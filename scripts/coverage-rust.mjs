@@ -2,14 +2,17 @@
 // Roda os testes (substitui cargo test no CI) e, no workspace principal, também a suíte de conformidade contra o
 // c3-example compilado com a medição ligada: o que o contrato exercita no c3-engine conta, como no engine-node.
 // O c3-example em si fica fora da conta (é o CRM de exemplo). Branches no Rust exigem nightly: aqui só linhas.
+// Deixa também coverage/rust-<crate>.lcov, que o scripts/diff-coverage.mjs lê para a cobertura das linhas do PR.
 //
 // Uso: node scripts/coverage-rust.mjs   (precisa de cargo-llvm-cov e do componente llvm-tools-preview)
 
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, readdirSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 
 const TARGET = 80;
+
+mkdirSync('coverage', { recursive: true });
 
 function run(cmd, args, env = process.env) {
   const r = spawnSync(cmd, args, { stdio: 'inherit', env });
@@ -45,6 +48,12 @@ run(
   ['llvm-cov', 'report', '--summary-only', '--ignore-filename-regex', 'crates/c3-example/', '--fail-under-lines', String(TARGET)],
   env
 );
+// o mesmo resultado em lcov, sem rodar os testes de novo
+run(
+  'cargo',
+  ['llvm-cov', 'report', '--ignore-filename-regex', 'crates/c3-example/', '--lcov', '--output-path', 'coverage/rust-c3-engine.lcov'],
+  env
+);
 
 // adaptador rusqlite: workspace próprio (outro libsqlite3-sys)
 console.log(`\n== c3-engine-rusqlite: mínimo de ${TARGET}% de linhas`);
@@ -55,4 +64,13 @@ run('cargo', [
   '--summary-only',
   '--fail-under-lines',
   String(TARGET)
+]);
+run('cargo', [
+  'llvm-cov',
+  'report',
+  '--manifest-path',
+  'crates/c3-engine-rusqlite/Cargo.toml',
+  '--lcov',
+  '--output-path',
+  'coverage/rust-c3-engine-rusqlite.lcov'
 ]);
