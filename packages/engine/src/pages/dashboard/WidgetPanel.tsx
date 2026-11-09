@@ -14,6 +14,7 @@ import { useText } from '../../context';
 import { chartKind, type ChartWidget as Chart, type WidgetDef } from '../../dashboard';
 import AreaWidget from './AreaWidget';
 import ChartWidget from './ChartWidget';
+import ChartsText from './ChartsText';
 import FeedWidget from './FeedWidget';
 import KpiWidget from './KpiWidget';
 import ListWidget from './ListWidget';
@@ -70,7 +71,9 @@ function ChartPanel({ widget }: { widget: Chart }) {
       sx={{ height: '100%' }}
       action={chartKind(widget) === 'donut' ? undefined : action}
     >
-      {area ? <AreaWidget widget={widget} last={range} /> : <ChartWidget widget={widget} table={table} />}
+      <ChartsText empty={widget.empty ? text(widget.empty) : undefined}>
+        {area ? <AreaWidget widget={widget} last={range} /> : <ChartWidget widget={widget} table={table} />}
+      </ChartsText>
     </Panel>
   );
 }
