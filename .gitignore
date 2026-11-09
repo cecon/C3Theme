@@ -18,3 +18,7 @@ target/
 *.db
 *.db-shm
 *.db-wal
+
+# saída dos testes e2e (Playwright)
+test-results/
+playwright-report/
