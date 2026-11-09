@@ -25,7 +25,7 @@ export default defineConfig({
         '**/*.d.ts',
         '**/*.d.mts'
       ],
-      reporter: ['text-summary', 'json-summary'],
+      reporter: ['text-summary', 'json-summary', 'lcov'],
       thresholds: coverageThresholds
     }
   }
