@@ -1,0 +1,2 @@
+# cargo-mutants (scripts/mutation-rust.mjs): o exemplo é demonstração, não código de produção
+exclude_globs = ["crates/c3-example/**"]

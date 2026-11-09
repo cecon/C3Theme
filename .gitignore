@@ -22,3 +22,9 @@ target/
 # saída dos testes e2e (Playwright)
 test-results/
 playwright-report/
+
+# testes de mutação (pnpm mutation:ts / mutation:rust)
+reports/
+.stryker-tmp/
+mutants.out/
+mutants.out.old/
