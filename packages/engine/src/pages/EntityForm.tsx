@@ -4,14 +4,9 @@ import useSWR, { useSWRConfig } from 'swr';
 
 // material-ui
 import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
 import Grid from '@mui/material/Grid';
-import Stack from '@mui/material/Stack';
 
 import { evaluate } from '../conditions.mjs';
 import { FormSkeleton, notify, Panel } from '@c3theme/ui';
@@ -20,7 +15,9 @@ import { branchLabel, useEngine, useText } from '../context';
 import FieldInput from '../widgets/FieldInput';
 import RecordActions from '../widgets/RecordActions';
 import { initialRecord, newLabel, toInput, urlValues, withParent } from '../formValues';
-import FormHeader, { EditButtons } from './FormHeader';
+import { allDayPatch } from '../calendarForm';
+import { EditButtons, FormFrame } from './FormHeader';
+import DeleteDialog from './DeleteDialog';
 import FormSections from './FormSections';
 import { formBlocks } from '../skeletonShape';
 import LossDialog from './LossDialog';
@@ -103,7 +100,8 @@ export default function EntityForm({ entity, id, embedded }: { entity: string; i
     f.denied === 'readOnly' || (!isNew && Boolean(f.createOnly || (f.readOnlyWhen && loaded && evaluate(f.readOnlyWhen, loaded, types))));
 
   const change = (name: string, value: unknown) => {
-    setRecord((r) => ({ ...r, [name]: value }));
+    // dia inteiro do calendário: início e fim vão para a meia-noite (ou voltam a ter hora)
+    setRecord((r) => ({ ...r, [name]: value, ...allDayPatch(def, r, name, value) }));
     setErrors(({ [name]: _, ...rest }) => rest);
   };
 
@@ -181,12 +179,22 @@ export default function EntityForm({ entity, id, embedded }: { entity: string; i
     }
   }
 
+  // diálogo com rodapé: o formulário é as partes do diálogo; enquanto carrega, só um respiro em volta
+  const pad = embedded && def.views?.form?.actions === 'footer' ? { m: 3 } : undefined;
   if (loadError) {
-    return <Alert severity={loadError instanceof ApiError && loadError.status === 404 ? 'warning' : 'error'}>{loadError.message}</Alert>;
+    return (
+      <Alert sx={pad} severity={loadError instanceof ApiError && loadError.status === 404 ? 'warning' : 'error'}>
+        {loadError.message}
+      </Alert>
+    );
   }
   if (!isNew && !loaded) {
     const blocks = formBlocks(def, sections, embedded ? Object.keys(embedded.fixed) : []);
-    return <FormSkeleton blocks={blocks.length ? blocks : undefined} />;
+    return (
+      <Box sx={pad}>
+        <FormSkeleton blocks={blocks.length ? blocks : undefined} />
+      </Box>
+    );
   }
 
   const title = isNew ? newLabel(def, text) : (loaded && recordTitle(def, loaded)) || text(def.label.singular);
@@ -203,8 +211,8 @@ export default function EntityForm({ entity, id, embedded }: { entity: string; i
   }
   const DetailComponent = !editing && def.views?.detail?.component ? components[def.views.detail.component] : undefined;
   const form = def.views?.form;
-  // botões no fim: o título da página já diz o que é; dentro de um diálogo, ficam em cima
-  const footer = !embedded && form?.actions === 'footer';
+  // botões no fim (da página ou do diálogo): o título da página já diz o que é
+  const footer = form?.actions === 'footer';
   const submit = text((isNew ? form?.submitLabel?.new : form?.submitLabel?.edit) ?? 'Salvar');
   const cancel = () => {
     if ((isNew || embedded?.edit) && embedded) embedded.onClose(false);
@@ -217,75 +225,76 @@ export default function EntityForm({ entity, id, embedded }: { entity: string; i
     }
   };
 
+  const inDialog = Boolean(embedded) && footer;
+  const readButtons = !editing && (
+    <>
+      {embedded && <Button onClick={() => embedded.onClose(false)}>Fechar</Button>}
+      {!isNew && loaded && <RecordActions entity={entity} id={id!} record={loaded} />}
+      {canDelete && (
+        <Button color="error" onClick={() => setConfirmDelete(true)}>
+          Excluir
+        </Button>
+      )}
+      {canUpdate && (
+        <Button variant="contained" onClick={() => setEditing(true)}>
+          Editar
+        </Button>
+      )}
+    </>
+  );
+  const editButtons = editing && (
+    <EditButtons
+      footer={footer}
+      dialog={inDialog}
+      submit={submit}
+      saving={saving}
+      onCancel={cancel}
+      onDelete={inDialog && !isNew && canDelete ? () => setConfirmDelete(true) : undefined}
+    />
+  );
+
   return (
-    <Stack
-      spacing={2.5}
-      component="form"
-      onSubmit={(e) => {
-        e.preventDefault();
-        // diálogos abertos daqui (filho, cadastro rápido, ação) são portais: o submit deles sobe pelo React até aqui
-        e.stopPropagation();
-        if (editing) save();
-      }}
-      noValidate
-    >
-      {!(footer && editing && !owner) && (
-        <FormHeader title={title} owner={owner}>
-          {!editing && embedded && <Button onClick={() => embedded.onClose(false)}>Fechar</Button>}
-          {!editing && !isNew && loaded && <RecordActions entity={entity} id={id!} record={loaded} />}
-          {!editing && canDelete && (
-            <Button color="error" onClick={() => setConfirmDelete(true)}>
-              Excluir
-            </Button>
-          )}
-          {!editing && canUpdate && (
-            <Button variant="contained" onClick={() => setEditing(true)}>
-              Editar
-            </Button>
-          )}
-          {editing && !footer && <EditButtons submit={submit} saving={saving} onCancel={cancel} />}
-        </FormHeader>
-      )}
+    <>
+      <FormFrame
+        dialog={inDialog}
+        title={inDialog && editing && !isNew ? `Editar ${text(def.label.singular).toLowerCase()}` : title}
+        owner={owner}
+        header={!(footer && editing && !owner)}
+        top={readButtons || (!footer && editButtons)}
+        bottom={footer && editButtons}
+        onSubmit={(e) => {
+          e.preventDefault();
+          // diálogos abertos daqui (filho, cadastro rápido, ação) são portais: o submit deles sobe pelo React até aqui
+          e.stopPropagation();
+          if (editing) save();
+        }}
+      >
+        {formError && <Alert severity="error">{formError}</Alert>}
 
-      {formError && <Alert severity="error">{formError}</Alert>}
+        {DetailComponent ? (
+          <DetailComponent entity={def} record={record} />
+        ) : (
+          <FormSections
+            sections={sections}
+            ctx={{ def, record, errors, editing, id, dirty, embedded, flat: inDialog, visible, required, locked, change, onRows }}
+          />
+        )}
 
-      {DetailComponent ? (
-        <DetailComponent entity={def} record={record} />
-      ) : (
-        <FormSections
-          sections={sections}
-          ctx={{ def, record, errors, editing, id, dirty, embedded, visible, required, locked, change, onRows }}
-        />
-      )}
-
-      {!isNew && readOnlyFields.length > 0 && (
-        <Panel>
-          <Grid container spacing={2.5}>
-            {readOnlyFields.map((f) => (
-              <Grid key={f.name} size={{ xs: 12, md: 6 }}>
-                <FieldInput field={f} value={record[f.name]} onChange={() => {}} readOnly />
-              </Grid>
-            ))}
-          </Grid>
-        </Panel>
-      )}
-
-      {footer && editing && <EditButtons footer submit={submit} saving={saving} onCancel={cancel} />}
+        {!isNew && readOnlyFields.length > 0 && (
+          <Panel>
+            <Grid container spacing={2.5}>
+              {readOnlyFields.map((f) => (
+                <Grid key={f.name} size={{ xs: 12, md: 6 }}>
+                  <FieldInput field={f} value={record[f.name]} onChange={() => {}} readOnly />
+                </Grid>
+              ))}
+            </Grid>
+          </Panel>
+        )}
+      </FormFrame>
 
       <LossDialog sections={confirmLoss} onCancel={() => setConfirmLoss(undefined)} onConfirm={() => save(true)} />
-
-      <Dialog open={confirmDelete} onClose={() => setConfirmDelete(false)}>
-        <DialogTitle>{`Excluir ${title}?`}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>Esta ação não pode ser desfeita.</DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setConfirmDelete(false)}>Cancelar</Button>
-          <Button color="error" variant="contained" onClick={remove}>
-            Excluir
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Stack>
+      <DeleteDialog open={confirmDelete} title={title} onCancel={() => setConfirmDelete(false)} onConfirm={remove} />
+    </>
   );
 }

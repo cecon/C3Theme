@@ -34,7 +34,7 @@ ao lado, na seção "Por JSON", até cada lacuna abaixo fechar. A troca de cada 
 | Faturas › Painel | `/apps/faturas/painel` | ✅ trocada: o menu "Painel de faturas" abre a página do `app.json` e a versão em código saiu. KPI com ícone, contagem e barra (`icon`, `count`, `progress`), área com duas séries e 6/12 meses (`chart: "area"`, `series`, `ranges`), rosca com legenda (`chart: "donut"`), "Maiores devedores" (`ranking` com `flag` e o botão Cobrar pela ação `cobrar`) e notificações (`feed` da entidade `notificacao`). A receita vem da entidade `receita_mes` (mês, faturado, recebido), com a mesma série da tela em código, uma série por medida (`series[].measure`) e o eixo em mil (`axisScale`); as faturas continuam as 28 de antes | — |
 | Kanban › Quadro | `/tarefa/board` | cartão e coluna iguais. Ficou diferente: sem o menu da coluna (renomear, excluir e marcar concluída mexem nas opções do enum, que são da spec), sem as abas Quadro/Backlog (L21) e com a troca lista/quadro no topo; a cor do avatar vem do registro, não de um campo do membro | L21 |
 | Kanban › Backlog | — | história com filhos expansíveis, critérios, comentários | L21 |
-| Calendário | `/evento/calendar` | grade, barra, Semana/Dia/Agenda e arrastar iguais (mesmo FullCalendar e estilos do `@c3theme/ui`). Falta o diálogo do evento: título "Editar evento", botões no rodapé, cor em bolinhas, dia inteiro em chave e data sem hora no dia inteiro; e o tom "primary" (o motor só tem os tons da spec) | L33 |
+| Calendário | `/evento/calendar` | ✅ trocada: o menu "Calendário" abre a tela do motor e a versão em código saiu. O diálogo do evento ficou igual: "Editar evento"/"Novo evento", Excluir, Cancelar e Salvar/"Criar evento" no rodapé (`actions: "footer"` num diálogo), cor em bolinhas (`display: "swatches"`, com o tom Principal) e, no dia inteiro, início e fim só como data, o fim mostrado como o último dia. Ficou diferente: a confirmação de excluir usa o texto padrão do motor e o fim antes do início é recusado ao gravar, não enquanto digita | — |
 | Clientes › Cartões | — | grade de cartões com avatar, contatos, interesses e situação | L25 |
 | Painéis › Padrão e Analítico, Widgets | — | banner, KPI com minigráfico, checklist de versão, feed, cartões de pessoa | L16 L17 L26 |
 | E-commerce (produtos, detalhe, checkout) | — | vitrine de loja com foto, nota, carrinho, passos de compra | L27 |
@@ -133,9 +133,11 @@ Ordem sugerida: as que afetam mais telas primeiro. Cada uma vira um PR com spec,
   (`CalendarToolbar`) e os estilos (`calendarStyles`) no `@c3theme/ui`. Ganhou Semana, Dia e Agenda, "Hoje" à
   esquerda, cabeçalho em caixa alta, borda colorida, selecionar um período para criar e arrastar ou esticar para
   remarcar (PATCH com `If-Match`). A grade própria do motor saiu.
-- **L33. Diálogo do evento.** O motor abre o formulário genérico (já editando); a tela em código tem título "Editar
-  evento", Excluir/Cancelar/Salvar no rodapé, cor em bolinhas, dia inteiro em chave e data sem hora quando é dia
-  inteiro. Rodapé é o mesmo pedido da L14; cor em bolinhas e chave são aparência de campo na spec.
+- **L33. Diálogo do evento.** ✅ Feito: formulário com `actions: "footer"` aberto num diálogo vira um diálogo comum
+  (título, campos sem cartão, Excluir à esquerda e Cancelar/gravar no rodapé, tela cheia no celular, cursor no
+  primeiro campo); `{ "field": "cor", "display": "swatches" }` mostra o enum com cores em bolinhas (`SwatchField` no
+  `@c3theme/ui`); com o `allDay` do calendário ligado, início e fim são editados só como data, o fim inclusivo, e
+  ligar ou desligar o dia inteiro ajusta as horas (meia-noite, ou 9h às 10h).
 
 **Outras visões**
 

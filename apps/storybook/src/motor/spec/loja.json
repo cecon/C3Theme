@@ -21,6 +21,20 @@
       ]
     },
     {
+      "name": "cor",
+      "type": "enum",
+      "label": "Cor da etiqueta",
+      "default": "primary",
+      "options": [
+        { "value": "primary", "label": "Principal", "color": "primary" },
+        { "value": "neutral", "label": "Neutra", "color": "neutral" },
+        { "value": "success", "label": "Verde", "color": "success" },
+        { "value": "warning", "label": "Amarela", "color": "warning" },
+        { "value": "danger", "label": "Vermelha", "color": "danger" },
+        { "value": "info", "label": "Azul", "color": "info" }
+      ]
+    },
+    {
       "name": "dias_entrega",
       "type": "flags",
       "label": "Dias de entrega",

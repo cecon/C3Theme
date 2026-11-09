@@ -1,9 +1,11 @@
+// Eventos de exemplo do calendário (o motor lê pelo seed, na entidade evento).
+
 // third-party
 import { addDays, setHours, setMinutes, startOfDay, startOfMonth } from 'date-fns';
 
-export type EventTone = 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'info';
+type EventTone = 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'info';
 
-export interface CalendarEvent {
+interface CalendarEvent {
   id: string;
   title: string;
   description: string;
@@ -13,15 +15,6 @@ export interface CalendarEvent {
   end: Date;
   tone: EventTone;
 }
-
-export const EVENT_TONES: { tone: EventTone; label: string }[] = [
-  { tone: 'primary', label: 'Principal' },
-  { tone: 'secondary', label: 'Neutra' },
-  { tone: 'success', label: 'Verde' },
-  { tone: 'warning', label: 'Amarela' },
-  { tone: 'danger', label: 'Vermelha' },
-  { tone: 'info', label: 'Azul' }
-];
 
 // os exemplos ficam no mês corrente para o calendário nunca abrir vazio
 const base = startOfMonth(new Date());

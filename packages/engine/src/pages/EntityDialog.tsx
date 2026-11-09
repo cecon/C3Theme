@@ -8,6 +8,10 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 
+import useMediaQuery from '@mui/material/useMediaQuery';
+import type { Theme } from '@mui/material/styles';
+
+import { useEngine } from '../context';
 import EntityForm from './EntityForm';
 import type { WireRecord } from '../types';
 
@@ -29,6 +33,10 @@ export interface EntityDialogProps {
  * pergunta antes de descartar.
  */
 export default function EntityDialog({ open, entity, fixed, initial, onClose }: EntityDialogProps) {
+  const { entities } = useEngine();
+  // formulário com botões no rodapé vira um diálogo comum: título, campos e botões do próprio diálogo
+  const plain = entities[entity]?.def.views?.form?.actions === 'footer';
+  const fullScreen = useMediaQuery((t: Theme) => t.breakpoints.down('sm'));
   const [dirty, setDirty] = useState(false);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   const onDirtyChange = useCallback((d: boolean) => setDirty(d), []);
@@ -38,19 +46,26 @@ export default function EntityDialog({ open, entity, fixed, initial, onClose }: 
     onClose(changed, saved);
   };
 
+  const form = (o: { id?: string; edit?: boolean }) => (
+    <EntityForm
+      key={o.id ?? 'new'}
+      entity={entity}
+      id={o.id}
+      embedded={{ fixed: fixed ?? {}, initial, onClose: close, onDirtyChange, edit: o.edit }}
+    />
+  );
+
   return (
     <>
-      <Dialog open={open !== null} onClose={() => (dirty ? setConfirmDiscard(true) : close(false))} fullWidth maxWidth="md">
-        <DialogContent sx={{ bgcolor: 'background.default' }}>
-          {open && (
-            <EntityForm
-              key={open.id ?? 'new'}
-              entity={entity}
-              id={open.id}
-              embedded={{ fixed: fixed ?? {}, initial, onClose: close, onDirtyChange, edit: open.edit }}
-            />
-          )}
-        </DialogContent>
+      <Dialog
+        open={open !== null}
+        onClose={() => (dirty ? setConfirmDiscard(true) : close(false))}
+        fullWidth
+        maxWidth={plain ? 'sm' : 'md'}
+        fullScreen={plain && fullScreen}
+      >
+        {open && plain && form(open)}
+        {open && !plain && <DialogContent sx={{ bgcolor: 'background.default' }}>{form(open)}</DialogContent>}
       </Dialog>
 
       <Dialog open={confirmDiscard} onClose={() => setConfirmDiscard(false)}>

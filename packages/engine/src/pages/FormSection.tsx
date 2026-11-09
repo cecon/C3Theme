@@ -1,8 +1,10 @@
 // material-ui
 import Grid from '@mui/material/Grid';
+import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
 import { Panel } from '@c3theme/ui';
+import { allDayRole, isAllDay } from '../calendarForm';
 import { useEngine, useText } from '../context';
 import { fieldTypes, sectionVisible } from '../sectionVisibility';
 import FieldInput from '../widgets/FieldInput';
@@ -27,6 +29,8 @@ export interface SectionContext {
   /** Há alteração não gravada no formulário. */
   dirty?: boolean;
   embedded?: Embedded;
+  /** Dentro do diálogo com rodapé: seções sem cartão, só os campos (e o título, se houver). */
+  flat?: boolean;
   visible: (f: FieldDef) => boolean;
   required: (f: FieldDef) => boolean;
   /** Campo travado na alteração (`createOnly`, `readOnlyWhen` sobre o gravado). */
@@ -100,8 +104,8 @@ export default function FormSection({ section: s, ctx, fill }: { section: Sectio
     return <Custom {...props} />;
   }
   const rows = shownRows(s, ctx);
-  return (
-    <Panel title={s.title ? text(s.title) : undefined} sx={fill ? { height: '100%' } : undefined}>
+  const content = (
+    <>
       {s.description && (
         <Typography color="text.secondary" sx={{ mb: 2 }}>
           {text(s.description)}
@@ -122,6 +126,8 @@ export default function FormSection({ section: s, ctx, fill }: { section: Sectio
                   locked={editing && ctx.locked(item.def)}
                   record={record}
                   component={item.component}
+                  display={item.display}
+                  allDay={isAllDay(def, record) ? allDayRole(def, item.field) : undefined}
                   existing={ctx.id !== undefined}
                   entity={def.name}
                 />
@@ -131,6 +137,18 @@ export default function FormSection({ section: s, ctx, fill }: { section: Sectio
         )}
       </Grid>
       {s.summary && <SummaryLines lines={s.summary} record={record} />}
+    </>
+  );
+  if (ctx.flat)
+    return (
+      <Stack spacing={1.5}>
+        {s.title && <Typography variant="subtitle1">{text(s.title)}</Typography>}
+        {content}
+      </Stack>
+    );
+  return (
+    <Panel title={s.title ? text(s.title) : undefined} sx={fill ? { height: '100%' } : undefined}>
+      {content}
     </Panel>
   );
 }

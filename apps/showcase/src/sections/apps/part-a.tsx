@@ -1,5 +1,5 @@
 import { lazy } from 'react';
-import { Navigate, type RouteObject } from 'react-router';
+import { Navigate, redirect, type RouteObject } from 'react-router';
 
 // third-party
 import { Calendar1, Kanban, Magicpen, Messages2 } from 'iconsax-reactjs';
@@ -7,7 +7,6 @@ import { Calendar1, Kanban, Magicpen, Messages2 } from 'iconsax-reactjs';
 import { Loadable, type NavItem } from '@c3theme/ui';
 
 const AssistentePage = Loadable(lazy(() => import('./assistente/AssistentePage')));
-const CalendarioPage = Loadable(lazy(() => import('./calendario/CalendarioPage')));
 const ChatPage = Loadable(lazy(() => import('./chat/ChatPage')));
 const KanbanLayout = Loadable(lazy(() => import('./kanban/KanbanLayout')));
 const QuadroPage = Loadable(lazy(() => import('./kanban/quadro/QuadroPage')));
@@ -16,7 +15,8 @@ const BacklogPage = Loadable(lazy(() => import('./kanban/backlog/BacklogPage')))
 // assistente, calendário, chat e kanban
 export const items: NavItem[] = [
   { id: 'apps-assistente', title: 'Assistente', icon: Magicpen, url: '/apps/assistente' },
-  { id: 'apps-calendario', title: 'Calendário', icon: Calendar1, url: '/apps/calendario' },
+  // o calendário é a tela do motor (spec em sections/motor/spec/evento.json)
+  { id: 'apps-calendario', title: 'Calendário', icon: Calendar1, url: '/evento/calendar' },
   { id: 'apps-chat', title: 'Chat', icon: Messages2, url: '/apps/chat' },
   {
     id: 'apps-kanban',
@@ -31,7 +31,8 @@ export const items: NavItem[] = [
 
 export const routes: RouteObject[] = [
   { path: 'apps/assistente', element: <AssistentePage /> },
-  { path: 'apps/calendario', element: <CalendarioPage /> },
+  // endereço antigo do calendário em código
+  { path: 'apps/calendario', loader: () => redirect('/evento/calendar') },
   { path: 'apps/chat', element: <ChatPage /> },
   {
     // o layout guarda o estado do kanban, compartilhado entre quadro e backlog

@@ -8,11 +8,22 @@ import InputAdornment from '@mui/material/InputAdornment';
 import Switch from '@mui/material/Switch';
 import TextField from '@mui/material/TextField';
 
-import { currencySymbol, DateField, DateTimeField, DecimalField, FileField, FlagsField, SelectField, withHint } from '@c3theme/ui';
+import {
+  currencySymbol,
+  DateField,
+  DateTimeField,
+  DecimalField,
+  FileField,
+  FlagsField,
+  SelectField,
+  SwatchField,
+  withHint
+} from '@c3theme/ui';
 import type { FileValue } from '@c3theme/ui';
 
 import { useEngine, useText } from '../context';
-import { datetimeToLocalInput, displayValue, findOption, localInputToDatetime } from '../format';
+import { fromDay, toDay } from '../calendarForm';
+import { datetimeToLocalInput, displayValue, findOption, formatDate, localInputToDatetime } from '../format';
 import DocumentInput from './DocumentInput';
 import PasswordInput from './PasswordInput';
 import ReferenceInput from './ReferenceInput';
@@ -36,6 +47,10 @@ export interface FieldInputProps {
   record?: WireRecord;
   /** Entidade do registro: o arquivo gravado (`file`) baixa por ela. */
   entity?: string;
+  /** Início ou fim de um evento de dia inteiro: datetime editado só como data (o fim, inclusivo). */
+  allDay?: 'start' | 'end';
+  /** Aparência escolhida na view: enum com cores em bolinhas. */
+  display?: 'swatches';
 }
 
 /** Props que um componente custom de campo recebe. */
@@ -87,6 +102,36 @@ export default function FieldInput(props: FieldInputProps) {
         onDownload={
           props.entity && props.record?.id ? () => saveFile(client, props.entity!, String(props.record!.id), field.name, file!) : undefined
         }
+      />
+    );
+  }
+  if (props.allDay) {
+    const day = toDay(value, props.allDay);
+    if (readOnly)
+      return (
+        <TextField label={label} value={day ? formatDate(day, intl.locale) : '—'} fullWidth slotProps={{ input: { readOnly: true } }} />
+      );
+    return (
+      <DateField
+        {...{ label, hint, required, error, helperText: helper }}
+        value={day}
+        onChange={(d) => onChange(fromDay(d, props.allDay!))}
+      />
+    );
+  }
+  if (field.type === 'enum' && props.display === 'swatches') {
+    const swatches = (field.options ?? []).map((o) => ({
+      value: o.value,
+      label: text(o.label, String(o.value)),
+      tone: o.color ?? 'neutral'
+    }));
+    return (
+      <SwatchField
+        {...{ label, hint, error, required, readOnly }}
+        helperText={helper}
+        options={swatches}
+        value={(value ?? null) as string | number | null}
+        onChange={onChange}
       />
     );
   }

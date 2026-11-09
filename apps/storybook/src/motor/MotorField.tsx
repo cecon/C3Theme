@@ -18,10 +18,12 @@ export interface MotorFieldProps {
   error?: string;
   /** Registro já gravado: campo só de escrita vazio mantém a senha. */
   existing?: boolean;
+  /** Como a linha do formulário desenha o campo (`display` da spec): 'swatches' põe a cor em bolinhas. */
+  display?: 'swatches';
   onChange?: (value: unknown) => void;
 }
 
-export default function MotorField({ entity, field, value = null, error, existing, onChange }: MotorFieldProps) {
+export default function MotorField({ entity, field, value = null, error, existing, display, onChange }: MotorFieldProps) {
   const def = useEntity(entity).def.fields.find((f) => f.name === field)!;
   const [current, setCurrent] = useState(value);
   useEffect(() => setCurrent(value), [value]);
@@ -34,6 +36,7 @@ export default function MotorField({ entity, field, value = null, error, existin
         required={def.required}
         readOnly={def.readOnly}
         existing={existing}
+        display={display}
         entity={entity}
         onChange={(next) => {
           setCurrent(next);

@@ -58,3 +58,6 @@ export const Radios: Story = {
     />
   )
 };
+
+/** Cor em bolinhas (`display: "swatches"` na linha do formulário): enum com `color` em toda opção. */
+export const Cores: Story = { name: 'Cores (bolinhas)', args: { field: 'cor', value: 'danger', display: 'swatches' } };

@@ -11,6 +11,8 @@ export { default as SelectField } from './SelectField';
 export type { SelectFieldProps } from './SelectField';
 export { default as RadioField } from './RadioField';
 export type { RadioFieldProps } from './RadioField';
+export { default as SwatchField } from './SwatchField';
+export type { SwatchFieldProps, SwatchOption } from './SwatchField';
 export { default as FlagsField } from './FlagsField';
 export type { FlagsFieldProps } from './FlagsField';
 export { default as FileField } from './FileField';
