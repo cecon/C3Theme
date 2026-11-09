@@ -32,6 +32,8 @@ export interface FlowPort {
   id: string;
   /** Rótulo da saída no nó e no menu de ligar (ex.: "sim", "não"). Sem rótulo, a saída é a única do nó. */
   label?: string;
+  /** Pode ficar sem ligação (o fluxo termina aqui): não gera `unlinkedOutput`. Ex.: o "não" de uma condição. */
+  optional?: boolean;
 }
 
 /** Campo do formulário de configuração do nó, declarado como dado (o editor monta com os campos do @c3theme/ui). */

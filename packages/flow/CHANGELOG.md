@@ -2,6 +2,10 @@
 
 Instale fixando o commit (`github:cecon/C3Theme#<sha>&path:packages/flow`). Cada entrada diz o que muda para quem usa; **Quebra** marca o que exige mudar o app.
 
+## 0.3.0 (2026-11-09)
+
+- Saída que pode ficar sem ligação (issue #3): `FlowPort.optional` não gera `unlinkedOutput`; e a prop `validate` no `FlowEditor` troca a validação do editor pela do app. Sem quebra.
+
 ## 0.2.0 (2026-11-09)
 
 - Regras do app (issue #151): `max`, `removable: false` e `defaults` no tipo de passo; `selectedId`/`onSelectedChange` (seleção controlada, opcional) e `extraIssues` no `FlowEditor`. Novos `canAdd` e `isRemovable` no núcleo. Sem quebra.

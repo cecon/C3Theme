@@ -1,6 +1,6 @@
 {
   "name": "@c3theme/flow",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "license": "MIT",
   "description": "C3 Flow: editor de fluxo de trabalho (grafo de passos) com contrato JSON, validação e organização automática; o canvas fica atrás de uma porta (adaptador padrão: React Flow)",
   "author": "cecon (https://github.com/cecon)",

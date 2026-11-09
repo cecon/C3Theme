@@ -14,6 +14,14 @@ describe('validateFlow', () => {
     expect(validateFlow(g, TYPES)).toEqual([{ code: 'unlinkedOutput', nodeId: 'confirmado', detail: 'nao' }]);
   });
 
+  it('saída optional pode ficar solta (o fluxo termina ali)', () => {
+    const g = removeEdges(FLOW, ['e4']);
+    const types = TYPES.map((t) =>
+      t.type === 'condicao' ? { ...t, outputs: t.outputs.map((p) => ({ ...p, optional: p.id === 'nao' })) } : t
+    );
+    expect(validateFlow(g, types)).toEqual([]);
+  });
+
   it('nó sem nenhuma ligação é solto; entrada sem ligação é outro problema', () => {
     const g = {
       ...FLOW,
