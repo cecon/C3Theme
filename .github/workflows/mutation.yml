@@ -1,0 +1,77 @@
+name: mutation
+
+# Placar de mutação do repositório inteiro, por pacote TS e pelo Rust em fatias. Semanal porque leva horas (o PR já
+# mede as próprias linhas no engine.yml). Cada pacote reprova se cair abaixo do piso em
+# scripts/quality/mutation-floors.mjs; o relatório HTML fica nos artefatos.
+on:
+  schedule:
+    - cron: '0 5 * * 0' # domingo, 02:00 em Brasília
+  workflow_dispatch:
+
+concurrency:
+  group: mutation
+  cancel-in-progress: true
+
+jobs:
+  ts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix:
+        package: [chat, electron, engine, engine-node, flow, ui]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+      - run: pnpm mutation:ts ${{ matrix.package }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mutation-${{ matrix.package }}
+          path: reports/mutation/${{ matrix.package }}/
+
+  rust-shard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@cargo-mutants
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            .
+            crates/c3-engine-rusqlite
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - run: node scripts/mutation-rust.mjs ${{ matrix.shard }}/8
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mutation-rust-${{ matrix.shard }}
+          path: reports/mutation/rust/
+
+  rust:
+    needs: rust-shard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: mutation-rust-*
+          path: rust-shards
+      - run: node scripts/mutation-rust.mjs --sum rust-shards

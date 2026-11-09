@@ -6,6 +6,7 @@ trocada ganha um ADR novo, e o antigo passa a `Substituída por NNNN`.
 | ADR                                      | Decisão                                                  | Status |
 | ---------------------------------------- | -------------------------------------------------------- | ------ |
 | [0001](0001-motor-dsl-caminho-padrao.md) | Toda tela de negócio é JSON no motor; TS só nas exceções | Aceita |
+| [0002](0002-padroes-de-qualidade.md)     | Padrões de qualidade e como cada um é medido             | Aceita |
 
 ## Formato
 

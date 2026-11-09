@@ -70,3 +70,43 @@ jobs:
           C3_BASE: origin/${{ github.base_ref }}
       # o app que o pnpm create-app gera (Rust e Node) compila, sobe e grava pela API
       - run: node scripts/create-app-smoke.mjs
+
+  # testes de mutação só nas linhas que o PR escreveu, meta de 90% (scripts/mutation-*.mjs). Por enquanto mede e mostra
+  # sem reprovar (continue-on-error): os pacotes estão entre 24% e 74% (ADR 0002). Corre em paralelo ao job principal;
+  # a rodada do repositório inteiro, essa sim com piso que reprova, é semanal (mutation.yml).
+  mutation-diff:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@cargo-mutants
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            .
+            crates/c3-engine-rusqlite
+      - run: pnpm install --frozen-lockfile
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+      - run: pnpm mutation:ts --diff
+        continue-on-error: true
+        env:
+          C3_BASE: origin/${{ github.base_ref }}
+      - run: pnpm mutation:rust --diff
+        continue-on-error: true
+        env:
+          C3_BASE: origin/${{ github.base_ref }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mutation-pr
+          path: reports/mutation/

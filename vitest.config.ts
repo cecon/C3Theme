@@ -9,8 +9,8 @@ export default defineConfig({
   resolve: { conditions: ['c3theme-source'] },
   ssr: { resolve: { conditions: ['c3theme-source'] } },
   test: {
-    // e2e/ é do Playwright (pnpm e2e)
-    exclude: [...configDefaults.exclude, 'e2e/**'],
+    // e2e/ é do Playwright (pnpm e2e); .stryker-tmp/ é a cópia do repositório que o Stryker monta
+    exclude: [...configDefaults.exclude, 'e2e/**', '.stryker-tmp/**'],
     coverage: {
       provider: 'v8',
       // só o código publicado dos pacotes; apps (vitrine, seed, storybook, exemplos) ficam fora
