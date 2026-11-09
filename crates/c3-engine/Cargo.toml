@@ -1,0 +1,34 @@
+[package]
+name = "c3-engine"
+description = "Backend Axum + SQLite do contrato C3 (spec/v0): metadados, CRUD genérico, condições e erros. Sem driver no núcleo: o banco entra por um Store."
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+async-trait = "0.1"
+axum.workspace = true
+form_urlencoded = "1"
+regex.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+# versão do registro (`_version`, controle otimista): hash estável entre processos, sem segredo
+sha2 = "0.10"
+sqlx = { workspace = true, optional = true }
+# tempo real (`live`): canal em memória e o fluxo do SSE
+tokio = { version = "1", default-features = false, features = ["sync"] }
+futures-util = { version = "0.3", default-features = false }
+
+[features]
+# Adaptador sqlx 0.8 (`c3_engine::sqlx`). Sem nenhuma feature, o crate não puxa driver SQLite: o de rusqlite
+# é o crate `c3-engine-rusqlite`, fora deste workspace porque o Cargo não aceita dois `links = "sqlite3"` no mesmo lock.
+sqlx = ["dep:sqlx"]
+
+[dev-dependencies]
+# os testes de integração usam o adaptador sqlx
+c3-engine = { path = ".", features = ["sqlx"] }
+sqlx.workspace = true
+tokio = { workspace = true, features = ["time"] }
+tower = { version = "0.5", features = ["util"] }
+http-body-util = "0.1"

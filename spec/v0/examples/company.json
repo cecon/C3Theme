@@ -1,0 +1,201 @@
+{
+  "$schema": "../entity.schema.json",
+  "specVersion": "0",
+  "name": "company",
+  "label": {
+    "singular": "Empresa",
+    "plural": "Empresas"
+  },
+  "icon": "Building",
+  "titleField": "trade_name",
+  "rowAccess": [
+    { "permission": "empresa.cliente", "where": { "field": "is_supplier", "op": "ne", "value": true } },
+    { "permission": "empresa.fornecedor", "where": { "field": "is_supplier", "op": "eq", "value": true } },
+    { "permission": "empresa.propria", "where": { "field": "id", "op": "eq", "value": { "$user": "company" } } }
+  ],
+  "fields": [
+    {
+      "name": "trade_name",
+      "type": "string",
+      "label": "Nome fantasia",
+      "required": true,
+      "maxLength": 120
+    },
+    {
+      "name": "cnpj",
+      "type": "string",
+      "label": "CNPJ",
+      "unique": true,
+      "format": "cnpj"
+    },
+    {
+      "name": "taxpayer",
+      "type": "boolean",
+      "label": "Contribuinte de ICMS",
+      "default": true
+    },
+    {
+      "name": "is_supplier",
+      "type": "boolean",
+      "label": "Também é fornecedor",
+      "default": false
+    },
+    {
+      "name": "supplier_terms",
+      "type": "integer",
+      "label": "Prazo de pagamento (dias)",
+      "min": 0,
+      "max": 180,
+      "required": true
+    },
+    {
+      "name": "certificate",
+      "type": "string",
+      "label": "Certificado A1",
+      "readOnly": true,
+      "help": "Troque pela ação Trocar certificado."
+    },
+    {
+      "name": "zip_code",
+      "type": "string",
+      "label": "CEP",
+      "pattern": "^[0-9]{8}$",
+      "help": "Só os números. O endereço é preenchido pela consulta."
+    },
+    {
+      "name": "street",
+      "type": "string",
+      "label": "Logradouro",
+      "maxLength": 120
+    },
+    {
+      "name": "city",
+      "type": "string",
+      "label": "Cidade",
+      "maxLength": 80
+    },
+    {
+      "name": "state",
+      "type": "string",
+      "label": "UF",
+      "pattern": "^[A-Z]{2}$"
+    }
+  ],
+  "lookups": [
+    {
+      "name": "cep",
+      "field": "zip_code",
+      "fills": ["street", "city", "state"],
+      "trigger": "change"
+    },
+    {
+      "name": "cnpj",
+      "field": "cnpj",
+      "fills": ["trade_name"],
+      "trigger": "button",
+      "label": "Consultar na Receita"
+    }
+  ],
+  "actions": [
+    {
+      "name": "replace_certificate",
+      "label": "Trocar certificado",
+      "icon": "DocumentUpload",
+      "description": "Envia o certificado A1 (.pfx) do emitente. O arquivo é conferido e guardado pelo sistema e nunca volta para a tela.",
+      "confirmLabel": "Trocar",
+      "successMessage": "Certificado trocado.",
+      "input": {
+        "fields": [
+          {
+            "name": "file",
+            "type": "file",
+            "label": "Arquivo do certificado",
+            "required": true,
+            "accept": [".pfx", ".p12"],
+            "maxSize": 65536
+          },
+          {
+            "name": "password",
+            "type": "string",
+            "label": "Senha do certificado",
+            "required": true,
+            "writeOnly": true
+          }
+        ]
+      }
+    }
+  ],
+  "views": {
+    "list": {
+      "columns": ["trade_name", "cnpj", "certificate"],
+      "search": ["trade_name", "cnpj"],
+      "defaultSort": [
+        {
+          "field": "trade_name"
+        }
+      ]
+    },
+    "form": {
+      "sections": [
+        {
+          "rows": [
+            ["trade_name", "cnpj"],
+            ["taxpayer", "is_supplier"],
+            ["zip_code"],
+            ["street"],
+            ["city", "state"]
+          ]
+        },
+        {
+          "title": "Contatos",
+          "tab": "Contatos",
+          "related": {
+            "entity": "company_contact",
+            "field": "company_id",
+            "save": "with_parent",
+            "columns": ["name", "email", "main"],
+            "sort": "name",
+            "maxItems": 3
+          }
+        },
+        {
+          "title": "Dados fiscais",
+          "tab": "Fiscal",
+          "related": {
+            "entity": "company_fiscal",
+            "field": "company_id",
+            "save": "with_parent",
+            "maxItems": 1
+          },
+          "access": { "edit": "empresa.fiscal" },
+          "visibleWhen": {
+            "field": "taxpayer",
+            "op": "eq",
+            "value": true
+          }
+        },
+        {
+          "title": "Fornecedor",
+          "tab": "Fornecedor",
+          "access": { "view": "empresa.fornecedor" },
+          "visibleWhen": {
+            "field": "is_supplier",
+            "op": "eq",
+            "value": true
+          },
+          "rows": [["supplier_terms"]]
+        },
+        {
+          "title": "Clientes",
+          "tab": "Clientes",
+          "related": {
+            "entity": "customer",
+            "field": "company_id",
+            "columns": ["name", "email", "status"],
+            "sort": "name"
+          }
+        }
+      ]
+    }
+  }
+}

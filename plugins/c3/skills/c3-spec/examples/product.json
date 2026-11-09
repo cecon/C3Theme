@@ -1,0 +1,176 @@
+{
+  "specVersion": "0",
+  "name": "product",
+  "label": { "singular": "Produto", "plural": "Produtos" },
+  "icon": "Box",
+  "titleField": "description",
+  "fields": [
+    {
+      "name": "code",
+      "type": "string",
+      "label": "Código",
+      "required": true,
+      "unique": true,
+      "createOnly": true,
+      "maxLength": 20,
+      "pattern": "^[A-Z0-9.-]+$",
+      "hint": "Letras maiúsculas, números, ponto e hífen."
+    },
+    { "name": "description", "type": "string", "label": "Descrição", "required": true, "maxLength": 120 },
+    {
+      "name": "kind",
+      "type": "enum",
+      "label": "Tipo",
+      "required": true,
+      "default": "goods",
+      "options": [
+        { "value": "goods", "label": "Mercadoria", "color": "info" },
+        { "value": "raw", "label": "Matéria-prima", "color": "neutral" },
+        { "value": "service", "label": "Serviço", "color": "warning" }
+      ]
+    },
+    {
+      "name": "category_id",
+      "type": "reference",
+      "entity": "product_category",
+      "label": "Categoria",
+      "required": true,
+      "filter": { "field": "active", "op": "eq", "value": true }
+    },
+    { "name": "unit_id", "type": "reference", "entity": "unit", "label": "Unidade", "required": true },
+    {
+      "name": "gtin",
+      "type": "string",
+      "label": "EAN principal",
+      "pattern": "^[0-9]{8,14}$",
+      "visibleWhen": { "field": "kind", "op": "ne", "value": "service" }
+    },
+    {
+      "name": "ncm",
+      "type": "string",
+      "label": "NCM",
+      "pattern": "^[0-9]{8}$",
+      "visibleWhen": { "field": "kind", "op": "ne", "value": "service" },
+      "requiredWhen": { "field": "kind", "op": "eq", "value": "goods" }
+    },
+    { "name": "price", "type": "decimal", "label": "Preço de venda", "scale": 2, "currency": "BRL", "min": 0, "aiReview": true },
+    {
+      "name": "cost",
+      "type": "decimal",
+      "label": "Custo médio",
+      "scale": 4,
+      "min": 0,
+      "readOnlyWhen": { "field": "cost", "op": "null", "value": false },
+      "help": "Informado só no cadastro inicial; depois quem mexe é a entrada de nota."
+    },
+    { "name": "min_stock", "type": "decimal", "label": "Estoque mínimo", "scale": 3, "min": 0 },
+    { "name": "notes", "type": "text", "label": "Observações", "maxLength": 2000 },
+    { "name": "active", "type": "boolean", "label": "Ativo", "default": true }
+  ],
+  "lookups": [
+    { "name": "gtin", "field": "gtin", "fills": ["description", "ncm"], "trigger": "button", "label": "Buscar pelo EAN" }
+  ],
+  "views": {
+    "list": {
+      "columns": [
+        { "field": "code", "width": 110 },
+        "description",
+        "category_id",
+        "unit_id",
+        "price",
+        { "field": "kind", "width": 130 },
+        "active"
+      ],
+      "search": ["code", "description", "gtin"],
+      "filters": ["category_id", "kind", "active"],
+      "defaultSort": [{ "field": "description" }],
+      "presets": [
+        { "id": "ativos", "label": "Ativos", "where": { "field": "active", "op": "eq", "value": true }, "default": true },
+        { "id": "sem-preco", "label": "Sem preço", "where": { "field": "price", "op": "null", "value": true } },
+        {
+          "id": "servicos",
+          "label": "Serviços",
+          "where": { "field": "kind", "op": "eq", "value": "service" },
+          "defaults": { "kind": "service" }
+        }
+      ]
+    },
+    "form": {
+      "sections": [
+        {
+          "tab": "Geral",
+          "rows": [
+            ["code", "description"],
+            ["kind", "category_id", "unit_id"],
+            ["gtin", "ncm"],
+            ["active"]
+          ]
+        },
+        {
+          "tab": "Preço e estoque",
+          "rows": [["price", "cost"], ["min_stock"]]
+        },
+        {
+          "tab": "Códigos de barras",
+          "visibleWhen": { "field": "kind", "op": "ne", "value": "service" },
+          "related": {
+            "entity": "product_barcode",
+            "field": "product_id",
+            "save": "with_parent",
+            "columns": ["barcode", "unit_id", "factor"],
+            "maxItems": 20
+          }
+        },
+        {
+          "tab": "Fornecedores",
+          "related": {
+            "entity": "product_supplier",
+            "field": "product_id",
+            "save": "with_parent",
+            "columns": ["supplier_id", "supplier_code", "last_cost"]
+          }
+        },
+        {
+          "tab": "Observações",
+          "rows": [["notes"]]
+        }
+      ]
+    }
+  },
+  "actions": [
+    {
+      "name": "adjust_price",
+      "label": "Reajustar preço",
+      "icon": "TrendUp",
+      "description": "Aplica o percentual sobre o preço atual. Preço vazio continua vazio.",
+      "bulk": true,
+      "input": {
+        "fields": [
+          { "name": "percent", "type": "decimal", "label": "Percentual", "scale": 2, "min": -90, "max": 500, "required": true }
+        ]
+      },
+      "successMessage": "Preço reajustado."
+    },
+    {
+      "name": "deactivate",
+      "label": "Inativar",
+      "icon": "CloseCircle",
+      "tone": "warning",
+      "visibleWhen": { "field": "active", "op": "eq", "value": true },
+      "bulk": true,
+      "confirm": "O produto some das vendas e compras novas. Pedidos já lançados não mudam."
+    },
+    {
+      "name": "import_sheet",
+      "label": "Importar planilha",
+      "icon": "DocumentUpload",
+      "target": "list",
+      "description": "Cria ou atualiza produtos pelo código. Linhas com erro voltam no relatório.",
+      "input": {
+        "fields": [
+          { "name": "sheet", "type": "file", "label": "Planilha", "accept": [".xlsx", ".csv"], "required": true }
+        ]
+      }
+    }
+  ]
+}

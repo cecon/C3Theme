@@ -1,0 +1,31 @@
+{
+  "$schema": "../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "fornecedor",
+  "label": {
+    "singular": "Fornecedor",
+    "plural": "Fornecedores",
+    "gender": "m"
+  },
+  "titleField": "nome",
+  "fields": [
+    {
+      "name": "nome",
+      "type": "string",
+      "label": "Nome",
+      "required": true
+    },
+    {
+      "name": "cnpj",
+      "type": "string",
+      "label": "CNPJ",
+      "format": "cnpj"
+    }
+  ],
+  "views": {
+    "list": {
+      "columns": ["nome", "cnpj"],
+      "search": ["nome"]
+    }
+  }
+}

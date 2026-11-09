@@ -1,0 +1,33 @@
+{
+  "$schema": "../entity.schema.json",
+  "specVersion": "0",
+  "name": "permission",
+  "label": {
+    "singular": "Permissão",
+    "plural": "Permissões"
+  },
+  "icon": "Key",
+  "titleField": "name",
+  "description": "Catálogo fixo, gravado por migration: as opções da lista de marcar do perfil.",
+  "fields": [
+    {
+      "name": "module",
+      "type": "string",
+      "label": "Módulo",
+      "required": true
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "label": "Permissão",
+      "required": true
+    }
+  ],
+  "views": {
+    "list": {
+      "columns": ["module", "name"],
+      "search": ["module", "name"],
+      "defaultSort": [{ "field": "module" }, { "field": "name" }]
+    }
+  }
+}

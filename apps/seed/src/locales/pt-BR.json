@@ -1,0 +1,15 @@
+{
+  "menu.principal": "Principal",
+  "menu.inicio": "Início",
+  "menu.paginas": "Páginas",
+  "menu.perfil": "Meu perfil",
+  "menu.manutencao": "Manutenção",
+  "menu.erro404": "Erro 404",
+  "menu.erro500": "Erro 500",
+  "menu.emManutencao": "Em manutenção",
+  "menu.emBreve": "Em breve",
+  "menu.suporte": "Suporte",
+  "menu.documentacao": "Documentação",
+  "inicio.titulo": "Página de exemplo",
+  "inicio.texto": "Ponto de partida do sistema. Crie as telas em src/pages, registre a rota no App.tsx e o item no menu.ts."
+}

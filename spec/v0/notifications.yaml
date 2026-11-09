@@ -1,0 +1,84 @@
+# Path items do sino (layout.header.notifications), referenciados por openapi.yaml (que já passou do limite de tamanho).
+# Os avisos são do sistema (ele guarda, cria e decide de quem é cada um); o motor só expõe as rotas. Backend que não
+# liga o recurso responde 404 nas três, e a shell deixa o sino vazio.
+list:
+  get:
+    summary: Avisos do usuário logado (sino do header)
+    description: >-
+      Do mais novo ao mais velho, até `limit` (padrão 20, de 1 a 100). `unread` conta todos os não lidos do usuário,
+      não só os da página. `readAt` null: não lido. `to` é a rota da shell aberta ao clicar (ex.: "/conversa/7").
+      `tone` pinta o ícone. Sem sessão: 401. Recurso desligado: 404.
+    operationId: notifications
+    parameters:
+      - name: limit
+        in: query
+        schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+    responses:
+      '200':
+        description: Avisos e o total de não lidos.
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [items, unread]
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    required: [id, title, createdAt, readAt]
+                    properties:
+                      id: { type: string }
+                      title: { type: string }
+                      description: { type: string }
+                      tone: { type: string, enum: [neutral, primary, secondary, info, success, warning, danger] }
+                      createdAt: { type: string, format: date-time }
+                      readAt: { type: [string, 'null'], format: date-time }
+                      to: { type: string, pattern: '^/' }
+                unread: { type: integer, minimum: 0 }
+      '400': { $ref: 'openapi.yaml#/components/responses/Error' }
+      '401': { $ref: 'openapi.yaml#/components/responses/Error' }
+      '404': { $ref: 'openapi.yaml#/components/responses/Error' }
+read:
+  post:
+    summary: Marcar avisos como lidos
+    description: >-
+      `{ "ids": [...] }` marca esses (id que não é do usuário é ignorado); sem `ids` (corpo vazio ou `{}`), marca
+      todos. Marcar de novo não muda o `readAt`. Responde quantos sobraram não lidos.
+    operationId: readNotifications
+    requestBody:
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            properties:
+              ids: { type: array, maxItems: 100, items: { type: string } }
+    responses:
+      '200':
+        description: Não lidos depois de marcar.
+        content:
+          application/json:
+            schema: { type: object, required: [unread], properties: { unread: { type: integer, minimum: 0 } } }
+      '400': { $ref: 'openapi.yaml#/components/responses/Error' }
+      '401': { $ref: 'openapi.yaml#/components/responses/Error' }
+      '404': { $ref: 'openapi.yaml#/components/responses/Error' }
+events:
+  get:
+    summary: Avisos novos na hora (SSE)
+    description: >-
+      Como GET /{entity}/_events: primeiro `event: ready` (quem reconecta relê a lista), depois um
+      `event: notification` com `data: {}` a cada aviso novo ou marcado como lido para este usuário, em outra aba ou
+      pelo sistema. O aviso não traz o conteúdo: a shell relê GET /_notifications. O sistema avisa depois de gravar
+      (no c3-engine, `Bell::notify(usuário)`; no engine-node, `bell.notify(usuário)`).
+    operationId: notificationEvents
+    responses:
+      '200':
+        description: Fluxo de eventos (SSE).
+        content:
+          text/event-stream:
+            schema:
+              type: string
+              example: "event: ready\ndata: {}\n\nevent: notification\ndata: {}\n\n"
+      '401': { $ref: 'openapi.yaml#/components/responses/Error' }
+      '404': { $ref: 'openapi.yaml#/components/responses/Error' }

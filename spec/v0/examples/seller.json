@@ -1,0 +1,104 @@
+{
+  "$schema": "../entity.schema.json",
+  "specVersion": "0",
+  "name": "seller",
+  "label": {
+    "singular": "Vendedor",
+    "plural": "Vendedores"
+  },
+  "icon": "UserTag",
+  "titleField": "name",
+  "scope": "branch",
+  "fields": [
+    {
+      "name": "name",
+      "type": "string",
+      "label": "Nome",
+      "required": true,
+      "maxLength": 120
+    },
+    {
+      "name": "channel",
+      "type": "enum",
+      "label": "Canal",
+      "options": [
+        { "value": "LOJA", "label": "Loja" },
+        { "value": "PISTA", "label": "Pista" },
+        { "value": "TELE VENDAS", "label": "Televendas" }
+      ]
+    },
+    {
+      "name": "commission_rule",
+      "type": "enum",
+      "label": "Comissão",
+      "options": [
+        { "value": 0, "label": "Sem comissão", "color": "neutral" },
+        { "value": 1, "label": "Sobre a venda", "color": "info" },
+        { "value": 2, "label": "Sobre a margem", "color": "success" }
+      ]
+    },
+    {
+      "name": "work_days",
+      "type": "flags",
+      "label": "Dias de trabalho",
+      "default": 62,
+      "options": [
+        { "value": 1, "label": "Dom" },
+        { "value": 2, "label": "Seg" },
+        { "value": 4, "label": "Ter" },
+        { "value": 8, "label": "Qua" },
+        { "value": 16, "label": "Qui" },
+        { "value": 32, "label": "Sex" },
+        { "value": 64, "label": "Sáb" }
+      ]
+    }
+  ],
+  "views": {
+    "list": {
+      "columns": ["name", "channel", "commission_rule", "work_days"],
+      "filters": ["channel", "commission_rule"],
+      "search": ["name"],
+      "defaultSort": [{ "field": "name" }]
+    }
+  },
+  "actions": [
+    {
+      "name": "apply_schedule",
+      "label": "Aplicar jornada",
+      "description": "Troca os dias de trabalho de todos os vendedores do canal, na filial ativa.",
+      "icon": "Calendar",
+      "target": "list",
+      "input": {
+        "fields": [
+          {
+            "name": "channel",
+            "type": "enum",
+            "label": "Canal",
+            "required": true,
+            "options": [
+              { "value": "LOJA", "label": "Loja" },
+              { "value": "PISTA", "label": "Pista" },
+              { "value": "TELE VENDAS", "label": "Televendas" }
+            ]
+          },
+          {
+            "name": "work_days",
+            "type": "flags",
+            "label": "Dias de trabalho",
+            "required": true,
+            "default": 62,
+            "options": [
+              { "value": 1, "label": "Dom" },
+              { "value": 2, "label": "Seg" },
+              { "value": 4, "label": "Ter" },
+              { "value": 8, "label": "Qua" },
+              { "value": 16, "label": "Qui" },
+              { "value": 32, "label": "Sex" },
+              { "value": 64, "label": "Sáb" }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

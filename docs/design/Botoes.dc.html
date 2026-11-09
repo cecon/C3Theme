@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>C3Theme · Botões</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2563EB}a:hover{color:#1A45A5}
+.btn{font-family:inherit;font-size:14px;font-weight:600;line-height:1.75;border-radius:8px;padding:6px 16px;min-width:64px;border:1px solid transparent;display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;box-sizing:border-box;background:transparent}
+.btn.sm{font-size:13px;padding:4px 10px}
+.btn.lg{font-size:15px;padding:8px 22px}
+.btn svg{width:18px;height:18px}
+.ib{width:40px;height:40px;border-radius:8px;border:1px solid transparent;background:transparent;display:inline-grid;place-items:center;cursor:pointer;padding:0;color:#5B6474}
+.ib svg{width:20px;height:20px}
+.ib.circle{border-radius:50%}
+.lbl{font-size:12px;color:#5B6474}
+.cap{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#5B6474}
+</style>
+</helmet>
+<div style="width: 1200px; height: 1180px; box-sizing: border-box; padding: 48px; background: #F4F6F9; font-family: 'Inter', system-ui, sans-serif; color: #141A24; display: flex; flex-direction: column; gap: 32px">
+  <div style="display: flex; flex-direction: column; gap: 4px">
+    <span class="cap">02 · Botões</span>
+    <h1 style="margin: 0; font-size: 32px; font-weight: 600; line-height: 1.25">Button, IconButton e SoftIconButton</h1>
+    <p style="margin: 0; font-size: 15px; color: #5B6474">MuiButton: disableElevation, textTransform none, peso 600, cantos 8px, paddingInline 16 (10 no small).</p>
+  </div>
+
+  <section style="background: #FFFFFF; border: 1px solid #E2E6EC; border-radius: 24px; overflow: hidden">
+    <div style="padding: 14px 20px; min-height: 60px; box-sizing: border-box; display: flex; align-items: center; border-bottom: 1px solid #E2E6EC">
+      <div><div style="font-size: 16px; font-weight: 600">Variantes × cores</div><div style="font-size: 14px; color: #5B6474">contained · outlined · text</div></div>
+    </div>
+    <div style="padding: 20px; display: grid; grid-template-columns: 120px repeat(6, minmax(0, 1fr)); gap: 16px 12px; align-items: center">
+      <span></span>
+      <sc-for list="{{tones}}" as="t" hint-placeholder-count="6"><span class="lbl">{{t.name}}</span></sc-for>
+      <span class="cap">contained</span>
+      <sc-for list="{{tones}}" as="t" hint-placeholder-count="6"><button type="button" class="btn" style="background: {{t.main}}; color: #FFFFFF">Salvar</button></sc-for>
+      <span class="cap">outlined</span>
+      <sc-for list="{{tones}}" as="t" hint-placeholder-count="6"><button type="button" class="btn" style="border-color: {{t.border}}; color: {{t.main}}">Salvar</button></sc-for>
+      <span class="cap">text</span>
+      <sc-for list="{{tones}}" as="t" hint-placeholder-count="6"><button type="button" class="btn" style="color: {{t.main}}">Salvar</button></sc-for>
+      <span class="cap">soft (sx)</span>
+      <sc-for list="{{tones}}" as="t" hint-placeholder-count="6"><button type="button" class="btn" style="background: {{t.soft}}; color: {{t.text}}">Salvar</button></sc-for>
+    </div>
+  </section>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px">
+    <section style="background: #FFFFFF; border: 1px solid #E2E6EC; border-radius: 24px; overflow: hidden">
+      <div style="padding: 14px 20px; min-height: 60px; box-sizing: border-box; display: flex; align-items: center; border-bottom: 1px solid #E2E6EC">
+        <div><div style="font-size: 16px; font-weight: 600">Tamanhos e estados</div><div style="font-size: 14px; color: #5B6474">small 31 · medium 37 · large 42 px</div></div>
+      </div>
+      <div style="padding: 20px; display: flex; flex-direction: column; gap: 20px">
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+          <button type="button" class="btn sm" style="background: #2563EB; color: #FFFFFF">Pequeno</button>
+          <button type="button" class="btn" style="background: #2563EB; color: #FFFFFF">Médio</button>
+          <button type="button" class="btn lg" style="background: #2563EB; color: #FFFFFF">Grande</button>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+          <button type="button" class="btn" style="background: #2563EB; color: #FFFFFF">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Novo cliente</button>
+          <button type="button" class="btn" style="border-color: rgb(37 99 235 / 0.5); color: #2563EB">Exportar
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg></button>
+          <button type="button" class="btn" style="background: #1A45A5; color: #FFFFFF">Hover</button>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
+          <button type="button" class="btn" disabled style="background: rgba(0,0,0,0.12); color: rgba(0,0,0,0.38); cursor: default">Desabilitado</button>
+          <button type="button" class="btn" disabled style="border-color: rgba(0,0,0,0.12); color: rgba(0,0,0,0.38); cursor: default">Desabilitado</button>
+          <button type="button" class="btn" style="background: #2563EB; color: #FFFFFF; opacity: 0.85">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9"/></svg>Salvando…</button>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span class="cap">ButtonGroup</span>
+          <div style="display: inline-flex; align-self: flex-start">
+            <button type="button" class="btn" style="border-color: rgb(37 99 235 / 0.5); color: #2563EB; border-radius: 8px 0 0 8px">Dia</button>
+            <button type="button" class="btn" style="border-color: rgb(37 99 235 / 0.5); color: #FFFFFF; background: #2563EB; border-radius: 0; margin-left: -1px">Semana</button>
+            <button type="button" class="btn" style="border-color: rgb(37 99 235 / 0.5); color: #2563EB; border-radius: 0 8px 8px 0; margin-left: -1px">Mês</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section style="background: #FFFFFF; border: 1px solid #E2E6EC; border-radius: 24px; overflow: hidden">
+      <div style="padding: 14px 20px; min-height: 60px; box-sizing: border-box; display: flex; align-items: center; border-bottom: 1px solid #E2E6EC">
+        <div><div style="font-size: 16px; font-weight: 600">SoftIconButton</div><div style="font-size: 14px; color: #5B6474">look soft · outlined · dashed — shape rounded · circle</div></div>
+      </div>
+      <div style="padding: 20px; display: grid; grid-template-columns: 90px repeat(6, minmax(0, 1fr)); gap: 14px 8px; align-items: center; justify-items: start">
+        <span></span>
+        <sc-for list="{{tones}}" as="t" hint-placeholder-count="6"><span class="lbl">{{t.name}}</span></sc-for>
+        <span class="cap">soft</span>
+        <sc-for list="{{tones}}" as="t" hint-placeholder-count="6"><button type="button" class="ib" aria-label="Editar" style="background: {{t.soft}}; color: {{t.text}}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4"/></svg></button></sc-for>
+        <span class="cap">outlined</span>
+        <sc-for list="{{tones}}" as="t" hint-placeholder-count="6"><button type="button" class="ib" aria-label="Excluir" style="border-color: {{t.main}}; color: {{t.main}}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button></sc-for>
+        <span class="cap">dashed</span>
+        <sc-for list="{{tones}}" as="t" hint-placeholder-count="6"><button type="button" class="ib" aria-label="Adicionar" style="border: 1px dashed {{t.main}}; color: {{t.main}}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button></sc-for>
+        <span class="cap">circle</span>
+        <sc-for list="{{tones}}" as="t" hint-placeholder-count="6"><button type="button" class="ib circle" aria-label="Notificações" style="background: {{t.soft}}; color: {{t.text}}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15L6 16zM10 20a2 2 0 0 0 4 0"/></svg></button></sc-for>
+      </div>
+      <div style="padding: 0 20px 20px; display: flex; flex-direction: column; gap: 10px">
+        <span class="cap">IconButton padrão (header)</span>
+        <div style="display: flex; gap: 8px">
+          <button type="button" class="ib" aria-label="Buscar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button>
+          <button type="button" class="ib" aria-label="Modo escuro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg></button>
+          <button type="button" class="ib" aria-label="Aparência" style="background: rgba(20,26,36,0.04)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg></button>
+          <button type="button" class="ib" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section style="background: #FFFFFF; border: 1px solid #E2E6EC; border-radius: 24px; overflow: hidden">
+    <div style="padding: 14px 20px; min-height: 60px; box-sizing: border-box; display: flex; align-items: center; border-bottom: 1px solid #E2E6EC">
+      <div><div style="font-size: 16px; font-weight: 600">Em contexto — barra de ações de formulário</div><div style="font-size: 14px; color: #5B6474">primária à direita, cancelar como text, destrutiva outlined error</div></div>
+    </div>
+    <div style="padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap">
+      <button type="button" class="btn" style="border-color: rgb(211 58 58 / 0.5); color: #D33A3A">Excluir cadastro</button>
+      <div style="display: flex; gap: 12px">
+        <button type="button" class="btn" style="color: #5B6474">Cancelar</button>
+        <button type="button" class="btn" style="border-color: rgb(37 99 235 / 0.5); color: #2563EB">Salvar rascunho</button>
+        <button type="button" class="btn" style="background: #2563EB; color: #FFFFFF">Salvar e publicar</button>
+      </div>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1200,"height":1180}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      tones: [
+        { name: 'primary', main: '#2563EB', border: 'rgb(37 99 235 / 0.5)', soft: 'rgb(37 99 235 / 0.12)', text: '#1A45A5' },
+        { name: 'secondary', main: '#5B6474', border: 'rgb(91 100 116 / 0.5)', soft: 'rgb(91 100 116 / 0.12)', text: '#404651' },
+        { name: 'success', main: '#16884A', border: 'rgb(22 136 74 / 0.5)', soft: 'rgb(22 136 74 / 0.12)', text: '#0F5F34' },
+        { name: 'warning', main: '#C77700', border: 'rgb(199 119 0 / 0.5)', soft: 'rgb(199 119 0 / 0.12)', text: '#8B5300' },
+        { name: 'error', main: '#D33A3A', border: 'rgb(211 58 58 / 0.5)', soft: 'rgb(211 58 58 / 0.12)', text: '#942929' },
+        { name: 'info', main: '#0B79B8', border: 'rgb(11 121 184 / 0.5)', soft: 'rgb(11 121 184 / 0.12)', text: '#085581' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

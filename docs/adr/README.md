@@ -1,0 +1,21 @@
+# Decisões de arquitetura (ADR)
+
+Cada decisão que muda o jeito de trabalhar no C3 fica num arquivo próprio, numerado e que não se apaga: decisão
+trocada ganha um ADR novo, e o antigo passa a `Substituída por NNNN`.
+
+| ADR                                      | Decisão                                                  | Status |
+| ---------------------------------------- | -------------------------------------------------------- | ------ |
+| [0001](0001-motor-dsl-caminho-padrao.md) | Toda tela de negócio é JSON no motor; TS só nas exceções | Aceita |
+
+## Formato
+
+Arquivo `NNNN-titulo-curto.md`, com as seções:
+
+- **Status**: Proposta, Aceita, Substituída por NNNN ou Abandonada, com a data e quem decidiu.
+- **Contexto**: o problema e o que existe hoje, sem enfeite.
+- **Decisão**: a regra, escrita para quem vai revisar um PR conseguir aplicar.
+- **Consequências**: o que melhora, o que piora e o custo.
+- **Alternativas consideradas**: o que ficou de fora e por quê.
+
+Decisões anteriores a esta pasta (spec neutra, backend Rust primeiro, cada sistema dono das migrations, piloto antes de
+crescer a spec) estão no [`spec/README.md`](../../spec/README.md) e no README da raiz; viram ADR quando forem revistas.

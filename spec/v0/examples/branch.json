@@ -1,0 +1,37 @@
+{
+  "$schema": "../entity.schema.json",
+  "specVersion": "0",
+  "name": "branch",
+  "label": {
+    "singular": "Filial",
+    "plural": "Filiais"
+  },
+  "description": "Estabelecimento (CNPJ completo). A matriz é a filial /0001 da empresa.",
+  "icon": "Shop",
+  "titleField": "name",
+  "scope": "company",
+  "fields": [
+    {
+      "name": "name",
+      "type": "string",
+      "label": "Nome",
+      "required": true,
+      "maxLength": 120
+    },
+    {
+      "name": "cnpj",
+      "type": "string",
+      "label": "CNPJ",
+      "required": true,
+      "unique": true,
+      "pattern": "^[0-9]{14}$"
+    }
+  ],
+  "views": {
+    "list": {
+      "columns": ["name", "cnpj"],
+      "search": ["name", "cnpj"],
+      "defaultSort": [{ "field": "name" }]
+    }
+  }
+}

@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Pontos frágeis resolvidos</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+.cap{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#5B6474}
+.card{background:#fff;border:1px solid #E2E6EC;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.ch{padding:12px 16px;border-bottom:1px solid #E2E6EC;display:flex;gap:10px;align-items:center}
+.num{width:28px;height:28px;border-radius:50%;background:#2563EB;color:#fff;font-size:13px;font-weight:700;display:grid;place-items:center;flex-shrink:0}
+.ct{font-size:15px;font-weight:600;line-height:1.3}
+.cb{padding:12px 16px;display:flex;flex-direction:column;gap:10px;font-size:13px;line-height:1.5;color:#404651}
+.cb b{color:#141A24}
+.code{margin:0;padding:10px 12px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11.5px;line-height:1.55;white-space:pre;background:#FAFBFC;border:1px solid #E2E6EC;border-radius:10px;color:#141A24}
+.k{color:#085581}.s{color:#0F5F34}.c{color:#7A8494}
+.chip{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:600;white-space:nowrap}
+.flow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px}
+.arr{color:#9AA4B2}
+.rule{display:flex;gap:8px;align-items:flex-start}
+.dot{width:6px;height:6px;border-radius:50%;background:#2563EB;margin-top:7px;flex-shrink:0}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th{font-size:11px;font-weight:600;color:#5B6474;background:#F4F6F9;text-align:left;padding:7px 10px}
+td{padding:7px 10px;border-top:1px solid #E2E6EC;vertical-align:top}
+</style>
+</helmet>
+<div style="width: 1680px; height: 1120px; box-sizing: border-box; padding: 32px 40px; background: #F4F6F9; font-family: 'Inter', system-ui, sans-serif; color: #141A24; display: flex; flex-direction: column; gap: 18px">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end">
+    <div><span class="cap">22 · chat agêntico</span><h1 style="margin: 4px 0 0; font-size: 26px; font-weight: 600">Pontos frágeis: o que fica decidido</h1></div>
+    <span style="font-size: 13px; color: #5B6474">Cada decisão aponta o PR onde entra</span>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; flex: 1; min-height: 0">
+    <section class="card">
+      <div class="ch"><span class="num">1</span><span class="ct">Mensagem nova com formulário pendente</span></div>
+      <div class="cb">
+        <div class="rule"><span class="dot"></span><span><b>No máximo 1 UiPart pendente por conversa.</b> Emitir outra cancela a anterior com motivo <code>superseded</code>.</span></div>
+        <div class="rule"><span class="dot"></span><span>A mensagem digitada vai ao agente com <code>pendingPart</code> no contexto. Ele decide: <b>manter</b> (não emite nada sobre a parte) ou <b>cancelar</b> (emite <code>ui.cancel</code>).</span></div>
+        <div class="rule"><span class="dot"></span><span>Se o agente responder sem decidir, a parte continua pendente até <code>expiresAt</code> (padrão 30 min) e vira <code>expired</code>.</span></div>
+        <div class="rule"><span class="dot"></span><span><b>Resposta única:</b> <code>answerUi</code> leva <code>partId</code> + versão; parte que não está <code>pending</code> devolve <b>409</b> e o card mostra "Esta pergunta foi substituída".</span></div>
+        <div class="flow">
+          <span class="chip" style="background: rgb(37 99 235 / .12); color: #1A45A5">pending</span><span class="arr">→ answerUi →</span><span class="chip" style="background: rgb(22 136 74 / .12); color: #0F5F34">submitted</span>
+        </div>
+        <div class="flow">
+          <span class="chip" style="background: rgb(37 99 235 / .12); color: #1A45A5">pending</span><span class="arr">→ nova parte / ui.cancel →</span><span class="chip" style="background: rgba(20,26,36,.06); color: #404651">cancelled</span>
+        </div>
+        <div class="flow">
+          <span class="chip" style="background: rgb(37 99 235 / .12); color: #1A45A5">pending</span><span class="arr">→ prazo →</span><span class="chip" style="background: rgb(199 119 0 / .12); color: #8B5300">expired</span>
+        </div>
+<pre class="code"><span class="c">// evento do transporte</span>
+{ type: <span class="s">'ui.cancel'</span>, partId,
+  reason: <span class="s">'superseded'</span> | <span class="s">'agent'</span> | <span class="s">'expired'</span> }</pre>
+        <div style="margin-top: auto"><span class="chip" style="background: rgb(37 99 235 / .12); color: #1A45A5">entra no PR do chat · F1</span></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="ch"><span class="num">2</span><span class="ct">O que a spec ganha antes da F2</span></div>
+      <div class="cb">
+        <div>Um PR só no C3Theme (schema, <code>spec:check</code>, conformidade, c3-engine), antes do PR do <code>c3.record</code>:</div>
+<pre class="code"><span class="c">// campo</span>
+{ <span class="k">"name"</span>: <span class="s">"cfop"</span>, <span class="k">"type"</span>: <span class="s">"text"</span>,
+  <span class="k">"critical"</span>: <span class="k">true</span> }
+
+<span class="c">// ação</span>
+{ <span class="k">"name"</span>: <span class="s">"cancel"</span>,
+  <span class="k">"tone"</span>: <span class="s">"danger"</span>,  <span class="c">// já existe</span>
+  <span class="k">"inverse"</span>: <span class="s">"reopen"</span> }
+
+<span class="c">// entidade</span>
+{ <span class="k">"name"</span>: <span class="s">"nfce"</span>, <span class="k">"undoable"</span>: <span class="k">false</span> }</pre>
+        <table>
+          <thead><tr><th>Atributo</th><th>Padrão</th><th>Usado por</th></tr></thead>
+          <tbody>
+            <tr><td><code>critical</code></td><td>false</td><td>toque de confirmação quando a IA preencheu</td></tr>
+            <tr><td><code>tone</code> (já existe)</td><td><code>danger</code> = destrutiva; DELETE também</td><td>escada de aprovação, sem atributo novo</td></tr>
+            <tr><td><code>inverse</code></td><td>nenhuma</td><td>Desfazer de ação</td></tr>
+            <tr><td><code>undoable</code></td><td>true</td><td>bloqueia Desfazer na entidade toda</td></tr>
+          </tbody>
+        </table>
+        <div><code>spec:check</code> recusa <code>inverse</code> que não exista ou que tenha <code>tone: "danger"</code>.</div>
+        <div style="margin-top: auto"><span class="chip" style="background: rgb(199 119 0 / .12); color: #8B5300">PR da spec · pré-requisito da F2</span></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="ch"><span class="num">3</span><span class="ct">Desfazer sem risco fiscal</span></div>
+      <div class="cb">
+        <div class="rule"><span class="dot"></span><span><b>Desfazer só aparece se</b> a entidade é <code>undoable</code> <b>e</b> existe caminho: criação → exclusão permitida ao usuário; ação → <code>inverse</code> declarada; edição → regravar os valores anteriores.</span></div>
+        <div class="rule"><span class="dot"></span><span><b>Documento fiscal nunca tem Desfazer.</b> NFC-e, NF-e e afins ficam <code>undoable: false</code>; reverter é a ação explícita deles (cancelar na SEFAZ, com prazo e motivo), sempre <code>tone: "danger"</code>.</span></div>
+        <div class="rule"><span class="dot"></span><span><b>Janela de 30 s, conferida no servidor.</b> O desfazer manda a versão gravada; se o registro mudou ou a janela passou, <b>409</b> e o botão some.</span></div>
+        <div class="rule"><span class="dot"></span><span>Desfazer passa pelas mesmas permissões e validações. Falhou: aviso de erro, nada parcial.</span></div>
+        <table>
+          <thead><tr><th>Caso</th><th>Desfazer?</th></tr></thead>
+          <tbody>
+            <tr><td>Cliente criado</td><td><span class="chip" style="background: rgb(22 136 74 / .12); color: #0F5F34">sim · exclui</span></td></tr>
+            <tr><td>Prazo do pedido 30 → 45</td><td><span class="chip" style="background: rgb(22 136 74 / .12); color: #0F5F34">sim · volta 30</span></td></tr>
+            <tr><td>Pedido cancelado</td><td><span class="chip" style="background: rgba(20,26,36,.06); color: #404651">só com inverse · no exemplo, não</span></td></tr>
+            <tr><td>NFC-e emitida</td><td><span class="chip" style="background: rgb(211 58 58 / .12); color: #942929">não · ação Cancelar NFC-e</span></td></tr>
+            <tr><td>Registro mudou depois</td><td><span class="chip" style="background: rgba(20,26,36,.06); color: #404651">não · 409</span></td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top: auto"><span class="chip" style="background: rgb(37 99 235 / .12); color: #1A45A5">F2 · c3.record / c3.action</span></div>
+      </div>
+    </section>
+  </div>
+
+  <section class="card" style="flex-shrink: 0">
+    <div class="ch"><span class="num">4</span><span class="ct">Linha de base: medir a tela normal com o mesmo evento</span></div>
+    <div style="padding: 14px 16px; display: grid; grid-template-columns: 1.1fr 1fr 1fr; gap: 20px; font-size: 13px; line-height: 1.5; color: #404651">
+<pre class="code" style="margin: 0"><span class="c">// mesmo formato no chat e no motor, sem dado pessoal</span>
+{ type: <span class="s">'task.start'</span> | <span class="s">'task.done'</span> | <span class="s">'task.abandon'</span>,
+  taskId, entity: <span class="s">'pedido_compra'</span>, op: <span class="s">'create'</span>,
+  channel: <span class="s">'chat'</span> | <span class="s">'screen'</span>,
+  turns?, fields?, suggested?, ms? }</pre>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <div class="rule"><span class="dot"></span><span><b>Motor emite também:</b> porta opcional <code>onTelemetry</code> no <code>C3Shell</code>. <code>task.start</code> ao abrir o formulário, <code>task.done</code> ao gravar, <code>abandon</code> ao sair sem gravar.</span></div>
+        <div class="rule"><span class="dot"></span><span><b>Correção em 24 h</b> sai do servidor: registro com <code>channel: chat</code> editado ou excluído depois.</span></div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <div class="rule"><span class="dot"></span><span><b>2 semanas de linha de base</b> só com a tela, antes de ligar o chat no piloto.</span></div>
+        <div class="rule"><span class="dot"></span><span>Comparar a <b>mediana</b> por entidade e operação, não a média.</span></div>
+        <div><span class="chip" style="background: rgb(37 99 235 / .12); color: #1A45A5">F1 · chat + motor</span></div>
+      </div>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1680,"height":1120}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

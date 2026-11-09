@@ -1,0 +1,106 @@
+{
+  "$schema": "../entity.schema.json",
+  "specVersion": "0",
+  "name": "activity",
+  "label": {
+    "singular": "Atividade",
+    "plural": "Atividades"
+  },
+  "description": "Follow-up de vendas: ligação, visita ou proposta com prazo. Exemplo do quadro (por etapa) e do calendário (pelo prazo).",
+  "icon": "TaskSquare",
+  "live": { "sound": { "on": ["created"] } },
+  "titleField": "subject",
+  "fields": [
+    {
+      "name": "subject",
+      "type": "string",
+      "label": "Assunto",
+      "required": true,
+      "maxLength": 120
+    },
+    {
+      "name": "customer_id",
+      "type": "reference",
+      "entity": "customer",
+      "label": "Cliente"
+    },
+    {
+      "name": "stage",
+      "type": "enum",
+      "label": "Etapa",
+      "required": true,
+      "default": "todo",
+      "options": [
+        { "value": "todo", "label": "A fazer", "color": "neutral" },
+        { "value": "doing", "label": "Em andamento", "color": "info" },
+        { "value": "done", "label": "Concluída", "color": "success" },
+        { "value": "dropped", "label": "Descartada", "color": "danger" }
+      ]
+    },
+    {
+      "name": "due_date",
+      "type": "date",
+      "label": "Prazo",
+      "required": true
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "label": "Observações",
+      "maxLength": 2000
+    }
+  ],
+  "views": {
+    "list": {
+      "columns": ["subject", "customer_id", "due_date", { "field": "stage", "width": 140 }],
+      "search": ["subject"],
+      "filters": ["stage"],
+      "defaultSort": [{ "field": "due_date" }],
+      "presets": [
+        {
+          "id": "pendentes",
+          "label": "Pendentes",
+          "where": { "field": "stage", "op": "in", "value": ["todo", "doing"] }
+        },
+        {
+          "id": "atrasadas",
+          "label": "Atrasadas",
+          "where": {
+            "and": [
+              { "field": "due_date", "op": "lt", "value": { "$date": "today" } },
+              { "field": "stage", "op": "ne", "value": "done" }
+            ]
+          }
+        },
+        {
+          "id": "esta-semana",
+          "label": "Esta semana",
+          "where": {
+            "and": [
+              { "field": "due_date", "op": "gte", "value": { "$date": "weekStart" } },
+              { "field": "due_date", "op": "lt", "value": { "$date": "weekStart", "offset": 1, "unit": "week" } }
+            ]
+          }
+        }
+      ]
+    },
+    "form": {
+      "sections": [
+        {
+          "title": "Atividade",
+          "rows": [["subject"], ["customer_id", "due_date"], ["stage"], ["notes"]]
+        }
+      ]
+    },
+    "board": {
+      "groupBy": "stage",
+      "columns": ["todo", "doing", "done"],
+      "fields": ["customer_id", "due_date"]
+    },
+    "calendar": {
+      "start": "due_date",
+      "color": "stage",
+      "fields": ["customer_id"]
+    }
+  }
+}

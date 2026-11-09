@@ -1,0 +1,40 @@
+{
+  "$schema": "../entity.schema.json",
+  "specVersion": "0",
+  "name": "customer_pending",
+  "label": {
+    "singular": "Pendência por cliente",
+    "plural": "Pendências por cliente"
+  },
+  "description": "Exemplo de consulta do sistema (source system): atividades em aberto de cada cliente até uma data. O SELECT vem do Hooks::source; lista, busca, filtros, totais e exportação são os de sempre.",
+  "icon": "Chart2",
+  "titleField": "customer_id",
+  "source": "system",
+  "params": {
+    "fields": [
+      { "name": "until", "type": "date", "label": "Posição em", "required": true, "default": { "$date": "today" } },
+      {
+        "name": "stage",
+        "type": "enum",
+        "label": "Etapa",
+        "options": [
+          { "value": "todo", "label": "A fazer" },
+          { "value": "doing", "label": "Em andamento" }
+        ]
+      }
+    ]
+  },
+  "fields": [
+    { "name": "customer_id", "type": "reference", "entity": "customer", "label": "Cliente" },
+    { "name": "open_count", "type": "integer", "label": "Em aberto" },
+    { "name": "late_count", "type": "integer", "label": "Atrasadas na data" },
+    { "name": "oldest_due", "type": "date", "label": "Prazo mais antigo" }
+  ],
+  "views": {
+    "list": {
+      "columns": ["customer_id", "open_count", "late_count", "oldest_due"],
+      "defaultSort": [{ "field": "late_count", "direction": "desc" }],
+      "totals": [{ "field": "open_count" }, { "field": "late_count" }]
+    }
+  }
+}

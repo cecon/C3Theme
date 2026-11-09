@@ -1,0 +1,224 @@
+{
+  "$schema": "../entity.schema.json",
+  "specVersion": "0",
+  "name": "promotion",
+  "label": {
+    "singular": "Promoção",
+    "plural": "Promoções"
+  },
+  "icon": "DiscountShape",
+  "titleField": "name",
+  "description": "Promoção da venda: leve X pague Y, % de desconto ou preço fixo, nos produtos da lista, nos dias, horários e canais marcados.",
+  "fields": [
+    {
+      "name": "name",
+      "type": "string",
+      "label": "Nome",
+      "required": true,
+      "maxLength": 80
+    },
+    {
+      "name": "kind",
+      "type": "enum",
+      "label": "Tipo",
+      "required": true,
+      "default": "buy_x_pay_y",
+      "options": [
+        { "value": "buy_x_pay_y", "label": "Leve X pague Y" },
+        { "value": "percent", "label": "% de desconto" },
+        { "value": "fixed_price", "label": "Preço fixo" }
+      ]
+    },
+    {
+      "name": "buy",
+      "type": "integer",
+      "label": "Leve",
+      "min": 2,
+      "max": 20,
+      "visibleWhen": { "field": "kind", "op": "eq", "value": "buy_x_pay_y" },
+      "requiredWhen": { "field": "kind", "op": "eq", "value": "buy_x_pay_y" }
+    },
+    {
+      "name": "pay",
+      "type": "integer",
+      "label": "Pague",
+      "min": 1,
+      "max": 19,
+      "help": "Menor que o leve.",
+      "visibleWhen": { "field": "kind", "op": "eq", "value": "buy_x_pay_y" },
+      "requiredWhen": { "field": "kind", "op": "eq", "value": "buy_x_pay_y" }
+    },
+    {
+      "name": "discount_percent",
+      "type": "decimal",
+      "label": "Desconto (%)",
+      "scale": 2,
+      "min": 0.01,
+      "max": 100,
+      "aiReview": true,
+      "visibleWhen": { "field": "kind", "op": "eq", "value": "percent" },
+      "requiredWhen": { "field": "kind", "op": "eq", "value": "percent" }
+    },
+    {
+      "name": "fixed_price",
+      "type": "decimal",
+      "label": "Preço da promoção",
+      "scale": 2,
+      "min": 0,
+      "aiReview": true,
+      "visibleWhen": { "field": "kind", "op": "eq", "value": "fixed_price" },
+      "requiredWhen": { "field": "kind", "op": "eq", "value": "fixed_price" }
+    },
+    {
+      "name": "limit_per_order",
+      "type": "integer",
+      "label": "Limite por pedido",
+      "min": 1,
+      "max": 99,
+      "help": "Vazio: sem limite."
+    },
+    {
+      "name": "mix_products",
+      "type": "boolean",
+      "label": "Pode misturar produtos da lista (1 laranja + 1 limão)",
+      "default": true
+    },
+    {
+      "name": "cheapest_free",
+      "type": "boolean",
+      "label": "O grátis é sempre o de menor preço",
+      "default": true,
+      "visibleWhen": { "field": "kind", "op": "eq", "value": "buy_x_pay_y" }
+    },
+    {
+      "name": "stacks",
+      "type": "boolean",
+      "label": "Acumula com outras promoções",
+      "default": false
+    },
+    {
+      "name": "starts_on",
+      "type": "date",
+      "label": "Início",
+      "required": true
+    },
+    {
+      "name": "ends_on",
+      "type": "date",
+      "label": "Fim",
+      "help": "Vazio: sem fim."
+    },
+    {
+      "name": "from_time",
+      "type": "string",
+      "label": "Das",
+      "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$",
+      "help": "HH:MM. Vazio: o dia todo."
+    },
+    {
+      "name": "to_time",
+      "type": "string",
+      "label": "Até",
+      "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$",
+      "requiredWhen": { "field": "from_time", "op": "null", "value": false }
+    },
+    {
+      "name": "week_days",
+      "type": "flags",
+      "label": "Dias da semana",
+      "required": true,
+      "default": 62,
+      "options": [
+        { "value": 1, "label": "Dom" },
+        { "value": 2, "label": "Seg" },
+        { "value": 4, "label": "Ter" },
+        { "value": 8, "label": "Qua" },
+        { "value": 16, "label": "Qui" },
+        { "value": 32, "label": "Sex" },
+        { "value": 64, "label": "Sáb" }
+      ]
+    },
+    {
+      "name": "channels",
+      "type": "flags",
+      "label": "Canais de venda",
+      "required": true,
+      "default": 3,
+      "options": [
+        { "value": 1, "label": "Totem" },
+        { "value": 2, "label": "Balcão" },
+        { "value": 4, "label": "Delivery" }
+      ]
+    },
+    {
+      "name": "status",
+      "type": "enum",
+      "label": "Situação",
+      "readOnly": true,
+      "options": [
+        { "value": "active", "label": "Vigente", "color": "success" },
+        { "value": "ended", "label": "Encerrada", "color": "neutral" }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "name": "end",
+      "label": "Encerrar promoção",
+      "icon": "CloseCircle",
+      "tone": "danger",
+      "description": "A promoção para de valer hoje. O fim passa a ser a data de hoje e ela sai das vigentes.",
+      "visibleWhen": { "field": "status", "op": "eq", "value": "active" },
+      "confirmLabel": "Encerrar",
+      "successMessage": "Promoção encerrada."
+    }
+  ],
+  "views": {
+    "list": {
+      "columns": ["name", "kind", "starts_on", "ends_on", "channels", "status"],
+      "filters": ["kind", "status"],
+      "search": ["name"],
+      "defaultSort": [{ "field": "starts_on", "direction": "desc" }],
+      "presets": [
+        {
+          "id": "vigentes",
+          "label": "Vigentes",
+          "where": { "field": "status", "op": "eq", "value": "active" }
+        }
+      ]
+    },
+    "form": {
+      "sections": [
+        {
+          "title": "Regra",
+          "rows": [
+            ["name", "kind"],
+            ["buy", "pay", "limit_per_order"],
+            ["discount_percent", "fixed_price"],
+            ["mix_products", "cheapest_free", "stacks"]
+          ]
+        },
+        {
+          "title": "Vigência",
+          "rows": [["starts_on", "ends_on"], ["from_time", "to_time"], ["week_days"]]
+        },
+        {
+          "title": "Onde vale",
+          "rows": [["channels"]]
+        },
+        {
+          "title": "Produtos da promoção",
+          "description": "O desconto vale para qualquer combinação dos produtos da lista.",
+          "related": {
+            "entity": "promotion_product",
+            "field": "promotion_id",
+            "save": "with_parent",
+            "columns": ["product_id"],
+            "minItems": 1,
+            "maxItems": 200
+          }
+        }
+      ]
+    }
+  }
+}

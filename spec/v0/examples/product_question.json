@@ -1,0 +1,61 @@
+{
+  "$schema": "../entity.schema.json",
+  "specVersion": "0",
+  "name": "product_question",
+  "label": {
+    "singular": "Pergunta do produto",
+    "plural": "Perguntas do produto"
+  },
+  "icon": "MessageQuestion",
+  "titleField": "question_id",
+  "description": "Só existe dentro do produto (related com save with_parent). Mín. e máx. vazios valem os da pergunta.",
+  "fields": [
+    {
+      "name": "product_id",
+      "type": "reference",
+      "entity": "product",
+      "label": "Produto",
+      "required": true,
+      "onDelete": "cascade"
+    },
+    {
+      "name": "position",
+      "type": "integer",
+      "label": "Ordem",
+      "required": true,
+      "min": 1,
+      "max": 99
+    },
+    {
+      "name": "question_id",
+      "type": "reference",
+      "entity": "question",
+      "label": "Pergunta",
+      "required": true
+    },
+    {
+      "name": "min_choices",
+      "type": "integer",
+      "label": "Mín.",
+      "min": 0,
+      "max": 20,
+      "help": "Vazio: o da pergunta."
+    },
+    {
+      "name": "max_choices",
+      "type": "integer",
+      "label": "Máx.",
+      "min": 1,
+      "max": 20,
+      "help": "Vazio: o da pergunta."
+    },
+    {
+      "name": "depends_on_id",
+      "type": "reference",
+      "entity": "question",
+      "label": "Libera depois de",
+      "hint": "A pergunta só aparece na venda depois que esta for respondida. Precisa ser uma pergunta deste produto com ordem menor.",
+      "onDelete": "set_null"
+    }
+  ]
+}

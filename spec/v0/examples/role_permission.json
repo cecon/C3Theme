@@ -1,0 +1,34 @@
+{
+  "$schema": "../entity.schema.json",
+  "specVersion": "0",
+  "name": "role_permission",
+  "label": {
+    "singular": "Permissão do perfil",
+    "plural": "Permissões do perfil"
+  },
+  "icon": "Key",
+  "description": "Liga o perfil à permissão (N:N). Só existe dentro do perfil: lista de marcar com a coluna 'Altera'.",
+  "fields": [
+    {
+      "name": "role_id",
+      "type": "reference",
+      "entity": "role",
+      "label": "Perfil",
+      "required": true,
+      "onDelete": "cascade"
+    },
+    {
+      "name": "permission_id",
+      "type": "reference",
+      "entity": "permission",
+      "label": "Permissão",
+      "required": true
+    },
+    {
+      "name": "can_write",
+      "type": "boolean",
+      "label": "Altera",
+      "default": false
+    }
+  ]
+}

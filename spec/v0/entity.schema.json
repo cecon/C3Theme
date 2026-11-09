@@ -1,0 +1,1394 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://c3theme.dev/spec/v0/entity.schema.json",
+  "title": "C3 Entity v0",
+  "description": "Definição de uma entidade: campos, regras de validação e como ela aparece na shell (lista, formulário, detalhe). Não descreve o banco: tabelas e migrations são do sistema que implementa o contrato.",
+  "type": "object",
+  "required": ["specVersion", "name", "label", "fields"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "specVersion": {
+      "const": "0"
+    },
+    "name": {
+      "$ref": "#/$defs/identifier",
+      "description": "Nome da entidade. Vira o segmento da URL (/api/{name}) e é referenciado por outras entidades."
+    },
+    "label": {
+      "type": "object",
+      "required": ["singular", "plural"],
+      "additionalProperties": false,
+      "properties": {
+        "singular": {
+          "$ref": "#/$defs/text"
+        },
+        "plural": {
+          "$ref": "#/$defs/text"
+        },
+        "gender": {
+          "enum": ["m", "f"],
+          "default": "m",
+          "description": "Gênero gramatical do nome, para os textos da shell em português (\"2 selecionadas\", \"Excluída.\")."
+        },
+        "new": {
+          "$ref": "#/$defs/text",
+          "description": "Texto do botão de criar na lista (\"Novo cliente\", \"Nova fatura\"). Padrão: \"Adicionar\" + singular."
+        }
+      }
+    },
+    "description": {
+      "$ref": "#/$defs/text"
+    },
+    "icon": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Za-z0-9]*$",
+      "description": "Nome de ícone do catálogo da shell, usado no menu e nos títulos (ex.: 'Profile2User'). Hoje o catálogo usa os nomes do iconsax: o sistema passa à shell só os que usa (`icons`); se a biblioteca mudar, a shell mantém um mapa de nomes antigos."
+    },
+    "scope": {
+      "enum": ["group", "company", "branch"],
+      "default": "group",
+      "description": "Dono dos registros quando o app declara 'organization'. 'group': compartilhado no grupo econômico (todo usuário vê). 'company': de uma empresa (CNPJ raiz); a tabela tem a coluna reservada org_company_id. 'branch': de uma filial (estabelecimento, inclusive a matriz); a tabela tem org_company_id e org_branch_id. O backend preenche essas colunas na criação com a filial ativa, nunca as muda e filtra toda leitura e escrita por elas. Fixo por entidade: não é configuração do cliente."
+    },
+    "titleField": {
+      "$ref": "#/$defs/identifier",
+      "description": "Campo usado para mostrar o registro em títulos, breadcrumbs e referências. Padrão: primeiro campo do tipo string."
+    },
+    "rowAccess": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["permission", "where"],
+        "properties": {
+          "permission": { "$ref": "#/$defs/permission" },
+          "where": { "$ref": "#/$defs/condition" }
+        }
+      },
+      "description": "Linhas que cada permissão enxerga (fornecedor só com o código de fornecedor; o pedido do próprio vendedor). O usuário vê a união dos 'where' dos códigos que tem (Hooks::permitted, na filial ativa); sem nenhum, nada. Vale em toda leitura, como o escopo de filial: lista, leitura, reference, ação. Gravar registro que fica fora é 403. O valor de uma folha pode ser {\"$user\": \"chave\"}: o valor do usuário logado (Hooks::user_value, no formato trafegado do campo), só com eq, ne e in; sem o valor, a regra não mostra nada."
+    },
+    "fields": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/field"
+      },
+      "description": "Todo registro tem um campo 'id' implícito (string, somente leitura, gerado pelo backend). Não declare 'id' aqui."
+    },
+    "views": {
+      "$ref": "#/$defs/views"
+    },
+    "source": {
+      "enum": ["system"],
+      "description": "Consulta do sistema: a entidade não tem tabela; as linhas vêm de um SELECT que o sistema monta com os parâmetros (Hooks::source no c3-engine), com coluna id estável e uma por campo. Só leitura: lista, busca, filtros, totais, exportação e ações de lista. Criar, alterar, excluir e abrir uma linha são 405; nenhuma entidade aponta para ela."
+    },
+    "params": {
+      "type": "object",
+      "required": ["fields"],
+      "additionalProperties": false,
+      "description": "Só com source: system. Valores pedidos antes da consulta (posição em uma data, período, almoxarifado), validados como o input de ação (400/422). Vão na URL como p.<nome>=valor; a shell mostra uma faixa acima dos filtros com 'Consultar'. default de date/datetime pode ser data relativa ({\"$date\": \"today\"}), e o /_meta devolve os defaults resolvidos em paramDefaults.",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/field" }
+        }
+      }
+    },
+    "singleton": {
+      "type": "boolean",
+      "default": false,
+      "description": "Configuração de registro único (loja, e-mail, juros e multa): um registro por escopo (o grupo, cada empresa ou cada filial, conforme 'scope'). /{entity} abre o formulário dele, sem lista; vazio, o formulário novo (com create). Criar o segundo é 409, excluir é 405 e capabilities.delete vem false. Não combina com quadro, calendário, presets, totais, ação em lote, ação de lista nem filha with_parent."
+    },
+    "live": {
+      "description": "Tempo real: quem está com a lista, o quadro, o calendário ou o relatório da entidade aberto fica sabendo na hora quando um registro entra, muda, sai ou passa por uma ação, e a tela relê o que mostra (GET /{entity}/_events, SSE). Para fila de cozinha (KDS), bicos da pista, requisições e comandas. true liga; o objeto liga e escolhe o som. Gravação feita fora do backend do motor só chega se o sistema avisar (Live::notify). O formulário aberto não é relido: a versão do registro (If-Match) já barra salvar por cima.",
+      "oneOf": [
+        { "type": "boolean" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "sound": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["on"],
+              "description": "Aviso sonoro curto (gerado no navegador, sem arquivo) quando chega um registro: o pedido novo no KDS. O navegador só toca depois que o usuário interagiu com a página.",
+              "properties": {
+                "on": {
+                  "type": "array",
+                  "minItems": 1,
+                  "uniqueItems": true,
+                  "items": { "enum": ["created", "updated"] }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "undoable": {
+      "type": "boolean",
+      "default": true,
+      "description": "false: nenhum Desfazer nesta entidade (documento fiscal, título baixado): nem depois de gravar, nem de ação. O backend recusa o pedido de Desfazer (cabeçalho C3-Undo) com 409 e a entidade não pode declarar 'inverse' em ação. Não muda o CRUD: quem trava alterar e excluir são as capabilities e o readOnly."
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/action"
+      },
+      "description": "Comandos sobre um registro já gravado (cancelar, reemitir, reprocessar). Não passam pelo CRUD: o backend chama a regra de negócio do sistema em POST /{entity}/{id}/_actions/{name}. Cada ação tem permissão própria em capabilities.actions."
+    },
+    "lookups": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/lookup"
+      },
+      "description": "Consultar e preencher: a partir de um campo (CEP, CNPJ), o backend consulta uma fonte externa em POST /{entity}/_lookups/{name} e devolve valores para outros campos do formulário. Falha da consulta nunca impede salvar."
+    }
+  },
+  "$defs": {
+    "cardFields": {
+      "type": "array",
+      "maxItems": 4,
+      "items": { "$ref": "#/$defs/identifier" },
+      "description": "Campos mostrados no cartão do quadro ou no evento do calendário, abaixo do título (titleField). Até 4."
+    },
+    "permission": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Código de permissão do sistema, opaco para o motor (ex.: '356', 'clientes.custo'). O backend pergunta ao sistema se o usuário tem o código (Hooks::permitted)."
+    },
+    "access": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "view": {
+          "$ref": "#/$defs/permission",
+          "description": "Sem ele, o campo (ou a seção) some da leitura, da lista, do filtro, da busca e da ordem."
+        },
+        "edit": {
+          "$ref": "#/$defs/permission",
+          "description": "Sem ele, o campo aparece só para leitura; mudar o valor é 422 'forbidden'."
+        }
+      },
+      "description": "Permissão para ver e para alterar. Na seção, vale para tudo o que ela mostra, somado ao do campo. O usuário recebe o resultado em capabilities.fields."
+    },
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{0,62}$",
+      "not": {
+        "enum": ["id", "org_company_id", "org_branch_id"]
+      },
+      "description": "snake_case, minúsculo, até 63 caracteres (limite de identificador do Postgres). 'org_company_id' e 'org_branch_id' são colunas reservadas do escopo (ver 'scope')."
+    },
+    "text": {
+      "description": "Texto exibido ao usuário: literal ou chave de tradução da shell ({ \"id\": \"...\", \"defaultMessage\": \"...\" }).",
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "object",
+          "required": ["id"],
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "defaultMessage": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "component": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*(/[a-z][a-z0-9-]*)*$",
+      "description": "Nome de um componente custom registrado na shell (ex.: 'cpf-input', 'vendas/mapa-entregas'). Saída de emergência para o que o motor não cobre."
+    },
+    "field": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/identifier"
+        },
+        "type": {
+          "enum": ["string", "text", "email", "integer", "decimal", "boolean", "date", "datetime", "enum", "flags", "reference", "file"],
+          "description": "Tipo lógico. `file` na entidade exige escrita delegada (o sistema guarda o arquivo). O formato no JSON trafegado está em spec/README.md (decimal e datetime viajam como string)."
+        },
+        "label": {
+          "$ref": "#/$defs/text"
+        },
+        "help": {
+          "$ref": "#/$defs/text",
+          "description": "Frase curta, sempre visível abaixo do campo."
+        },
+        "hint": {
+          "$ref": "#/$defs/text",
+          "description": "Ajuda longa (o que é, de onde vem, exemplo), atrás de uma interrogação no rótulo; abre no clique ou toque."
+        },
+        "aiReview": {
+          "type": "boolean",
+          "default": false,
+          "description": "Valor crítico (preço, CFOP, conta): quando o assistente preenche o campo num rascunho do chat, a tela só grava depois de o usuário conferir esse campo. Não muda nada fora do chat."
+        },
+        "required": {
+          "type": "boolean",
+          "default": false
+        },
+        "readOnly": {
+          "type": "boolean",
+          "default": false,
+          "description": "Calculado ou preenchido pelo backend; a shell não envia no POST/PATCH. Enviado na criação é ignorado; na alteração, outro valor é 422 'read_only' e o mesmo valor passa."
+        },
+        "createOnly": {
+          "type": "boolean",
+          "default": false,
+          "description": "Informado só na criação (código da máquina, login): depois aparece travado, e mudar o valor na alteração é 422 'read_only'. Não combina com readOnly."
+        },
+        "access": {
+          "$ref": "#/$defs/access",
+          "description": "Permissão para ver e para alterar o campo. Campo required com access precisa de default (quem não pode alterar não teria como preencher)."
+        },
+        "readOnlyWhen": {
+          "$ref": "#/$defs/condition",
+          "description": "Trava o campo na alteração quando a condição vale para o registro como está gravado, não para o formulário (custo só enquanto o produto não tem custo; total de pedido cancelado). Na criação não trava. Mudar o valor travado é 422 'read_only'; mandar o mesmo valor passa."
+        },
+        "unique": {
+          "type": "boolean",
+          "default": false,
+          "description": "Informativo para a shell; quem garante é o banco do sistema (violação vira erro 409 'conflict'). Em entidade com scope 'company' ou 'branch', vale dentro do escopo: o índice único do banco inclui org_company_id ou org_branch_id, e o backend confere isso no boot."
+        },
+        "default": {
+          "description": "Valor inicial no formulário de criação, no formato trafegado do tipo."
+        },
+        "visibleWhen": {
+          "$ref": "#/$defs/condition",
+          "description": "Mostra o campo no formulário só quando a condição vale para os valores atuais do formulário. Campo escondido não é validado e o backend grava null nele (se o status deixa de ser 'perdido', o motivo some)."
+        },
+        "requiredWhen": {
+          "$ref": "#/$defs/condition",
+          "description": "Torna o campo obrigatório quando a condição vale. O backend avalia a mesma condição ao validar."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "enum": ["string", "text", "email"]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "minLength": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "maxLength": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "pattern": {
+                "type": "string",
+                "description": "Regex no subconjunto comum de ECMAScript e do crate regex do Rust (sem lookaround nem backreference)."
+              },
+              "format": {
+                "enum": ["cpf", "cnpj", "cpf_cnpj", "phone"],
+                "description": "Só em string. 'phone': telefone brasileiro com DDD, trafega só os 10 ou 11 dígitos (erro 'pattern' fora disso), a shell mostra e digita como (11) 98123-4567. Os outros: documento brasileiro com dígito verificador. Trafega sem máscara: CPF com 11 dígitos; CNPJ com 12 caracteres [0-9A-Z] e 2 dígitos (alfanumérico desde jul/2026). 'cpf_cnpj' aceita os dois pelo tamanho. Erro: 'pattern' (forma) ou 'check_digit'. A shell mostra e digita com máscara."
+              },
+              "writeOnly": {
+                "type": "boolean",
+                "default": false,
+                "description": "Só em string: senha, PIN. A leitura sempre traz null; vazio na alteração mantém o gravado; não entra em lista, busca, filtro, ordem nem condição. O backend recebe o texto puro e quem faz o hash é o sistema (no c3-engine, exige escrita delegada). A shell mostra o campo mascarado."
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "file"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "accept": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^\\.[A-Za-z0-9]+$"
+                },
+                "description": "Extensões aceitas, com ponto ([\".pfx\", \".p12\"]). Sem accept, qualquer uma. Erro: 'file_type'."
+              },
+              "maxSize": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1048576,
+                "default": 1048576,
+                "description": "Tamanho máximo do arquivo em bytes, depois de decodificado. Teto de 1 MB (em base64 o corpo cresce 4/3). Erro: 'too_large'."
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "enum": ["integer", "decimal"]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "min": {
+                "type": "number"
+              },
+              "max": {
+                "type": "number"
+              },
+              "unit": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 8,
+                "description": "Texto depois do número, no campo e na leitura (\"%\", \"kg\"). Não muda o que trafega: o percentual de 10% trafega 10."
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "decimal"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "scale": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10,
+                "default": 2,
+                "description": "Casas decimais."
+              },
+              "currency": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$",
+                "description": "Valor em dinheiro, código ISO 4217 (BRL, USD). Não muda o que trafega nem a validação: a shell mostra com o símbolo no idioma do usuário (R$ 9.568,20) em lista, registro, painel e total, e o campo de digitação ganha o símbolo à esquerda. CSV sai só com o número, para a planilha continuar somando."
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "enum": ["enum", "flags"]
+              }
+            }
+          },
+          "then": {
+            "required": ["options"],
+            "properties": {
+              "options": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": ["value", "label"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "value": {
+                      "description": "O valor exatamente como o banco grava, sem tradução: é o que trafega no JSON, nas condições e nos filtros ('PISTA', 'SEM BALANCA', 5102). Comparação exata (maiúsculas e espaços contam). Todas as opções de um campo têm o mesmo tipo e não repetem; enum numérico usa coluna inteira.",
+                      "oneOf": [
+                        { "type": "string", "minLength": 1 },
+                        { "type": "integer", "minimum": -9007199254740991, "maximum": 9007199254740991 }
+                      ]
+                    },
+                    "label": {
+                      "$ref": "#/$defs/text"
+                    },
+                    "color": {
+                      "enum": ["neutral", "primary", "info", "success", "warning", "danger"],
+                      "description": "Tom semântico do selo. A shell decide a cor real (no tema atual, a paleta do MUI)."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "reference"
+              }
+            }
+          },
+          "then": {
+            "required": ["entity"],
+            "properties": {
+              "entity": {
+                "$ref": "#/$defs/identifier",
+                "description": "Entidade referenciada. Na escrita o valor é o id (string); na leitura vem { \"id\": \"...\", \"title\": \"...\" } com o titleField do registro referenciado, para a lista não precisar de uma requisição por linha."
+              },
+              "filter": {
+                "$ref": "#/$defs/condition",
+                "description": "Só oferece (e só aceita) registros da entidade apontada para os quais a condição vale: subgrupo ativo, conta analítica, centro do mesmo cliente. Pode citar 'id' (o registro apontado). O valor de uma folha pode ser {\"$field\": \"nome\"}: o valor desse campo no formulário de quem aponta, ou 'id' para o próprio registro ('nem o próprio produto'); vazio, a folha não restringe. A variável só vale com eq/ne/lt/lte/gt/gte, fora de 'not', e o campo precisa ser do mesmo tipo. Opção fora do filtro é 422 'not_allowed'."
+              },
+              "onDelete": {
+                "enum": ["restrict", "cascade", "set_null"],
+                "default": "restrict",
+                "description": "Informativo: o comportamento real é da FK no banco do sistema."
+              }
+            }
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "views": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "list": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "columns": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/identifier"
+                  },
+                  {
+                    "type": "object",
+                    "required": ["field"],
+                    "additionalProperties": false,
+                    "properties": {
+                      "field": {
+                        "$ref": "#/$defs/identifier"
+                      },
+                      "width": {
+                        "type": "integer",
+                        "minimum": 40
+                      },
+                      "component": {
+                        "$ref": "#/$defs/component",
+                        "description": "Widget da célula no lugar do padrão do tipo."
+                      },
+                      "label": {
+                        "$ref": "#/$defs/text",
+                        "description": "Título da coluna no lugar do rótulo do campo (\"Cliente\" na coluna do nome com e-mail embaixo)."
+                      },
+                      "link": {
+                        "type": "boolean",
+                        "description": "O valor vira link (cor primária) que abre o registro, como o número da fatura."
+                      },
+                      "secondary": {
+                        "$ref": "#/$defs/identifier",
+                        "description": "Campo mostrado numa segunda linha, menor e apagada, embaixo do valor (e-mail embaixo do nome)."
+                      },
+                      "join": {
+                        "type": "array",
+                        "minItems": 1,
+                        "maxItems": 3,
+                        "items": {
+                          "$ref": "#/$defs/identifier"
+                        },
+                        "description": "Campos emendados ao valor com \" - \" (cidade e UF viram \"Recife - PE\"). Valor vazio fica de fora. A ordenação continua pelo campo da coluna."
+                      },
+                      "avatar": {
+                        "oneOf": [
+                          {
+                            "type": "boolean"
+                          },
+                          {
+                            "$ref": "#/$defs/identifier"
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "photo": { "$ref": "#/$defs/identifier", "description": "Campo string com o endereço da foto." },
+                              "letters": { "enum": [1, 2], "default": 2, "description": "Quantas iniciais." },
+                              "tone": {
+                                "enum": ["auto", "neutral"],
+                                "default": "auto",
+                                "description": "auto: uma cor por registro; neutral: cinza."
+                              }
+                            }
+                          }
+                        ],
+                        "description": "Avatar antes do valor. true: duas iniciais do valor, uma cor por registro. Nome de campo string: endereço da foto, com as iniciais quando vazio. Objeto: { photo, letters, tone }."
+                      },
+                      "weight": {
+                        "enum": ["normal", "bold"],
+                        "description": "Peso do valor. Padrão: negrito quando a coluna tem secondary, normal sem."
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "search": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/identifier"
+              },
+              "description": "Campos (string/text/email) cobertos pela busca livre ?q=."
+            },
+            "filters": {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  { "$ref": "#/$defs/identifier" },
+                  {
+                    "type": "object",
+                    "required": ["field"],
+                    "additionalProperties": false,
+                    "properties": {
+                      "field": { "$ref": "#/$defs/identifier" },
+                      "all": { "$ref": "#/$defs/text", "description": "Opção sem filtro (\"Todas\" para Situação). Padrão: \"Todos\"." }
+                    }
+                  }
+                ]
+              },
+              "description": "Campos que o usuário pode filtrar livremente na barra da lista: o nome, ou { field, all } para trocar o texto da opção sem filtro."
+            },
+            "presets": {
+              "type": "array",
+              "description": "Filtros nomeados que aparecem como atalhos na barra da lista (ex.: 'Ativos', 'VIPs sem empresa').",
+              "items": {
+                "type": "object",
+                "required": ["id", "label", "where"],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                  },
+                  "label": {
+                    "$ref": "#/$defs/text"
+                  },
+                  "where": {
+                    "$ref": "#/$defs/condition"
+                  },
+                  "default": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Já vem aplicado ao abrir a lista."
+                  },
+                  "defaults": {
+                    "type": "object",
+                    "propertyNames": { "$ref": "#/$defs/identifier" },
+                    "description": "Valores iniciais do registro novo criado com este filtro ativo (\"Adicionar\" na lista de clientes já marca o papel cliente), no formato trafegado de cada campo. Passam por cima do `default` do campo; o usuário ainda pode trocar. É conveniência da tela: quem garante a regra é o backend."
+                  }
+                }
+              }
+            },
+            "defaultSort": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["field"],
+                "additionalProperties": false,
+                "properties": {
+                  "field": {
+                    "$ref": "#/$defs/identifier"
+                  },
+                  "direction": {
+                    "enum": ["asc", "desc"],
+                    "default": "asc"
+                  }
+                }
+              }
+            },
+            "pageSize": {
+              "enum": [10, 25, 50, 100],
+              "default": 25
+            },
+            "presetTabs": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "all": { "$ref": "#/$defs/text", "description": "Rótulo da primeira aba, sem preset. Padrão: \"Todos\"." }
+              },
+              "description": "Mostra os presets como abas acima da barra, cada uma com a contagem de registros (GET /{entity}/_aggregate com o where do preset somado à busca e aos filtros da barra). A primeira aba é a lista sem preset."
+            },
+            "dateRange": {
+              "type": "object",
+              "required": ["field"],
+              "additionalProperties": false,
+              "properties": {
+                "field": { "$ref": "#/$defs/identifier", "description": "Campo date." },
+                "label": {
+                  "$ref": "#/$defs/text",
+                  "description": "Começo do rótulo do primeiro campo (\"Emitidas\" vira \"Emitidas de\"). Padrão: o rótulo do campo."
+                }
+              },
+              "description": "Período na barra da lista: dois campos de data, \"de\" e \"até\", que filtram com gte e lte (os dois dias entram)."
+            },
+            "searchHint": {
+              "$ref": "#/$defs/text",
+              "description": "Placeholder da busca (\"Número ou cliente\"). Padrão: \"Em 42 clientes\", com o total da lista."
+            },
+            "export": {
+              "type": "boolean",
+              "default": true,
+              "description": "false tira o \"Exportar CSV\" da barra."
+            },
+            "expand": {
+              "type": "object",
+              "additionalProperties": false,
+              "minProperties": 1,
+              "description": "Seta no começo da linha que abre a prévia do registro embaixo dela, com os valores que a linha já trouxe (não faz outro GET). 'fields': dados com ícone e rótulo, em grade; 'stats': números em destaque numa faixa ao lado; 'notes': texto longo e listas (flags viram etiquetas), na largura toda.",
+              "properties": {
+                "fields": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": { "$ref": "#/$defs/expandItem" }
+                },
+                "stats": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 4,
+                  "items": { "$ref": "#/$defs/expandItem" }
+                },
+                "notes": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": { "$ref": "#/$defs/expandItem" }
+                }
+              }
+            },
+            "rowActionsStyle": {
+              "enum": ["color", "quiet"],
+              "default": "color",
+              "description": "'color': ver cinza, editar azul com o ícone de nota, excluir vermelho. 'quiet': ver e editar (lápis) em cinza, excluir vermelho."
+            },
+            "open": {
+              "enum": ["page", "dialog"],
+              "default": "page",
+              "description": "Onde abrem o registro (clique na linha, ícone Ver) e o novo (botão de criar): na página do registro ou num diálogo sobre a lista. Editar pela linha é sempre diálogo."
+            },
+            "rowActions": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "enum": ["view", "edit", "delete"]
+              },
+              "description": "Ícones na última coluna (\"Ações\"): 'view' abre o registro, 'edit' abre o formulário num diálogo sobre a lista, 'delete' pergunta e exclui. Cada um só aparece com a permissão dele (update, delete). Com 'delete', a lista ganha a marcação de linhas e \"Excluir (n)\" na barra."
+            },
+            "refreshSeconds": {
+              "type": "integer",
+              "minimum": 3,
+              "maximum": 3600,
+              "description": "Relê a página da lista (e os totais) a cada N segundos, só com a aba visível. Mantém página, filtros, seleção e rolagem. Para filas que mudam sozinhas (requisições, comandas em uso, caixas abertos). Tempo real de verdade (KDS) é outra coisa."
+            },
+            "totals": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 10,
+              "description": "Totais no rodapé da lista, sobre tudo o que o filtro alcança (não só a página), numa chamada só a GET /{entity}/_aggregate com o mesmo where, q e filiais. Saem também na última linha do CSV. A contagem já é o total da paginação. Campo que o usuário não vê não soma.",
+              "items": {
+                "type": "object",
+                "required": ["field"],
+                "additionalProperties": false,
+                "properties": {
+                  "field": {
+                    "$ref": "#/$defs/identifier",
+                    "description": "Campo integer ou decimal que está em views.list.columns (ou nas colunas por convenção)."
+                  },
+                  "measure": {
+                    "enum": ["sum"],
+                    "default": "sum"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "form": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "autosave": {
+              "type": "boolean",
+              "default": false,
+              "description": "Só em entidade `singleton` (configuração): o formulário abre editável, sem Editar nem Salvar, e cada campo grava sozinho (PATCH só dele, com `_version`) ao mudar (switch, select, data, reference) ou ao sair (texto, número). Booleano vira linha de ajuste (rótulo e `help` à esquerda, switch à direita). Erro de validação fica no campo e o valor volta ao gravado. `visibleWhen` vale na hora; campo que some não é apagado. Seções `related` e `component` não aparecem nesse modo."
+            },
+            "afterCreate": {
+              "type": "string",
+              "pattern": "^/",
+              "description": "Para onde o formulário vai depois de criar o registro, no lugar de /{entity}/{id} (ex.: contratar um agente abre a conversa com ele: \"/conversa/{id}\"). `{campo}` é trocado pelo valor gravado (reference: o id); campo vazio ou ausente volta ao padrão. Vale só na criação pela tela cheia: no diálogo e no assistente o registro volta a quem abriu. Alterar não muda."
+            },
+            "initial": {
+              "type": "object",
+              "description": "Valores do registro novo só neste formulário (o `default` do campo vale para qualquer gravação, inclusive pela API). Campo date ou datetime aceita data relativa ({\"$date\": \"today\", \"offset\": 15}), resolvida pelo relógio de quem abre. Ganha do `default` e perde para os `defaults` do preset e para o que vem na URL.",
+              "propertyNames": { "$ref": "#/$defs/identifier" }
+            },
+            "actions": {
+              "enum": ["top", "footer"],
+              "default": "top",
+              "description": "Onde ficam Cancelar e Salvar enquanto edita. 'footer': no fim do formulário, alinhados à direita, sem o título do registro em cima (o título da página já diz o que é). Num diálogo, ficam sempre em cima."
+            },
+            "submitLabel": {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "Texto do botão de gravar. Padrão: Salvar.",
+              "properties": {
+                "new": { "$ref": "#/$defs/text", "description": "No registro novo (\"Criar fatura\")." },
+                "edit": { "$ref": "#/$defs/text", "description": "Na alteração (\"Salvar alterações\")." }
+              }
+            },
+            "sections": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "title": {
+                    "$ref": "#/$defs/text"
+                  },
+                  "description": {
+                    "$ref": "#/$defs/text"
+                  },
+                  "tab": {
+                    "$ref": "#/$defs/text",
+                    "description": "Aba onde a seção aparece. Seções com a mesma aba ficam juntas, na ordem em que aparecem; as abas seguem a ordem da primeira seção de cada uma. Seções sem `tab` vêm antes de todas as com `tab` e ficam sempre visíveis acima das abas (cabeçalho, ex.: código e nome). Usando abas, são pelo menos duas. Formulário sem `tab` não muda. Vale para qualquer tipo de seção, inclusive `related`."
+                  },
+                  "access": {
+                    "$ref": "#/$defs/access",
+                    "description": "Permissão para ver e para alterar o que a seção mostra (aba Fornecedor só com o código de fornecedor). Numa lista with_parent: sem 'view' ela não vem na leitura; sem 'edit', não pode vir no corpo. Filha with_parent ainda não aceita access nos próprios campos nem rowAccess."
+                  },
+                  "visibleWhen": {
+                    "$ref": "#/$defs/condition",
+                    "description": "Mostra a seção só quando a condição vale para os valores atuais do formulário (ex.: aba Fornecedor só com o papel marcado). Escondida, tudo o que ela mostra vale como escondido: os campos das linhas não são validados e gravam null; a lista `with_parent` vale vazia e o gravado é excluído. A condição não pode citar campo da própria seção, e campo de seção condicional não aparece em outra seção. Uma aba some quando nenhuma seção dela aparece."
+                  },
+                  "width": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 11,
+                    "description": "Largura da seção em colunas de 12, na tela média ou maior. Seções seguidas com `width` que somam até 12 dividem a linha e ficam da mesma altura (Observações 7 e Resumo 5). No celular, empilham. Sem `width`, a seção ocupa a linha toda."
+                  },
+                  "summary": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 10,
+                    "description": "Contas mostradas abaixo dos campos da seção, recalculadas enquanto o usuário digita (subtotal, desconto, total). Só exibição: nada disso vai no corpo, e o valor gravado (o total da fatura) é regra do backend.",
+                    "items": {
+                      "type": "object",
+                      "required": ["label", "value"],
+                      "additionalProperties": false,
+                      "properties": {
+                        "name": { "$ref": "#/$defs/identifier", "description": "Deixa as linhas de baixo citarem esta na fórmula." },
+                        "label": { "$ref": "#/$defs/text" },
+                        "value": { "$ref": "#/$defs/formula" },
+                        "currency": { "type": "string", "pattern": "^[A-Z]{3}$", "description": "Mostra como dinheiro (ISO 4217)." },
+                        "negative": { "type": "boolean", "default": false, "description": "Mostra com o sinal de menos (o desconto)." },
+                        "total": { "type": "boolean", "default": false, "description": "Fecha o resumo: depois de um traço, em destaque." }
+                      }
+                    }
+                  },
+                  "rows": {
+                    "type": "array",
+                    "description": "Cada linha é uma lista de campos lado a lado (até 4). No celular, empilham. O tipo define o widget padrão; { field, component } troca o widget só neste formulário.",
+                    "items": {
+                      "type": "array",
+                      "minItems": 1,
+                      "maxItems": 4,
+                      "items": {
+                        "$ref": "#/$defs/formField"
+                      }
+                    }
+                  },
+                  "component": {
+                    "$ref": "#/$defs/component"
+                  },
+                  "related": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "Lista de filhos (1:N) dentro do formulário do pai: registros de `entity` cujo `field` aponta para este registro. Com `save: separately` (padrão), aparece só em registro já salvo e cada filho grava sozinho pelo CRUD da filha. Com `save: with_parent`, os filhos são editados no formulário do pai (inclusive no novo), vão no corpo do POST/PATCH dele na chave `entity` e são gravados na mesma transação.",
+                    "required": ["entity", "field"],
+                    "if": {
+                      "not": {
+                        "required": ["save"],
+                        "properties": { "save": { "const": "with_parent" } }
+                      }
+                    },
+                    "then": {
+                      "properties": {
+                        "minItems": false,
+                        "maxItems": false,
+                        "computed": false,
+                        "option": false,
+                        "groupBy": false,
+                        "display": { "const": "table" }
+                      }
+                    },
+                    "properties": {
+                      "entity": {
+                        "$ref": "#/$defs/identifier",
+                        "description": "Entidade filha."
+                      },
+                      "field": {
+                        "$ref": "#/$defs/identifier",
+                        "description": "Campo reference da entidade filha que aponta para esta entidade."
+                      },
+                      "columns": {
+                        "type": "array",
+                        "minItems": 1,
+                        "items": {
+                          "$ref": "#/$defs/identifier"
+                        },
+                        "description": "Colunas mostradas. Padrão: as colunas da lista da filha, sem `field`."
+                      },
+                      "computed": {
+                        "type": "array",
+                        "minItems": 1,
+                        "maxItems": 3,
+                        "description": "Só em with_parent: contas por linha sobre os campos da filha (total do item = quantidade * preço), mostradas ao lado dos campos e como coluna na grade. Só exibição; não vão no corpo.",
+                        "items": {
+                          "type": "object",
+                          "required": ["label", "value"],
+                          "additionalProperties": false,
+                          "properties": {
+                            "label": { "$ref": "#/$defs/text" },
+                            "value": { "$ref": "#/$defs/formula" },
+                            "currency": { "type": "string", "pattern": "^[A-Z]{3}$" }
+                          }
+                        }
+                      },
+                      "sort": {
+                        "type": "string",
+                        "description": "Mesmo formato do parâmetro sort da listagem, ex.: \"-created_at\". Padrão: defaultSort da filha (em with_parent, a ordem de inclusão)."
+                      },
+                      "save": {
+                        "enum": ["separately", "with_parent"],
+                        "default": "separately",
+                        "description": "'separately': cada filho tem CRUD próprio (lista paginada, ilimitada). 'with_parent': o filho só existe dentro do pai (itens, endereços, códigos de barras); a lista inteira vem na leitura do pai, é enviada no corpo dele e substitui a gravada, e o CRUD direto da filha responde 403. A filha precisa ter o mesmo scope do pai e um pai só."
+                      },
+                      "minItems": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "default": 0,
+                        "description": "Só em with_parent: mínimo de linhas (422 too_few)."
+                      },
+                      "display": {
+                        "enum": ["table", "checklist"],
+                        "default": "table",
+                        "description": "Só em with_parent. 'checklist': lista de marcar sobre todos os registros da entidade de `option` (permissões do perfil, produtos permitidos); cada opção marcada é uma linha da filha. Os outros campos editáveis da filha viram colunas da matriz, editáveis na linha marcada. A mesma opção duas vezes é 422 duplicate."
+                      },
+                      "option": {
+                        "$ref": "#/$defs/identifier",
+                        "description": "Com display checklist: campo reference da filha (não o `field`) cujos registros são as opções."
+                      },
+                      "groupBy": {
+                        "$ref": "#/$defs/identifier",
+                        "description": "Com display checklist: campo da entidade das opções que agrupa a lista (módulo da permissão), com marcar todos por grupo."
+                      },
+                      "maxItems": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 500,
+                        "default": 200,
+                        "description": "Só em with_parent: máximo de linhas (422 too_many). Com 1, a shell mostra os campos da filha direto na seção, sem grade. Lista maior que 500 não cabe num formulário: use save separately."
+                      }
+                    }
+                  }
+                },
+                "oneOf": [
+                  {
+                    "anyOf": [{ "required": ["rows"] }, { "required": ["summary"] }]
+                  },
+                  {
+                    "required": ["component"]
+                  },
+                  {
+                    "required": ["related"]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "detail": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "component": {
+              "$ref": "#/$defs/component"
+            }
+          },
+          "description": "v0: sem component, a shell mostra o formulário em modo leitura."
+        },
+        "board": {
+          "type": "object",
+          "required": ["groupBy"],
+          "additionalProperties": false,
+          "description": "Quadro (kanban): um cartão por registro, em colunas pelo valor de um campo enum. Arrastar o cartão para outra coluna grava o campo (PATCH) quando o usuário pode alterar e o campo não é readOnly; senão o quadro é só leitura. Usa o mesmo GET da lista (where por coluna) e respeita os presets da lista: não há endpoint próprio.",
+          "properties": {
+            "groupBy": { "$ref": "#/$defs/identifier", "description": "Campo enum que define as colunas, na ordem de options." },
+            "columns": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": { "oneOf": [{ "type": "string" }, { "type": "integer" }] },
+              "description": "Valores de options que viram coluna, nesta ordem. Ausente: todas. Serve para esconder estados finais (ex.: 'Cancelado')."
+            },
+            "fields": { "$ref": "#/$defs/cardFields" },
+            "pageSize": {
+              "type": "integer",
+              "minimum": 10,
+              "maximum": 100,
+              "default": 50,
+              "description": "Cartões carregados por coluna; o resto aparece no 'Ver mais'."
+            },
+            "code": {
+              "$ref": "#/$defs/identifier",
+              "description": "Campo string mostrado acima do título, na cor primária (código da história, número do pedido)."
+            },
+            "due": {
+              "$ref": "#/$defs/identifier",
+              "description": "Campo date do prazo: chip com ícone ('14 nov'), vermelho se venceu, amarelo em até 2 dias, verde na coluna 'done'."
+            },
+            "assignee": {
+              "$ref": "#/$defs/identifier",
+              "description": "Campo reference do responsável: avatar com as iniciais (primeira e última palavra do título) no pé do cartão; vazio, um '?' tracejado."
+            },
+            "counters": {
+              "type": "array",
+              "maxItems": 3,
+              "items": {
+                "type": "object",
+                "required": ["field", "icon"],
+                "additionalProperties": false,
+                "properties": {
+                  "field": { "$ref": "#/$defs/identifier", "description": "Campo integer (comentários, anexos)." },
+                  "icon": { "type": "string", "description": "Ícone do catálogo da shell." },
+                  "label": { "$ref": "#/$defs/text", "description": "Nome lido pelo leitor de tela ('3 comentários')." }
+                }
+              },
+              "description": "Contadores no pé do cartão; zero não aparece."
+            },
+            "done": {
+              "oneOf": [{ "type": "string" }, { "type": "integer" }],
+              "description": "Valor de groupBy da coluna de concluídos: título riscado, prazo verde e um visto no cabeçalho."
+            },
+            "quickAdd": {
+              "type": "boolean",
+              "default": true,
+              "description": "'Adicionar cartão' no pé de cada coluna: cria só com o título (titleField) e o valor da coluna; se o backend recusar por falta de campo, abre o formulário com o que já foi digitado. false: um botão de criar no topo, como antes."
+            }
+          }
+        },
+        "report": {
+          "type": "object",
+          "required": ["columns"],
+          "additionalProperties": false,
+          "description": "Relatório: todas as linhas do filtro da lista (mesmos presets, filtros, busca, parâmetros e filiais), sem paginação até 10 mil, agrupadas por um ou dois campos com subtotal por grupo e total geral, ou em árvore. Rota /{entity}/report, com botão Imprimir (o papel sai sem menu, com título, data e os filtros). Usa o mesmo GET da lista: não há endpoint próprio. Acima de 10 mil linhas a shell pede para filtrar, em vez de mostrar total pela metade.",
+          "properties": {
+            "title": { "$ref": "#/$defs/text", "description": "Título do relatório. Padrão: o plural da entidade." },
+            "columns": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 12,
+              "uniqueItems": true,
+              "items": { "$ref": "#/$defs/identifier" },
+              "description": "Campos das colunas, nesta ordem. A primeira recebe o nome do grupo no subtotal."
+            },
+            "groupBy": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 2,
+              "uniqueItems": true,
+              "items": { "$ref": "#/$defs/identifier" },
+              "description": "Um ou dois campos (enum, boolean, reference, string, date ou integer). Grupos de enum na ordem de options, o resto pelo texto; o vazio por último."
+            },
+            "subtotals": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": { "$ref": "#/$defs/identifier" },
+              "description": "Colunas integer ou decimal somadas por grupo e no total geral (decimal sem erro de arredondamento)."
+            },
+            "sort": {
+              "type": "string",
+              "description": "Ordem das linhas dentro do grupo, como no GET da lista (ex.: '-total'). Padrão: a da lista."
+            },
+            "tree": {
+              "type": "object",
+              "required": ["parent"],
+              "additionalProperties": false,
+              "description": "Árvore (DRE, balancete): cada linha abaixo da mãe, com recuo. Só exibe: os totais de cada nível vêm do sistema (consulta com source: system). Não junta com groupBy nem subtotals.",
+              "properties": { "parent": { "$ref": "#/$defs/identifier", "description": "Campo reference para a própria entidade." } }
+            }
+          }
+        },
+        "map": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Planta: cada registro vira um bloco, colorido pelo enum de situação, posicionado por coordenadas (mesas do salão) ou dentro de grupos aninhados (ilha, bomba, bico da pista; setor do KDS). Clicar abre o registro com as ações dele. Rota /{entity}/map, com os presets da lista; lê até 500 registros. Com live na entidade, a planta acompanha na hora.",
+          "properties": {
+            "title": { "$ref": "#/$defs/text", "description": "Título da planta. Padrão: o plural da entidade." },
+            "color": {
+              "$ref": "#/$defs/identifier",
+              "description": "Campo enum cujas options têm color: a cor de cada bloco e a legenda."
+            },
+            "fields": {
+              "type": "array",
+              "maxItems": 3,
+              "uniqueItems": true,
+              "items": { "$ref": "#/$defs/identifier" },
+              "description": "Até 3 campos mostrados no bloco, abaixo do título."
+            },
+            "groupBy": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 2,
+              "uniqueItems": true,
+              "items": { "$ref": "#/$defs/identifier" },
+              "description": "Um ou dois campos (enum, reference, string ou integer): caixas aninhadas com os blocos dentro, na ordem de options ou pelo texto. Não junta com position."
+            },
+            "position": {
+              "type": "object",
+              "required": ["x", "y"],
+              "additionalProperties": false,
+              "description": "Coordenadas em células de uma grade (a partir de 1): campos integer do registro. Registro sem coordenada vai para uma faixa 'Sem lugar' abaixo da planta.",
+              "properties": {
+                "x": { "$ref": "#/$defs/identifier", "description": "Coluna (integer, 1 = esquerda)." },
+                "y": { "$ref": "#/$defs/identifier", "description": "Linha (integer, 1 = topo)." },
+                "w": { "$ref": "#/$defs/identifier", "description": "Largura em células (integer, padrão 1)." },
+                "h": { "$ref": "#/$defs/identifier", "description": "Altura em células (integer, padrão 1)." }
+              }
+            },
+            "size": { "enum": ["small", "medium", "large"], "default": "medium", "description": "Tamanho do bloco (e da célula da grade)." }
+          }
+        },
+        "calendar": {
+          "type": "object",
+          "required": ["start"],
+          "additionalProperties": false,
+          "description": "Calendário do mês: cada registro aparece no dia do campo 'start' (e até 'end', se houver). Usa o mesmo GET da lista com where de período e respeita os presets. Clicar num dia abre o registro novo com a data preenchida; clicar no evento abre o registro.",
+          "properties": {
+            "start": { "$ref": "#/$defs/identifier", "description": "Campo date ou datetime do início." },
+            "end": {
+              "$ref": "#/$defs/identifier",
+              "description": "Campo do fim, do mesmo tipo de 'start'. Ausente: evento de um dia. Em date, o fim é o último dia (inclusivo). Em datetime, o fim é exclusivo: terminar às 00:00 não ocupa aquele dia (dia inteiro de 4 a 5 grava fim no dia 6 às 00:00)."
+            },
+            "allDay": {
+              "$ref": "#/$defs/identifier",
+              "description": "Só com start datetime: campo boolean que marca o evento de dia inteiro. Verdadeiro: a shell não mostra a hora."
+            },
+            "color": { "$ref": "#/$defs/identifier", "description": "Campo enum cuja cor (options[].color) pinta o evento." },
+            "fields": { "$ref": "#/$defs/cardFields" }
+          }
+        }
+      }
+    },
+    "condition": {
+      "description": "Expressão declarativa (AST JSON, nunca string de código). A mesma semântica é avaliada na shell (TS), no backend (Rust/Node) e vale para filtros de lista, filtros nomeados e regras de formulário. Casos de teste compartilhados em spec/v0/conformance/conditions.json.",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["and"],
+          "additionalProperties": false,
+          "properties": {
+            "and": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/condition"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["or"],
+          "additionalProperties": false,
+          "properties": {
+            "or": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/condition"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["not"],
+          "additionalProperties": false,
+          "properties": {
+            "not": {
+              "$ref": "#/$defs/condition"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": ["field", "op", "value"],
+          "additionalProperties": false,
+          "properties": {
+            "field": {
+              "anyOf": [{ "$ref": "#/$defs/identifier" }, { "const": "id" }],
+              "description": "Campo da entidade, ou 'id' (o id implícito do registro, comparado como reference)."
+            },
+            "op": {
+              "enum": ["eq", "ne", "lt", "lte", "gt", "gte", "in", "contains", "null"]
+            },
+            "value": {
+              "description": "Valor no formato trafegado do tipo do campo. 'in' recebe array; 'null' recebe true/false. Em filtro de lista (presets e where da API), campo date/datetime aceita data relativa: {\"$date\": \"today|weekStart|monthStart|yearStart\", \"offset\", \"unit\"} ou {\"$now\": true, \"offset\", \"unit\"}, resolvida pelo backend."
+            }
+          }
+        }
+      ]
+    },
+    "expandItem": {
+      "oneOf": [
+        { "$ref": "#/$defs/identifier" },
+        {
+          "type": "object",
+          "required": ["field"],
+          "additionalProperties": false,
+          "properties": {
+            "field": { "$ref": "#/$defs/identifier" },
+            "label": { "$ref": "#/$defs/text", "description": "No lugar do rótulo do campo." },
+            "icon": { "type": "string", "description": "Nome do ícone no catálogo da shell (ex.: \"Sms\")." }
+          }
+        }
+      ]
+    },
+    "formula": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300,
+      "description": "Conta para mostrar: números, nomes de campo, + - * / e parênteses; `sum(lista, conta)` soma a conta em cada linha de uma lista with_parent do formulário (sum(fatura_item, quantidade * preco)). Campo vazio vale 0 e divisão por zero dá 0. Avaliador de referência: packages/engine/src/formulas.mjs."
+    },
+    "formField": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/identifier"
+        },
+        {
+          "type": "object",
+          "required": ["field"],
+          "additionalProperties": false,
+          "properties": {
+            "field": {
+              "$ref": "#/$defs/identifier"
+            },
+            "component": {
+              "$ref": "#/$defs/component",
+              "description": "Widget usado neste formulário no lugar do padrão do tipo."
+            }
+          }
+        }
+      ]
+    },
+    "lookup": {
+      "type": "object",
+      "required": ["name", "field", "fills"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/identifier",
+          "description": "Nome da consulta; vira o segmento da URL."
+        },
+        "field": {
+          "$ref": "#/$defs/identifier",
+          "description": "Campo de origem (string), cujo valor vai para a consulta."
+        },
+        "fills": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/identifier"
+          },
+          "description": "Campos que a resposta pode preencher. A shell só preenche campo vazio ou que ainda tem o valor da consulta anterior; edição manual fica."
+        },
+        "trigger": {
+          "enum": ["change", "button"],
+          "default": "button",
+          "description": "'change': consulta sozinha quando o valor do campo fica válido (CEP). 'button': botão ao lado do campo (CNPJ, consulta paga ou lenta)."
+        },
+        "label": {
+          "$ref": "#/$defs/text",
+          "description": "Texto do botão. Padrão: 'Consultar'."
+        }
+      }
+    },
+    "gridField": {
+      "type": "object",
+      "required": ["name", "type", "label", "fields"],
+      "additionalProperties": false,
+      "description": "Grade no input de uma ação: várias linhas digitadas de uma vez (contar cada forma de pagamento, ajustar o preço de 50 produtos). Trafega como lista de objetos; cada linha é validada como os campos dela, com erro em '<grade>.<linha>.<campo>'.",
+      "properties": {
+        "name": { "$ref": "#/$defs/identifier" },
+        "type": { "const": "grid" },
+        "label": { "$ref": "#/$defs/text" },
+        "help": { "$ref": "#/$defs/text" },
+        "required": {
+          "type": "boolean",
+          "default": false,
+          "description": "Pelo menos uma linha (o mesmo que minItems 1)."
+        },
+        "minItems": { "type": "integer", "minimum": 0 },
+        "maxItems": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 500,
+          "default": 200
+        },
+        "fields": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 12,
+          "description": "Colunas da grade. readOnly só trava a célula na tela: o valor vai ao sistema (é o que identifica a linha). Sem file, createOnly, filter, access nem condições.",
+          "items": { "$ref": "#/$defs/field" }
+        }
+      }
+    },
+    "action": {
+      "type": "object",
+      "required": ["name", "label"],
+      "additionalProperties": false,
+      "if": { "required": ["target"], "properties": { "target": { "const": "list" } } },
+      "then": { "properties": { "bulk": { "const": false }, "visibleWhen": false } },
+      "dependentSchemas": {
+        "returns": { "properties": { "bulk": { "not": { "const": true } } } },
+        "summary": { "required": ["bulk"], "properties": { "bulk": { "not": { "const": false } } } }
+      },
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/identifier",
+          "description": "Vira o segmento da URL e a chave em capabilities.actions."
+        },
+        "label": {
+          "$ref": "#/$defs/text",
+          "description": "Texto do botão e título do diálogo (ex.: 'Cancelar venda')."
+        },
+        "description": {
+          "$ref": "#/$defs/text",
+          "description": "Explica no diálogo o que a ação faz e o que ela desfaz."
+        },
+        "icon": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Za-z0-9]*$"
+        },
+        "tone": {
+          "enum": ["neutral", "info", "success", "warning", "danger"],
+          "default": "neutral",
+          "description": "'danger' para o que não se desfaz: o botão de confirmar fica vermelho."
+        },
+        "visibleWhen": {
+          "$ref": "#/$defs/condition",
+          "description": "Condição sobre o registro. Fora dela a shell esconde a ação e o backend responde 409 conflict (ex.: só venda concluída pode ser cancelada)."
+        },
+        "target": {
+          "enum": ["record", "list"],
+          "default": "record",
+          "description": "'record': comando sobre um registro gravado (o padrão). 'list': comando da lista, sem registro (importar um arquivo, aplicar um modelo): botão no topo da lista, em POST /{entity}/_actions/{name} com { input }; permissão na filial ativa. Ação de lista não tem bulk nem visibleWhen."
+        },
+        "bulk": {
+          "oneOf": [{ "type": "boolean" }, { "const": "together" }],
+          "default": false,
+          "description": "true: roda também em lote, um por um. A lista ganha seleção e a ação aparece na barra das linhas marcadas. O input é preenchido uma vez e vale para todas; cada registro passa pelas mesmas conferências e falha ou passa sozinho. 'together': o lote é um fato só (receber vários recebíveis num movimento, pagar títulos com um cheque). O backend confere cada registro e, com qualquer recusa, nada roda (409 com o erro de cada um em records); depois o sistema executa uma vez sobre todos, tudo ou nada. Pode devolver arquivo; não tem Desfazer."
+        },
+        "summary": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 4,
+          "description": "Somas das linhas marcadas, na barra de seleção e no diálogo (ação com bulk). Só campos integer ou decimal da entidade.",
+          "items": {
+            "type": "object",
+            "required": ["field"],
+            "additionalProperties": false,
+            "properties": { "field": { "$ref": "#/$defs/identifier" } }
+          }
+        },
+        "confirm": {
+          "$ref": "#/$defs/text",
+          "description": "Pergunta de confirmação mostrada no diálogo. Ação sem input e sem confirm roda direto."
+        },
+        "confirmLabel": {
+          "$ref": "#/$defs/text",
+          "description": "Texto do botão de confirmar. Padrão: o label."
+        },
+        "input": {
+          "type": "object",
+          "required": ["fields"],
+          "additionalProperties": false,
+          "description": "Dados pedidos antes de rodar (motivo, data, conta). Mesmos tipos e regras dos campos da entidade; as condições citam campos do próprio input. Não é gravado pelo motor: vai para a regra de negócio.",
+          "properties": {
+            "fields": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "if": { "required": ["type"], "properties": { "type": { "const": "grid" } } },
+                "then": { "$ref": "#/$defs/gridField" },
+                "else": { "$ref": "#/$defs/field" }
+              }
+            },
+            "rows": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 4,
+                "items": {
+                  "$ref": "#/$defs/identifier"
+                }
+              },
+              "description": "Disposição dos campos no diálogo. Padrão: um por linha."
+            }
+          }
+        },
+        "successMessage": {
+          "$ref": "#/$defs/text",
+          "description": "Aviso depois de rodar, quando o backend não manda message. Padrão: 'Feito.'"
+        },
+        "prefill": {
+          "type": "boolean",
+          "default": false,
+          "description": "Antes de abrir o diálogo, a shell pede os valores iniciais do input ao sistema: GET /{entity}/{id}/_actions/{name}/_prefill (ou /{entity}/_actions/{name}/_prefill na ação da lista). Ex.: a conferência do caixa abre com uma linha por forma de pagamento e o valor do sistema."
+        },
+        "preview": {
+          "type": "boolean",
+          "default": false,
+          "description": "Antes de confirmar, o diálogo mostra a prévia do sistema: POST /{entity}/{id}/_actions/{name}/_preview com o input (ou /{entity}/_actions/{name}/_preview com { input } na ação da lista). Responde { message, fill, table }: fill sugere valor para os campos vazios do input; table é só leitura. Nada é gravado; falta de campo obrigatório não barra a prévia. A shell pede ao abrir e ao sair de cada campo, não a cada tecla; em lote não há prévia."
+        },
+        "returns": {
+          "const": "file",
+          "description": "A ação pode responder um arquivo (SPED, TXT da balança, CSV): o corpo é o próprio arquivo, com Content-Type e Content-Disposition, e o aviso vem no cabeçalho C3-Message (UTF-8 com %XX). A shell baixa. Sem arquivo, a resposta é o JSON de sempre. Em lote, só com bulk 'together' (um arquivo para todos)."
+        },
+        "inverse": {
+          "$ref": "#/$defs/identifier",
+          "description": "Ação que desfaz esta (ex.: 'approve' tem inverse 'reopen'). Depois de rodar, a shell oferece Desfazer, que roda a inversa com If-Match na versão de depois da ação e C3-Undo: true; se alguém mexeu no registro no meio, o backend responde 412 e nada muda. A inversa é outra ação de registro da mesma entidade, sem input (o Desfazer é um clique). Sem inverse, a ação não tem Desfazer. Proibido em entidade com undoable false."
+        }
+      }
+    }
+  }
+}

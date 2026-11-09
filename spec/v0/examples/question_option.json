@@ -1,0 +1,59 @@
+{
+  "$schema": "../entity.schema.json",
+  "specVersion": "0",
+  "name": "question_option",
+  "label": {
+    "singular": "Opção",
+    "plural": "Opções"
+  },
+  "icon": "TickSquare",
+  "titleField": "name",
+  "description": "Só existe dentro da pergunta (related com save with_parent).",
+  "fields": [
+    {
+      "name": "question_id",
+      "type": "reference",
+      "entity": "question",
+      "label": "Pergunta",
+      "required": true,
+      "onDelete": "cascade"
+    },
+    {
+      "name": "position",
+      "type": "integer",
+      "label": "Ordem",
+      "required": true,
+      "min": 1,
+      "max": 99
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "label": "Opção",
+      "required": true,
+      "maxLength": 60
+    },
+    {
+      "name": "product_id",
+      "type": "reference",
+      "entity": "product",
+      "label": "Produto vinculado",
+      "help": "Dá baixa no estoque. Vazio: só texto no pedido.",
+      "onDelete": "set_null"
+    },
+    {
+      "name": "extra_price",
+      "type": "decimal",
+      "label": "Acréscimo",
+      "scale": 2,
+      "min": 0,
+      "aiReview": true
+    },
+    {
+      "name": "active",
+      "type": "boolean",
+      "label": "Ativa",
+      "default": true
+    }
+  ]
+}

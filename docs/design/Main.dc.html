@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>C3Theme · Fundamentos</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2563EB}a:hover{color:#1A45A5}
+</style>
+</helmet>
+<div style="width: 1200px; height: 1180px; box-sizing: border-box; padding: 48px; background: #F4F6F9; font-family: 'Inter', system-ui, sans-serif; color: #141A24; display: flex; flex-direction: column; gap: 32px">
+  <div style="display: flex; flex-direction: column; gap: 4px">
+    <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #5B6474">01 · Fundamentos</span>
+    <h1 style="margin: 0; font-size: 32px; font-weight: 600; line-height: 1.25">Cores, tipografia e forma</h1>
+    <p style="margin: 0; font-size: 15px; color: #5B6474">createC3Theme({ look: 'c3', brand }) — a cor de marca vira o primary nos dois modos.</p>
+  </div>
+
+  <section style="background: #FFFFFF; border: 1px solid #E2E6EC; border-radius: 24px; overflow: hidden">
+    <div style="padding: 14px 20px; min-height: 60px; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #E2E6EC">
+      <div><div style="font-size: 16px; font-weight: 600">Cores de marca</div><div style="font-size: 14px; color: #5B6474">BRAND_COLORS · claro / escuro</div></div>
+    </div>
+    <div style="padding: 20px; display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 12px">
+      <sc-for list="{{brands}}" as="b" hint-placeholder-count="9">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <div style="height: 72px; border-radius: 12px; overflow: hidden; display: flex">
+            <div style="flex: 1; background: {{b.light}}"></div>
+            <div style="flex: 1; background: {{b.dark}}"></div>
+          </div>
+          <div style="font-size: 13px; font-weight: 600">{{b.name}}</div>
+          <div style="font-size: 12px; color: #5B6474; font-family: ui-monospace, monospace; line-height: 1.5">{{b.light}}<br>{{b.dark}}</div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="background: #FFFFFF; border: 1px solid #E2E6EC; border-radius: 24px; overflow: hidden">
+    <div style="padding: 14px 20px; min-height: 60px; box-sizing: border-box; display: flex; align-items: center; border-bottom: 1px solid #E2E6EC">
+      <div><div style="font-size: 16px; font-weight: 600">Paleta semântica</div><div style="font-size: 14px; color: #5B6474">main · fundo suave (12%) · texto suave (dark) — usado por StatusChip, SoftAvatar e SoftIconButton</div></div>
+    </div>
+    <div style="padding: 20px; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px">
+      <sc-for list="{{tones}}" as="t" hint-placeholder-count="6">
+        <div style="border: 1px solid #E2E6EC; border-radius: 12px; overflow: hidden">
+          <div style="height: 56px; background: {{t.main}}; color: #FFFFFF; font-size: 13px; font-weight: 600; display: flex; align-items: flex-end; padding: 8px 10px; box-sizing: border-box">{{t.name}}</div>
+          <div style="padding: 10px; display: flex; flex-direction: column; gap: 8px">
+            <span style="align-self: flex-start; background: {{t.soft}}; color: {{t.text}}; border-radius: 6px; font-size: 13px; font-weight: 500; padding: 3px 8px">Suave</span>
+            <div style="font-size: 12px; color: #5B6474; font-family: ui-monospace, monospace; line-height: 1.5">claro {{t.main}}<br>escuro {{t.darkMode}}</div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="padding: 0 20px 20px; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px">
+      <sc-for list="{{neutrals}}" as="n" hint-placeholder-count="6">
+        <div style="display: flex; align-items: center; gap: 10px">
+          <div style="width: 36px; height: 36px; border-radius: 8px; background: {{n.hex}}; border: 1px solid #E2E6EC; flex-shrink: 0"></div>
+          <div style="min-width: 0"><div style="font-size: 13px; font-weight: 600">{{n.name}}</div><div style="font-size: 12px; color: #5B6474; font-family: ui-monospace, monospace">{{n.hex}}</div></div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px">
+    <section style="background: #FFFFFF; border: 1px solid #E2E6EC; border-radius: 24px; overflow: hidden">
+      <div style="padding: 14px 20px; min-height: 60px; box-sizing: border-box; display: flex; align-items: center; border-bottom: 1px solid #E2E6EC">
+        <div><div style="font-size: 16px; font-weight: 600">Tipografia</div><div style="font-size: 14px; color: #5B6474">Inter · base 14px · peso 600 nos títulos</div></div>
+      </div>
+      <div style="padding: 12px 20px; display: flex; flex-direction: column">
+        <div style="display: flex; align-items: baseline; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #F0F2F5"><span style="font-size: 32px; font-weight: 600; line-height: 1.25">Heading 1</span><span style="font-size: 12px; color: #5B6474">h1 · 32 / 600</span></div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #F0F2F5"><span style="font-size: 26px; font-weight: 600; line-height: 1.3">Heading 2</span><span style="font-size: 12px; color: #5B6474">h2 · 26 / 600</span></div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #F0F2F5"><span style="font-size: 22px; font-weight: 600; line-height: 1.35">Heading 3</span><span style="font-size: 12px; color: #5B6474">h3 · 22 / 600</span></div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #F0F2F5"><span style="font-size: 18px; font-weight: 600">Heading 4</span><span style="font-size: 12px; color: #5B6474">h4 · 18 / 600</span></div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #F0F2F5"><span style="font-size: 16px; font-weight: 600">Heading 5 — título de Panel</span><span style="font-size: 12px; color: #5B6474">h5 · 16 / 600</span></div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #F0F2F5"><span style="font-size: 14px; font-weight: 600">Heading 6</span><span style="font-size: 12px; color: #5B6474">h6 · 14 / 600</span></div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #F0F2F5"><span style="font-size: 15px; font-weight: 500">Subtitle 1</span><span style="font-size: 12px; color: #5B6474">subtitle1 · 15 / 500</span></div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #F0F2F5"><span style="font-size: 15px">Body 1 — texto corrido das telas</span><span style="font-size: 12px; color: #5B6474">body1 · 15 / 400</span></div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #F0F2F5"><span style="font-size: 14px; color: #5B6474">Body 2 — secundário</span><span style="font-size: 12px; color: #5B6474">body2 · 14 / 400</span></div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #F0F2F5"><span style="font-size: 12px">Caption</span><span style="font-size: 12px; color: #5B6474">caption · 12</span></div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; padding: 6px 0"><span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase">Overline</span><span style="font-size: 12px; color: #5B6474">overline · 11 / 600 / 0.08em</span></div>
+      </div>
+    </section>
+
+    <section style="background: #FFFFFF; border: 1px solid #E2E6EC; border-radius: 24px; overflow: hidden">
+      <div style="padding: 14px 20px; min-height: 60px; box-sizing: border-box; display: flex; align-items: center; border-bottom: 1px solid #E2E6EC">
+        <div><div style="font-size: 16px; font-weight: 600">Forma e superfície</div><div style="font-size: 14px; color: #5B6474">shape.borderRadius 8 · cantos por componente</div></div>
+      </div>
+      <div style="padding: 20px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 8px"><div style="height: 72px; border: 1px solid #C9D0DA; background: #F4F6F9; border-radius: 6px"></div><span style="font-size: 13px; font-weight: 600">6px</span><span style="font-size: 12px; color: #5B6474">Chip</span></div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><div style="height: 72px; border: 1px solid #C9D0DA; background: #F4F6F9; border-radius: 8px"></div><span style="font-size: 13px; font-weight: 600">8px</span><span style="font-size: 12px; color: #5B6474">Botão, campo, Alert, item de menu</span></div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><div style="height: 72px; border: 1px solid #C9D0DA; background: #F4F6F9; border-radius: 12px"></div><span style="font-size: 13px; font-weight: 600">12px</span><span style="font-size: 12px; color: #5B6474">Card, Dialog</span></div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><div style="height: 72px; border: 1px solid #C9D0DA; background: #F4F6F9; border-radius: 24px"></div><span style="font-size: 13px; font-weight: 600">24px</span><span style="font-size: 12px; color: #5B6474">Panel (raio × 3)</span></div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><div style="height: 72px; background: #FFFFFF; border: 1px solid #E2E6EC; border-radius: 12px"></div><span style="font-size: 13px; font-weight: 600">Borda</span><span style="font-size: 12px; color: #5B6474">padrão: divider sobre #F4F6F9</span></div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><div style="height: 72px; background: #FFFFFF; border-radius: 12px; box-shadow: 0 1px 2px rgb(16 24 40 / 0.06), 0 4px 12px rgb(16 24 40 / 0.06)"></div><span style="font-size: 13px; font-weight: 600">Contraste</span><span style="font-size: 12px; color: #5B6474">sombra sobre fundo branco</span></div>
+      </div>
+      <div style="padding: 0 20px 20px; display: flex; flex-direction: column; gap: 8px">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #5B6474">Fontes do painel de aparência</span>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px">
+          <span style="border: 1px solid #E2E6EC; border-radius: 6px; padding: 4px 10px; font-size: 13px; font-weight: 500; background: rgb(37 99 235 / 0.12); color: #1A45A5">Inter (padrão)</span>
+          <span style="border: 1px solid #E2E6EC; border-radius: 6px; padding: 4px 10px; font-size: 13px; font-weight: 500">Roboto</span>
+          <span style="border: 1px solid #E2E6EC; border-radius: 6px; padding: 4px 10px; font-size: 13px; font-weight: 500">Public Sans</span>
+          <span style="border: 1px solid #E2E6EC; border-radius: 6px; padding: 4px 10px; font-size: 13px; font-weight: 500">Poppins</span>
+          <span style="border: 1px solid #E2E6EC; border-radius: 6px; padding: 4px 10px; font-size: 13px; font-weight: 500">Source Sans Pro</span>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1200,"height":1180}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      brands: [
+        { name: 'blue', light: '#2563EB', dark: '#5B8DEF' },
+        { name: 'teal', light: '#0F8B7E', dark: '#3CC3B2' },
+        { name: 'violet', light: '#6D4AE0', dark: '#9C84F2' },
+        { name: 'orange', light: '#D9570F', dark: '#F08A4B' },
+        { name: 'graphite', light: '#3A4556', dark: '#A8B3C4' },
+        { name: 'indigo', light: '#4F46E5', dark: '#8B85F5' },
+        { name: 'green', light: '#15803D', dark: '#4ADE80' },
+        { name: 'rose', light: '#E11D48', dark: '#FB7190' },
+        { name: 'cyan', light: '#0E7490', dark: '#38BDF8' }
+      ],
+      tones: [
+        { name: 'primary', main: '#2563EB', darkMode: '#5B8DEF', soft: 'rgb(37 99 235 / 0.12)', text: '#1A45A5' },
+        { name: 'secondary', main: '#5B6474', darkMode: '#9AA4B2', soft: 'rgb(91 100 116 / 0.12)', text: '#404651' },
+        { name: 'success', main: '#16884A', darkMode: '#3DBA74', soft: 'rgb(22 136 74 / 0.12)', text: '#0F5F34' },
+        { name: 'warning', main: '#C77700', darkMode: '#E5A23B', soft: 'rgb(199 119 0 / 0.12)', text: '#8B5300' },
+        { name: 'error', main: '#D33A3A', darkMode: '#EF6B6B', soft: 'rgb(211 58 58 / 0.12)', text: '#942929' },
+        { name: 'info', main: '#0B79B8', darkMode: '#4BA8DE', soft: 'rgb(11 121 184 / 0.12)', text: '#085581' }
+      ],
+      neutrals: [
+        { name: 'text.primary', hex: '#141A24' },
+        { name: 'text.secondary', hex: '#5B6474' },
+        { name: 'divider', hex: '#E2E6EC' },
+        { name: 'bg.default', hex: '#F4F6F9' },
+        { name: 'bg.paper', hex: '#FFFFFF' },
+        { name: 'dark bg.paper', hex: '#151B23' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

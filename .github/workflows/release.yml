@@ -1,0 +1,133 @@
+name: release
+
+# Publica @c3theme/ui, chat, engine, flow e electron no npm. Nunca roda em push de branch nem em PR:
+# - tag `ui-v0.1.0`, `chat-v0.6.0`, `engine-v0.1.0`, `flow-v0.1.0` ou `electron-v0.1.0` publica aquele pacote
+#   naquela versão (a tag tem que bater com o package.json);
+# - à mão pela aba Actions, com `dry_run` ligado por padrão (empacota e mostra o que iria, sem publicar).
+# Ordem na primeira vez: ui antes de chat, engine e flow (os três têm @c3theme/ui como peer). O npm não barra a
+# publicação sem o peer; a ordem é para quem instala não achar o flow antes do ui. O electron não depende de nenhum.
+# Segredo: NPM_TOKEN (token granular do npm com escrita no escopo @c3theme). O --provenance só entra com o
+# repositório público: o npm recusa atestado vindo de repositório privado.
+on:
+  push:
+    tags: ['ui-v*', 'chat-v*', 'engine-v*', 'flow-v*', 'electron-v*']
+  workflow_dispatch:
+    inputs:
+      package:
+        description: Pacote
+        type: choice
+        options: [ui, chat, engine, flow, electron]
+        required: true
+      dry_run:
+        description: Só simular (não publica)
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - name: Qual pacote e versão
+        id: target
+        env:
+          EVENT: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          INPUT_PACKAGE: ${{ inputs.package }}
+          INPUT_DRY_RUN: ${{ inputs.dry_run }}
+          REPO_PRIVATE: ${{ github.event.repository.private }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT" = "push" ]; then
+            pkg="${REF_NAME%%-v*}"
+            tag_version="${REF_NAME#*-v}"
+            dry_run=false
+          else
+            pkg="$INPUT_PACKAGE"
+            tag_version=""
+            dry_run="$INPUT_DRY_RUN"
+          fi
+          case "$pkg" in ui|chat|engine|flow|electron) ;; *) echo "::error::pacote desconhecido: $pkg"; exit 1 ;; esac
+          version="$(node -p "require('./packages/$pkg/package.json').version")"
+          if [ -n "$tag_version" ] && [ "$tag_version" != "$version" ]; then
+            echo "::error::a tag diz $tag_version, mas packages/$pkg/package.json está em $version"
+            exit 1
+          fi
+          # pré-lançamento (0.2.0-beta.1) vai para a etiqueta next, para não virar o `latest` de quem instala
+          case "$version" in *-*) dist_tag=next ;; *) dist_tag=latest ;; esac
+          provenance=""
+          [ "$REPO_PRIVATE" = "false" ] && provenance="--provenance"
+          {
+            echo "pkg=$pkg"
+            echo "name=@c3theme/$pkg"
+            echo "version=$version"
+            echo "dist_tag=$dist_tag"
+            echo "dry_run=$dry_run"
+            echo "provenance=$provenance"
+          } >> "$GITHUB_OUTPUT"
+          echo "@c3theme/$pkg@$version (tag npm: $dist_tag, simulação: $dry_run, ${provenance:-sem provenance})"
+
+      - name: Versão ainda não publicada
+        env:
+          NAME: ${{ steps.target.outputs.name }}
+          VERSION: ${{ steps.target.outputs.version }}
+        run: |
+          if npm view "$NAME@$VERSION" version >/dev/null 2>&1; then
+            echo "::error::$NAME@$VERSION já está no npm: suba a versão no package.json"
+            exit 1
+          fi
+
+      - run: pnpm install --frozen-lockfile
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+      - run: pnpm lines:check
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm --filter "@c3theme/${{ steps.target.outputs.pkg }}" build
+      - run: node scripts/check-pack.mjs "${{ steps.target.outputs.pkg }}"
+
+      - name: Empacotar
+        id: pack
+        working-directory: packages/${{ steps.target.outputs.pkg }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/pack"
+          pnpm pack --pack-destination "$RUNNER_TEMP/pack"
+          echo "tarball=$(ls "$RUNNER_TEMP"/pack/*.tgz)" >> "$GITHUB_OUTPUT"
+
+      # o tarball já sai com o manifesto que o pnpm reescreve (publishConfig.exports, workspace: trocado pela versão)
+      - name: Publicar
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          TARBALL: ${{ steps.pack.outputs.tarball }}
+          DIST_TAG: ${{ steps.target.outputs.dist_tag }}
+          DRY_RUN: ${{ steps.target.outputs.dry_run }}
+          PROVENANCE: ${{ steps.target.outputs.provenance }}
+        run: |
+          set -euo pipefail
+          if [ "$DRY_RUN" = "true" ]; then
+            npm publish "$TARBALL" --access public --tag "$DIST_TAG" --dry-run
+            exit 0
+          fi
+          if [ -z "$NODE_AUTH_TOKEN" ]; then
+            echo "::error::falta o segredo NPM_TOKEN no repositório"
+            exit 1
+          fi
+          # shellcheck disable=SC2086 # PROVENANCE é vazio ou uma única flag
+          npm publish "$TARBALL" --access public --tag "$DIST_TAG" $PROVENANCE

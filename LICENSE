@@ -1,0 +1,14 @@
+Copyright (c) 2026 cecon (https://github.com/cecon). Todos os direitos reservados.
+
+Este software e a documentação que o acompanha são propriedade do titular acima.
+Nenhuma licença é concedida a terceiros: é proibido copiar, modificar, distribuir,
+sublicenciar ou usar este código, no todo ou em parte, sem autorização prévia e por
+escrito do titular.
+
+Exceção: os pacotes packages/ui (@c3theme/ui), packages/chat (@c3theme/chat),
+packages/engine (@c3theme/engine), packages/flow (@c3theme/flow) e packages/electron
+(@c3theme/electron), assim como a especificação do contrato em spec/, são distribuídos sob
+a licença MIT, cujo texto está no arquivo LICENSE de cada uma dessas pastas.
+
+As bibliotecas de terceiros usadas pelo projeto continuam sob as licenças delas
+(MIT, Apache-2.0, BSD; fontes sob OFL).

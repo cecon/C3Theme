@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Cadastro de pergunta</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2563EB;text-decoration:none}a:hover{color:#1A45A5}
+.cap{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#5B6474}
+.panel{background:#fff;border:1px solid #E2E6EC;border-radius:24px;overflow:hidden}
+.ph{padding:14px 20px;min-height:60px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #E2E6EC}
+.pt{font-size:16px;font-weight:600}
+.ps{font-size:13px;color:#5B6474}
+.pb{padding:24px 20px 20px;display:grid;gap:24px 20px}
+.fld{position:relative}
+.fld label{position:absolute;top:-8px;left:10px;padding:0 4px;background:#fff;font-size:12px;color:#5B6474;line-height:16px}
+.fld .v{font-size:15px;height:56px;box-sizing:border-box;padding:0 14px;border:1px solid #E2E6EC;border-radius:8px;display:flex;align-items:center;justify-content:space-between}
+.help{font-size:12px;color:#5B6474;padding:4px 14px 0}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{font-size:12px;font-weight:600;color:#5B6474;background:#F4F6F9;text-align:left;padding:10px 16px;border-bottom:1px solid #E2E6EC;white-space:nowrap}
+td{padding:10px 16px;border-bottom:1px solid #E2E6EC;white-space:nowrap}
+th:first-child,td:first-child{padding-left:20px}
+.chip{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:600}
+.add{font-family:inherit;font-size:13px;font-weight:600;color:#2563EB;background:none;border:1px dashed rgb(37 99 235 / .5);border-radius:8px;padding:4px 12px}
+.sw{display:inline-block;width:34px;height:14px;border-radius:7px;position:relative;vertical-align:middle}
+.sw i{position:absolute;top:-3px;width:20px;height:20px;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.seg{display:flex;border:1px solid #E2E6EC;border-radius:8px;overflow:hidden;height:56px}
+.seg span{flex:1;display:grid;place-items:center;font-size:14px;font-weight:600;color:#5B6474}
+.seg span.on{background:rgb(37 99 235 / .1);color:#1A45A5}
+</style>
+</helmet>
+<div style="width: 1200px; height: 1120px; box-sizing: border-box; padding: 32px 40px; background: #F4F6F9; font-family: 'Inter', system-ui, sans-serif; color: #141A24; display: flex; flex-direction: column; gap: 20px">
+  <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 16px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <nav aria-label="Caminho" style="font-size: 14px; color: #5B6474">⌂ › Cadastros › <a href="#" style="color: #5B6474">Perguntas</a> › <span style="color: #141A24">Guarnições</span></nav>
+      <h1 style="margin: 0; font-size: 22px; font-weight: 600">Guarnições</h1>
+    </div>
+    <span class="cap">pergunta · lote 3</span>
+  </div>
+
+  <section class="panel">
+    <div class="ph"><span class="pt">Pergunta</span></div>
+    <div class="pb" style="grid-template-columns: 1fr 1.4fr">
+      <div class="fld"><label>Nome interno *</label><div class="v">Guarnições</div></div>
+      <div class="fld"><label>Texto mostrado na venda *</label><div class="v">Escolha 3 guarnições</div></div>
+    </div>
+    <div class="pb" style="grid-template-columns: 1.4fr 1fr 1fr; padding-top: 4px">
+      <div><div class="seg" role="radiogroup" aria-label="Tipo de escolha"><span>Uma opção</span><span class="on">Várias opções</span></div><div class="help">Uma opção vira rádio; várias vira caixa de marcar.</div></div>
+      <div class="fld"><label>Mínimo de escolhas</label><div class="v">3</div></div>
+      <div class="fld"><label>Máximo de escolhas</label><div class="v">3</div><div class="help">Mín = máx: exatamente 3.</div></div>
+    </div>
+    <div class="pb" style="grid-template-columns: 1fr 1fr; padding-top: 0">
+      <div style="display: flex; align-items: center; gap: 12px; font-size: 15px"><span class="sw" style="background: rgba(0,0,0,.38)"><i style="left: -3px; background: #fff"></i></span>Pode repetir a mesma opção</div>
+      <div style="display: flex; align-items: center; gap: 12px; font-size: 15px"><span class="sw" style="background: rgb(37 99 235 / .5)"><i style="left: 17px; background: #2563EB"></i></span>Ativa</div>
+    </div>
+  </section>
+
+  <section class="panel" style="flex: 1">
+    <div class="ph">
+      <div><div class="pt">Opções</div><div class="ps">related · pergunta_opcao · save: with_parent</div></div>
+      <button type="button" class="add">+ Adicionar opção</button>
+    </div>
+    <table>
+      <thead><tr><th style="width: 40px">Ordem</th><th>Opção</th><th>Produto vinculado</th><th style="text-align: right">Acréscimo</th><th>Situação</th><th></th></tr></thead>
+      <tbody>
+        <sc-for list="{{opts}}" as="o" hint-placeholder-count="7">
+          <tr>
+            <td style="color: #5B6474">⋮⋮ {{o.ord}}</td>
+            <td style="font-weight: 500">{{o.nome}}</td>
+            <td style="color: #5B6474">{{o.prod}}</td>
+            <td style="text-align: right">{{o.extra}}</td>
+            <td><span class="chip" style="background: {{o.sb}}; color: {{o.sf}}">{{o.sit}}</span></td>
+            <td style="width: 1px; padding-right: 20px; color: #5B6474; white-space: nowrap">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Editar opção"><path d="M4 20h4L19 9l-4-4L4 16v4z"/></svg>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#D33A3A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Excluir opção" style="margin-left: 10px"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>
+            </td>
+          </tr>
+        </sc-for>
+      </tbody>
+    </table>
+    <div style="padding: 14px 20px; font-size: 13px; color: #5B6474">O produto vinculado dá baixa no estoque e leva a tributação da guarnição. Sem vínculo, a opção é só texto no pedido.</div>
+  </section>
+
+  <div style="display: flex; justify-content: space-between; align-items: center">
+    <span style="font-size: 14px; font-weight: 600; color: #D33A3A; border: 1px solid rgb(211 58 58 / .5); border-radius: 8px; padding: 6px 15px">Excluir pergunta</span>
+    <div style="display: flex; gap: 12px">
+      <span style="font-size: 14px; font-weight: 600; color: #5B6474; padding: 7px 16px">Cancelar</span>
+      <span style="font-size: 14px; font-weight: 600; color: #fff; background: #2563EB; padding: 7px 16px; border-radius: 8px">Salvar</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1200,"height":1120}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const on = { sit: 'Ativa', sb: 'rgb(22 136 74 / .12)', sf: '#0F5F34' };
+    const off = { sit: 'Inativa', sb: 'rgba(20,26,36,.06)', sf: '#5B6474' };
+    const rows = [
+      ['Arroz branco', '[PRODUTO] Arroz porção', '—', on],
+      ['Feijão carioca', '[PRODUTO] Feijão porção', '—', on],
+      ['Farofa', '—', '—', on],
+      ['Salada verde', '[PRODUTO] Salada porção', '—', on],
+      ['Batata frita', '[PRODUTO] Batata porção', '[R$]', on],
+      ['Purê', '[PRODUTO] Purê porção', '—', on],
+      ['Legumes no vapor', '[PRODUTO] Legumes porção', '—', off]
+    ];
+    return { opts: rows.map(([nome, prod, extra, s], i) => ({ ord: i + 1, nome, prod, extra, ...s })) };
+  }
+}
+</script>
+</body>
+</html>

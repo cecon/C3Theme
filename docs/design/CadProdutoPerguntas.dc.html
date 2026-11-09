@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Produto · aba Perguntas</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2563EB;text-decoration:none}a:hover{color:#1A45A5}
+.cap{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#5B6474}
+.panel{background:#fff;border:1px solid #E2E6EC;border-radius:24px;overflow:hidden}
+.ph{padding:14px 20px;min-height:60px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #E2E6EC}
+.pt{font-size:16px;font-weight:600}
+.ps{font-size:13px;color:#5B6474}
+.tab{font-size:14px;font-weight:600;color:#5B6474;border-bottom:2px solid transparent;padding:12px 16px;display:inline-flex;align-items:center;gap:8px}
+.tab.on{color:#2563EB;border-bottom-color:#2563EB}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{font-size:12px;font-weight:600;color:#5B6474;background:#F4F6F9;text-align:left;padding:10px 16px;border-bottom:1px solid #E2E6EC;white-space:nowrap}
+td{padding:12px 16px;border-bottom:1px solid #E2E6EC;white-space:nowrap}
+th:first-child,td:first-child{padding-left:20px}
+.chip{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:600}
+.add{font-family:inherit;font-size:13px;font-weight:600;color:#2563EB;background:none;border:1px dashed rgb(37 99 235 / .5);border-radius:8px;padding:4px 12px}
+.code{margin:0;padding:14px 18px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;line-height:1.6;white-space:pre;background:#FAFBFC}
+.k{color:#085581}.s{color:#0F5F34}
+.flow{display:flex;align-items:center;gap:12px}
+.node{flex:1;border:2px solid #E2E6EC;border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.num{width:26px;height:26px;border-radius:50%;background:#2563EB;color:#fff;font-size:13px;font-weight:700;display:inline-grid;place-items:center}
+</style>
+</helmet>
+<div style="width: 1200px; height: 1120px; box-sizing: border-box; padding: 32px 40px; background: #F4F6F9; font-family: 'Inter', system-ui, sans-serif; color: #141A24; display: flex; flex-direction: column; gap: 16px">
+  <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 16px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <nav aria-label="Caminho" style="font-size: 14px; color: #5B6474">⌂ › Cadastros › <a href="#" style="color: #5B6474">Produtos</a> › <span style="color: #141A24">Prato executivo</span></nav>
+      <h1 style="margin: 0; font-size: 22px; font-weight: 600">Prato executivo</h1>
+    </div>
+    <span class="cap">produto · seção com tab: "Perguntas"</span>
+  </div>
+
+  <div role="tablist" aria-label="Abas do produto" style="display: flex; border-bottom: 1px solid #E2E6EC">
+    <span class="tab" role="tab" aria-selected="false">Geral</span>
+    <span class="tab on" role="tab" aria-selected="true">Perguntas <span style="min-width: 18px; height: 18px; border-radius: 9px; background: rgb(37 99 235 / .14); color: #1A45A5; font-size: 11px; display: inline-grid; place-items: center; padding: 0 5px">2</span></span>
+    <span class="tab" role="tab" aria-selected="false">Fiscal</span>
+    <span class="tab" role="tab" aria-selected="false">Preços</span>
+  </div>
+
+  <section class="panel">
+    <div class="ph">
+      <div><div class="pt">Perguntas na venda</div><div class="ps">related · produto_pergunta · save: with_parent · tab: Perguntas</div></div>
+      <button type="button" class="add">+ Adicionar pergunta</button>
+    </div>
+    <table>
+      <thead><tr><th>Ordem</th><th>Pergunta</th><th style="text-align: center">Mín.</th><th style="text-align: center">Máx.</th><th>Regra</th><th>Libera depois de</th><th></th></tr></thead>
+      <tbody>
+        <tr>
+          <td style="color: #5B6474">⋮⋮ 1</td>
+          <td><a href="CadPergunta.dc.html" style="font-weight: 600">Proteína</a><div style="font-size: 12px; color: #5B6474">4 opções · 2 com acréscimo</div></td>
+          <td style="text-align: center">1</td><td style="text-align: center">1</td>
+          <td><span class="chip" style="background: rgb(211 58 58 / .12); color: #942929">Obrigatória · escolha 1</span></td>
+          <td style="color: #5B6474">—</td>
+          <td style="width: 1px; padding-right: 20px; color: #5B6474">✎</td>
+        </tr>
+        <tr>
+          <td style="color: #5B6474">⋮⋮ 2</td>
+          <td><a href="CadPergunta.dc.html" style="font-weight: 600">Guarnições</a><div style="font-size: 12px; color: #5B6474">7 opções · 1 inativa</div></td>
+          <td style="text-align: center">3</td><td style="text-align: center">3</td>
+          <td><span class="chip" style="background: rgb(211 58 58 / .12); color: #942929">Obrigatória · exatamente 3</span></td>
+          <td><span class="chip" style="background: rgb(37 99 235 / .12); color: #1A45A5">Proteína</span></td>
+          <td style="width: 1px; padding-right: 20px; color: #5B6474">✎</td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="padding: 12px 20px; font-size: 13px; color: #5B6474">Mín. e máx. vêm da pergunta e podem ser trocados só neste produto. Mín. 0 deixa a pergunta opcional.</div>
+  </section>
+
+  <section class="panel">
+    <div class="ph"><span class="pt">Como fica na venda</span><span class="ps">pré-visualização gerada do cadastro</span></div>
+    <div style="padding: 20px" class="flow">
+      <div class="node" style="border-color: #2563EB"><span style="display: flex; align-items: center; gap: 10px; font-weight: 600"><span class="num">1</span>Proteína</span><span style="font-size: 13px; color: #5B6474">Escolha 1 · obrigatória</span></div>
+      <svg viewBox="0 0 40 24" width="40" height="24" fill="none" stroke="#5B6474" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h30M28 6l6 6-6 6"/></svg>
+      <div class="node"><span style="display: flex; align-items: center; gap: 10px; font-weight: 600"><span class="num">2</span>Guarnições</span><span style="font-size: 13px; color: #5B6474">Escolha exatamente 3 · libera após a proteína</span></div>
+      <svg viewBox="0 0 40 24" width="40" height="24" fill="none" stroke="#5B6474" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h30M28 6l6 6-6 6"/></svg>
+      <div class="node" style="background: rgb(22 136 74 / .06); border-color: rgb(22 136 74 / .4)"><span style="font-weight: 600; color: #0F5F34">Adicionar ao pedido</span><span style="font-size: 13px; color: #5B6474">só com as duas respondidas</span></div>
+    </div>
+  </section>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; flex: 1; min-height: 0">
+    <section class="panel" style="display: flex; flex-direction: column">
+      <div class="ph"><span class="pt">Filho · produto_pergunta.json</span></div>
+<pre class="code" style="flex: 1">{ <span class="k">"name"</span>: <span class="s">"produto_pergunta"</span>,
+  <span class="k">"fields"</span>: [
+    { <span class="k">"name"</span>: <span class="s">"produto_id"</span>, <span class="k">"type"</span>: <span class="s">"reference"</span>,
+      <span class="k">"entity"</span>: <span class="s">"produto"</span> },
+    { <span class="k">"name"</span>: <span class="s">"pergunta_id"</span>, <span class="k">"type"</span>: <span class="s">"reference"</span>,
+      <span class="k">"entity"</span>: <span class="s">"pergunta"</span> },
+    { <span class="k">"name"</span>: <span class="s">"ordem"</span>, <span class="k">"type"</span>: <span class="s">"integer"</span> },
+    { <span class="k">"name"</span>: <span class="s">"minimo"</span>, <span class="k">"type"</span>: <span class="s">"integer"</span> },
+    { <span class="k">"name"</span>: <span class="s">"maximo"</span>, <span class="k">"type"</span>: <span class="s">"integer"</span> },
+    { <span class="k">"name"</span>: <span class="s">"depende_de_id"</span>, <span class="k">"type"</span>: <span class="s">"reference"</span>,
+      <span class="k">"entity"</span>: <span class="s">"pergunta"</span> }
+  ] }</pre>
+    </section>
+    <section class="panel" style="display: flex; flex-direction: column">
+      <div class="ph"><span class="pt">Validações ao salvar</span></div>
+      <div style="padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; font-size: 14px">
+        <div style="display: flex; gap: 10px; align-items: flex-start; border: 1px solid #D33A3A; border-radius: 8px; padding: 10px 14px; color: #541717"><span style="color: #D33A3A; font-weight: 700">!</span>Mín. não pode ser maior que máx.</div>
+        <div style="display: flex; gap: 10px; align-items: flex-start; border: 1px solid #D33A3A; border-radius: 8px; padding: 10px 14px; color: #541717"><span style="color: #D33A3A; font-weight: 700">!</span>Máx. não pode passar do número de opções ativas da pergunta.</div>
+        <div style="display: flex; gap: 10px; align-items: flex-start; border: 1px solid #D33A3A; border-radius: 8px; padding: 10px 14px; color: #541717"><span style="color: #D33A3A; font-weight: 700">!</span>"Libera depois de" precisa ser uma pergunta deste produto com ordem menor.</div>
+        <div style="font-size: 13px; color: #5B6474">Erros voltam como 422 nos campos da linha; nada é gravado.</div>
+      </div>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1200,"height":1120}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

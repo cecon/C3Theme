@@ -1,0 +1,15 @@
+{
+  "specVersion": "0",
+  "name": "product_category",
+  "label": { "singular": "Categoria", "plural": "Categorias" },
+  "icon": "Category",
+  "titleField": "name",
+  "fields": [
+    { "name": "name", "type": "string", "label": "Nome", "required": true, "unique": true, "maxLength": 80 },
+    { "name": "active", "type": "boolean", "label": "Ativa", "default": true }
+  ],
+  "views": {
+    "list": { "columns": ["name", "active"], "search": ["name"], "defaultSort": [{ "field": "name" }] },
+    "form": { "sections": [{ "rows": [["name", "active"]] }] }
+  }
+}

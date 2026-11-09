@@ -1,0 +1,198 @@
+{
+  "$schema": "../entity.schema.json",
+  "specVersion": "0",
+  "name": "sales_order",
+  "label": {
+    "singular": "Pedido",
+    "plural": "Pedidos"
+  },
+  "icon": "ReceiptText",
+  "titleField": "description",
+  "scope": "branch",
+  "undoable": false,
+  "fields": [
+    {
+      "name": "number",
+      "type": "integer",
+      "label": "Número",
+      "required": true,
+      "unique": true,
+      "min": 1
+    },
+    {
+      "name": "description",
+      "type": "string",
+      "label": "Descrição",
+      "required": true,
+      "maxLength": 200
+    },
+    {
+      "name": "customer_id",
+      "type": "reference",
+      "entity": "customer",
+      "label": "Cliente",
+      "filter": { "field": "status", "op": "ne", "value": "churned" }
+    },
+    {
+      "name": "seller_id",
+      "type": "reference",
+      "entity": "seller",
+      "label": "Vendedor"
+    },
+    {
+      "name": "total",
+      "type": "decimal",
+      "label": "Total",
+      "scale": 2,
+      "min": 0,
+      "readOnlyWhen": { "field": "status", "op": "eq", "value": "canceled" }
+    },
+    {
+      "name": "status",
+      "type": "enum",
+      "label": "Situação",
+      "readOnly": true,
+      "default": "open",
+      "options": [
+        {
+          "value": "open",
+          "label": "Aberto",
+          "color": "info"
+        },
+        {
+          "value": "canceled",
+          "label": "Cancelado",
+          "color": "danger"
+        }
+      ]
+    },
+    {
+      "name": "cancel_reason",
+      "type": "text",
+      "label": "Motivo do cancelamento",
+      "readOnly": true
+    },
+    {
+      "name": "invoice",
+      "type": "integer",
+      "label": "Fatura",
+      "readOnly": true
+    },
+    {
+      "name": "attachment",
+      "type": "file",
+      "label": "Anexo",
+      "accept": [".pdf", ".xml", ".png", ".jpg"],
+      "maxSize": 262144,
+      "help": "Pedido assinado, XML ou foto (até 256 KB)."
+    }
+  ],
+  "views": {
+    "list": {
+      "columns": [
+        "number",
+        "description",
+        "customer_id",
+        "seller_id",
+        "total",
+        {
+          "field": "status",
+          "width": 120
+        }
+      ],
+      "search": ["description"],
+      "totals": [{ "field": "total" }],
+      "refreshSeconds": 60,
+      "defaultSort": [
+        {
+          "field": "number",
+          "direction": "desc"
+        }
+      ],
+      "presets": [
+        {
+          "id": "em-aberto",
+          "label": "Em aberto",
+          "where": {
+            "field": "status",
+            "op": "eq",
+            "value": "open"
+          }
+        }
+      ]
+    },
+    "report": {
+      "title": "Pedidos por vendedor e situação",
+      "groupBy": ["seller_id", "status"],
+      "columns": ["number", "description", "customer_id", "total"],
+      "subtotals": ["total"],
+      "sort": "-total"
+    },
+    "form": {
+      "sections": [
+        {
+          "rows": [["number", "description"], ["customer_id", "seller_id"], ["total", "attachment"]]
+        },
+        {
+          "title": "Itens",
+          "related": {
+            "entity": "sales_order_item",
+            "field": "order_id",
+            "save": "with_parent",
+            "columns": ["product", "quantity", "unit_price"]
+          }
+        }
+      ]
+    }
+  },
+  "actions": [
+    {
+      "name": "cancel",
+      "label": "Cancelar pedido",
+      "icon": "CloseCircle",
+      "tone": "danger",
+      "description": "O pedido fica cancelado e sai dos totais. Não dá para desfazer.",
+      "visibleWhen": {
+        "field": "status",
+        "op": "eq",
+        "value": "open"
+      },
+      "bulk": true,
+      "confirmLabel": "Cancelar pedido",
+      "input": {
+        "fields": [
+          {
+            "name": "reason",
+            "type": "text",
+            "label": "Motivo",
+            "required": true,
+            "minLength": 15,
+            "maxLength": 255,
+            "help": "Pelo menos 15 caracteres, como a SEFAZ exige no cancelamento de nota."
+          }
+        ]
+      },
+      "successMessage": "Pedido cancelado."
+    },
+    {
+      "name": "invoice",
+      "label": "Faturar juntos",
+      "icon": "ReceiptText",
+      "tone": "info",
+      "description": "Uma fatura só com a soma dos pedidos marcados. Se um deles não puder, nenhum é faturado.",
+      "visibleWhen": {
+        "and": [
+          { "field": "status", "op": "eq", "value": "open" },
+          { "field": "invoice", "op": "null", "value": true }
+        ]
+      },
+      "bulk": "together",
+      "preview": true,
+      "summary": [{ "field": "total" }],
+      "input": {
+        "fields": [{ "name": "due_date", "type": "date", "label": "Vencimento", "required": true }]
+      },
+      "successMessage": "Pedidos faturados."
+    }
+  ]
+}

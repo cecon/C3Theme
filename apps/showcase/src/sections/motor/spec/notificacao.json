@@ -1,0 +1,26 @@
+{
+  "$schema": "../../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "notificacao",
+  "label": { "singular": "Notificação", "plural": "Notificações", "gender": "f" },
+  "titleField": "titulo",
+  "fields": [
+    { "name": "titulo", "type": "string", "label": "Título", "required": true },
+    { "name": "detalhe", "type": "string", "label": "Detalhe" },
+    {
+      "name": "tipo",
+      "type": "enum",
+      "label": "Tipo",
+      "required": true,
+      "options": [
+        { "value": "pagamento", "label": "Pagamento", "color": "success" },
+        { "value": "vencida", "label": "Vencida", "color": "danger" },
+        { "value": "lembrete", "label": "Lembrete", "color": "info" },
+        { "value": "criada", "label": "Criada", "color": "primary" },
+        { "value": "visualizada", "label": "Visualizada", "color": "warning" }
+      ]
+    },
+    { "name": "quando", "type": "datetime", "label": "Quando", "required": true }
+  ],
+  "views": { "list": { "columns": ["titulo", "tipo", "quando"], "defaultSort": [{ "field": "quando", "direction": "desc" }] } }
+}

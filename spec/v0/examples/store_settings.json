@@ -1,0 +1,29 @@
+{
+  "$schema": "../entity.schema.json",
+  "specVersion": "0",
+  "name": "store_settings",
+  "label": {
+    "singular": "Configuração da loja",
+    "plural": "Configuração da loja"
+  },
+  "description": "Exemplo de entidade singleton: um registro por filial, aberto direto no formulário, sem lista nem excluir.",
+  "icon": "Setting2",
+  "scope": "branch",
+  "singleton": true,
+  "fields": [
+    { "name": "receipt_footer", "type": "text", "label": "Rodapé do cupom", "maxLength": 300 },
+    { "name": "fine_percent", "type": "decimal", "scale": 2, "label": "Multa por atraso (%)", "min": 0, "max": 100 },
+    { "name": "interest_month_percent", "type": "decimal", "scale": 2, "label": "Juros ao mês (%)", "min": 0, "max": 100 },
+    { "name": "reply_email", "type": "email", "label": "E-mail de resposta" }
+  ],
+  "views": {
+    "form": {
+      "autosave": true,
+      "sections": [
+        { "title": "Cupom", "rows": [["receipt_footer"]] },
+        { "title": "Juros e multa", "rows": [["fine_percent", "interest_month_percent"]] },
+        { "title": "E-mail", "rows": [["reply_email"]] }
+      ]
+    }
+  }
+}

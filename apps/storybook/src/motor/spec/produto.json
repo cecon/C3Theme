@@ -1,0 +1,24 @@
+{
+  "$schema": "../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "produto",
+  "label": { "singular": "Produto", "plural": "Produtos", "gender": "m" },
+  "titleField": "nome",
+  "fields": [
+    { "name": "nome", "type": "string", "label": "Nome", "required": true, "maxLength": 120 },
+    { "name": "descricao", "type": "text", "label": "Descrição", "maxLength": 500 },
+    { "name": "peso", "type": "decimal", "label": "Peso (kg)", "scale": 3, "min": 0, "help": "Peso bruto da embalagem" },
+    {
+      "name": "peso_bruto",
+      "type": "decimal",
+      "label": "Peso bruto (kg)",
+      "scale": 3,
+      "min": 0,
+      "hint": "Peso bruto: produto mais embalagem. Usado no cálculo do frete pela transportadora."
+    },
+    { "name": "preco", "type": "decimal", "label": "Preço de venda", "scale": 2, "min": 0, "currency": "BRL", "required": true },
+    { "name": "custo", "type": "decimal", "label": "Custo médio", "scale": 2, "currency": "BRL", "readOnly": true },
+    { "name": "estoque", "type": "integer", "label": "Estoque", "min": 0 },
+    { "name": "ativo", "type": "boolean", "label": "Ativo", "default": true }
+  ]
+}

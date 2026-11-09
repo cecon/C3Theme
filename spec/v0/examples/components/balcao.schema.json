@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Config da página registrada 'balcao' (exemplo)",
+  "description": "O que varia por loja na tela de balcão: teclas, colunas do cupom e o texto do caixa livre. O comportamento fica no componente.",
+  "type": "object",
+  "required": ["columns"],
+  "additionalProperties": false,
+  "properties": {
+    "keys": {
+      "type": "object",
+      "propertyNames": { "pattern": "^(F([1-9]|1[0-2])|Ctrl\\+[A-Z0-9]|Delete)$" },
+      "additionalProperties": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" }
+    },
+    "columns": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "enum": ["descricao", "quantidade", "unitario", "total"] }
+    },
+    "greeting": { "type": "string", "maxLength": 40 }
+  }
+}

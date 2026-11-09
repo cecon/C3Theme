@@ -1,0 +1,136 @@
+{
+  "$schema": "../entity.schema.json",
+  "specVersion": "0",
+  "name": "product",
+  "label": {
+    "singular": "Produto",
+    "plural": "Produtos"
+  },
+  "icon": "Box",
+  "titleField": "name",
+  "description": "Produto vendido no totem e no balcão. As perguntas da venda (proteína, guarnições) ficam na aba Perguntas.",
+  "fields": [
+    {
+      "name": "name",
+      "type": "string",
+      "label": "Nome",
+      "required": true,
+      "maxLength": 120
+    },
+    {
+      "name": "product_group",
+      "type": "enum",
+      "label": "Grupo",
+      "required": true,
+      "options": [
+        { "value": "dishes", "label": "Pratos" },
+        { "value": "sides", "label": "Porções" },
+        { "value": "drinks", "label": "Bebidas" },
+        { "value": "desserts", "label": "Sobremesas" }
+      ]
+    },
+    {
+      "name": "price",
+      "type": "decimal",
+      "label": "Preço",
+      "scale": 2,
+      "min": 0,
+      "required": true,
+      "aiReview": true
+    },
+    {
+      "name": "active",
+      "type": "boolean",
+      "label": "Ativo",
+      "default": true
+    }
+  ],
+  "views": {
+    "list": {
+      "columns": ["name", "product_group", "price", "active"],
+      "filters": ["product_group", "active"],
+      "search": ["name"],
+      "defaultSort": [{ "field": "name" }]
+    },
+    "form": {
+      "sections": [
+        {
+          "tab": "Geral",
+          "rows": [
+            ["name", "product_group"],
+            ["price", "active"]
+          ]
+        },
+        {
+          "title": "Perguntas na venda",
+          "description": "Mín. e máx. vêm da pergunta e podem ser trocados só neste produto. Mín. 0 deixa a pergunta opcional.",
+          "tab": "Perguntas",
+          "related": {
+            "entity": "product_question",
+            "field": "product_id",
+            "save": "with_parent",
+            "columns": ["position", "question_id", "min_choices", "max_choices", "depends_on_id"],
+            "sort": "position",
+            "maxItems": 20
+          }
+        }
+      ]
+    }
+  },
+  "actions": [
+    {
+      "name": "reprice",
+      "label": "Reajustar preços",
+      "description": "Abre com os produtos ativos e o preço de hoje; troque os que mudaram e aplique tudo de uma vez.",
+      "icon": "Tag",
+      "target": "list",
+      "prefill": true,
+      "successMessage": "Preços aplicados.",
+      "input": {
+        "fields": [
+          {
+            "name": "prices",
+            "type": "grid",
+            "label": "Preços",
+            "required": true,
+            "maxItems": 200,
+            "fields": [
+              { "name": "product", "type": "reference", "entity": "product", "label": "Produto", "required": true, "readOnly": true },
+              { "name": "price", "type": "decimal", "label": "Preço novo", "scale": 2, "min": 0, "required": true }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "scale_file",
+      "label": "Arquivo da balança",
+      "description": "Gera o TXT de carga da balança com o código, o nome e o preço de cada produto.",
+      "icon": "Weight",
+      "target": "list",
+      "returns": "file",
+      "input": {
+        "fields": [{ "name": "only_active", "type": "boolean", "label": "Só os ativos", "default": true }]
+      }
+    },
+    {
+      "name": "discount",
+      "label": "Dar desconto",
+      "description": "Informe o percentual: o sistema mostra o preço novo antes de gravar. Dá para trocar o valor sugerido.",
+      "icon": "PercentageSquare",
+      "preview": true,
+      "input": {
+        "fields": [
+          { "name": "percent", "type": "decimal", "label": "Desconto (%)", "scale": 2, "min": 0, "max": 90, "required": true },
+          { "name": "price", "type": "decimal", "label": "Preço novo", "scale": 2, "min": 0, "required": true }
+        ]
+      }
+    },
+    {
+      "name": "duplicate",
+      "label": "Duplicar",
+      "description": "Cria uma cópia inativa e abre para editar.",
+      "icon": "Copy"
+    }
+  ]
+}

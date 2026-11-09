@@ -1,0 +1,203 @@
+{
+  "$schema": "../../../../../spec/v0/app.schema.json",
+  "specVersion": "0",
+  "name": "Storybook pelo motor",
+  "entities": ["produto", "fatura", "loja", "cliente", "vendedor", "fornecedor", "tarefa", "evento", "mesa"],
+  "layout": {
+    "orientation": "vertical",
+    "header": {
+      "search": true,
+      "notifications": true,
+      "fullscreen": true,
+      "settings": true
+    },
+    "menu": [
+      {
+        "title": "Início",
+        "items": [
+          {
+            "path": "/painel",
+            "icon": "Home2"
+          }
+        ]
+      },
+      {
+        "title": "Cadastros",
+        "items": [
+          {
+            "entity": "cliente",
+            "icon": "People"
+          },
+          {
+            "entity": "produto",
+            "icon": "Box"
+          },
+          {
+            "entity": "fornecedor",
+            "icon": "Truck"
+          },
+          {
+            "entity": "loja",
+            "icon": "Shop"
+          },
+          {
+            "entity": "vendedor",
+            "icon": "Profile2User"
+          }
+        ]
+      },
+      {
+        "title": "Financeiro",
+        "items": [
+          {
+            "title": "Faturas",
+            "icon": "ReceiptText",
+            "children": [
+              {
+                "entity": "fatura",
+                "title": "Todas"
+              },
+              {
+                "entity": "fatura",
+                "preset": "atrasadas",
+                "title": "Atrasadas",
+                "badge": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Operação",
+        "items": [
+          {
+            "entity": "tarefa",
+            "view": "board",
+            "title": "Quadro de tarefas",
+            "icon": "TaskSquare"
+          },
+          {
+            "entity": "evento",
+            "view": "calendar",
+            "title": "Agenda",
+            "icon": "Calendar"
+          },
+          {
+            "entity": "fatura",
+            "view": "report",
+            "title": "Relatório de faturas",
+            "icon": "DocumentText"
+          },
+          {
+            "entity": "mesa",
+            "view": "map",
+            "title": "Planta",
+            "icon": "Element3"
+          }
+        ]
+      }
+    ],
+    "footer": {
+      "text": "Storybook do C3, montado pelo motor"
+    }
+  },
+  "pages": [
+    {
+      "path": "/painel",
+      "title": "Painel de faturas",
+      "dashboard": {
+        "actions": [
+          {
+            "label": "Ver todas",
+            "path": "/fatura"
+          }
+        ],
+        "widgets": [
+          {
+            "type": "kpi",
+            "title": "Total faturado",
+            "entity": "fatura",
+            "where": {
+              "field": "status",
+              "op": "ne",
+              "value": "cancelada"
+            },
+            "measure": "sum:total",
+            "icon": "ReceiptText",
+            "tone": "primary",
+            "count": true,
+            "progress": {
+              "label": "recebido",
+              "part": {
+                "field": "status",
+                "op": "eq",
+                "value": "paga"
+              }
+            }
+          },
+          {
+            "type": "kpi",
+            "title": "Pagas",
+            "entity": "fatura",
+            "where": {
+              "field": "status",
+              "op": "eq",
+              "value": "paga"
+            },
+            "measure": "sum:total",
+            "icon": "TickCircle",
+            "tone": "success",
+            "count": true
+          },
+          {
+            "type": "kpi",
+            "title": "Atrasadas",
+            "entity": "fatura",
+            "where": {
+              "field": "status",
+              "op": "eq",
+              "value": "atrasada"
+            },
+            "measure": "sum:total",
+            "icon": "Warning2",
+            "tone": "danger",
+            "count": true
+          },
+          {
+            "type": "chart",
+            "title": "Faturado por mês",
+            "entity": "fatura",
+            "groupBy": "emissao",
+            "interval": "month",
+            "measure": "sum:total",
+            "chart": "area",
+            "width": 8
+          },
+          {
+            "type": "chart",
+            "title": "Situação das faturas",
+            "entity": "fatura",
+            "groupBy": "status",
+            "measure": "sum:total",
+            "chart": "donut",
+            "width": 4
+          },
+          {
+            "type": "ranking",
+            "title": "Maiores devedores",
+            "entity": "fatura",
+            "groupBy": "cliente",
+            "measure": "sum:total",
+            "where": {
+              "field": "status",
+              "op": "eq",
+              "value": "atrasada"
+            },
+            "caption": "{count} {label} atrasadas",
+            "width": 12
+          }
+        ]
+      }
+    }
+  ]
+}

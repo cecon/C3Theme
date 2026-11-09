@@ -1,0 +1,12 @@
+{
+  "name": "c3theme",
+  "owner": { "name": "cecon" },
+  "metadata": { "description": "Skills para agentes de código usarem o C3 (spec do motor, c3-engine, @c3theme/ui, @c3theme/engine e @c3theme/chat)." },
+  "plugins": [
+    {
+      "name": "c3",
+      "source": "./plugins/c3",
+      "description": "Ensina o agente a descrever telas na spec do motor C3, ligar o c3-engine no Axum, montar o front com C3Shell e @c3theme/ui e pôr telas do motor no chat do assistente."
+    }
+  ]
+}

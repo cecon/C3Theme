@@ -1,0 +1,19 @@
+[workspace]
+resolver = "2"
+members = ["crates/*"]
+# adaptador rusqlite: workspace próprio, porque sqlx e rusqlite linkam libsqlite3-sys diferentes
+exclude = ["crates/c3-engine-rusqlite"]
+
+[workspace.package]
+edition = "2021"
+version = "0.1.0"
+license = "UNLICENSED"
+publish = false
+
+[workspace.dependencies]
+axum = "0.8"
+regex = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sqlx = { version = "0.8", default-features = false, features = ["sqlite", "runtime-tokio", "regexp", "migrate", "macros"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "net"] }

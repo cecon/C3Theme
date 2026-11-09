@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>C3Theme · Superfícies</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2563EB}a:hover{color:#1A45A5}
+.cap{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#5B6474}
+.btn{font-family:inherit;font-size:14px;font-weight:600;line-height:1.75;border-radius:8px;padding:6px 16px;border:1px solid transparent;cursor:pointer;background:transparent}
+.btn.sm{font-size:13px;padding:4px 10px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{font-size:12px;font-weight:600;letter-spacing:.02em;color:#5B6474;background:#F4F6F9;text-align:left;padding:10px 16px;white-space:nowrap;border-bottom:1px solid #E2E6EC}
+td{padding:12px 16px;border-bottom:1px solid #E2E6EC}
+.chip{display:inline-flex;align-items:center;height:24px;padding:0 8px;border-radius:6px;font-size:13px;font-weight:500}
+.av{display:inline-grid;place-items:center;border-radius:50%;font-weight:600;width:32px;height:32px;font-size:13px;flex-shrink:0}
+</style>
+</helmet>
+<div style="width: 1200px; height: 1120px; box-sizing: border-box; padding: 48px; background: #F4F6F9; font-family: 'Inter', system-ui, sans-serif; color: #141A24; display: flex; flex-direction: column; gap: 32px">
+  <div style="display: flex; flex-direction: column; gap: 4px">
+    <span class="cap">07 · Superfícies</span>
+    <h1 style="margin: 0; font-size: 32px; font-weight: 600; line-height: 1.25">Panel, tabela, Card, lista e Dialog</h1>
+    <p style="margin: 0; font-size: 15px; color: #5B6474">Panel é a unidade visual das telas: Paper outlined, raio 24, cabeçalho de 60px com ação à direita.</p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 24px">
+    <section style="background: #FFFFFF; border: 1px solid #E2E6EC; border-radius: 24px; overflow: hidden">
+      <div style="padding: 14px 20px; min-height: 60px; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid #E2E6EC">
+        <div><div style="font-size: 16px; font-weight: 600">Clientes</div><div style="font-size: 14px; color: #5B6474">Panel flush — tabela de borda a borda</div></div>
+        <button type="button" class="btn sm" style="background: #2563EB; color: #FFFFFF">Novo cliente</button>
+      </div>
+      <table>
+        <thead><tr><th>Nome</th><th>Cidade</th><th>Função</th><th>Situação</th></tr></thead>
+        <tbody>
+          <sc-for list="{{people}}" as="p" hint-placeholder-count="5">
+            <tr>
+              <td><div style="display: flex; align-items: center; gap: 10px"><span class="av" style="background: {{p.soft}}; color: {{p.text}}">{{p.ini}}</span><div><div style="font-weight: 500">{{p.name}}</div><div style="font-size: 12px; color: #5B6474">{{p.email}}</div></div></div></td>
+              <td>{{p.city}}</td>
+              <td style="color: #5B6474">{{p.role}}</td>
+              <td><span class="chip" style="background: {{p.sBg}}; color: {{p.sFg}}">{{p.status}}</span></td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </section>
+
+    <div style="display: flex; flex-direction: column; gap: 24px; min-width: 0">
+      <section style="background: #FFFFFF; border: 1px solid #E2E6EC; border-radius: 24px; overflow: hidden">
+        <div style="padding: 14px 20px; min-height: 60px; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #E2E6EC">
+          <div><div style="font-size: 16px; font-weight: 600">Movimentações</div></div>
+          <a href="#" style="font-size: 14px; font-weight: 600">Ver todas</a>
+        </div>
+        <ul style="list-style: none; margin: 0; padding: 8px 0">
+          <sc-for list="{{moves}}" as="m" hint-placeholder-count="4">
+            <li style="display: flex; align-items: center; gap: 12px; padding: 10px 20px">
+              <span style="width: 36px; height: 36px; border-radius: 8px; background: {{m.soft}}; color: {{m.text}}; display: grid; place-items: center; flex-shrink: 0"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{m.icon}}"/></svg></span>
+              <div style="flex: 1; min-width: 0"><div style="font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{m.title}}</div><div style="font-size: 12px; color: #5B6474">{{m.date}}</div></div>
+              <span style="font-size: 14px; font-weight: 600; color: {{m.text}}">{{m.amount}}</span>
+            </li>
+          </sc-for>
+        </ul>
+      </section>
+
+      <section style="background: #FFFFFF; border: 1px solid #E2E6EC; border-radius: 24px; overflow: hidden">
+        <div style="padding: 14px 20px; min-height: 60px; box-sizing: border-box; display: flex; align-items: center; border-bottom: 1px solid #E2E6EC">
+          <div style="font-size: 16px; font-weight: 600">Accordion</div>
+        </div>
+        <div style="padding: 0">
+          <div style="padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 500">Como mudo a cor de marca?<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#5B6474" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform: rotate(180deg)"><path d="M6 9l6 6 6-6"/></svg></div>
+          <div style="padding: 0 20px 14px; font-size: 14px; color: #5B6474">No painel de aparência ou com brand no defaultConfig do provider.</div>
+          <div style="padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 500; border-top: 1px solid #E2E6EC">O modo escuro recria o tema?<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#5B6474" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px">
+    <article style="background: #FFFFFF; border: 1px solid #E2E6EC; border-radius: 12px; overflow: hidden">
+      <div style="height: 140px; background: #C7D7F7; position: relative; overflow: hidden" aria-hidden="true">
+        <span style="position: absolute; right: 48px; top: 28px; width: 40px; height: 40px; border-radius: 50%; background: #F2E3C4"></span>
+        <span style="position: absolute; left: -20px; right: -20px; bottom: -40px; height: 110px; background: #4D74C4; transform: skewY(-8deg)"></span>
+      </div>
+      <div style="padding: 16px; display: flex; flex-direction: column; gap: 6px">
+        <span class="cap">Card · raio 12</span>
+        <div style="font-size: 16px; font-weight: 600">Nova versão do tema</div>
+        <div style="font-size: 14px; color: #5B6474">Visual Angle para telas do motor dentro de sistemas legados.</div>
+      </div>
+      <div style="padding: 0 8px 8px; display: flex; gap: 4px"><button type="button" class="btn sm" style="color: #2563EB">Ler mais</button><button type="button" class="btn sm" style="color: #5B6474">Dispensar</button></div>
+    </article>
+
+    <article style="background: #FFFFFF; border-radius: 12px; padding: 20px; box-shadow: 0 1px 2px rgb(16 24 40 / 0.06), 0 4px 12px rgb(16 24 40 / 0.06); display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start">
+        <span style="width: 44px; height: 44px; border-radius: 8px; background: rgb(22 136 74 / 0.12); color: #0F5F34; display: grid; place-items: center"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg></span>
+        <span class="chip" style="background: rgb(22 136 74 / 0.12); color: #0F5F34">[VARIAÇÃO]</span>
+      </div>
+      <div style="font-size: 14px; color: #5B6474">KPI · contraste ligado (sombra)</div>
+      <div style="font-size: 26px; font-weight: 600">[VALOR]</div>
+      <div style="font-size: 12px; color: #5B6474">vs. período anterior</div>
+    </article>
+
+    <div style="background: rgba(20,26,36,0.5); border-radius: 12px; padding: 20px; display: grid; place-items: center">
+      <div role="dialog" aria-label="Excluir cliente" style="background: #FFFFFF; border-radius: 12px; width: 100%; box-shadow: 0 11px 15px -7px rgba(0,0,0,.2), 0 24px 38px 3px rgba(0,0,0,.14)">
+        <div style="padding: 16px 24px 8px; font-size: 18px; font-weight: 600">Excluir cliente?</div>
+        <div style="padding: 0 24px 16px; font-size: 14px; color: #5B6474">Ana Beatriz Souza e o histórico dela saem da lista. Não dá para desfazer.</div>
+        <div style="padding: 8px 16px 16px; display: flex; justify-content: flex-end; gap: 8px">
+          <button type="button" class="btn" style="color: #5B6474">Cancelar</button>
+          <button type="button" class="btn" style="background: #D33A3A; color: #FFFFFF">Excluir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1200,"height":1120}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const ok = { sBg: 'rgb(22 136 74 / 0.12)', sFg: '#0F5F34', status: 'Ativo' };
+    return {
+      people: [
+        { ini: 'AS', name: 'Ana Beatriz Souza', email: 'ana.souza@exemplo.com.br', city: 'Curitiba', role: 'Gerente de projetos', soft: 'rgb(37 99 235 / 0.12)', text: '#1A45A5', ...ok },
+        { ini: 'CL', name: 'Carlos Henrique Lima', email: 'carlos.lima@exemplo.com.br', city: 'Recife', role: 'Desenvolvedor', soft: 'rgb(22 136 74 / 0.12)', text: '#0F5F34', ...ok },
+        { ini: 'FR', name: 'Fernanda Rocha', email: 'fernanda.rocha@exemplo.com.br', city: 'Porto Alegre', role: 'Designer', soft: 'rgb(199 119 0 / 0.12)', text: '#8B5300', sBg: 'rgb(199 119 0 / 0.12)', sFg: '#8B5300', status: 'Pendente' },
+        { ini: 'JA', name: 'João Pedro Alves', email: 'joao.alves@exemplo.com.br', city: 'Belo Horizonte', role: 'Analista financeiro', soft: 'rgb(11 121 184 / 0.12)', text: '#085581', ...ok },
+        { ini: 'MC', name: 'Mariana Costa', email: 'mariana.costa@exemplo.com.br', city: 'Salvador', role: 'Suporte', soft: 'rgb(211 58 58 / 0.12)', text: '#942929', sBg: 'rgb(211 58 58 / 0.12)', sFg: '#942929', status: 'Inativo' },
+        { ini: 'RM', name: 'Rafael Martins', email: 'rafael.martins@exemplo.com.br', city: 'Fortaleza', role: 'Vendas', soft: 'rgb(91 100 116 / 0.12)', text: '#404651', ...ok }
+      ],
+      moves: [
+        { title: 'Pagamento recebido – Pedido 4521', date: '14/10/2026', amount: '+R$ 1.890,50', soft: 'rgb(22 136 74 / 0.12)', text: '#0F5F34', icon: 'M12 19V5M5 12l7-7 7 7' },
+        { title: 'Fornecedor – Papelaria Ipê', date: '13/10/2026', amount: '−R$ 342,90', soft: 'rgb(211 58 58 / 0.12)', text: '#942929', icon: 'M12 5v14M5 12l7 7 7-7' },
+        { title: 'Assinatura do sistema', date: '10/10/2026', amount: '−R$ 129,00', soft: 'rgb(211 58 58 / 0.12)', text: '#942929', icon: 'M12 5v14M5 12l7 7 7-7' },
+        { title: 'Pagamento recebido – Pedido 4498', date: '09/10/2026', amount: '+R$ 760,00', soft: 'rgb(22 136 74 / 0.12)', text: '#0F5F34', icon: 'M12 19V5M5 12l7-7 7 7' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

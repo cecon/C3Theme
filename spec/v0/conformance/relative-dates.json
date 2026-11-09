@@ -1,0 +1,199 @@
+{
+  "description": "Datas relativas em condição ({\"$date\": ...} e {\"$now\": true}): valor trafegado que cada uma vira, dado o relógio do sistema. clock.now é o instante UTC; utcOffsetMinutes é o fuso do sistema (Brasília: -180), que decide o dia e o início do dia em datetime; clock.today, quando vem, é o dia operacional e manda no $date. type é o tipo do campo filtrado. expected é o valor resolvido; error true = a condição é recusada (400 no backend).",
+  "cases": [
+    {
+      "clock": { "now": "2026-11-05T01:30:00Z", "utcOffsetMinutes": 0 },
+      "type": "date",
+      "op": "gte",
+      "value": { "$date": "today" },
+      "expected": "2026-11-05"
+    },
+    {
+      "clock": { "now": "2026-11-05T01:30:00Z", "utcOffsetMinutes": 0 },
+      "type": "date",
+      "op": "gte",
+      "value": { "$date": "today", "offset": -30 },
+      "expected": "2026-10-06"
+    },
+    {
+      "clock": { "now": "2026-11-05T01:30:00Z", "utcOffsetMinutes": 0 },
+      "type": "date",
+      "op": "gte",
+      "value": { "$date": "weekStart" },
+      "expected": "2026-11-02",
+      "note": "semana começa na segunda"
+    },
+    {
+      "clock": { "now": "2026-11-05T01:30:00Z", "utcOffsetMinutes": 0 },
+      "type": "date",
+      "op": "gte",
+      "value": { "$date": "weekStart", "offset": -1, "unit": "week" },
+      "expected": "2026-10-26"
+    },
+    {
+      "clock": { "now": "2026-11-05T01:30:00Z", "utcOffsetMinutes": 0 },
+      "type": "date",
+      "op": "gte",
+      "value": { "$date": "monthStart" },
+      "expected": "2026-11-01"
+    },
+    {
+      "clock": { "now": "2026-11-05T01:30:00Z", "utcOffsetMinutes": 0 },
+      "type": "date",
+      "op": "gte",
+      "value": { "$date": "monthStart", "offset": -1, "unit": "month" },
+      "expected": "2026-10-01"
+    },
+    {
+      "clock": { "now": "2026-11-05T01:30:00Z", "utcOffsetMinutes": 0 },
+      "type": "date",
+      "op": "gte",
+      "value": { "$date": "yearStart", "offset": 1, "unit": "year" },
+      "expected": "2027-01-01"
+    },
+    {
+      "clock": { "now": "2026-01-31T12:00:00Z", "utcOffsetMinutes": 0 },
+      "type": "date",
+      "op": "lt",
+      "value": { "$date": "today", "offset": 1, "unit": "month" },
+      "expected": "2026-02-28",
+      "note": "dia que não existe no mês vai ao último"
+    },
+    {
+      "clock": { "now": "2024-03-31T12:00:00Z", "utcOffsetMinutes": 0 },
+      "type": "date",
+      "op": "lt",
+      "value": { "$date": "today", "offset": -1, "unit": "month" },
+      "expected": "2024-02-29",
+      "note": "ano bissexto"
+    },
+    {
+      "clock": { "now": "2026-01-15T12:00:00Z", "utcOffsetMinutes": 0 },
+      "type": "date",
+      "op": "lt",
+      "value": { "$date": "today", "offset": -13, "unit": "month" },
+      "expected": "2024-12-15"
+    },
+    {
+      "clock": { "now": "2026-11-05T01:30:00Z", "utcOffsetMinutes": 0 },
+      "type": "datetime",
+      "op": "gte",
+      "value": { "$date": "today" },
+      "expected": "2026-11-05T00:00:00Z",
+      "note": "em datetime, $date é o início do dia"
+    },
+    {
+      "clock": { "now": "2026-11-05T01:30:00Z", "utcOffsetMinutes": 0 },
+      "type": "datetime",
+      "op": "gte",
+      "value": { "$now": true, "offset": -24 },
+      "expected": "2026-11-04T01:30:00Z",
+      "note": "unit padrão de $now é hour"
+    },
+    {
+      "clock": { "now": "2026-11-05T01:30:00Z", "utcOffsetMinutes": 0 },
+      "type": "datetime",
+      "op": "gte",
+      "value": { "$now": true, "offset": 90, "unit": "minute" },
+      "expected": "2026-11-05T03:00:00Z"
+    },
+    {
+      "clock": { "now": "2026-11-05T01:30:00Z", "utcOffsetMinutes": -180 },
+      "type": "datetime",
+      "op": "gte",
+      "value": { "$date": "today" },
+      "expected": "2026-11-04T03:00:00Z",
+      "note": "Brasília: 01:30 UTC ainda é dia 4, que começou às 03:00 UTC"
+    },
+    {
+      "clock": { "now": "2026-11-05T01:30:00Z", "utcOffsetMinutes": -180 },
+      "type": "date",
+      "op": "eq",
+      "value": { "$date": "today" },
+      "expected": "2026-11-04"
+    },
+    {
+      "clock": { "now": "2026-11-05T01:30:00Z", "utcOffsetMinutes": -180, "today": "2026-11-03" },
+      "type": "date",
+      "op": "eq",
+      "value": { "$date": "today" },
+      "expected": "2026-11-03",
+      "note": "dia operacional do sistema manda"
+    },
+    {
+      "clock": { "now": "2026-11-05T01:30:00Z", "utcOffsetMinutes": 0 },
+      "type": "string",
+      "op": "eq",
+      "value": { "$date": "today" },
+      "error": true,
+      "note": "só em date ou datetime"
+    },
+    {
+      "clock": { "now": "2026-11-05T01:30:00Z", "utcOffsetMinutes": 0 },
+      "type": "date",
+      "op": "in",
+      "value": { "$date": "today" },
+      "error": true,
+      "note": "só eq, ne, lt, lte, gt e gte"
+    },
+    {
+      "clock": { "now": "2026-11-05T01:30:00Z", "utcOffsetMinutes": 0 },
+      "type": "date",
+      "op": "eq",
+      "value": { "$now": true },
+      "error": true,
+      "note": "$now só em datetime"
+    },
+    {
+      "clock": { "now": "2026-11-05T01:30:00Z", "utcOffsetMinutes": 0 },
+      "type": "date",
+      "op": "eq",
+      "value": { "$date": "ontem" },
+      "error": true
+    },
+    {
+      "clock": { "now": "2026-11-05T01:30:00Z", "utcOffsetMinutes": 0 },
+      "type": "date",
+      "op": "eq",
+      "value": { "$date": "today", "unit": "hour" },
+      "error": true
+    },
+    {
+      "clock": { "now": "2026-11-05T01:30:00Z", "utcOffsetMinutes": 0 },
+      "type": "datetime",
+      "op": "gte",
+      "value": { "$now": true, "offset": 1, "unit": "month" },
+      "error": true,
+      "note": "$now anda em minute, hour ou day"
+    },
+    {
+      "clock": { "now": "2026-11-05T01:30:00Z", "utcOffsetMinutes": 0 },
+      "type": "date",
+      "op": "eq",
+      "value": { "$date": "today", "offset": 1.5 },
+      "error": true
+    },
+    {
+      "clock": { "now": "2026-11-05T01:30:00Z", "utcOffsetMinutes": 0 },
+      "type": "date",
+      "op": "eq",
+      "value": { "$date": "today", "extra": 1 },
+      "error": true
+    },
+    {
+      "clock": { "now": "2026-11-05T01:30:00Z", "utcOffsetMinutes": 0 },
+      "type": "datetime",
+      "op": "eq",
+      "value": { "$now": true, "$date": "today" },
+      "error": true
+    },
+    {
+      "clock": { "now": "2026-11-05T01:30:00Z", "utcOffsetMinutes": 0, "today": "05/11/2026" },
+      "type": "date",
+      "op": "eq",
+      "value": { "$date": "today" },
+      "error": true,
+      "note": "today do sistema fora do formato"
+    }
+  ]
+}

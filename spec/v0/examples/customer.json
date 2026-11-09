@@ -1,0 +1,267 @@
+{
+  "$schema": "../entity.schema.json",
+  "specVersion": "0",
+  "name": "customer",
+  "label": {
+    "singular": "Cliente",
+    "plural": "Clientes"
+  },
+  "icon": "Profile2User",
+  "titleField": "name",
+  "fields": [
+    {
+      "name": "name",
+      "type": "string",
+      "label": "Nome",
+      "required": true,
+      "maxLength": 120
+    },
+    {
+      "name": "email",
+      "type": "email",
+      "label": "E-mail",
+      "unique": true
+    },
+    {
+      "name": "company_id",
+      "type": "reference",
+      "entity": "company",
+      "label": "Empresa"
+    },
+    {
+      "name": "status",
+      "type": "enum",
+      "label": "Situação",
+      "required": true,
+      "default": "lead",
+      "options": [
+        {
+          "value": "lead",
+          "label": "Lead",
+          "color": "info"
+        },
+        {
+          "value": "active",
+          "label": "Ativo",
+          "color": "success"
+        },
+        {
+          "value": "churned",
+          "label": "Perdido",
+          "color": "danger"
+        }
+      ]
+    },
+    {
+      "name": "churn_reason",
+      "type": "text",
+      "label": "Motivo da perda",
+      "maxLength": 500,
+      "visibleWhen": {
+        "field": "status",
+        "op": "eq",
+        "value": "churned"
+      },
+      "requiredWhen": {
+        "field": "status",
+        "op": "eq",
+        "value": "churned"
+      }
+    },
+    {
+      "name": "credit_limit",
+      "type": "decimal",
+      "label": "Limite de crédito",
+      "hint": "Quanto o cliente pode comprar a prazo somando os títulos em aberto. Zero bloqueia vendas a prazo.",
+      "aiReview": true,
+      "scale": 2,
+      "min": 0,
+      "access": { "edit": "cliente.credito" }
+    },
+    {
+      "name": "birth_date",
+      "type": "date",
+      "label": "Nascimento"
+    },
+    {
+      "name": "vip",
+      "type": "boolean",
+      "label": "VIP",
+      "default": false
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "label": "Observações",
+      "maxLength": 2000
+    },
+    {
+      "name": "referred_by",
+      "type": "reference",
+      "entity": "customer",
+      "label": "Indicado por",
+      "help": "Outro cliente da mesma empresa.",
+      "onDelete": "set_null",
+      "filter": {
+        "and": [
+          { "field": "id", "op": "ne", "value": { "$field": "id" } },
+          { "field": "company_id", "op": "eq", "value": { "$field": "company_id" } }
+        ]
+      }
+    },
+    {
+      "name": "created_at",
+      "type": "datetime",
+      "label": "Criado em",
+      "readOnly": true
+    }
+  ],
+  "views": {
+    "list": {
+      "columns": [
+        "name",
+        "email",
+        "company_id",
+        {
+          "field": "status",
+          "width": 120
+        },
+        "created_at"
+      ],
+      "search": ["name", "email"],
+      "filters": ["status", "company_id", "vip"],
+      "presets": [
+        {
+          "id": "ativos",
+          "label": "Ativos",
+          "where": {
+            "field": "status",
+            "op": "eq",
+            "value": "active"
+          },
+          "default": true,
+          "defaults": { "status": "active" }
+        },
+        {
+          "id": "vip-sem-empresa",
+          "label": "VIPs sem empresa",
+          "where": {
+            "and": [
+              {
+                "field": "vip",
+                "op": "eq",
+                "value": true
+              },
+              {
+                "field": "company_id",
+                "op": "null",
+                "value": true
+              }
+            ]
+          },
+          "defaults": { "vip": true }
+        },
+        {
+          "id": "limite-alto",
+          "label": "Limite acima de 10 mil",
+          "where": {
+            "field": "credit_limit",
+            "op": "gt",
+            "value": "10000.00"
+          }
+        }
+      ],
+      "defaultSort": [
+        {
+          "field": "created_at",
+          "direction": "desc"
+        }
+      ],
+      "pageSize": 25
+    },
+    "form": {
+      "sections": [
+        {
+          "title": "Dados principais",
+          "rows": [["name"], ["email", "company_id"], ["status", "vip"], ["churn_reason"]]
+        },
+        {
+          "title": "Financeiro",
+          "tab": "Financeiro",
+          "rows": [["credit_limit", "birth_date"], ["referred_by"]]
+        },
+        {
+          "title": "Observações",
+          "tab": "Observações",
+          "rows": [["notes"]]
+        }
+      ]
+    }
+  },
+  "actions": [
+    {
+      "name": "churn",
+      "label": "Marcar como perdido",
+      "icon": "UserRemove",
+      "tone": "danger",
+      "description": "Encerra o relacionamento. O cliente sai das listas de ativos e o motivo fica registrado.",
+      "visibleWhen": {
+        "field": "status",
+        "op": "ne",
+        "value": "churned"
+      },
+      "confirmLabel": "Marcar como perdido",
+      "input": {
+        "fields": [
+          {
+            "name": "reason",
+            "type": "enum",
+            "label": "Motivo",
+            "required": true,
+            "options": [
+              {
+                "value": "price",
+                "label": "Preço"
+              },
+              {
+                "value": "competitor",
+                "label": "Foi para a concorrência"
+              },
+              {
+                "value": "other",
+                "label": "Outro"
+              }
+            ]
+          },
+          {
+            "name": "details",
+            "type": "text",
+            "label": "Detalhes",
+            "minLength": 15,
+            "maxLength": 500,
+            "help": "Pelo menos 15 caracteres.",
+            "requiredWhen": {
+              "field": "reason",
+              "op": "eq",
+              "value": "other"
+            }
+          }
+        ],
+        "rows": [["reason"], ["details"]]
+      },
+      "successMessage": "Cliente marcado como perdido."
+    },
+    {
+      "name": "reactivate",
+      "label": "Reativar",
+      "icon": "UserTick",
+      "visibleWhen": {
+        "field": "status",
+        "op": "eq",
+        "value": "churned"
+      },
+      "confirm": "O cliente volta a ativo e o motivo da perda é apagado.",
+      "successMessage": "Cliente reativado."
+    }
+  ]
+}

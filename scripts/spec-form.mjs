@@ -1,0 +1,57 @@
+// Regras do formulário que o JSON Schema não expressa: valores iniciais, largura das seções e fórmulas
+// (resumo da seção e contas por linha), conferidas com o parser de referência (packages/engine/src/formulas.mjs).
+
+import { formulaRefs, parseFormula } from '../packages/engine/src/formulas.mjs';
+
+const NUMERIC = new Set(['integer', 'decimal']);
+
+/** Confere a fórmula: lê, cada nome é campo numérico de `fields` (ou de `vars`) e cada `sum` é uma lista with_parent. */
+function checkFormula(src, fields, vars, lists, where, errors) {
+  let refs;
+  try {
+    refs = formulaRefs(parseFormula(src));
+  } catch (e) {
+    errors.push(`${where}: ${e.message}`);
+    return;
+  }
+  for (const name of refs.own)
+    if (!vars.has(name) && !NUMERIC.has(fields.get(name)?.type))
+      errors.push(`${where}: '${name}' não é campo integer/decimal nem linha anterior do resumo`);
+  for (const [list, names] of Object.entries(refs.lists)) {
+    const child = lists.get(list);
+    if (!child) {
+      errors.push(`${where}: sum('${list}', ...) precisa de uma lista with_parent do formulário`);
+      continue;
+    }
+    for (const name of names)
+      if (!NUMERIC.has(child.get(name)?.type)) errors.push(`${where}: '${list}.${name}' não é campo integer/decimal`);
+  }
+}
+
+export function checkForm(entity, fields, entities, file, errors) {
+  const form = entity.views?.form;
+  if (!form) return;
+  for (const [name, value] of Object.entries(form.initial ?? {})) {
+    const f = fields.get(name);
+    if (!f || f.readOnly) errors.push(`${file}: views.form.initial cita '${name}', que não é campo editável`);
+    else if (value && typeof value === 'object' && !['date', 'datetime'].includes(f.type))
+      errors.push(`${file}: views.form.initial.${name}: data relativa só em campo date ou datetime`);
+  }
+  // listas with_parent do formulário, para o sum()
+  const lists = new Map();
+  for (const s of form.sections) {
+    const child = s.related?.save === 'with_parent' && entities.get(s.related.entity)?.entity;
+    if (child) lists.set(s.related.entity, new Map(child.fields.map((f) => [f.name, f])));
+  }
+  for (const [i, s] of form.sections.entries()) {
+    const where = `${file} views.form.sections[${i}]`;
+    const vars = new Set();
+    for (const [j, line] of (s.summary ?? []).entries()) {
+      checkFormula(line.value, fields, vars, lists, `${where}.summary[${j}]`, errors);
+      if (line.name) vars.add(line.name);
+    }
+    const childFields = s.related && lists.get(s.related.entity);
+    for (const [j, c] of (s.related?.computed ?? []).entries())
+      checkFormula(c.value, childFields ?? new Map(), new Set(), new Map(), `${where}.related.computed[${j}]`, errors);
+  }
+}

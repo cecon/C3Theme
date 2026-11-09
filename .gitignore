@@ -1,0 +1,20 @@
+node_modules/
+dist/
+build/
+coverage/
+.turbo/
+*.log
+.DS_Store
+.env.local
+.env.*.local
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# env files (use .env.example as base)
+.env
+.env.qa
+target/
+*.db
+*.db-shm
+*.db-wal

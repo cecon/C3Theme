@@ -1,0 +1,29 @@
+{
+  "$schema": "../entity.schema.json",
+  "specVersion": "0",
+  "name": "promotion_product",
+  "label": {
+    "singular": "Produto da promoção",
+    "plural": "Produtos da promoção"
+  },
+  "icon": "Box",
+  "titleField": "product_id",
+  "description": "Só existe dentro da promoção (related com save with_parent). O mesmo produto não entra duas vezes.",
+  "fields": [
+    {
+      "name": "promotion_id",
+      "type": "reference",
+      "entity": "promotion",
+      "label": "Promoção",
+      "required": true,
+      "onDelete": "cascade"
+    },
+    {
+      "name": "product_id",
+      "type": "reference",
+      "entity": "product",
+      "label": "Produto",
+      "required": true
+    }
+  ]
+}

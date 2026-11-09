@@ -1,0 +1,15 @@
+[package]
+name = "c3-example"
+description = "CRM de exemplo da spec servido pelo c3-engine; é o alvo da suíte de conformidade."
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+axum.workspace = true
+c3-engine = { path = "../c3-engine", features = ["sqlx"] }
+serde_json.workspace = true
+sha2 = "0.10"
+sqlx.workspace = true
+tokio = { workspace = true, features = ["signal"] }

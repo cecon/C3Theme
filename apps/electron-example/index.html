@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <!-- a página só carrega o que vem do pacote: o backend é alcançado pelo IPC, não pela rede do renderer -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>C3 no Electron</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./src/index.tsx"></script>
+  </body>
+</html>

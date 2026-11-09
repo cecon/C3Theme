@@ -1,0 +1,62 @@
+name: engine
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  # permite rodar à mão pela aba Actions
+  workflow_dispatch:
+
+# um push novo no mesmo PR cancela a execução anterior
+concurrency:
+  group: engine-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  spec-and-conformance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt, llvm-tools-preview
+      - uses: taiki-e/install-action@cargo-llvm-cov
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            .
+            crates/c3-engine-rusqlite
+      - run: pnpm install --frozen-lockfile
+        # o exemplo Electron só é compilado aqui, nunca aberto: sem os ~120 MB do binário
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+      - run: pnpm lines:check
+      - run: pnpm spec:check
+      - run: pnpm skills:check
+      - run: pnpm typecheck
+      - run: pnpm lint
+      # testes + cobertura mínima por pacote (scripts/coverage-floors.ts; meta 80% de linhas e branches)
+      - run: pnpm test:coverage
+      # o que vai para o npm (ui, chat, engine): só dist + LICENSE + README, sem teste, sem workspace:
+      - run: pnpm pack:check
+      # catálogo de componentes: história quebrada (import, tipo, build) reprova aqui
+      - run: pnpm build:storybook
+      # acessibilidade: axe em todas as histórias, claro e escuro; achado novo reprova
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm a11y:storybook
+      - run: cargo fmt --check
+      - run: cargo clippy --all-targets -- -D warnings
+      # adaptador rusqlite: workspace próprio (outro libsqlite3-sys)
+      - run: cargo fmt --check --manifest-path crates/c3-engine-rusqlite/Cargo.toml
+      - run: cargo clippy --manifest-path crates/c3-engine-rusqlite/Cargo.toml --all-targets -- -D warnings
+      # testes Rust dos dois workspaces + conformidade contra o c3-example, com cobertura mínima (scripts/coverage-rust.mjs)
+      - run: pnpm coverage:rust
+      # conformidade do backend Node (a do Rust já rodou acima, medida)
+      - run: pnpm conformance node
+      # o app que o pnpm create-app gera (Rust e Node) compila, sobe e grava pela API
+      - run: node scripts/create-app-smoke.mjs

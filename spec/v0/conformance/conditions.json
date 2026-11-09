@@ -1,0 +1,229 @@
+{
+  "description": "Casos que toda implementação de condição (shell TS, backend Rust, backend Node + SQL gerado) precisa passar. 'types' dá o tipo de cada campo; 'record' está no formato trafegado. 'enumOptions' dá os options de cada enum e flags, com o value (o valor como o banco grava).",
+  "types": {
+    "name": "string",
+    "status": "enum",
+    "vip": "boolean",
+    "credit_limit": "decimal",
+    "age": "integer",
+    "birth_date": "date",
+    "created_at": "datetime",
+    "company_id": "reference",
+    "kind": "enum",
+    "cfop": "enum",
+    "days": "flags"
+  },
+  "enumOptions": {
+    "status": [{ "value": "lead" }, { "value": "active" }, { "value": "churned" }],
+    "kind": [{ "value": "PISTA" }, { "value": "SEM BALANCA" }, { "value": "SP" }],
+    "cfop": [{ "value": 0 }, { "value": 5102 }, { "value": 5405 }],
+    "days": [{ "value": 1 }, { "value": 2 }, { "value": 4 }, { "value": 8 }, { "value": 16 }, { "value": 32 }, { "value": 64 }]
+  },
+  "cases": [
+    {
+      "name": "id é o id implícito, comparado como reference",
+      "record": { "id": "7" },
+      "where": { "field": "id", "op": "ne", "value": "7" },
+      "expected": false
+    },
+    {
+      "name": "id vazio (registro novo) é diferente de qualquer id",
+      "record": {},
+      "where": { "field": "id", "op": "ne", "value": "7" },
+      "expected": true
+    },
+    {
+      "name": "eq string é sensível a maiúsculas",
+      "record": { "name": "Maria" },
+      "where": { "field": "name", "op": "eq", "value": "maria" },
+      "expected": false
+    },
+    {
+      "name": "contains ignora maiúsculas",
+      "record": { "name": "Maria Souza" },
+      "where": { "field": "name", "op": "contains", "value": "SOUZA" },
+      "expected": true
+    },
+    {
+      "name": "contains ignora maiúsculas fora do ASCII",
+      "record": { "name": "ÉRICA" },
+      "where": { "field": "name", "op": "contains", "value": "érica" },
+      "expected": true
+    },
+    {
+      "name": "contains não ignora acento",
+      "record": { "name": "Érica" },
+      "where": { "field": "name", "op": "contains", "value": "erica" },
+      "expected": false
+    },
+    {
+      "name": "in com enum",
+      "record": { "status": "lead" },
+      "where": { "field": "status", "op": "in", "value": ["lead", "active"] },
+      "expected": true
+    },
+    {
+      "name": "decimal compara como número, não como texto",
+      "record": { "credit_limit": "10.00" },
+      "where": { "field": "credit_limit", "op": "gt", "value": "9.00" },
+      "expected": true
+    },
+    {
+      "name": "decimal ignora zeros à direita",
+      "record": { "credit_limit": "10.5" },
+      "where": { "field": "credit_limit", "op": "eq", "value": "10.50" },
+      "expected": true
+    },
+    { "name": "integer gte no limite", "record": { "age": 18 }, "where": { "field": "age", "op": "gte", "value": 18 }, "expected": true },
+    {
+      "name": "date lt",
+      "record": { "birth_date": "1990-05-01" },
+      "where": { "field": "birth_date", "op": "lt", "value": "2000-01-01" },
+      "expected": true
+    },
+    {
+      "name": "datetime em UTC compara por instante",
+      "record": { "created_at": "2026-10-17T02:55:17Z" },
+      "where": { "field": "created_at", "op": "gt", "value": "2026-10-17T02:55:16Z" },
+      "expected": true
+    },
+    { "name": "boolean eq", "record": { "vip": false }, "where": { "field": "vip", "op": "eq", "value": false }, "expected": true },
+    {
+      "name": "reference compara pelo id (leitura vem com title)",
+      "record": { "company_id": { "id": "7", "title": "Acme" } },
+      "where": { "field": "company_id", "op": "eq", "value": "7" },
+      "expected": true
+    },
+    {
+      "name": "reference no formulário vem só com id",
+      "record": { "company_id": "7" },
+      "where": { "field": "company_id", "op": "in", "value": ["3", "7"] },
+      "expected": true
+    },
+    {
+      "name": "null true em campo vazio",
+      "record": { "company_id": null },
+      "where": { "field": "company_id", "op": "null", "value": true },
+      "expected": true
+    },
+    {
+      "name": "null false em campo preenchido",
+      "record": { "company_id": "7" },
+      "where": { "field": "company_id", "op": "null", "value": false },
+      "expected": true
+    },
+    { "name": "campo ausente conta como vazio", "record": {}, "where": { "field": "name", "op": "null", "value": true }, "expected": true },
+    {
+      "name": "string vazia conta como vazio",
+      "record": { "name": "" },
+      "where": { "field": "name", "op": "null", "value": true },
+      "expected": true
+    },
+    {
+      "name": "vazio: eq é falso",
+      "record": { "status": null },
+      "where": { "field": "status", "op": "eq", "value": "lead" },
+      "expected": false
+    },
+    {
+      "name": "vazio: ne é verdadeiro (difere do NULL do SQL)",
+      "record": { "status": null },
+      "where": { "field": "status", "op": "ne", "value": "lead" },
+      "expected": true
+    },
+    {
+      "name": "vazio: comparação de ordem é falsa",
+      "record": { "age": null },
+      "where": { "field": "age", "op": "lt", "value": 100 },
+      "expected": false
+    },
+    {
+      "name": "vazio: in é falso",
+      "record": { "status": null },
+      "where": { "field": "status", "op": "in", "value": ["lead"] },
+      "expected": false
+    },
+    {
+      "name": "and",
+      "record": { "vip": true, "company_id": null },
+      "where": {
+        "and": [
+          { "field": "vip", "op": "eq", "value": true },
+          { "field": "company_id", "op": "null", "value": true }
+        ]
+      },
+      "expected": true
+    },
+    {
+      "name": "or",
+      "record": { "status": "churned", "vip": false },
+      "where": {
+        "or": [
+          { "field": "vip", "op": "eq", "value": true },
+          { "field": "status", "op": "eq", "value": "churned" }
+        ]
+      },
+      "expected": true
+    },
+    {
+      "name": "not",
+      "record": { "status": "lead" },
+      "where": { "not": { "field": "status", "op": "eq", "value": "lead" } },
+      "expected": false
+    },
+    {
+      "name": "not de vazio com eq vira verdadeiro",
+      "record": { "status": null },
+      "where": { "not": { "field": "status", "op": "eq", "value": "lead" } },
+      "expected": true
+    },
+    {
+      "name": "enum com espaço e maiúsculas compara o valor exato",
+      "record": { "kind": "SEM BALANCA" },
+      "where": { "field": "kind", "op": "eq", "value": "SEM BALANCA" },
+      "expected": true
+    },
+    {
+      "name": "enum é sensível a maiúsculas",
+      "record": { "kind": "SP" },
+      "where": { "field": "kind", "op": "in", "value": ["PISTA", "SEM BALANCA"] },
+      "expected": false
+    },
+    {
+      "name": "enum numérico com in",
+      "record": { "cfop": 5405 },
+      "where": { "field": "cfop", "op": "in", "value": [5102, 5405] },
+      "expected": true
+    },
+    {
+      "name": "enum numérico: zero não é vazio",
+      "record": { "cfop": 0 },
+      "where": { "field": "cfop", "op": "null", "value": false },
+      "expected": true
+    },
+    {
+      "name": "enum numérico: string no registro não casa com o número",
+      "record": { "cfop": "5102" },
+      "where": { "field": "cfop", "op": "eq", "value": 5102 },
+      "expected": false
+    },
+    {
+      "name": "flags compara o conjunto inteiro (eq)",
+      "record": { "days": 62 },
+      "where": { "field": "days", "op": "eq", "value": 62 },
+      "expected": true
+    },
+    {
+      "name": "flags com in: seg a sex ou todos",
+      "record": { "days": 127 },
+      "where": { "field": "days", "op": "in", "value": [62, 127] },
+      "expected": true
+    },
+    {
+      "name": "flags 0 (nenhum marcado) não é vazio",
+      "record": { "days": 0 },
+      "where": { "field": "days", "op": "null", "value": true },
+      "expected": false
+    }
+  ]
+}

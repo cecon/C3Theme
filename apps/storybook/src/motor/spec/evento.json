@@ -1,0 +1,80 @@
+{
+  "$schema": "../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "evento",
+  "label": {
+    "singular": "Evento",
+    "plural": "Eventos",
+    "gender": "m"
+  },
+  "icon": "Calendar",
+  "titleField": "titulo",
+  "fields": [
+    {
+      "name": "titulo",
+      "type": "string",
+      "label": "Título",
+      "required": true
+    },
+    {
+      "name": "inicio",
+      "type": "datetime",
+      "label": "Início",
+      "required": true
+    },
+    {
+      "name": "fim",
+      "type": "datetime",
+      "label": "Fim"
+    },
+    {
+      "name": "dia_inteiro",
+      "type": "boolean",
+      "label": "Dia inteiro"
+    },
+    {
+      "name": "tipo",
+      "type": "enum",
+      "label": "Tipo",
+      "default": "reuniao",
+      "options": [
+        {
+          "value": "reuniao",
+          "label": "Reunião",
+          "color": "primary"
+        },
+        {
+          "value": "visita",
+          "label": "Visita a cliente",
+          "color": "success"
+        },
+        {
+          "value": "entrega",
+          "label": "Entrega",
+          "color": "warning"
+        },
+        {
+          "value": "feriado",
+          "label": "Feriado",
+          "color": "danger"
+        }
+      ]
+    }
+  ],
+  "views": {
+    "list": {
+      "columns": ["titulo", "inicio", "tipo"],
+      "defaultSort": [
+        {
+          "field": "inicio"
+        }
+      ]
+    },
+    "calendar": {
+      "start": "inicio",
+      "end": "fim",
+      "allDay": "dia_inteiro",
+      "color": "tipo"
+    }
+  }
+}

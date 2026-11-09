@@ -1,0 +1,9 @@
+{
+  "$schema": "../../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "membro",
+  "label": { "singular": "Membro", "plural": "Membros" },
+  "titleField": "nome",
+  "fields": [{ "name": "nome", "type": "string", "label": "Nome", "required": true }],
+  "views": { "list": { "columns": ["nome"], "search": ["nome"] } }
+}

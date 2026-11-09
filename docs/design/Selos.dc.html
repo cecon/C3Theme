@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>C3Theme · Chips, selos e avatares</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2563EB}a:hover{color:#1A45A5}
+.chip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:6px;font-size:13px;font-weight:500;box-sizing:border-box;border:1px solid transparent;white-space:nowrap}
+.chip.sm{height:24px;padding:0 8px;font-size:13px}
+.chip svg{width:16px;height:16px}
+.av{display:inline-grid;place-items:center;border-radius:50%;font-weight:600;flex-shrink:0;box-sizing:border-box}
+.lbl{font-size:12px;color:#5B6474}
+.cap{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#5B6474}
+</style>
+</helmet>
+<div style="width: 1200px; height: 1180px; box-sizing: border-box; padding: 48px; background: #F4F6F9; font-family: 'Inter', system-ui, sans-serif; color: #141A24; display: flex; flex-direction: column; gap: 32px">
+  <div style="display: flex; flex-direction: column; gap: 4px">
+    <span class="cap">03 · Chips, selos e avatares</span>
+    <h1 style="margin: 0; font-size: 32px; font-weight: 600; line-height: 1.25">Chip, StatusChip, Badge, Dot e SoftAvatar</h1>
+    <p style="margin: 0; font-size: 15px; color: #5B6474">Todos os tons suaves saem de softColors(theme, tone): fundo a 12% e texto no dark do tom.</p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px">
+    <section style="background: #FFFFFF; border: 1px solid #E2E6EC; border-radius: 24px; overflow: hidden">
+      <div style="padding: 14px 20px; min-height: 60px; box-sizing: border-box; display: flex; align-items: center; border-bottom: 1px solid #E2E6EC">
+        <div><div style="font-size: 16px; font-weight: 600">StatusChip</div><div style="font-size: 14px; color: #5B6474">tone neutral · primary · info · success · warning · danger</div></div>
+      </div>
+      <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; flex-wrap: wrap; gap: 8px">
+          <span class="chip sm" style="background: rgba(20,26,36,0.04); color: #5B6474">Rascunho</span>
+          <span class="chip sm" style="background: rgb(37 99 235 / 0.12); color: #1A45A5">Novo</span>
+          <span class="chip sm" style="background: rgb(11 121 184 / 0.12); color: #085581">Em análise</span>
+          <span class="chip sm" style="background: rgb(22 136 74 / 0.12); color: #0F5F34">Ativo</span>
+          <span class="chip sm" style="background: rgb(199 119 0 / 0.12); color: #8B5300">Pendente</span>
+          <span class="chip sm" style="background: rgb(211 58 58 / 0.12); color: #942929">Cancelado</span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px">
+          <span class="chip" style="background: rgba(20,26,36,0.04); color: #5B6474">Rascunho</span>
+          <span class="chip" style="background: rgb(22 136 74 / 0.12); color: #0F5F34">Pago</span>
+          <span class="chip" style="background: rgb(199 119 0 / 0.12); color: #8B5300">Vence hoje</span>
+          <span class="chip" style="background: rgb(211 58 58 / 0.12); color: #942929">Atrasado</span>
+        </div>
+        <span class="lbl">size small (24px, padrão) e medium (32px) · cantos 6px · peso 500</span>
+      </div>
+    </section>
+
+    <section style="background: #FFFFFF; border: 1px solid #E2E6EC; border-radius: 24px; overflow: hidden">
+      <div style="padding: 14px 20px; min-height: 60px; box-sizing: border-box; display: flex; align-items: center; border-bottom: 1px solid #E2E6EC">
+        <div><div style="font-size: 16px; font-weight: 600">Chip (MUI)</div><div style="font-size: 14px; color: #5B6474">filled · outlined · com ícone · removível</div></div>
+      </div>
+      <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; flex-wrap: wrap; gap: 8px">
+          <span class="chip" style="background: rgba(0,0,0,0.08); color: #141A24">Padrão</span>
+          <span class="chip" style="background: #2563EB; color: #FFFFFF">Primary</span>
+          <span class="chip" style="background: #16884A; color: #FFFFFF">Success</span>
+          <span class="chip" style="background: #D33A3A; color: #FFFFFF">Error</span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px">
+          <span class="chip" style="border-color: #C9D0DA; color: #141A24">Outlined</span>
+          <span class="chip" style="border-color: #2563EB; color: #2563EB">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>Selecionado</span>
+          <span class="chip" style="background: rgba(0,0,0,0.08); color: #141A24; padding-right: 6px">React
+            <svg viewBox="0 0 24 24" fill="#5B6474" aria-hidden="true" style="opacity: 0.7"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+          <span class="chip" style="background: rgba(0,0,0,0.08); color: #141A24; padding-left: 4px">
+            <span class="av" style="width: 24px; height: 24px; font-size: 10px; background: rgb(37 99 235 / 0.12); color: #1A45A5">AS</span>Ana Souza</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section style="background: #FFFFFF; border: 1px solid #E2E6EC; border-radius: 24px; overflow: hidden">
+    <div style="padding: 14px 20px; min-height: 60px; box-sizing: border-box; display: flex; align-items: center; border-bottom: 1px solid #E2E6EC">
+      <div><div style="font-size: 16px; font-weight: 600">SoftAvatar</div><div style="font-size: 14px; color: #5B6474">size xs 24 · sm 32 · md 40 · lg 56 · xl 72 — look soft · filled · outlined</div></div>
+    </div>
+    <div style="padding: 20px; display: grid; grid-template-columns: 100px repeat(7, minmax(0, 1fr)); gap: 16px 8px; align-items: center; justify-items: start">
+      <span></span>
+      <sc-for list="{{tones}}" as="t" hint-placeholder-count="7"><span class="lbl">{{t.name}}</span></sc-for>
+      <span class="cap">soft</span>
+      <sc-for list="{{tones}}" as="t" hint-placeholder-count="7"><span class="av" style="width: 40px; height: 40px; font-size: 16px; background: {{t.soft}}; color: {{t.text}}">{{t.ini}}</span></sc-for>
+      <span class="cap">filled</span>
+      <sc-for list="{{tones}}" as="t" hint-placeholder-count="7"><span class="av" style="width: 40px; height: 40px; font-size: 16px; background: {{t.text}}; color: #FFFFFF">{{t.ini}}</span></sc-for>
+      <span class="cap">outlined</span>
+      <sc-for list="{{tones}}" as="t" hint-placeholder-count="7"><span class="av" style="width: 40px; height: 40px; font-size: 16px; border: 1px solid {{t.text}}; color: {{t.text}}">{{t.ini}}</span></sc-for>
+    </div>
+    <div style="padding: 0 20px 20px; display: flex; align-items: flex-end; gap: 32px; flex-wrap: wrap">
+      <div style="display: flex; align-items: flex-end; gap: 12px">
+        <span class="av" style="width: 24px; height: 24px; font-size: 10px; background: rgb(37 99 235 / 0.12); color: #1A45A5">AS</span>
+        <span class="av" style="width: 32px; height: 32px; font-size: 13px; background: rgb(37 99 235 / 0.12); color: #1A45A5">AS</span>
+        <span class="av" style="width: 40px; height: 40px; font-size: 16px; background: rgb(37 99 235 / 0.12); color: #1A45A5">AS</span>
+        <span class="av" style="width: 56px; height: 56px; font-size: 22px; background: rgb(37 99 235 / 0.12); color: #1A45A5">AS</span>
+        <span class="av" style="width: 72px; height: 72px; font-size: 29px; background: rgb(37 99 235 / 0.12); color: #1A45A5">AS</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span class="cap">Grupo</span>
+        <div style="display: flex">
+          <span class="av" style="width: 40px; height: 40px; font-size: 16px; background: rgb(37 99 235 / 0.12); color: #1A45A5; border: 2px solid #FFFFFF">AS</span>
+          <span class="av" style="width: 40px; height: 40px; font-size: 16px; background: rgb(22 136 74 / 0.12); color: #0F5F34; border: 2px solid #FFFFFF; margin-left: -8px">CL</span>
+          <span class="av" style="width: 40px; height: 40px; font-size: 16px; background: rgb(199 119 0 / 0.12); color: #8B5300; border: 2px solid #FFFFFF; margin-left: -8px">FR</span>
+          <span class="av" style="width: 40px; height: 40px; font-size: 14px; background: #E9ECF1; color: #5B6474; border: 2px solid #FFFFFF; margin-left: -8px">+5</span>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span class="cap">Com status</span>
+        <div style="display: flex; gap: 16px">
+          <span style="position: relative; display: inline-flex">
+            <span class="av" style="width: 40px; height: 40px; font-size: 16px; background: rgb(11 121 184 / 0.12); color: #085581">JA</span>
+            <span style="position: absolute; right: 0; bottom: 0; width: 10px; height: 10px; border-radius: 50%; background: #16884A; border: 2px solid #FFFFFF"></span>
+          </span>
+          <span style="position: relative; display: inline-flex">
+            <span class="av" style="width: 40px; height: 40px; font-size: 16px; background: rgb(211 58 58 / 0.12); color: #942929">MC</span>
+            <span style="position: absolute; right: 0; bottom: 0; width: 10px; height: 10px; border-radius: 50%; background: #9AA4B2; border: 2px solid #FFFFFF"></span>
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px">
+    <section style="background: #FFFFFF; border: 1px solid #E2E6EC; border-radius: 24px; overflow: hidden">
+      <div style="padding: 14px 20px; min-height: 60px; box-sizing: border-box; display: flex; align-items: center; border-bottom: 1px solid #E2E6EC">
+        <div><div style="font-size: 16px; font-weight: 600">Badge</div><div style="font-size: 14px; color: #5B6474">contador e ponto sobre ícone</div></div>
+      </div>
+      <div style="padding: 24px 20px; display: flex; gap: 32px; align-items: center">
+        <span style="position: relative; display: inline-flex; color: #5B6474">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15L6 16zM10 20a2 2 0 0 0 4 0"/></svg>
+          <span style="position: absolute; top: -6px; right: -8px; min-width: 20px; height: 20px; padding: 0 6px; box-sizing: border-box; border-radius: 10px; background: #D33A3A; color: #FFFFFF; font-size: 12px; font-weight: 500; display: grid; place-items: center">4</span>
+        </span>
+        <span style="position: relative; display: inline-flex; color: #5B6474">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v12H4zM4 7l8 6 8-6"/></svg>
+          <span style="position: absolute; top: -6px; right: -12px; min-width: 20px; height: 20px; padding: 0 6px; box-sizing: border-box; border-radius: 10px; background: #2563EB; color: #FFFFFF; font-size: 12px; font-weight: 500; display: grid; place-items: center">99+</span>
+        </span>
+        <span style="position: relative; display: inline-flex; color: #5B6474">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"/></svg>
+          <span style="position: absolute; top: 0; right: 0; width: 8px; height: 8px; border-radius: 50%; background: #16884A"></span>
+        </span>
+        <span style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500">Mensagens
+          <span style="min-width: 20px; height: 20px; padding: 0 6px; box-sizing: border-box; border-radius: 10px; background: rgb(37 99 235 / 0.12); color: #1A45A5; font-size: 12px; font-weight: 600; display: grid; place-items: center">12</span>
+        </span>
+      </div>
+    </section>
+
+    <section style="background: #FFFFFF; border: 1px solid #E2E6EC; border-radius: 24px; overflow: hidden">
+      <div style="padding: 14px 20px; min-height: 60px; box-sizing: border-box; display: flex; align-items: center; border-bottom: 1px solid #E2E6EC">
+        <div><div style="font-size: 16px; font-weight: 600">Dot</div><div style="font-size: 14px; color: #5B6474">marcador de legenda e situação</div></div>
+      </div>
+      <div style="padding: 24px 20px; display: flex; flex-wrap: wrap; gap: 20px">
+        <span style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #2563EB"></span>Receita</span>
+        <span style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #16884A"></span>Online</span>
+        <span style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #C77700"></span>Ausente</span>
+        <span style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #D33A3A"></span>Erro</span>
+        <span style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #5B6474"></span>Offline</span>
+      </div>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1200,"height":1180}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      tones: [
+        { name: 'neutral', ini: 'RM', soft: 'rgba(20,26,36,0.04)', text: '#5B6474' },
+        { name: 'primary', ini: 'AS', soft: 'rgb(37 99 235 / 0.12)', text: '#1A45A5' },
+        { name: 'secondary', ini: 'LF', soft: 'rgb(91 100 116 / 0.12)', text: '#404651' },
+        { name: 'info', ini: 'JA', soft: 'rgb(11 121 184 / 0.12)', text: '#085581' },
+        { name: 'success', ini: 'CL', soft: 'rgb(22 136 74 / 0.12)', text: '#0F5F34' },
+        { name: 'warning', ini: 'FR', soft: 'rgb(199 119 0 / 0.12)', text: '#8B5300' },
+        { name: 'danger', ini: 'MC', soft: 'rgb(211 58 58 / 0.12)', text: '#942929' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

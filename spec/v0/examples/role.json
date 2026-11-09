@@ -1,0 +1,45 @@
+{
+  "$schema": "../entity.schema.json",
+  "specVersion": "0",
+  "name": "role",
+  "label": {
+    "singular": "Perfil",
+    "plural": "Perfis"
+  },
+  "icon": "ShieldTick",
+  "titleField": "name",
+  "fields": [
+    {
+      "name": "name",
+      "type": "string",
+      "label": "Nome",
+      "required": true,
+      "unique": true,
+      "maxLength": 60
+    }
+  ],
+  "views": {
+    "list": {
+      "columns": ["name"],
+      "search": ["name"]
+    },
+    "form": {
+      "sections": [
+        { "rows": [["name"]] },
+        {
+          "title": "Permissões",
+          "description": "Marque o que o perfil acessa e, em cada uma, se ele pode alterar.",
+          "related": {
+            "entity": "role_permission",
+            "field": "role_id",
+            "save": "with_parent",
+            "display": "checklist",
+            "option": "permission_id",
+            "groupBy": "module",
+            "maxItems": 500
+          }
+        }
+      ]
+    }
+  }
+}

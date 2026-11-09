@@ -1,0 +1,256 @@
+{
+  "$schema": "../app.schema.json",
+  "specVersion": "0",
+  "name": "CRM Exemplo",
+  "entities": [
+    "company",
+    "customer",
+    "org_company",
+    "branch",
+    "seller",
+    "sales_order",
+    "company_contact",
+    "sales_order_item",
+    "company_fiscal",
+    "operator",
+    "permission",
+    "role",
+    "role_permission",
+    "activity",
+    "dining_table",
+    "product",
+    "question",
+    "question_option",
+    "product_question",
+    "promotion",
+    "promotion_product",
+    "store_settings",
+    "customer_pending"
+  ],
+  "auth": {
+    "subtitle": "Demonstração: entre como admin, ana ou caio, com a senha c3.",
+    "identifier": "username",
+    "profile": false
+  },
+  "organization": {
+    "company": "org_company",
+    "branch": "branch"
+  },
+  "pages": [
+    {
+      "path": "/painel",
+      "title": "Painel",
+      "dashboard": {
+        "filters": [
+          { "name": "periodo", "type": "period", "label": "Prazo das atividades", "default": "all" },
+          { "name": "vendedor", "type": "reference", "entity": "seller", "label": "Vendedor" }
+        ],
+        "widgets": [
+          {
+            "type": "alert",
+            "entity": "activity",
+            "preset": "atrasadas",
+            "text": "{count} atividade(s) atrasada(s): veja e reagende",
+            "tone": "error"
+          },
+          { "type": "kpi", "title": "Clientes", "entity": "customer" },
+          { "type": "kpi", "title": "Clientes ativos", "entity": "customer", "preset": "ativos" },
+          {
+            "type": "kpi",
+            "title": "Pedidos em aberto",
+            "entity": "sales_order",
+            "preset": "em-aberto",
+            "bind": { "vendedor": "seller_id" }
+          },
+          {
+            "type": "kpi",
+            "title": "Valor em aberto",
+            "entity": "sales_order",
+            "preset": "em-aberto",
+            "measure": "sum:total",
+            "bind": { "vendedor": "seller_id" }
+          },
+          { "type": "chart", "title": "Clientes por status", "entity": "customer", "groupBy": "status", "width": 4 },
+          {
+            "type": "chart",
+            "title": "Em aberto por vendedor",
+            "entity": "sales_order",
+            "preset": "em-aberto",
+            "groupBy": "seller_id",
+            "measure": "sum:total",
+            "width": 4
+          },
+          {
+            "type": "chart",
+            "title": "Atividades por mês",
+            "entity": "activity",
+            "groupBy": "due_date",
+            "width": 4,
+            "bind": { "periodo": "due_date" }
+          },
+          {
+            "type": "list",
+            "title": "Atividades pendentes",
+            "entity": "activity",
+            "preset": "pendentes",
+            "columns": ["subject", "customer_id", "due_date"],
+            "sort": "due_date",
+            "bind": { "periodo": "due_date" }
+          },
+          {
+            "type": "list",
+            "title": "Maiores pedidos em aberto",
+            "entity": "sales_order",
+            "preset": "em-aberto",
+            "columns": ["number", "customer_id", "total"],
+            "sort": "-total",
+            "bind": { "vendedor": "seller_id" }
+          }
+        ]
+      }
+    },
+    {
+      "path": "/balcao",
+      "title": "Balcão",
+      "component": "balcao",
+      "permission": "loja.balcao",
+      "config": {
+        "keys": { "F2": "quantidade", "F9": "espera" },
+        "columns": ["descricao", "quantidade", "total"],
+        "greeting": "Caixa livre"
+      }
+    }
+  ],
+  "layout": {
+    "orientation": "vertical",
+    "header": {
+      "search": true,
+      "actions": ["assistente"],
+      "languages": ["pt-BR", "en"],
+      "userMenu": [
+        {
+          "label": "Ajuda",
+          "href": "https://example.com/ajuda"
+        }
+      ]
+    },
+    "menu": [
+      {
+        "items": [
+          {
+            "path": "/painel",
+            "icon": "Home2"
+          }
+        ]
+      },
+      {
+        "title": "Cadastros",
+        "items": [
+          {
+            "entity": "customer"
+          },
+          {
+            "entity": "customer",
+            "preset": "vip-sem-empresa",
+            "title": "VIPs sem empresa",
+            "icon": "Crown"
+          },
+          {
+            "entity": "company"
+          }
+        ]
+      },
+      {
+        "title": "Vendas",
+        "items": [
+          {
+            "entity": "sales_order"
+          },
+          {
+            "entity": "dining_table",
+            "view": "map",
+            "title": "Salão"
+          },
+          {
+            "entity": "sales_order",
+            "preset": "em-aberto",
+            "title": "Pedidos em aberto",
+            "icon": "Timer1",
+            "badge": true
+          },
+          {
+            "entity": "activity",
+            "view": "board",
+            "title": "Funil de atividades",
+            "icon": "Kanban"
+          },
+          {
+            "entity": "customer_pending"
+          },
+          {
+            "entity": "activity",
+            "view": "calendar",
+            "preset": "pendentes",
+            "title": "Agenda",
+            "icon": "Calendar"
+          },
+          {
+            "entity": "seller"
+          },
+          {
+            "entity": "operator"
+          },
+          {
+            "entity": "role"
+          }
+        ]
+      },
+      {
+        "title": "Cardápio",
+        "items": [
+          {
+            "entity": "product"
+          },
+          {
+            "entity": "question"
+          },
+          {
+            "entity": "promotion"
+          },
+          {
+            "entity": "promotion",
+            "preset": "vigentes",
+            "title": "Promoções vigentes",
+            "icon": "TicketDiscount"
+          },
+          {
+            "path": "/balcao",
+            "icon": "Shop"
+          }
+        ]
+      },
+      {
+        "title": "Organização",
+        "items": [
+          {
+            "entity": "org_company"
+          },
+          {
+            "entity": "branch"
+          },
+          {
+            "entity": "store_settings"
+          }
+        ]
+      }
+    ],
+    "footer": {
+      "links": [
+        {
+          "label": "Suporte",
+          "href": "https://example.com/suporte"
+        }
+      ]
+    }
+  }
+}

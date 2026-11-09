@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://c3theme.dev/spec/v0/agent-ui.schema.json",
+  "title": "C3 Agent UI v0",
+  "description": "Parte de interface que o assistente põe numa mensagem do chat (Message.ui). Catálogo fechado do motor: o agente só propõe; a gravação vai pelo CRUD e pelas ações, com a permissão do usuário. Nada de HTML, código ou layout livre. O backend confere com Engine::check_agent_part antes de mandar.",
+  "type": "object",
+  "required": ["id", "kind", "payload"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "kind": { "enum": ["c3.form", "c3.record", "c3.action"] },
+    "state": { "enum": ["pending", "submitted", "declined", "cancelled", "expired", "undone"], "default": "pending" },
+    "result": { "description": "O que foi enviado ou gravado, para o resumo." },
+    "expiresAt": { "type": "string", "format": "date-time" },
+    "version": { "type": "integer", "minimum": 0, "description": "Sobe quando o assistente reenvia a parte mudada. A resposta leva a versão vista; versão velha é 409." },
+    "reason": { "enum": ["superseded", "agent", "expired"], "description": "Por que fechou sem resposta: outra parte a substituiu (só uma pendente por conversa), o assistente desistiu (ui.cancel) ou venceu o prazo." },
+    "payload": { "type": "object" }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    { "if": { "properties": { "kind": { "const": "c3.form" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/form" } } } },
+    { "if": { "properties": { "kind": { "const": "c3.record" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/record" } } } },
+    { "if": { "properties": { "kind": { "const": "c3.action" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/action" } } } }
+  ],
+  "$defs": {
+    "suggested": {
+      "type": "object",
+      "description": "Campo → de onde veio o valor que o assistente preencheu (\"do pedido 1234\"). A tela marca o campo; com aiReview, só grava depois de o usuário conferir.",
+      "additionalProperties": { "type": "string" }
+    },
+    "values": {
+      "type": "object",
+      "description": "Valores no formato trafegado (spec/README.md#tipos-de-campo-e-formato-trafegado); reference como { id, title } para a tela mostrar o nome."
+    },
+    "form": {
+      "type": "object",
+      "description": "Campos avulsos (motivo, período, quantidade). A resposta volta ao assistente e é conferida com Engine::check_agent_answer. Mesmas regras do input de uma ação, e mais: sem writeOnly e sem file.",
+      "required": ["fields"],
+      "additionalProperties": false,
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "fields": { "type": "array", "minItems": 1, "items": { "$ref": "entity.schema.json#/$defs/field" } },
+        "rows": { "type": "array", "items": { "type": "array", "items": { "type": "string" } } },
+        "values": { "$ref": "#/$defs/values" },
+        "suggested": { "$ref": "#/$defs/suggested" },
+        "submitLabel": { "type": "string" }
+      }
+    },
+    "record": {
+      "type": "object",
+      "description": "Rascunho de um registro: novo, ou alteração quando há id (só os campos que mudam). Só campos que o usuário editaria: nada readOnly, writeOnly, file nem createOnly numa alteração.",
+      "required": ["entity", "values"],
+      "additionalProperties": false,
+      "properties": {
+        "entity": { "type": "string" },
+        "id": { "type": "string" },
+        "values": { "$ref": "#/$defs/values", "minProperties": 1 },
+        "suggested": { "$ref": "#/$defs/suggested" },
+        "title": { "type": "string" }
+      }
+    },
+    "action": {
+      "type": "object",
+      "description": "Rodar uma ação do registro (não de lista), com o input preenchido. Ação tone danger pede um segundo clique.",
+      "required": ["entity", "id", "action"],
+      "additionalProperties": false,
+      "properties": {
+        "entity": { "type": "string" },
+        "id": { "type": "string" },
+        "action": { "type": "string" },
+        "input": { "$ref": "#/$defs/values" },
+        "suggested": { "$ref": "#/$defs/suggested" }
+      }
+    }
+  }
+}

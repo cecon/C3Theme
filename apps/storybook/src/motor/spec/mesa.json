@@ -1,0 +1,85 @@
+{
+  "$schema": "../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "mesa",
+  "label": {
+    "singular": "Mesa",
+    "plural": "Mesas",
+    "gender": "f"
+  },
+  "icon": "Element3",
+  "titleField": "nome",
+  "fields": [
+    {
+      "name": "nome",
+      "type": "string",
+      "label": "Mesa",
+      "required": true,
+      "maxLength": 40
+    },
+    {
+      "name": "area",
+      "type": "enum",
+      "label": "Área",
+      "required": true,
+      "default": "salao",
+      "options": [
+        {
+          "value": "salao",
+          "label": "Salão"
+        },
+        {
+          "value": "varanda",
+          "label": "Varanda"
+        }
+      ]
+    },
+    {
+      "name": "lugares",
+      "type": "integer",
+      "label": "Lugares",
+      "required": true,
+      "min": 1,
+      "max": 30
+    },
+    {
+      "name": "situacao",
+      "type": "enum",
+      "label": "Situação",
+      "default": "livre",
+      "options": [
+        {
+          "value": "livre",
+          "label": "Livre",
+          "color": "success"
+        },
+        {
+          "value": "ocupada",
+          "label": "Ocupada",
+          "color": "warning"
+        },
+        {
+          "value": "conta",
+          "label": "Conta pedida",
+          "color": "info"
+        },
+        {
+          "value": "bloqueada",
+          "label": "Bloqueada",
+          "color": "neutral"
+        }
+      ]
+    }
+  ],
+  "views": {
+    "list": {
+      "columns": ["nome", "area", "lugares", "situacao"]
+    },
+    "map": {
+      "title": "Planta do restaurante",
+      "color": "situacao",
+      "groupBy": ["area"],
+      "fields": ["lugares"]
+    }
+  }
+}

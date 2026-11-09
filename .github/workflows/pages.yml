@@ -1,0 +1,53 @@
+name: pages
+
+# publica o showcase (só front estático) e o Storybook dos componentes no GitHub Pages
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+        # o exemplo Electron só é compilado aqui, nunca aberto: sem os ~120 MB do binário
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+      # o site fica em https://<dono>.github.io/<repo>/
+      - run: pnpm --filter @c3theme/showcase build
+        env:
+          VITE_APP_BASE_NAME: /${{ github.event.repository.name }}/
+      # uma página por tela do menu (status 200, título e prévia de link próprios), 404.html com o app
+      # para as rotas dinâmicas, sitemap.xml e robots.txt
+      - run: node apps/showcase/scripts/static-pages.mjs "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
+      # catálogo de componentes (Storybook) em https://<dono>.github.io/<repo>/storybook/; caminhos relativos, sem base
+      - run: pnpm build:storybook && cp -r apps/storybook/dist apps/showcase/dist/storybook
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/showcase/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

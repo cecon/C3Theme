@@ -1,0 +1,47 @@
+{
+  "$schema": "../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "loja",
+  "label": { "singular": "Loja", "plural": "Lojas", "gender": "f" },
+  "titleField": "nome",
+  "fields": [
+    { "name": "nome", "type": "string", "label": "Nome da loja", "required": true, "maxLength": 80 },
+    { "name": "email", "type": "email", "label": "E-mail" },
+    { "name": "cnpj", "type": "string", "label": "CNPJ", "format": "cnpj" },
+    {
+      "name": "uf",
+      "type": "enum",
+      "label": "Estado",
+      "required": true,
+      "options": [
+        { "value": "SP", "label": "São Paulo" },
+        { "value": "RJ", "label": "Rio de Janeiro" },
+        { "value": "MG", "label": "Minas Gerais" },
+        { "value": "RS", "label": "Rio Grande do Sul" }
+      ]
+    },
+    {
+      "name": "dias_entrega",
+      "type": "flags",
+      "label": "Dias de entrega",
+      "options": [
+        { "value": 1, "label": "Dom" },
+        { "value": 2, "label": "Seg" },
+        { "value": 4, "label": "Ter" },
+        { "value": 8, "label": "Qua" },
+        { "value": 16, "label": "Qui" },
+        { "value": 32, "label": "Sex" },
+        { "value": 64, "label": "Sáb" }
+      ]
+    },
+    {
+      "name": "certificado",
+      "type": "file",
+      "label": "Certificado digital",
+      "accept": [".pfx", ".p12"],
+      "maxSize": 1048576,
+      "help": "Arquivo A1, até 1 MB"
+    },
+    { "name": "senha_certificado", "type": "string", "label": "Senha do certificado", "writeOnly": true }
+  ]
+}

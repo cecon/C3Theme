@@ -1,0 +1,14 @@
+{
+  "specVersion": "0",
+  "name": "product_barcode",
+  "label": { "singular": "Código de barras", "plural": "Códigos de barras" },
+  "icon": "Barcode",
+  "titleField": "barcode",
+  "description": "Só existe dentro do produto (with_parent). Um produto pode ter o EAN da unidade e o DUN da caixa.",
+  "fields": [
+    { "name": "product_id", "type": "reference", "entity": "product", "label": "Produto", "required": true, "onDelete": "cascade" },
+    { "name": "barcode", "type": "string", "label": "Código", "required": true, "unique": true, "pattern": "^[0-9]{8,14}$" },
+    { "name": "unit_id", "type": "reference", "entity": "unit", "label": "Embalagem", "required": true },
+    { "name": "factor", "type": "decimal", "label": "Qtd. na embalagem", "scale": 3, "min": 0.001, "default": "1.000", "required": true }
+  ]
+}

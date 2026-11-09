@@ -1,0 +1,783 @@
+openapi: 3.1.0
+info:
+  title: C3 Data Contract
+  version: 0.0.0
+  description: |
+    Contrato HTTP que todo backend (Axum, Node...) implementa para a shell C3.
+    A shell não conhece o banco: ela lê a estrutura em /_meta, grava cadastros via CRUD genérico e
+    roda comandos de negócio via ações (/{entity}/{id}/_actions/{action}, ou em lote /{entity}/_actions/{action}).
+    Regras de formato (tipos, filtros, erros) detalhadas em spec/README.md.
+servers: [{ url: /api }]
+security: [{ bearer: [] }]
+
+paths:
+  /_meta/app:
+    get:
+      summary: Estrutura do sistema (layout, menu, páginas, entidades)
+      operationId: getApp
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: 'app.schema.json' }
+                  pages:
+                    type: object
+                    additionalProperties: { type: boolean }
+                    description: >-
+                      Para cada página com permission (pelo path): o usuário pode abri-la na filial ativa? A shell
+                      esconde do menu e bloqueia a rota. Páginas sem permission não aparecem.
+        '401': { $ref: '#/components/responses/Error' }
+
+  /_meta/login:
+    get:
+      summary: Nome do sistema e configuração da tela de login (público, sem token)
+      description: >-
+        A shell lê isto antes de haver usuário para montar a tela de entrada. Só traz 'name' e 'auth' do app.json;
+        o resto do app continua em /_meta/app, que exige token. O sistema precisa deixar esta rota fora da autenticação.
+      operationId: getLogin
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: object
+                    required: [name, auth]
+                    properties:
+                      name: { type: string }
+                      auth:
+                        oneOf:
+                          - { $ref: 'app.schema.json#/properties/auth' }
+                          - { type: 'null' }
+
+  /_meta/context:
+    get:
+      summary: Empresas e filiais que o usuário acessa (seletor de filial da shell)
+      description: >-
+        Só tem conteúdo quando o app declara 'organization'; sem ela, devolve organization null e listas vazias.
+        A shell guarda a filial ativa e a manda em todo pedido no cabeçalho C3-Branch.
+      operationId: getContext
+      parameters:
+        - $ref: '#/components/parameters/branch'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/OrgContext' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+
+  /_meta/entities/{entity}:
+    parameters:
+      - $ref: '#/components/parameters/entity'
+      - $ref: '#/components/parameters/branch'
+    get:
+      summary: Definição de uma entidade + o que o usuário atual pode fazer nela (na filial ativa)
+      operationId: getEntity
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, capabilities]
+                properties:
+                  data: { $ref: 'entity.schema.json' }
+                  capabilities: { $ref: '#/components/schemas/Capabilities' }
+        '401': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+
+  /{entity}:
+    parameters:
+      - $ref: '#/components/parameters/entity'
+      - $ref: '#/components/parameters/branch'
+    get:
+      summary: Listar registros
+      operationId: list
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: pageSize
+          in: query
+          schema: { type: integer, enum: [10, 25, 50, 100], default: 25 }
+        - name: sort
+          in: query
+          description: "Campos separados por vírgula; prefixo '-' = decrescente. Ex.: 'status,-created_at'. Vazios sempre por último, reference ordena pelo título, desempate final por id."
+          schema: { type: string }
+        - name: q
+          in: query
+          description: Busca livre, case-insensitive, nos campos de views.list.search.
+          schema: { type: string }
+        - name: where
+          in: query
+          description: >-
+            Condição (mesmo AST de entity.schema.json#/$defs/condition) em JSON, codificada na URL.
+            Combina com os presets e com os filtros da barra da lista. Campo inexistente, operador
+            inválido para o tipo ou valor fora do formato → 400.
+            Ex.: where={"and":[{"field":"status","op":"in","value":["lead","active"]},{"field":"credit_limit","op":"gte","value":"1000.00"}]}
+          content:
+            application/json:
+              schema: { $ref: 'entity.schema.json#/$defs/condition' }
+        - name: branches
+          in: query
+          description: >-
+            Só em entidade com scope 'company' ou 'branch': ids de filiais separados por vírgula, para ler várias
+            ao mesmo tempo. Padrão: a filial ativa (C3-Branch); sem ela, todas as filiais que o usuário pode listar.
+            Filial sem acesso → 403. Em 'company', vale a empresa de cada filial.
+          schema: { type: string, pattern: '^[0-9]+(,[0-9]+)*$' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Record' }
+                  meta: { $ref: '#/components/schemas/PageMeta' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+    post:
+      summary: Criar registro
+      operationId: create
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecordInput' }
+      responses:
+        '201':
+          description: Criado. Devolve o registro como ficou no banco (com id e campos readOnly).
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/Record' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+
+  /{entity}/{id}:
+    parameters:
+      - $ref: '#/components/parameters/entity'
+      - $ref: '#/components/parameters/branch'
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      summary: Ler um registro
+      operationId: get
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/Record' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+    patch:
+      summary: Alterar campos de um registro
+      description: >-
+        Atualização parcial. Campo ausente não muda; campo com null é limpo (se não for required).
+        Com If-Match, só grava se o registro ainda está naquela _version (senão 412 stale, nada muda).
+      operationId: update
+      parameters:
+        - $ref: '#/components/parameters/ifMatch'
+        - $ref: '#/components/parameters/undo'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecordInput' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/Record' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '412': { $ref: '#/components/responses/Stale' }
+        '422': { $ref: '#/components/responses/Error' }
+    delete:
+      summary: Excluir registro
+      operationId: delete
+      parameters:
+        - $ref: '#/components/parameters/ifMatch'
+        - $ref: '#/components/parameters/undo'
+      responses:
+        '204': { description: Excluído }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '405':
+          $ref: '#/components/responses/Error'
+          description: Entidade singleton (configuração de registro único) não se exclui.
+        '409':
+          $ref: '#/components/responses/Error'
+          description: Outro registro ainda referencia este (FK restrict), ou Desfazer em entidade undoable false.
+        '412': { $ref: '#/components/responses/Stale' }
+
+  /{entity}/{id}/_actions/{action}:
+    parameters:
+      - $ref: '#/components/parameters/entity'
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+      - name: action
+        in: path
+        required: true
+        description: Nome de uma ação em entity.actions.
+        schema: { type: string, pattern: '^[a-z][a-z0-9_]{0,62}$' }
+    post:
+      summary: Rodar uma ação sobre o registro
+      description: >-
+        Comando de negócio (cancelar, reemitir, reprocessar), nunca um UPDATE genérico: o backend chama a regra
+        do sistema. Ordem das conferências: ação existe (404), read na entidade (403), registro existe e está no
+        escopo (404), permissão da ação na filial dona do registro (403), visibleWhen da ação vale para o registro
+        (409), corpo bem formado (400), input válido (422). Com If-Match, a versão é conferida antes do
+        visibleWhen (412 stale). Com C3-Undo, a ação precisa ser a inverse de outra e a entidade, undoable (409).
+        Erro da regra de negócio volta no mesmo formato (422 com fields, 409 etc.).
+      operationId: runAction
+      parameters:
+        - $ref: '#/components/parameters/ifMatch'
+        - $ref: '#/components/parameters/undo'
+      requestBody:
+        required: false
+        description: Campos de action.input, no formato trafegado. Corpo vazio = {}. Campo desconhecido → 400.
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: true }
+      responses:
+        '200':
+          description: >-
+            Ação feita. data é o registro depois da ação (null se a ação o removeu). Em ação returns file, o corpo
+            pode ser o próprio arquivo (ver ActionFile).
+          headers:
+            C3-Message: { $ref: '#/components/headers/C3Message' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    oneOf:
+                      - { $ref: '#/components/schemas/Record' }
+                      - { type: 'null' }
+                  message:
+                    type: [string, 'null']
+                    description: Aviso pronto para o usuário. Ausente ou null → a shell usa action.successMessage.
+                  open: { $ref: '#/components/schemas/ActionOpen' }
+            '*/*':
+              schema: { $ref: '#/components/schemas/ActionFile' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '412': { $ref: '#/components/responses/Stale' }
+        '422': { $ref: '#/components/responses/Error' }
+
+  /{entity}/{id}/_actions/{action}/_preview:
+    parameters:
+      - $ref: '#/components/parameters/entity'
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+      - name: action
+        in: path
+        required: true
+        description: Nome de uma ação de registro com preview true.
+        schema: { type: string, pattern: '^[a-z][a-z0-9_]{0,62}$' }
+    post:
+      summary: Prévia de uma ação de registro
+      description: >-
+        Só para ação com preview true (senão 404). Mesmas conferências de rodar a ação, mas falta de campo
+        (required, min_items) não barra: o input pode estar pela metade. Nada é gravado.
+      operationId: previewAction
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: true }
+      responses:
+        '200': { $ref: '#/components/responses/Preview' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+
+  /{entity}/_actions/{action}/_preview:
+    parameters:
+      - $ref: '#/components/parameters/entity'
+      - name: action
+        in: path
+        required: true
+        description: Nome de uma ação da lista (target list) ou em conjunto (bulk together) com preview true.
+        schema: { type: string, pattern: '^[a-z][a-z0-9_]{0,62}$' }
+    post:
+      summary: Prévia de uma ação da lista ou sobre a seleção
+      description: >-
+        Como a prévia da ação de registro, com { input } no corpo; permissão na filial ativa. Ação em conjunto
+        (bulk together) manda { ids, input }: cada id é conferido como ao rodar (409 refused com records).
+      operationId: previewListAction
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                ids: { type: array, minItems: 1, maxItems: 100, uniqueItems: true, items: { type: string } }
+                input: { type: object, additionalProperties: true }
+      responses:
+        '200': { $ref: '#/components/responses/Preview' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+
+  /{entity}/{id}/_actions/{action}/_prefill:
+    parameters:
+      - $ref: '#/components/parameters/entity'
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+      - name: action
+        in: path
+        required: true
+        description: Nome de uma ação de registro com prefill true.
+        schema: { type: string, pattern: '^[a-z][a-z0-9_]{0,62}$' }
+    get:
+      summary: Valores iniciais do input de uma ação de registro
+      description: >-
+        Só para ação com prefill true (senão 404). Mesmas conferências de rodar a ação, sem corpo: read (403),
+        registro no escopo (404), permissão da ação na filial dona (403), visibleWhen (409). O sistema calcula os
+        valores (a conferência do caixa abre com uma linha por forma de pagamento); só voltam os campos que o input
+        declara. Nada é gravado.
+      operationId: actionPrefill
+      responses:
+        '200': { $ref: '#/components/responses/Prefill' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+  /{entity}/_actions/{action}/_prefill:
+    parameters:
+      - $ref: '#/components/parameters/entity'
+      - name: action
+        in: path
+        required: true
+        description: Nome de uma ação da lista (target list) com prefill true.
+        schema: { type: string, pattern: '^[a-z][a-z0-9_]{0,62}$' }
+    get:
+      summary: Valores iniciais do input de uma ação da lista
+      description: >-
+        Só para ação da lista com prefill true (senão 404). list na entidade e permissão da ação na filial ativa
+        (403). Ex.: reajustar preços abre com os produtos ativos e o preço de hoje.
+      operationId: listActionPrefill
+      responses:
+        '200': { $ref: '#/components/responses/Prefill' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+  /_notifications: { $ref: 'notifications.yaml#/list' }
+  /_notifications/_read: { $ref: 'notifications.yaml#/read' }
+  /_notifications/_events: { $ref: 'notifications.yaml#/events' }
+  /{entity}/_aggregate: { $ref: 'aggregate.yaml' }
+  /{entity}/_events: { $ref: 'events.yaml' }
+  /{entity}/_lookups/{lookup}: { $ref: 'lookups.yaml' }
+  /{entity}/{id}/_files/{field}: { $ref: 'files.yaml' }
+  /{entity}/_actions/{action}:
+    parameters:
+      - $ref: '#/components/parameters/entity'
+      - name: action
+        in: path
+        required: true
+        description: Nome de uma ação em entity.actions com bulk (true ou together), ou de uma ação da lista.
+        schema: { type: string, pattern: '^[a-z][a-z0-9_]{0,62}$' }
+    post:
+      summary: Rodar uma ação em lote (linhas marcadas na lista, fila de pendências)
+      description: >-
+        A mesma ação, com o mesmo input, em cada id, um depois do outro. Antes de tocar em qualquer registro:
+        ação existe e tem bulk (404), read na entidade (403), corpo bem formado (400), input válido (422).
+        Depois, cada registro passa pelas conferências da ação de um registro (404, 403, 409, 422 de reference fora
+        da empresa/filial dele) e pela regra do sistema, e falha ou passa sozinho: o que deu certo não é desfeito.
+        Ação da lista (target list) usa a mesma rota com { input } e responde { message, open? }, ou o arquivo
+        (ActionFile) quando a ação tem returns file.
+        Com bulk together (ação em conjunto), as conferências por registro vêm antes e qualquer recusa recusa o
+        pedido inteiro (409 refused, com o erro de cada id barrado em error.records; com um id só, o erro dele);
+        depois o sistema executa uma vez sobre todos, tudo ou nada, e a resposta é { message, open? } ou o arquivo.
+      operationId: runBulkAction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ids]
+              additionalProperties: false
+              properties:
+                ids:
+                  type: array
+                  minItems: 1
+                  maxItems: 100
+                  uniqueItems: true
+                  items: { type: string }
+                input:
+                  type: object
+                  additionalProperties: true
+                  description: Campos de action.input, como na ação de um registro. Ausente = {}.
+      responses:
+        '200':
+          description: >-
+            Pedido processado; o resultado de cada id está em results, na ordem de ids. Em conjunto (bulk together)
+            e na ação da lista, { message, open? } ou o arquivo.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items: { $ref: '#/components/schemas/BulkItem' }
+                  meta:
+                    type: object
+                    required: [ok, failed]
+                    properties:
+                      ok: { type: integer }
+                      failed: { type: integer }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '422': { $ref: '#/components/responses/Error' }
+
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+
+  parameters:
+    entity:
+      name: entity
+      in: path
+      required: true
+      description: Nome de uma entidade listada em app.entities. Nomes começando com '_' são reservados.
+      schema: { type: string, pattern: '^[a-z][a-z0-9_]{0,62}$' }
+
+    ifMatch:
+      name: If-Match
+      in: header
+      required: false
+      description: >-
+        Controle otimista: a _version do registro como o cliente o viu (com ou sem aspas, W/ aceito, lista separada
+        por vírgula, * = qualquer). Diferente da atual → 412 stale e nada muda. Sem o cabeçalho, grava como sempre.
+        Em sistema que grava por conta própria (delegates_writes, run_action), a conferência é feita logo antes de
+        chamar o sistema, fora da transação dele.
+      schema: { type: string }
+    undo:
+      name: C3-Undo
+      in: header
+      required: false
+      description: >-
+        'true' marca o pedido como Desfazer: exige If-Match (sem ele → 400); em entidade undoable false → 409; numa
+        ação, só vale a que é inverse de outra (senão 409). Desfazer de criar é DELETE, de alterar é PATCH com os
+        valores de antes, de ação é a inversa.
+      schema: { type: string, enum: ['true'] }
+    branch:
+      name: C3-Branch
+      in: header
+      required: false
+      description: >-
+        Filial ativa (id). É onde se grava: criar em entidade com scope 'company' ou 'branch' sem ele → 400.
+        Também decide as capabilities devolvidas em /_meta/entities. Filial a que o usuário não tem acesso → 403.
+        O cabeçalho é um pedido do cliente: o backend sempre cruza com as filiais permitidas ao usuário.
+      schema: { type: string, pattern: '^[0-9]+$' }
+
+  headers:
+    C3Message:
+      description: Só na resposta que é arquivo (ActionFile) - o aviso da ação, em UTF-8 com %XX (decodeURIComponent).
+      schema: { type: string }
+
+  responses:
+    Stale:
+      description: >-
+        If-Match com uma _version que não é mais a do registro: alguém gravou depois. Nada muda; error.code 'stale'.
+        A shell relê o registro e, num Desfazer, avisa que não desfez para não apagar a alteração do outro.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Preview:
+      description: >-
+        Prévia do sistema. fill sugere valor para campos vazios do input (formato trafegado); table é só leitura,
+        com cada linha restrita às chaves de columns.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [fill]
+            properties:
+              message: { type: [string, 'null'] }
+              fill: { type: object, additionalProperties: true }
+              table:
+                oneOf:
+                  - type: 'null'
+                  - type: object
+                    required: [columns, rows]
+                    properties:
+                      columns:
+                        type: array
+                        items:
+                          type: object
+                          required: [name, label]
+                          properties:
+                            name: { type: string }
+                            label: { type: string }
+                      rows:
+                        type: array
+                        items: { type: object, additionalProperties: true }
+    Prefill:
+      description: >-
+        Valores iniciais do input no formato trafegado (reference como { id, title }; grade como lista de objetos).
+        Campo ausente abre com o default.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [data]
+            properties:
+              data: { type: object, additionalProperties: true }
+    Error:
+      description: Erro no formato padrão
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+  schemas:
+    Record:
+      type: object
+      required: [id]
+      description: >-
+        Registro com todos os campos da entidade, no formato trafegado (ver README). Campo sem valor vem como null,
+        nunca ausente. Campos reference vêm como { id, title }, para a lista mostrar o nome sem uma requisição por linha.
+        Se o registro apontado está fora do escopo do usuário, title vem null (o nome não vaza).
+        Todo registro traz a chave reservada _version; em entidade com scope, vêm também _company, _branch e _can.
+        _version no corpo é ignorada, como o id (a versão conferida é a do If-Match); as outras no corpo → 400.
+        Na leitura de um registro (não na listagem), cada seção related com save 'with_parent' vem como uma lista
+        na chave do nome da entidade filha, com as linhas no formato trafegado, na ordem da seção.
+      properties:
+        id: { type: string }
+        _company:
+          description: Empresa dona do registro (scope 'company' e 'branch').
+          $ref: '#/components/schemas/ReferenceValue'
+        _branch:
+          description: Filial dona do registro (scope 'branch').
+          $ref: '#/components/schemas/ReferenceValue'
+        _version:
+          type: string
+          description: >-
+            Versão do registro como este usuário o vê (opaca; hoje um hash dos campos visíveis, reference pelo id).
+            Muda quando algum campo do registro muda; filhas with_parent e títulos de reference não contam. Vai no
+            If-Match de alterar, excluir e ação.
+        _can:
+          type: object
+          description: O que o usuário pode fazer com esta linha (a lista pode misturar filiais com permissões diferentes).
+          required: [update, delete]
+          properties:
+            update: { type: boolean }
+            delete: { type: boolean }
+      additionalProperties: true
+
+    ReferenceValue:
+      type: object
+      required: [id, title]
+      properties:
+        id: { type: string }
+        title: { type: [string, 'null'], description: Valor do titleField do registro referenciado; null se ele está fora do escopo do usuário. }
+
+    RecordInput:
+      type: object
+      description: >-
+        Campos graváveis da entidade. 'id', '_version' e campos readOnly enviados são ignorados. Reference é enviado só como id (string).
+        Seção related com save 'with_parent': a chave com o nome da entidade filha traz a lista inteira de linhas, que substitui
+        a gravada (linha com id altera, sem id inclui, a gravada que não veio é excluída). Ausente no PATCH, os filhos não mudam;
+        ausente no POST, é lista vazia. Erro de uma linha volta em fields como '{filha}.{posição}.{campo}'; da lista, em '{filha}'.
+      additionalProperties: true
+
+    PageMeta:
+      type: object
+      required: [page, pageSize, total]
+      properties:
+        page: { type: integer, minimum: 1 }
+        pageSize: { type: integer }
+        total: { type: integer, minimum: 0 }
+
+    Capabilities:
+      type: object
+      description: O que o usuário atual pode fazer. A shell esconde botões; o backend continua obrigado a responder 403.
+      required: [list, read, create, update, delete, actions]
+      properties:
+        list: { type: boolean }
+        read: { type: boolean }
+        create: { type: boolean }
+        update: { type: boolean }
+        delete: { type: boolean }
+        actions:
+          type: object
+          description: Uma chave por ação de entity.actions (vazio se não há ações). Ação exige read.
+          additionalProperties: { type: boolean }
+        fields:
+          type: object
+          description: >-
+            Campos e listas with_parent que o usuário não vê ('hidden') ou só lê ('readOnly'), pelo `access` do campo
+            e da seção (Hooks::permitted, na filial ativa). Fora daqui, livre. 'hidden' não vem na leitura nem na lista
+            e não serve para filtrar, buscar ou ordenar (400); mudar 'hidden' ou 'readOnly' é 422 'forbidden'.
+          additionalProperties: { enum: [hidden, readOnly] }
+
+    OrgContext:
+      type: object
+      required: [organization, companies, branches, activeBranch, defaultBranch]
+      properties:
+        organization:
+          description: Cópia de app.organization, ou null.
+          oneOf:
+            - type: 'null'
+            - type: object
+              required: [company, branch]
+              properties:
+                company: { type: string }
+                branch: { type: string }
+        companies:
+          type: array
+          description: Empresas de alguma filial permitida, ordenadas pelo título.
+          items: { $ref: '#/components/schemas/ReferenceValue' }
+        branches:
+          type: array
+          description: Filiais permitidas ao usuário, ordenadas por empresa e título.
+          items:
+            type: object
+            required: [id, title, company]
+            properties:
+              id: { type: string }
+              title: { type: string }
+              company: { type: string, description: id da empresa }
+        activeBranch: { type: [string, 'null'], description: O C3-Branch desta requisição, se veio. }
+        defaultBranch: { type: [string, 'null'], description: Filial sugerida pelo sistema para abrir a sessão. }
+
+    ActionOpen:
+      type: object
+      required: [entity, id]
+      description: Registro que a shell abre depois da ação (/{entity}/{id}), como o rascunho criado a partir do XML.
+      properties:
+        entity: { type: string }
+        id: { type: string }
+    ActionFile:
+      type: string
+      format: binary
+      description: >-
+        Resposta de ação returns file - o próprio arquivo, com Content-Type do sistema, Content-Disposition
+        (attachment; filename*=UTF-8''...) e o aviso no cabeçalho C3-Message. A shell baixa. Sem arquivo, a mesma
+        ação responde o JSON de sempre.
+    BulkItem:
+      type: object
+      required: [id, ok]
+      description: Resultado de um id na ação em lote. ok true traz data e message como na ação de um registro; ok false traz error.
+      properties:
+        id: { type: string }
+        ok: { type: boolean }
+        data:
+          oneOf:
+            - { $ref: '#/components/schemas/Record' }
+            - { type: 'null' }
+        message: { type: [string, 'null'] }
+        error: { $ref: '#/components/schemas/Error/properties/error' }
+
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              enum:
+                [bad_request, unauthorized, forbidden, not_found, method_not_allowed, conflict, refused, stale, validation_failed, unavailable, internal]
+            message:
+              type: string
+              description: Mensagem pronta para o usuário final, no idioma do header Accept-Language.
+            records:
+              type: array
+              description: Só em refused (ação em conjunto) - o erro de cada registro barrado, na ordem de ids.
+              items:
+                type: object
+                required: [id, error]
+                properties:
+                  id: { type: string }
+                  error: { type: object, description: 'O error de sempre (code, message, fields?).' }
+            fields:
+              type: object
+              description: Só em validation_failed e conflict. Chave = nome do campo.
+              additionalProperties:
+                type: array
+                minItems: 1
+                items:
+                  type: object
+                  required: [code, message]
+                  properties:
+                    code:
+                      type: string
+                      enum:
+                        [required, too_short, too_long, pattern, min, max, invalid_type, invalid_option, not_found, unique, out_of_scope]
+                    message: { type: string }

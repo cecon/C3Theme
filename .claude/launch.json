@@ -1,0 +1,26 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "seed",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@c3theme/seed", "exec", "vite", "--open", "false"],
+      "port": 5180,
+      "autoPort": true
+    },
+    {
+      "name": "demo",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@c3theme/demo", "exec", "vite", "--open", "false"],
+      "port": 5181,
+      "autoPort": true
+    },
+    {
+      "name": "engine-demo",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@c3theme/engine-demo", "exec", "vite", "--open", "false", "--port", "5173"],
+      "port": 5173,
+      "autoPort": true
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "$schema": "../entity.schema.json",
+  "specVersion": "0",
+  "name": "company_fiscal",
+  "label": {
+    "singular": "Dados fiscais",
+    "plural": "Dados fiscais"
+  },
+  "icon": "Receipt",
+  "description": "Uma linha por empresa, opcional: aparece como campos na aba Fiscal (related with_parent com maxItems 1).",
+  "fields": [
+    {
+      "name": "company_id",
+      "type": "reference",
+      "entity": "company",
+      "label": "Empresa",
+      "required": true,
+      "onDelete": "cascade"
+    },
+    {
+      "name": "tax_regime",
+      "type": "enum",
+      "label": "Regime tributário",
+      "required": true,
+      "options": [
+        { "value": "simples", "label": "Simples Nacional" },
+        { "value": "presumido", "label": "Lucro presumido" },
+        { "value": "real", "label": "Lucro real" }
+      ]
+    },
+    {
+      "name": "state_registration",
+      "type": "string",
+      "label": "Inscrição estadual",
+      "maxLength": 20
+    },
+    {
+      "name": "municipal_registration",
+      "type": "string",
+      "label": "Inscrição municipal",
+      "maxLength": 20
+    }
+  ],
+  "lookups": [
+    {
+      "name": "sintegra",
+      "field": "state_registration",
+      "fills": ["tax_regime"],
+      "label": "Consultar no Sintegra"
+    }
+  ],
+  "views": {
+    "form": {
+      "sections": [{ "rows": [["tax_regime"], ["state_registration", "municipal_registration"]] }]
+    }
+  }
+}

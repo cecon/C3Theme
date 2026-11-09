@@ -1,0 +1,45 @@
+# Path item de POST /{entity}/_lookups/{lookup}, referenciado por openapi.yaml (que já passou do limite de tamanho).
+parameters:
+  - $ref: 'openapi.yaml#/components/parameters/entity'
+  - name: lookup
+    in: path
+    required: true
+    description: Nome de uma consulta em entity.lookups.
+    schema: { type: string, pattern: '^[a-z][a-z0-9_]{0,62}$' }
+post:
+  summary: Consultar e preencher (CEP, CNPJ)
+  description: >-
+    A partir do valor de um campo, o sistema consulta uma fonte externa e devolve valores para os campos de
+    lookup.fills. Nada é gravado: a shell só preenche o formulário, e a falha nunca impede salvar. Ordem das
+    conferências: consulta existe (404), create ou update na entidade (403; filha with_parent: no pai), corpo bem formado (400), valor de
+    origem válido pelas regras do campo (422 com fields no campo de origem). Sem resultado → 404; fonte fora do
+    ar → 503 unavailable.
+  operationId: runLookup
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required: [value]
+          additionalProperties: false
+          properties:
+            value: { type: string }
+  responses:
+    '200':
+      description: >-
+        Campos para preencher, só os de lookup.fills, no formato trafegado (reference como { id, title }).
+        Campo ausente = a consulta não sabe; a shell não mexe nele.
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [data]
+            properties:
+              data: { type: object, additionalProperties: true }
+    '400': { $ref: 'openapi.yaml#/components/responses/Error' }
+    '401': { $ref: 'openapi.yaml#/components/responses/Error' }
+    '403': { $ref: 'openapi.yaml#/components/responses/Error' }
+    '404': { $ref: 'openapi.yaml#/components/responses/Error' }
+    '422': { $ref: 'openapi.yaml#/components/responses/Error' }
+    '503': { $ref: 'openapi.yaml#/components/responses/Error' }

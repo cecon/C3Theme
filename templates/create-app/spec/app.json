@@ -1,0 +1,28 @@
+{
+  "$schema": "../../../spec/v0/app.schema.json",
+  "specVersion": "0",
+  "name": "{{title}}",
+  "homePath": "/painel",
+  "entities": ["contact"],
+  "pages": [
+    {
+      "path": "/painel",
+      "title": "Painel",
+      "dashboard": {
+        "widgets": [
+          { "type": "kpi", "title": "Contatos", "entity": "contact", "width": 6 },
+          { "type": "kpi", "title": "Contatos ativos", "entity": "contact", "preset": "ativos", "width": 6 },
+          { "type": "chart", "title": "Contatos por situação", "entity": "contact", "groupBy": "status", "width": 12 }
+        ]
+      }
+    }
+  ],
+  "layout": {
+    "orientation": "vertical",
+    "header": { "search": true },
+    "menu": [
+      { "items": [{ "path": "/painel", "icon": "Home2" }] },
+      { "title": "Cadastros", "items": [{ "entity": "contact" }] }
+    ]
+  }
+}

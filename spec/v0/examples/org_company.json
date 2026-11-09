@@ -1,0 +1,37 @@
+{
+  "$schema": "../entity.schema.json",
+  "specVersion": "0",
+  "name": "org_company",
+  "label": {
+    "singular": "Empresa do grupo",
+    "plural": "Empresas do grupo"
+  },
+  "description": "Empresa (CNPJ raiz) do grupo econômico que usa o sistema. Não confundir com 'company', que é a empresa do cliente no CRM.",
+  "icon": "Buildings2",
+  "titleField": "name",
+  "scope": "group",
+  "fields": [
+    {
+      "name": "name",
+      "type": "string",
+      "label": "Razão social",
+      "required": true,
+      "maxLength": 120
+    },
+    {
+      "name": "cnpj_root",
+      "type": "string",
+      "label": "CNPJ raiz",
+      "required": true,
+      "unique": true,
+      "pattern": "^[0-9]{8}$"
+    }
+  ],
+  "views": {
+    "list": {
+      "columns": ["name", "cnpj_root"],
+      "search": ["name", "cnpj_root"],
+      "defaultSort": [{ "field": "name" }]
+    }
+  }
+}

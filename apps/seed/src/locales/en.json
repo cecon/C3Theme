@@ -1,0 +1,15 @@
+{
+  "menu.principal": "Main",
+  "menu.inicio": "Home",
+  "menu.paginas": "Pages",
+  "menu.perfil": "My profile",
+  "menu.manutencao": "Maintenance",
+  "menu.erro404": "Error 404",
+  "menu.erro500": "Error 500",
+  "menu.emManutencao": "Under maintenance",
+  "menu.emBreve": "Coming soon",
+  "menu.suporte": "Support",
+  "menu.documentacao": "Documentation",
+  "inicio.titulo": "Sample page",
+  "inicio.texto": "Starting point of the system. Create screens in src/pages, add the route in App.tsx and the item in menu.ts."
+}

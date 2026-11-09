@@ -1,0 +1,97 @@
+{
+  "$schema": "../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "cliente",
+  "label": {
+    "singular": "Cliente",
+    "plural": "Clientes",
+    "gender": "m"
+  },
+  "titleField": "nome",
+  "fields": [
+    {
+      "name": "nome",
+      "type": "string",
+      "label": "Nome",
+      "required": true,
+      "maxLength": 120
+    },
+    {
+      "name": "email",
+      "type": "email",
+      "label": "E-mail"
+    },
+    {
+      "name": "telefone",
+      "type": "string",
+      "label": "Telefone",
+      "format": "phone"
+    },
+    {
+      "name": "cidade",
+      "type": "string",
+      "label": "Cidade"
+    },
+    {
+      "name": "uf",
+      "type": "string",
+      "label": "UF",
+      "maxLength": 2
+    },
+    {
+      "name": "status",
+      "type": "enum",
+      "label": "Situação",
+      "default": "ativo",
+      "options": [
+        {
+          "value": "ativo",
+          "label": "Ativo",
+          "color": "success"
+        },
+        {
+          "value": "pendente",
+          "label": "Pendente",
+          "color": "warning"
+        },
+        {
+          "value": "inativo",
+          "label": "Inativo",
+          "color": "danger"
+        }
+      ]
+    }
+  ],
+  "views": {
+    "list": {
+      "columns": [
+        {
+          "field": "nome",
+          "avatar": true,
+          "secondary": "email"
+        },
+        "telefone",
+        {
+          "field": "cidade",
+          "join": ["uf"]
+        },
+        "status"
+      ],
+      "search": ["nome", "email"],
+      "searchHint": "Nome ou e-mail",
+      "filters": [
+        {
+          "field": "status",
+          "all": "Todas"
+        }
+      ],
+      "rowActions": ["view", "edit", "delete"],
+      "defaultSort": [
+        {
+          "field": "nome"
+        }
+      ],
+      "pageSize": 10
+    }
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "$schema": "../../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "fatura",
+  "label": { "singular": "Fatura", "plural": "Faturas", "new": "Nova fatura", "gender": "f" },
+  "titleField": "numero",
+  "fields": [
+    { "name": "numero", "type": "string", "label": "Número", "required": true, "createOnly": true },
+    { "name": "conta", "type": "reference", "entity": "cliente_fatura", "label": "Cadastro do cliente" },
+    { "name": "cliente", "type": "string", "label": "Cliente", "required": true },
+    { "name": "cliente_email", "type": "email", "label": "E-mail do cliente" },
+    { "name": "emissao", "type": "date", "label": "Emissão", "required": true },
+    { "name": "vencimento", "type": "date", "label": "Vencimento", "required": true },
+    {
+      "name": "status",
+      "type": "enum",
+      "label": "Situação",
+      "default": "pendente",
+      "options": [
+        { "value": "paga", "label": "Paga", "color": "success" },
+        { "value": "pendente", "label": "Pendente", "color": "warning" },
+        { "value": "vencida", "label": "Vencida", "color": "danger" },
+        { "value": "cancelada", "label": "Cancelada", "color": "neutral" }
+      ]
+    },
+    { "name": "desconto", "type": "decimal", "label": "Desconto", "scale": 2, "unit": "%", "min": 0, "max": 100 },
+    { "name": "impostos", "type": "decimal", "label": "Impostos", "scale": 2, "unit": "%", "min": 0, "max": 100 },
+    { "name": "total", "type": "decimal", "label": "Total", "scale": 2, "currency": "BRL", "readOnly": true },
+    {
+      "name": "observacoes",
+      "type": "text",
+      "label": "Observações para o cliente",
+      "help": "Aparece no rodapé da fatura (até 500 caracteres).",
+      "maxLength": 500
+    }
+  ],
+  "views": {
+    "list": {
+      "columns": [
+        { "field": "numero", "link": true },
+        { "field": "cliente", "avatar": { "letters": 1, "tone": "neutral" }, "weight": "normal", "secondary": "cliente_email" },
+        "emissao",
+        "vencimento",
+        { "field": "total", "label": "Valor" },
+        "status"
+      ],
+      "search": ["numero", "cliente", "cliente_email"],
+      "searchHint": "Número ou cliente",
+      "presets": [
+        { "id": "pagas", "label": "Pagas", "where": { "field": "status", "op": "eq", "value": "paga" } },
+        { "id": "pendentes", "label": "Pendentes", "where": { "field": "status", "op": "eq", "value": "pendente" } },
+        { "id": "vencidas", "label": "Vencidas", "where": { "field": "status", "op": "eq", "value": "vencida" } },
+        { "id": "canceladas", "label": "Canceladas", "where": { "field": "status", "op": "eq", "value": "cancelada" } }
+      ],
+      "presetTabs": { "all": "Todas" },
+      "dateRange": { "field": "emissao", "label": "Emitidas" },
+      "rowActions": ["view", "edit", "delete"],
+      "rowActionsStyle": "quiet",
+      "export": false,
+      "defaultSort": [{ "field": "emissao", "direction": "desc" }],
+      "pageSize": 10
+    },
+    "form": {
+      "actions": "footer",
+      "submitLabel": { "new": "Criar fatura", "edit": "Salvar alterações" },
+      "initial": {
+        "emissao": { "$date": "today" },
+        "vencimento": { "$date": "today", "offset": 15 },
+        "desconto": "0",
+        "impostos": "0",
+        "observacoes": "Pagamento via Pix ou boleto bancário."
+      },
+      "sections": [
+        { "title": "Dados da fatura", "rows": [["numero", "status", "emissao", "vencimento"]] },
+        { "title": "Cliente e endereços", "rows": [["cliente", "cliente_email"]] },
+        {
+          "title": "Itens",
+          "related": {
+            "entity": "fatura_item",
+            "field": "fatura",
+            "save": "with_parent",
+            "minItems": 1,
+            "maxItems": 50,
+            "computed": [{ "label": "Total do item", "value": "quantidade * preco", "currency": "BRL" }]
+          }
+        },
+        { "title": "Observações", "width": 7, "rows": [["observacoes"]] },
+        {
+          "title": "Resumo",
+          "width": 5,
+          "rows": [["desconto", "impostos"]],
+          "summary": [
+            { "name": "subtotal", "label": "Subtotal", "value": "sum(fatura_item, quantidade * preco)", "currency": "BRL" },
+            { "name": "desconto_valor", "label": "Desconto", "value": "subtotal * desconto / 100", "currency": "BRL", "negative": true },
+            { "name": "impostos_valor", "label": "Impostos", "value": "(subtotal - desconto_valor) * impostos / 100", "currency": "BRL" },
+            { "label": "Total", "value": "subtotal - desconto_valor + impostos_valor", "currency": "BRL", "total": true }
+          ]
+        }
+      ]
+    }
+  },
+  "actions": [
+    {
+      "name": "marcar_paga",
+      "label": "Marcar como pagas",
+      "icon": "TickCircle",
+      "bulk": true,
+      "visibleWhen": { "field": "status", "op": "ne", "value": "paga" }
+    }
+  ]
+}

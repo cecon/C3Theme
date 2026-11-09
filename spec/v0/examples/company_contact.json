@@ -1,0 +1,73 @@
+{
+  "$schema": "../entity.schema.json",
+  "specVersion": "0",
+  "name": "company_contact",
+  "label": {
+    "singular": "Contato",
+    "plural": "Contatos"
+  },
+  "icon": "Call",
+  "titleField": "name",
+  "description": "Só existe dentro da empresa: é gravado junto com ela (seção related com save with_parent). O CEP preenche o endereço no diálogo da linha.",
+  "fields": [
+    {
+      "name": "company_id",
+      "type": "reference",
+      "entity": "company",
+      "label": "Empresa",
+      "required": true,
+      "onDelete": "cascade"
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "label": "Nome",
+      "required": true,
+      "maxLength": 80
+    },
+    {
+      "name": "email",
+      "type": "email",
+      "label": "E-mail",
+      "help": "Não repete dentro da mesma empresa."
+    },
+    {
+      "name": "main",
+      "type": "boolean",
+      "label": "Principal",
+      "default": false
+    },
+    {
+      "name": "zip_code",
+      "type": "string",
+      "label": "CEP",
+      "pattern": "^[0-9]{8}$"
+    },
+    {
+      "name": "street",
+      "type": "string",
+      "label": "Logradouro",
+      "maxLength": 120
+    },
+    {
+      "name": "city",
+      "type": "string",
+      "label": "Cidade",
+      "maxLength": 80
+    },
+    {
+      "name": "state",
+      "type": "string",
+      "label": "UF",
+      "pattern": "^[A-Z]{2}$"
+    }
+  ],
+  "lookups": [
+    {
+      "name": "cep",
+      "field": "zip_code",
+      "fills": ["street", "city", "state"],
+      "trigger": "change"
+    }
+  ]
+}

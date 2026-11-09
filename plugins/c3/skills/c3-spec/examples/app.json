@@ -1,0 +1,20 @@
+{
+  "specVersion": "0",
+  "name": "ERP Exemplo",
+  "entities": ["product", "product_category", "unit", "supplier", "product_barcode", "product_supplier"],
+  "layout": {
+    "orientation": "vertical",
+    "menu": [
+      {
+        "title": "Estoque",
+        "items": [
+          { "entity": "product" },
+          { "entity": "product", "preset": "sem-preco", "title": "Produtos sem preço", "icon": "Warning2", "badge": true },
+          { "entity": "product_category" },
+          { "entity": "unit" },
+          { "entity": "supplier" }
+        ]
+      }
+    ]
+  }
+}

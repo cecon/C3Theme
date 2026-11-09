@@ -1,0 +1,15 @@
+{
+  "name": "@c3theme/conformance",
+  "version": "0.1.0",
+  "license": "UNLICENSED",
+  "description": "Suíte de conformidade do contrato C3 (spec/v0): testa um backend rodando, via HTTP.",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "c3-conformance": "./src/cli.mjs"
+  },
+  "dependencies": {
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1"
+  }
+}

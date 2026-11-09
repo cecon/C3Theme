@@ -1,0 +1,161 @@
+{
+  "description": "Formato de documento e telefone (format em string): o valor trafega sem máscara, só dígitos (CPF) ou 12 caracteres [0-9A-Z] e 2 dígitos (CNPJ). error null = válido; 'pattern' = forma errada; 'check_digit' = dígito verificador errado. 'phone' trafega só os 10 ou 11 dígitos (DDD + número), sem dígito verificador.",
+  "cases": [
+    {
+      "format": "cpf",
+      "value": "52998224725",
+      "error": null,
+      "note": "CPF válido"
+    },
+    {
+      "format": "cpf",
+      "value": "11144477735",
+      "error": null,
+      "note": "CPF válido"
+    },
+    {
+      "format": "cpf",
+      "value": "52998224724",
+      "error": "check_digit",
+      "note": "último dígito errado"
+    },
+    {
+      "format": "cpf",
+      "value": "11111111111",
+      "error": "check_digit",
+      "note": "todos iguais passam no cálculo mas não existem"
+    },
+    {
+      "format": "cpf",
+      "value": "529.982.247-25",
+      "error": "pattern",
+      "note": "com máscara: trafega só dígitos"
+    },
+    {
+      "format": "cpf",
+      "value": "5299822472",
+      "error": "pattern",
+      "note": "10 dígitos"
+    },
+    {
+      "format": "cpf",
+      "value": "12345678000195",
+      "error": "pattern",
+      "note": "CNPJ num campo só de CPF"
+    },
+    {
+      "format": "cnpj",
+      "value": "12345678000195",
+      "error": null,
+      "note": "CNPJ numérico válido"
+    },
+    {
+      "format": "cnpj",
+      "value": "12ABC34501DE35",
+      "error": null,
+      "note": "CNPJ alfanumérico (exemplo da Receita, vale desde jul/2026)"
+    },
+    {
+      "format": "cnpj",
+      "value": "12ABC34501DE36",
+      "error": "check_digit",
+      "note": "alfanumérico com DV errado"
+    },
+    {
+      "format": "cnpj",
+      "value": "12abc34501de35",
+      "error": "pattern",
+      "note": "letra minúscula: trafega maiúscula"
+    },
+    {
+      "format": "cnpj",
+      "value": "12ABC34501DEA5",
+      "error": "pattern",
+      "note": "os dois últimos são sempre dígitos"
+    },
+    {
+      "format": "cnpj",
+      "value": "12.ABC.345/01DE-35",
+      "error": "pattern",
+      "note": "com máscara"
+    },
+    {
+      "format": "cnpj",
+      "value": "12345678000190",
+      "error": "check_digit",
+      "note": "DV errado"
+    },
+    {
+      "format": "cnpj",
+      "value": "00000000000000",
+      "error": "check_digit",
+      "note": "todos iguais"
+    },
+    {
+      "format": "cnpj",
+      "value": "52998224725",
+      "error": "pattern",
+      "note": "CPF num campo só de CNPJ"
+    },
+    {
+      "format": "cpf_cnpj",
+      "value": "52998224725",
+      "error": null,
+      "note": "11 caracteres: CPF"
+    },
+    {
+      "format": "cpf_cnpj",
+      "value": "12ABC34501DE35",
+      "error": null,
+      "note": "14 caracteres: CNPJ"
+    },
+    {
+      "format": "cpf_cnpj",
+      "value": "1234567890123",
+      "error": "pattern",
+      "note": "13 caracteres"
+    },
+    {
+      "format": "cpf_cnpj",
+      "value": "52998224726",
+      "error": "check_digit",
+      "note": "CPF com DV errado"
+    },
+    {
+      "format": "phone",
+      "value": "11981234567",
+      "error": null,
+      "note": "celular com DDD (11 dígitos)"
+    },
+    {
+      "format": "phone",
+      "value": "1131234567",
+      "error": null,
+      "note": "fixo com DDD (10 dígitos)"
+    },
+    {
+      "format": "phone",
+      "value": "(11) 98123-4567",
+      "error": "pattern",
+      "note": "com máscara: trafega só dígitos"
+    },
+    {
+      "format": "phone",
+      "value": "981234567",
+      "error": "pattern",
+      "note": "sem DDD"
+    },
+    {
+      "format": "phone",
+      "value": "5511981234567",
+      "error": "pattern",
+      "note": "com código do país"
+    },
+    {
+      "format": "phone",
+      "value": "11a81234567",
+      "error": "pattern",
+      "note": "com letra no meio"
+    }
+  ]
+}

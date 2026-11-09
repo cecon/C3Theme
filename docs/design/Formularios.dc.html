@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>C3Theme · Formulários</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2563EB}a:hover{color:#1A45A5}
+.fld{position:relative;display:flex;flex-direction:column;gap:4px}
+.fld label.fl{position:absolute;top:-8px;left:10px;padding:0 4px;background:#FFFFFF;font-size:12px;color:#5B6474;line-height:16px}
+.fld input,.fld .sel{font-family:inherit;font-size:15px;color:#141A24;height:56px;box-sizing:border-box;padding:0 14px;border:1px solid #E2E6EC;border-radius:8px;background:#FFFFFF;outline:none;width:100%}
+.fld.sm input,.fld.sm .sel{height:40px;font-size:15px}
+.fld .help{font-size:12px;color:#5B6474;padding:0 14px}
+.sel{display:flex;align-items:center;justify-content:space-between}
+.cap{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#5B6474}
+.row{display:flex;align-items:center;gap:10px;font-size:15px}
+.cb{width:18px;height:18px;border-radius:3px;box-sizing:border-box;border:2px solid #5B6474;display:inline-grid;place-items:center;flex-shrink:0}
+.rd{width:20px;height:20px;border-radius:50%;box-sizing:border-box;border:2px solid #5B6474;display:inline-grid;place-items:center;flex-shrink:0}
+.sw{width:34px;height:14px;border-radius:7px;position:relative;flex-shrink:0;margin:0 3px}
+.sw i{position:absolute;top:-3px;width:20px;height:20px;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+</style>
+</helmet>
+<div style="width: 1200px; height: 1180px; box-sizing: border-box; padding: 48px; background: #F4F6F9; font-family: 'Inter', system-ui, sans-serif; color: #141A24; display: flex; flex-direction: column; gap: 32px">
+  <div style="display: flex; flex-direction: column; gap: 4px">
+    <span class="cap">04 · Formulários</span>
+    <h1 style="margin: 0; font-size: 32px; font-weight: 600; line-height: 1.25">Campos e controles</h1>
+    <p style="margin: 0; font-size: 15px; color: #5B6474">MuiOutlinedInput: fundo paper, borda divider, hover text.secondary, foco primary 2px.</p>
+  </div>
+
+  <section style="background: #FFFFFF; border: 1px solid #E2E6EC; border-radius: 24px; overflow: hidden">
+    <div style="padding: 14px 20px; min-height: 60px; box-sizing: border-box; display: flex; align-items: center; border-bottom: 1px solid #E2E6EC">
+      <div><div style="font-size: 16px; font-weight: 600">TextField e Select — estados</div><div style="font-size: 14px; color: #5B6474">medium 56px · small 40px</div></div>
+    </div>
+    <div style="padding: 28px 20px 20px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px 16px">
+      <div class="fld"><label class="fl" for="f1">Nome</label><input id="f1" value="Ana Beatriz Souza"><span class="help">Padrão</span></div>
+      <div class="fld"><label class="fl" for="f2" style="color: #9AA4B2">E-mail</label><input id="f2" value="" placeholder="E-mail" style="border-color: #5B6474"><span class="help">Hover</span></div>
+      <div class="fld"><label class="fl" for="f3" style="color: #2563EB">Cidade</label><input id="f3" value="Curitiba" style="border: 2px solid #2563EB; padding-left: 13px"><span class="help">Foco</span></div>
+      <div class="fld"><label class="fl" for="f4" style="color: #D33A3A">CPF</label><input id="f4" value="123.456.789-0" style="border-color: #D33A3A"><span class="help" style="color: #D33A3A">CPF incompleto</span></div>
+      <div class="fld"><label class="fl" for="f5" style="color: rgba(0,0,0,0.38)">Código</label><input id="f5" value="CLI-00421" disabled style="color: rgba(0,0,0,0.38); border-color: rgba(0,0,0,0.12)"><span class="help">Desabilitado</span></div>
+      <div class="fld"><label class="fl" for="f6">Departamento</label><div id="f6" class="sel">Tecnologia<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#5B6474" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></div><span class="help">Select</span></div>
+      <div class="fld"><label class="fl" for="f7">Valor</label><div style="display: flex; align-items: center; height: 56px; border: 1px solid #E2E6EC; border-radius: 8px; padding: 0 14px; gap: 8px; box-sizing: border-box"><span style="color: #5B6474; font-size: 15px">R$</span><input id="f7" value="1.890,50" style="border: none; height: 100%; padding: 0"></div><span class="help">Adornment</span></div>
+      <div class="fld"><label class="fl" for="f8">Buscar</label><div style="display: flex; align-items: center; height: 56px; border: 1px solid #E2E6EC; border-radius: 8px; padding: 0 14px; gap: 8px; box-sizing: border-box"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#5B6474" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="f8" value="" placeholder="Nome, e-mail ou CPF" style="border: none; height: 100%; padding: 0"></div><span class="help">Ícone inicial</span></div>
+      <div class="fld sm"><label class="fl" for="f9">Small</label><input id="f9" value="Recife"></div>
+      <div class="fld sm"><label class="fl" for="f10">Small · select</label><div id="f10" class="sel">Nordeste<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#5B6474" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></div></div>
+      <div class="fld" style="grid-column: span 2"><label class="fl" for="f11">Habilidades</label><div id="f11" style="min-height: 56px; border: 1px solid #E2E6EC; border-radius: 8px; padding: 8px 10px; box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: center; gap: 6px">
+        <span style="height: 24px; padding: 0 8px; border-radius: 6px; background: rgba(0,0,0,0.08); font-size: 13px; font-weight: 500; display: inline-flex; align-items: center">React</span>
+        <span style="height: 24px; padding: 0 8px; border-radius: 6px; background: rgba(0,0,0,0.08); font-size: 13px; font-weight: 500; display: inline-flex; align-items: center">TypeScript</span>
+        <span style="height: 24px; padding: 0 8px; border-radius: 6px; background: rgba(0,0,0,0.08); font-size: 13px; font-weight: 500; display: inline-flex; align-items: center">SQL</span>
+        <span style="font-size: 15px; color: #9AA4B2; padding-left: 4px">Autocomplete múltiplo…</span>
+      </div></div>
+    </div>
+  </section>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px">
+    <section style="background: #FFFFFF; border: 1px solid #E2E6EC; border-radius: 24px; overflow: hidden">
+      <div style="padding: 14px 20px; min-height: 60px; box-sizing: border-box; display: flex; align-items: center; border-bottom: 1px solid #E2E6EC">
+        <div><div style="font-size: 16px; font-weight: 600">Checkbox e Radio</div></div>
+      </div>
+      <div style="padding: 20px; display: flex; flex-direction: column; gap: 14px">
+        <div class="row"><span class="cb" style="background: #2563EB; border-color: #2563EB"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg></span>Receber notificações</div>
+        <div class="row"><span class="cb"></span>Aceito os termos</div>
+        <div class="row"><span class="cb" style="background: #2563EB; border-color: #2563EB"><span style="width: 8px; height: 2px; background: #FFFFFF"></span></span>Selecionar todos (parcial)</div>
+        <div class="row" style="color: rgba(0,0,0,0.38)"><span class="cb" style="border-color: rgba(0,0,0,0.26)"></span>Desabilitado</div>
+        <div style="height: 1px; background: #E2E6EC; margin: 4px 0"></div>
+        <div class="row"><span class="rd" style="border-color: #2563EB"><span style="width: 10px; height: 10px; border-radius: 50%; background: #2563EB"></span></span>Pessoa física</div>
+        <div class="row"><span class="rd"></span>Pessoa jurídica</div>
+        <div class="row" style="color: rgba(0,0,0,0.38)"><span class="rd" style="border-color: rgba(0,0,0,0.26)"></span>Estrangeiro</div>
+      </div>
+    </section>
+
+    <section style="background: #FFFFFF; border: 1px solid #E2E6EC; border-radius: 24px; overflow: hidden">
+      <div style="padding: 14px 20px; min-height: 60px; box-sizing: border-box; display: flex; align-items: center; border-bottom: 1px solid #E2E6EC">
+        <div><div style="font-size: 16px; font-weight: 600">Switch e Slider</div></div>
+      </div>
+      <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px">
+        <div class="row"><span class="sw" style="background: rgb(37 99 235 / 0.5)"><i style="left: 17px; background: #2563EB"></i></span>Modo escuro</div>
+        <div class="row"><span class="sw" style="background: rgba(0,0,0,0.38)"><i style="left: -3px; background: #FFFFFF"></i></span>Menu recolhido</div>
+        <div class="row"><span class="sw" style="background: rgb(22 136 74 / 0.5)"><i style="left: 17px; background: #16884A"></i></span>Ativo</div>
+        <div style="height: 1px; background: #E2E6EC; margin: 4px 0"></div>
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <span style="font-size: 14px; color: #5B6474">Volume · 60</span>
+          <div style="position: relative; height: 20px">
+            <div style="position: absolute; top: 8px; left: 0; right: 0; height: 4px; border-radius: 2px; background: rgb(37 99 235 / 0.38)"></div>
+            <div style="position: absolute; top: 8px; left: 0; width: 60%; height: 4px; border-radius: 2px; background: #2563EB"></div>
+            <div style="position: absolute; top: 0; left: calc(60% - 10px); width: 20px; height: 20px; border-radius: 50%; background: #2563EB; box-shadow: 0 0 0 6px rgb(37 99 235 / 0.16)"></div>
+          </div>
+          <span style="font-size: 14px; color: #5B6474">Faixa de preço · R$ 200 – R$ 700</span>
+          <div style="position: relative; height: 20px">
+            <div style="position: absolute; top: 8px; left: 0; right: 0; height: 4px; border-radius: 2px; background: rgb(37 99 235 / 0.38)"></div>
+            <div style="position: absolute; top: 8px; left: 20%; width: 50%; height: 4px; background: #2563EB"></div>
+            <div style="position: absolute; top: 0; left: calc(20% - 10px); width: 20px; height: 20px; border-radius: 50%; background: #2563EB"></div>
+            <div style="position: absolute; top: 0; left: calc(70% - 10px); width: 20px; height: 20px; border-radius: 50%; background: #2563EB"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section style="background: #FFFFFF; border: 1px solid #E2E6EC; border-radius: 24px; overflow: hidden">
+      <div style="padding: 14px 20px; min-height: 60px; box-sizing: border-box; display: flex; align-items: center; border-bottom: 1px solid #E2E6EC">
+        <div><div style="font-size: 16px; font-weight: 600">OtpInput e PasswordStrength</div></div>
+      </div>
+      <div style="padding: 20px; display: flex; flex-direction: column; gap: 20px">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 14px; color: #5B6474">Código enviado para ana.souza@exemplo.com.br</span>
+          <div style="display: flex; gap: 8px">
+            <span style="width: 44px; height: 52px; border: 1px solid #E2E6EC; border-radius: 8px; display: grid; place-items: center; font-size: 20px; font-weight: 600">4</span>
+            <span style="width: 44px; height: 52px; border: 1px solid #E2E6EC; border-radius: 8px; display: grid; place-items: center; font-size: 20px; font-weight: 600">8</span>
+            <span style="width: 44px; height: 52px; border: 1px solid #E2E6EC; border-radius: 8px; display: grid; place-items: center; font-size: 20px; font-weight: 600">1</span>
+            <span style="width: 44px; height: 52px; border: 2px solid #2563EB; border-radius: 8px; box-sizing: border-box; display: grid; place-items: center; font-size: 20px; font-weight: 600"></span>
+            <span style="width: 44px; height: 52px; border: 1px solid #E2E6EC; border-radius: 8px; display: grid; place-items: center"></span>
+            <span style="width: 44px; height: 52px; border: 1px solid #E2E6EC; border-radius: 8px; display: grid; place-items: center"></span>
+          </div>
+        </div>
+        <div class="fld"><label class="fl" for="pw">Senha</label><input id="pw" type="password" value="Ipe2026!"></div>
+        <div style="display: flex; flex-direction: column; gap: 6px; margin-top: -8px">
+          <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px">
+            <span style="height: 4px; border-radius: 2px; background: #16884A"></span>
+            <span style="height: 4px; border-radius: 2px; background: #16884A"></span>
+            <span style="height: 4px; border-radius: 2px; background: #16884A"></span>
+            <span style="height: 4px; border-radius: 2px; background: #E2E6EC"></span>
+          </div>
+          <span style="font-size: 12px; color: #0F5F34; font-weight: 600">Senha boa</span>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1200,"height":1180}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

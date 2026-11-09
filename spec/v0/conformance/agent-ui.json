@@ -1,0 +1,34 @@
+{
+  "description": "Partes do assistente válidas contra os exemplos (spec/v0/examples). O spec:check confere o formato e se entidade, campo e ação existem.",
+  "parts": [
+    {
+      "id": "motivo",
+      "kind": "c3.form",
+      "payload": {
+        "title": "Antes de seguir, preciso de dois dados",
+        "fields": [
+          { "name": "periodo_inicio", "type": "date", "label": "De", "required": true },
+          { "name": "periodo_fim", "type": "date", "label": "Até", "required": true },
+          { "name": "cliente", "type": "reference", "entity": "customer", "label": "Cliente" }
+        ],
+        "rows": [["periodo_inicio", "periodo_fim"], ["cliente"]],
+        "values": { "periodo_inicio": "2026-10-01" },
+        "suggested": { "periodo_inicio": "início do mês passado" }
+      }
+    },
+    {
+      "id": "novo-cliente",
+      "kind": "c3.record",
+      "payload": {
+        "entity": "customer",
+        "values": { "name": "Padaria Bom Dia", "status": "lead", "credit_limit": "5000.00" },
+        "suggested": { "credit_limit": "média dos clientes do mesmo porte" }
+      }
+    },
+    {
+      "id": "cancelar-pedido",
+      "kind": "c3.action",
+      "payload": { "entity": "sales_order", "id": "1", "action": "cancel", "input": { "reason": "Cliente desistiu da compra por telefone." } }
+    }
+  ]
+}

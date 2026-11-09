@@ -1,0 +1,16 @@
+{
+  "specVersion": "0",
+  "name": "supplier",
+  "label": { "singular": "Fornecedor", "plural": "Fornecedores" },
+  "icon": "Truck",
+  "titleField": "name",
+  "fields": [
+    { "name": "name", "type": "string", "label": "Razão social", "required": true, "maxLength": 120 },
+    { "name": "document", "type": "string", "label": "CNPJ", "format": "cnpj", "unique": true },
+    { "name": "active", "type": "boolean", "label": "Ativo", "default": true }
+  ],
+  "views": {
+    "list": { "columns": ["name", "document", "active"], "search": ["name", "document"], "defaultSort": [{ "field": "name" }] },
+    "form": { "sections": [{ "rows": [["name", "document"], ["active"]] }] }
+  }
+}

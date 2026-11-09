@@ -1,0 +1,45 @@
+{
+  "$schema": "../entity.schema.json",
+  "specVersion": "0",
+  "name": "sales_order_item",
+  "label": {
+    "singular": "Item",
+    "plural": "Itens"
+  },
+  "icon": "Box",
+  "titleField": "product",
+  "scope": "branch",
+  "description": "Item do pedido: gravado junto com ele, pelo escritor do sistema (escrita delegada).",
+  "fields": [
+    {
+      "name": "order_id",
+      "type": "reference",
+      "entity": "sales_order",
+      "label": "Pedido",
+      "required": true,
+      "onDelete": "cascade"
+    },
+    {
+      "name": "product",
+      "type": "string",
+      "label": "Produto",
+      "required": true,
+      "maxLength": 120
+    },
+    {
+      "name": "quantity",
+      "type": "integer",
+      "label": "Quantidade",
+      "required": true,
+      "default": 1,
+      "min": 1
+    },
+    {
+      "name": "unit_price",
+      "type": "decimal",
+      "label": "Preço unitário",
+      "scale": 2,
+      "min": 0
+    }
+  ]
+}

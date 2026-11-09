@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Contrato UiPart, fases e métricas</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2563EB}
+.cap{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#5B6474}
+.card{background:#fff;border:1px solid #E2E6EC;border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+.ch{padding:12px 16px;border-bottom:1px solid #E2E6EC;font-size:15px;font-weight:600;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.code{margin:0;padding:14px 16px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;line-height:1.6;white-space:pre;background:#FAFBFC}
+.k{color:#085581}.s{color:#0F5F34}.c{color:#7A8494}
+.box{border:2px solid #E2E6EC;border-radius:14px;padding:12px 14px;background:#fff;display:flex;flex-direction:column;gap:4px;font-size:13px;line-height:1.4}
+.box b{font-size:14px}
+.arrow{display:flex;align-items:center;justify-content:center;color:#5B6474;flex-shrink:0}
+.chip{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:600}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{font-size:11px;font-weight:600;color:#5B6474;background:#F4F6F9;text-align:left;padding:8px 14px;letter-spacing:.02em}
+td{padding:9px 14px;border-top:1px solid #E2E6EC;vertical-align:top;line-height:1.4}
+.ph{display:flex;flex-direction:column;gap:6px;padding:12px 14px;border-radius:12px;border:1px solid #E2E6EC;background:#fff;font-size:12.5px;line-height:1.4;min-width:0}
+.metric{display:flex;flex-direction:column;gap:4px;padding:12px 14px;border-radius:12px;background:#F7F8FA;font-size:12.5px;line-height:1.4}
+.metric b{font-size:14px}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1120px; box-sizing: border-box; padding: 32px 40px; background: #F4F6F9; font-family: 'Inter', system-ui, sans-serif; color: #141A24; display: flex; flex-direction: column; gap: 18px">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 24px">
+    <div>
+      <span class="cap">21 · @c3theme/chat × motor</span>
+      <h1 style="margin: 4px 0 0; font-size: 26px; font-weight: 600">O agente propõe, o motor executa</h1>
+    </div>
+    <span class="chip" style="background: rgb(199 119 0 / .12); color: #8B5300; height: 28px; font-size: 13px">Contrato em rascunho, para discutir</span>
+  </div>
+
+  <div style="display: flex; align-items: stretch; gap: 10px">
+    <div class="box"><span class="cap">backend do Nati</span><b>Agente</b><span>prompt, ferramentas, LLM. Monta o JSON da UiPart.</span></div>
+    <div class="arrow"><svg viewBox="0 0 40 24" width="40" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h30M28 6l6 6-6 6"/></svg></div>
+    <div class="box" style="border-color: #C77700"><span class="cap">c3-engine</span><b>Valida o payload</b><span>contra <code>#/$defs/field</code> e a spec. Inválido vira texto, nunca tela quebrada.</span></div>
+    <div class="arrow"><svg viewBox="0 0 40 24" width="40" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h30M28 6l6 6-6 6"/></svg></div>
+    <div class="box"><span class="cap">@c3theme/chat</span><b>Message.parts</b><span>só conhece <code>UiPart</code> e o estado. Não importa o motor.</span></div>
+    <div class="arrow"><svg viewBox="0 0 40 24" width="40" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h30M28 6l6 6-6 6"/></svg></div>
+    <div class="box"><span class="cap">@c3theme/engine</span><b>uiRenderers</b><span>FieldInput, EntityForm, ações, views. Catálogo fechado.</span></div>
+    <div class="arrow"><svg viewBox="0 0 40 24" width="40" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h30M28 6l6 6-6 6"/></svg></div>
+    <div class="box" style="border-color: #16884A"><span class="cap">usuário confirma</span><b>CRUD / _actions</b><span>com a permissão <b>do usuário</b>, pelo endpoint normal.</span></div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 520px minmax(0, 1fr); gap: 16px">
+    <section class="card">
+      <div class="ch">UiPart<span class="cap">@c3theme/chat/core</span></div>
+<pre class="code"><span class="k">interface</span> UiPart {
+  id: <span class="k">string</span>;
+  kind: <span class="s">'c3.form'</span> | <span class="s">'c3.record'</span> | <span class="s">'c3.action'</span> | <span class="s">'c3.view'</span>;
+  payload: <span class="k">unknown</span>;   <span class="c">// validado pelo renderizador do kind</span>
+  state: <span class="s">'pending'</span> | <span class="s">'submitted'</span> | <span class="s">'declined'</span>
+       | <span class="s">'cancelled'</span> | <span class="s">'expired'</span>;
+  result?: <span class="k">unknown</span>;   <span class="c">// resumo do que foi gravado</span>
+  expiresAt?: <span class="k">string</span>;
+}
+
+<span class="c">// &lt;AssistantPanel uiRenderers={{ 'c3.form': C3FormPart }} /&gt;</span>
+ChatTransport.answerUi(messageId, partId, {
+  action: <span class="s">'accept'</span> | <span class="s">'decline'</span> | <span class="s">'cancel'</span>, values?
+})</pre>
+    </section>
+    <section class="card">
+      <div class="ch">Catálogo fechado: 4 kinds</div>
+      <table>
+        <thead><tr><th>kind</th><th>O que é</th><th>Reusa</th><th>A resposta vai para</th></tr></thead>
+        <tbody>
+          <tr><td><span class="chip" style="background: rgb(37 99 235 / .12); color: #1A45A5">c3.form</span></td><td>Campos ad hoc (motivo, período)</td><td><code>input</code> de ação · <code>useActionInput</code></td><td>o agente (como elicitation)</td></tr>
+          <tr><td><span class="chip" style="background: rgb(37 99 235 / .12); color: #1A45A5">c3.record</span></td><td>Rascunho de registro pré-preenchido</td><td>EntityForm, permissões, related</td><td>CRUD; o agente recebe o id</td></tr>
+          <tr><td><span class="chip" style="background: rgb(37 99 235 / .12); color: #1A45A5">c3.action</span></td><td>Confirmação de ação declarada</td><td>Ações e <code>input</code></td><td>endpoint da ação</td></tr>
+          <tr><td><span class="chip" style="background: rgba(20,26,36,.06); color: #404651">c3.view</span></td><td>Lista, registro ou KPI só leitura</td><td>views list/detail, <code>_aggregate</code></td><td>nada; links abrem a tela</td></tr>
+        </tbody>
+      </table>
+      <div style="padding: 10px 14px; font-size: 12px; color: #5B6474; border-top: 1px solid #E2E6EC">Bloqueado no catálogo: HTML/JS, iframe, <code>password</code>, <code>writeOnly</code>, <code>sensitive</code>. Kind novo só com caso real do piloto.</div>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="ch">Fases<span class="cap">piloto no Nati entre F2 e F3</span></div>
+    <div style="padding: 14px 16px; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px">
+      <div class="ph" style="border-color: #2563EB"><span class="chip" style="background: #2563EB; color: #fff; align-self: flex-start">F1</span><b>c3.form</b>UiPart, 1 pendente por vez, answerUi com 409; eventos no chat e no motor</div>
+      <div class="ph" style="border-color: #2563EB"><span class="chip" style="background: #2563EB; color: #fff; align-self: flex-start">F2</span><b>c3.record + c3.action</b>antes: PR da spec com critical, inverse, undoable</div>
+      <div class="ph" style="border-color: #C77700; background: rgb(199 119 0 / .05)"><span class="chip" style="background: #C77700; color: #fff; align-self: flex-start">Piloto</span><b>2 ou 3 fluxos reais</b>medir os 4 números; decide se segue</div>
+      <div class="ph"><span class="chip" style="background: rgba(20,26,36,.08); color: #404651; align-self: flex-start">F3</span><b>c3.view</b>de onde veio, chat ancorado no registro</div>
+      <div class="ph"><span class="chip" style="background: rgba(20,26,36,.08); color: #404651; align-self: flex-start">F4</span><b>Plano editável</b>Feito nesta conversa, segundo plano</div>
+      <div class="ph" style="border-style: dashed"><span class="chip" style="background: rgba(20,26,36,.08); color: #404651; align-self: flex-start">F5</span><b>Adaptadores</b>MCP elicitation, AG-UI, A2UI · só com demanda</div>
+    </div>
+  </section>
+
+  <div style="display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 16px; flex: 1; min-height: 0">
+    <section class="card">
+      <div class="ch">Como medir "melhor experiência"<span class="cap">mesmo evento no chat e no motor</span></div>
+      <div style="padding: 14px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+        <div class="metric"><b>Tempo até concluir</b>do pedido ao registro gravado, contra a tela normal</div>
+        <div class="metric"><b>Conclusão de formulário</b>enviados / mostrados · abaixo de 70% é form ruim ou desnecessário</div>
+        <div class="metric"><b>Correção em 24 h</b>editado ou desfeito depois de gravar · mede aceitação cega</div>
+        <div class="metric"><b>Turnos por tarefa</b>mensagens até concluir · formulário deve reduzir</div>
+      </div>
+      <div style="padding: 0 16px 14px; font-size: 12px; color: #5B6474">Mais 5 usuários do Nati em 3 tarefas reais, observados.</div>
+    </section>
+    <section class="card">
+      <div class="ch">Fora do escopo</div>
+      <div style="padding: 12px 16px; display: flex; flex-direction: column; gap: 9px; font-size: 13px; line-height: 1.4">
+        <div><b>HTML/JS gerado pelo modelo</b> · latência, XSS, nenhuma regra de negócio</div>
+        <div><b>MCP Apps com iframe</b> · só se houver telas de terceiros</div>
+        <div><b>A2UI como formato interno</b> · genérico e em preview</div>
+        <div><b>Voz em tempo real, avatar</b> · caro, pouco valor no ERP</div>
+        <div><b>Agente criando menu, entidade ou view</b> · mistura uso com configuração</div>
+        <div><b>Aprovação em todo passo</b> · gera clique sem ler</div>
+      </div>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1120}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

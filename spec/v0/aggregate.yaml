@@ -1,0 +1,83 @@
+# Path item de GET /{entity}/_aggregate, referenciado por openapi.yaml (que já passou do limite de tamanho).
+parameters:
+  - $ref: 'openapi.yaml#/components/parameters/entity'
+  - $ref: 'openapi.yaml#/components/parameters/branch'
+get:
+  summary: Agregar registros (indicadores e gráficos do painel)
+  description: >-
+    Conta ou soma os registros que o filtro da lista alcança (mesmos where, q e branches, mesmo escopo,
+    rowAccess e permissão list), opcionalmente agrupados por um campo. Campo que o usuário não vê não agrupa
+    nem soma (400, como se não existisse). Sem groupBy, devolve um item só, com key null. Com groupBy: data em
+    ordem de tempo; o resto do maior valor para o menor; o grupo vazio (key null) sempre por último. No máximo
+    100 grupos (os primeiros dessa ordem).
+  operationId: aggregate
+  parameters:
+    - name: measure
+      in: query
+      description: >-
+        'count' (padrão) ou 'sum:<campo>' de um campo integer ou decimal. Até 10 medidas separadas por vírgula numa
+        chamada só (totais da lista): cada item traz então `values` com todas, na ordem pedida, e `value` com a
+        primeira, que também ordena os grupos.
+      schema:
+        type: string
+        pattern: '^(count|sum:[a-z][a-z0-9_]{0,62})(,(count|sum:[a-z][a-z0-9_]{0,62})){0,9}$'
+        default: count
+    - name: groupBy
+      in: query
+      description: Campo enum, boolean, reference, date ou datetime.
+      schema: { type: string, pattern: '^[a-z][a-z0-9_]{0,62}$' }
+    - name: interval
+      in: query
+      description: Só com groupBy de data. A key vira o prefixo da data (2026, 2026-10 ou 2026-10-30, em UTC).
+      schema: { type: string, enum: [day, month, year], default: month }
+    - name: q
+      in: query
+      description: Busca livre, como na lista.
+      schema: { type: string }
+    - name: where
+      in: query
+      description: Condição em JSON, como na lista.
+      content:
+        application/json:
+          schema: { $ref: 'entity.schema.json#/$defs/condition' }
+  responses:
+    '200':
+      description: OK
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [data]
+            properties:
+              data:
+                type: array
+                maxItems: 100
+                items:
+                  type: object
+                  required: [key, value]
+                  properties:
+                    key:
+                      description: >-
+                        Valor do grupo no formato trafegado do campo (enum, boolean, id de reference em string,
+                        prefixo da data); null = registros com o campo vazio, ou o total sem groupBy.
+                    title:
+                      type: [string, 'null']
+                      description: Só em reference, o título do registro apontado (null fora do escopo de leitura).
+                    value:
+                      description: count e soma de integer em número; soma de decimal em string escalada, como o campo.
+                      oneOf:
+                        - { type: integer }
+                        - { type: string, pattern: '^-?\d+(\.\d+)?$' }
+                    values:
+                      type: array
+                      minItems: 2
+                      maxItems: 10
+                      description: Só com mais de uma medida em `measure`; cada valor no formato de `value`.
+                      items:
+                        oneOf:
+                          - { type: integer }
+                          - { type: string, pattern: '^-?\d+(\.\d+)?$' }
+    '400': { $ref: 'openapi.yaml#/components/responses/Error' }
+    '401': { $ref: 'openapi.yaml#/components/responses/Error' }
+    '403': { $ref: 'openapi.yaml#/components/responses/Error' }
+    '404': { $ref: 'openapi.yaml#/components/responses/Error' }

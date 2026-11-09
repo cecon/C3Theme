@@ -1,0 +1,225 @@
+{
+  "$schema": "../../../../../../spec/v0/app.schema.json",
+  "specVersion": "0",
+  "name": "Vitrine por JSON",
+  "entities": ["pessoa", "cliente", "cliente_fatura", "fatura", "fatura_item", "membro", "tarefa", "evento", "notificacao", "receita_mes"],
+  "pages": [
+    {
+      "path": "/apps/faturas/painel",
+      "title": "Painel de faturas",
+      "dashboard": {
+        "actions": [
+          {
+            "label": "Ver todas",
+            "path": "/fatura"
+          },
+          {
+            "label": "Nova fatura",
+            "path": "/fatura/new",
+            "icon": "Add",
+            "variant": "contained"
+          }
+        ],
+        "widgets": [
+          {
+            "type": "kpi",
+            "title": "Total faturado",
+            "entity": "fatura",
+            "where": {
+              "field": "status",
+              "op": "ne",
+              "value": "cancelada"
+            },
+            "measure": "sum:total",
+            "icon": "ReceiptText",
+            "tone": "primary",
+            "count": true,
+            "progress": {
+              "label": "recebido",
+              "part": {
+                "field": "status",
+                "op": "eq",
+                "value": "paga"
+              }
+            }
+          },
+          {
+            "type": "kpi",
+            "title": "Pagas",
+            "entity": "fatura",
+            "where": {
+              "field": "status",
+              "op": "eq",
+              "value": "paga"
+            },
+            "measure": "sum:total",
+            "icon": "TickCircle",
+            "tone": "success",
+            "count": true,
+            "progress": {
+              "label": "do total",
+              "whole": {
+                "field": "status",
+                "op": "ne",
+                "value": "cancelada"
+              }
+            }
+          },
+          {
+            "type": "kpi",
+            "title": "Pendentes",
+            "entity": "fatura",
+            "where": {
+              "field": "status",
+              "op": "eq",
+              "value": "pendente"
+            },
+            "measure": "sum:total",
+            "icon": "Clock",
+            "tone": "warning",
+            "count": true,
+            "progress": {
+              "label": "do total",
+              "whole": {
+                "field": "status",
+                "op": "ne",
+                "value": "cancelada"
+              }
+            }
+          },
+          {
+            "type": "kpi",
+            "title": "Vencidas",
+            "entity": "fatura",
+            "where": {
+              "field": "status",
+              "op": "eq",
+              "value": "vencida"
+            },
+            "measure": "sum:total",
+            "icon": "Warning2",
+            "tone": "danger",
+            "count": true,
+            "progress": {
+              "label": "do total",
+              "whole": {
+                "field": "status",
+                "op": "ne",
+                "value": "cancelada"
+              }
+            }
+          },
+          {
+            "type": "chart",
+            "title": "Receita",
+            "subtitle": "Faturado x recebido, em R$ mil",
+            "axisScale": 1000,
+            "entity": "receita_mes",
+            "groupBy": "mes",
+            "interval": "month",
+            "measure": "sum:faturado",
+            "chart": "area",
+            "series": [
+              {
+                "label": "Faturado",
+                "measure": "sum:faturado",
+                "tone": "primary"
+              },
+              {
+                "label": "Recebido",
+                "measure": "sum:recebido",
+                "tone": "success"
+              }
+            ],
+            "ranges": [6, 12],
+            "width": 8
+          },
+          {
+            "type": "chart",
+            "title": "Situação das faturas",
+            "entity": "fatura",
+            "groupBy": "status",
+            "measure": "sum:total",
+            "chart": "donut",
+            "width": 4
+          },
+          {
+            "type": "ranking",
+            "title": "Maiores devedores",
+            "subtitle": "Faturas pendentes e vencidas por cliente",
+            "entity": "fatura",
+            "groupBy": "conta",
+            "measure": "sum:total",
+            "where": {
+              "field": "status",
+              "op": "in",
+              "value": ["pendente", "vencida"]
+            },
+            "caption": "{count} {label} em aberto",
+            "flag": {
+              "where": {
+                "field": "status",
+                "op": "eq",
+                "value": "vencida"
+              },
+              "label": "{value} vencido",
+              "tone": "danger",
+              "otherwise": {
+                "label": "No prazo",
+                "tone": "warning"
+              }
+            },
+            "action": "cobrar",
+            "width": 7
+          },
+          {
+            "type": "feed",
+            "title": "Notificações",
+            "entity": "notificacao",
+            "kind": "tipo",
+            "text": "detalhe",
+            "time": "quando",
+            "icons": {
+              "pagamento": "TickCircle",
+              "vencida": "CloseCircle",
+              "lembrete": "Notification",
+              "criada": "ReceiptText",
+              "visualizada": "Clock"
+            },
+            "width": 5
+          }
+        ]
+      }
+    }
+  ],
+  "layout": {
+    "menu": [
+      {
+        "title": "Por JSON",
+        "items": [
+          {
+            "entity": "pessoa"
+          },
+          {
+            "entity": "cliente"
+          },
+          {
+            "entity": "fatura"
+          },
+          {
+            "entity": "tarefa",
+            "view": "board"
+          },
+          {
+            "entity": "evento",
+            "view": "calendar"
+          },
+          {
+            "path": "/apps/faturas/painel",
+            "title": "Painel de faturas"
+          }
+        ]
+      }
+    ]
+  }
+}

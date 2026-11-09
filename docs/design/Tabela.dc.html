@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>C3Theme · DataTable</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2563EB}a:hover{color:#1A45A5}
+.cap{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#5B6474}
+.btn{font-family:inherit;font-size:14px;font-weight:600;line-height:1.75;border-radius:8px;padding:5px 15px;border:1px solid rgb(91 100 116 / .5);color:#5B6474;background:transparent;display:inline-flex;align-items:center;gap:8px;cursor:pointer}
+.btn svg{width:18px;height:18px}
+.srch{display:flex;align-items:center;gap:8px;height:40px;width:280px;box-sizing:border-box;padding:0 12px;border:1px solid #E2E6EC;border-radius:8px;font-size:15px;color:#5B6474;background:#fff}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{font-size:12px;font-weight:600;letter-spacing:.02em;color:#5B6474;background:#F4F6F9;text-align:left;padding:12px 16px;white-space:nowrap;border-bottom:1px solid #E2E6EC}
+td{padding:12px 16px;border-bottom:1px solid #E2E6EC;white-space:nowrap}
+th:first-child,td:first-child{padding-left:20px}
+.chip{display:inline-flex;align-items:center;height:24px;padding:0 8px;border-radius:6px;font-size:13px;font-weight:500}
+.pchip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 6px 0 10px;border-radius:6px;font-size:13px;font-weight:500;background:#2563EB;color:#fff}
+.mi{display:flex;align-items:center;gap:12px;padding:6px 16px;font-size:14px;min-height:36px;box-sizing:border-box}
+.cb{width:18px;height:18px;border-radius:3px;box-sizing:border-box;border:2px solid #5B6474;display:inline-grid;place-items:center;flex-shrink:0}
+.cb.on{background:#2563EB;border-color:#2563EB}
+.menu{position:absolute;background:#fff;border-radius:8px;box-shadow:0 5px 5px -3px rgba(0,0,0,.2),0 8px 10px 1px rgba(0,0,0,.14),0 3px 14px 2px rgba(0,0,0,.12);padding:8px 0;min-width:220px;z-index:3}
+.g{background:rgba(20,26,36,0.04)}
+.cnt{display:inline-grid;place-items:center;height:24px;min-width:24px;padding:0 8px;box-sizing:border-box;border-radius:6px;background:rgba(0,0,0,.08);font-size:13px}
+</style>
+</helmet>
+<div style="width: 1200px; height: 1120px; box-sizing: border-box; padding: 48px; background: #F4F6F9; font-family: 'Inter', system-ui, sans-serif; color: #141A24; display: flex; flex-direction: column; gap: 24px">
+  <div style="display: flex; flex-direction: column; gap: 4px">
+    <span class="cap">09 · DataTable</span>
+    <h1 style="margin: 0; font-size: 32px; font-weight: 600; line-height: 1.25">Busca, ordenação, colunas e agrupamento</h1>
+    <p style="margin: 0; font-size: 15px; color: #5B6474">&lt;DataTable rows columns rowActions /&gt; dentro de um Panel flush. Shift + clique ordena por várias colunas.</p>
+  </div>
+
+  <section style="position: relative; background: #FFFFFF; border: 1px solid #E2E6EC; border-radius: 24px">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 20px; min-height: 64px; box-sizing: border-box">
+      <div class="srch"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span style="color: #141A24">indústria</span></div>
+      <div style="display: flex; gap: 8px">
+        <button type="button" class="btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>Agrupar por</button>
+        <button type="button" class="btn" style="background: rgba(91,100,116,.08)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>Colunas (6/9)</button>
+      </div>
+    </div>
+    <div class="menu" style="right: 20px; top: 58px">
+      <div class="mi"><span class="cb" style="background: #2563EB; border-color: #2563EB"><span style="width: 8px; height: 2px; background: #fff"></span></span>Todas</div>
+      <div style="height: 1px; background: #E2E6EC; margin: 8px 0"></div>
+      <sc-for list="{{cols}}" as="c" hint-placeholder-count="8">
+        <div class="mi"><sc-if value="{{c.on}}" hint-placeholder-val="{{ true }}"><span class="cb on"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg></span></sc-if><sc-if value="{{c.off}}" hint-placeholder-val="{{ false }}"><span class="cb"></span></sc-if>{{c.name}}</div>
+      </sc-for>
+    </div>
+    <table>
+      <thead><tr>
+        <th>Nome</th>
+        <th>Cidade</th>
+        <th>UF</th>
+        <th style="color: #141A24">Segmento <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align: -2px"><path d="M12 5v14M6 13l6 6 6-6"/></svg> <span style="display: inline-block; min-width: 16px; height: 16px; border-radius: 8px; background: #2563EB; color: #fff; font-size: 10px; line-height: 16px; text-align: center">1</span></th>
+        <th>Situação</th>
+        <th style="color: #141A24; text-align: right">Limite <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align: -2px"><path d="M12 19V5M6 11l6-6 6 6"/></svg> <span style="display: inline-block; min-width: 16px; height: 16px; border-radius: 8px; background: #2563EB; color: #fff; font-size: 10px; line-height: 16px; text-align: center">2</span></th>
+        <th></th>
+      </tr></thead>
+      <tbody>
+        <sc-for list="{{rows}}" as="r" hint-placeholder-count="4">
+          <tr>
+            <td><div style="font-weight: 500">{{r.nome}}</div><div style="font-size: 12px; color: #5B6474">{{r.email}}</div></td>
+            <td>{{r.cidade}}</td><td>{{r.uf}}</td><td>{{r.seg}}</td>
+            <td><span class="chip" style="background: {{r.sb}}; color: {{r.sf}}">{{r.sit}}</span></td>
+            <td style="text-align: right">{{r.lim}}</td>
+            <td style="width: 1px; padding-right: 20px; color: #5B6474">
+              <span style="display: inline-flex; gap: 12px"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Editar"><path d="M4 20h4L19 9l-4-4L4 16v4z"/></svg><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#D33A3A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Excluir"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></span>
+            </td>
+          </tr>
+        </sc-for>
+      </tbody>
+    </table>
+    <div style="display: flex; justify-content: flex-end; align-items: center; gap: 28px; padding: 10px 20px; font-size: 14px; color: #141A24">
+      <span>Linhas por página: 10 ▾</span><span>1–4 de 4</span><span style="color: #9AA4B2">‹</span><span style="color: #9AA4B2">›</span>
+    </div>
+  </section>
+
+  <div style="display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 24px; flex: 1; min-height: 0">
+    <section style="position: relative; background: #FFFFFF; border: 1px solid #E2E6EC; border-radius: 24px; overflow: hidden">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 20px; min-height: 64px; box-sizing: border-box">
+        <div style="display: flex; gap: 8px">
+          <span class="pchip">1. UF <svg viewBox="0 0 24 24" width="16" height="16" fill="rgba(255,255,255,.7)" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6" stroke="#2563EB" stroke-width="2" stroke-linecap="round"/></svg></span>
+          <span class="pchip">2. Situação <svg viewBox="0 0 24 24" width="16" height="16" fill="rgba(255,255,255,.7)" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6" stroke="#2563EB" stroke-width="2" stroke-linecap="round"/></svg></span>
+        </div>
+        <button type="button" class="btn" style="background: rgba(91,100,116,.08)">Agrupar por</button>
+      </div>
+      <div class="menu" style="right: 20px; top: 58px">
+        <div class="mi"><span class="cb"></span><span style="flex: 1">Cidade</span></div>
+        <div class="mi"><span class="cb on"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg></span><span style="flex: 1">UF</span><span style="font-size: 12px; color: #5B6474">1º</span></div>
+        <div class="mi"><span class="cb"></span><span style="flex: 1">Segmento</span></div>
+        <div class="mi"><span class="cb on"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg></span><span style="flex: 1">Situação</span><span style="font-size: 12px; color: #5B6474">2º</span></div>
+        <div style="height: 1px; background: #E2E6EC; margin: 8px 0"></div>
+        <div class="mi" style="padding-left: 46px">Recolher todos</div>
+        <div class="mi" style="padding-left: 46px">Desagrupar</div>
+      </div>
+      <table>
+        <thead><tr><th>Nome</th><th>Cidade</th><th>Situação</th></tr></thead>
+        <tbody>
+          <tr class="g"><td colspan="3" style="padding: 6px 20px"><span style="display: inline-flex; align-items: center; gap: 8px">▾ <span style="font-size: 12px; color: #5B6474">UF</span><b style="font-size: 13px">SP</b><span class="cnt">3</span></span></td></tr>
+          <tr class="g"><td colspan="3" style="padding: 6px 20px 6px 44px"><span style="display: inline-flex; align-items: center; gap: 8px">▾ <span style="font-size: 12px; color: #5B6474">Situação</span><b style="font-size: 13px">Ativo</b><span class="cnt">1</span></span></td></tr>
+          <tr><td style="padding-left: 68px">Thiago Nascimento</td><td>São Paulo</td><td><span class="chip" style="background: rgb(22 136 74 / .12); color: #0F5F34">Ativo</span></td></tr>
+          <tr class="g"><td colspan="3" style="padding: 6px 20px 6px 44px"><span style="display: inline-flex; align-items: center; gap: 8px">▾ <span style="font-size: 12px; color: #5B6474">Situação</span><b style="font-size: 13px">Pendente</b><span class="cnt">2</span></span></td></tr>
+          <tr><td style="padding-left: 68px">Marcelo Teixeira</td><td>Campinas</td><td><span class="chip" style="background: rgb(199 119 0 / .12); color: #8B5300">Pendente</span></td></tr>
+          <tr><td style="padding-left: 68px">Larissa Moreira</td><td>Santos</td><td><span class="chip" style="background: rgb(199 119 0 / .12); color: #8B5300">Pendente</span></td></tr>
+          <tr class="g"><td colspan="3" style="padding: 6px 20px"><span style="display: inline-flex; align-items: center; gap: 8px">▸ <span style="font-size: 12px; color: #5B6474">UF</span><b style="font-size: 13px">RS</b><span class="cnt">2</span></span></td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section style="background: #FFFFFF; border: 1px solid #E2E6EC; border-radius: 24px; overflow: hidden; display: flex; flex-direction: column">
+      <div style="padding: 12px 20px; min-height: 64px; box-sizing: border-box; display: flex; align-items: center">
+        <div class="srch" style="width: 100%"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span style="color: #141A24">zzz</span></div>
+      </div>
+      <div style="height: 1px; background: #E2E6EC"></div>
+      <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 8px; padding: 24px">
+        <span style="width: 56px; height: 56px; border-radius: 50%; background: rgba(20,26,36,.04); color: #5B6474; display: grid; place-items: center"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8l9-5 9 5v8l-9 5-9-5zM3 8l9 5 9-5M12 13v8"/></svg></span>
+        <div style="font-size: 15px; font-weight: 500; margin-top: 8px">Nada encontrado</div>
+        <div style="font-size: 14px; color: #5B6474">Ajuste a busca para ver resultados.</div>
+        <span class="cap" style="margin-top: 16px">Estado vazio</span>
+      </div>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1200,"height":1120}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const at = { sb: 'rgb(22 136 74 / .12)', sf: '#0F5F34', sit: 'Ativo' };
+    const pe = { sb: 'rgb(199 119 0 / .12)', sf: '#8B5300', sit: 'Pendente' };
+    const cols = [['E-mail', 0], ['CPF/CNPJ', 0], ['Telefone', 0], ['Cidade', 1], ['UF', 1], ['Segmento', 1], ['Situação', 1], ['Limite', 1]];
+    return {
+      cols: cols.map(([name, on]) => ({ name, on: !!on, off: !on })),
+      rows: [
+        { nome: 'Thiago Nascimento', email: 'thiago.nascimento@exemplo.com.br', cidade: 'São Paulo', uf: 'SP', seg: 'Indústria', lim: 'R$ 90.000,00', ...at },
+        { nome: 'Rodrigo Cardoso', email: 'rodrigo.cardoso@exemplo.com.br', cidade: 'Joinville', uf: 'SC', seg: 'Indústria', lim: 'R$ 55.000,00', ...at },
+        { nome: 'Felipe Araújo', email: 'felipe.araujo@exemplo.com.br', cidade: 'Caxias do Sul', uf: 'RS', seg: 'Indústria', lim: 'R$ 48.000,00', ...at },
+        { nome: 'Fernanda Rocha', email: 'fernanda.rocha@exemplo.com.br', cidade: 'Porto Alegre', uf: 'RS', seg: 'Indústria', lim: 'R$ 42.000,00', ...pe }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

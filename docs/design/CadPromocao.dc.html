@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Cadastro de promoção</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2563EB;text-decoration:none}a:hover{color:#1A45A5}
+.cap{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#5B6474}
+.panel{background:#fff;border:1px solid #E2E6EC;border-radius:24px;overflow:hidden}
+.ph{padding:14px 20px;min-height:60px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #E2E6EC}
+.pt{font-size:16px;font-weight:600}
+.ps{font-size:13px;color:#5B6474}
+.pb{padding:22px 20px 18px;display:grid;gap:22px 16px}
+.fld{position:relative}
+.fld label{position:absolute;top:-8px;left:10px;padding:0 4px;background:#fff;font-size:12px;color:#5B6474;line-height:16px}
+.fld .v{font-size:15px;height:52px;box-sizing:border-box;padding:0 14px;border:1px solid #E2E6EC;border-radius:8px;display:flex;align-items:center;justify-content:space-between}
+.seg{display:flex;border:1px solid #E2E6EC;border-radius:8px;overflow:hidden;height:52px}
+.seg span{flex:1;display:grid;place-items:center;font-size:14px;font-weight:600;color:#5B6474;border-left:1px solid #E2E6EC}
+.seg span:first-child{border-left:none}
+.seg span.on{background:rgb(37 99 235 / .1);color:#1A45A5}
+.pill{display:inline-flex;align-items:center;height:32px;padding:0 12px;border-radius:6px;font-size:13px;font-weight:500;border:1px solid #C9D0DA}
+.pill.on{background:#2563EB;border-color:#2563EB;color:#fff}
+.sw{display:inline-block;width:34px;height:14px;border-radius:7px;position:relative;vertical-align:middle;flex-shrink:0}
+.sw i{position:absolute;top:-3px;width:20px;height:20px;border-radius:50%;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{font-size:12px;font-weight:600;color:#5B6474;background:#F4F6F9;text-align:left;padding:10px 16px;border-bottom:1px solid #E2E6EC}
+td{padding:10px 16px;border-bottom:1px solid #E2E6EC;white-space:nowrap}
+th:first-child,td:first-child{padding-left:20px}
+.add{font-family:inherit;font-size:13px;font-weight:600;color:#2563EB;background:none;border:1px dashed rgb(37 99 235 / .5);border-radius:8px;padding:4px 12px}
+</style>
+</helmet>
+<div style="width: 1200px; height: 1120px; box-sizing: border-box; padding: 32px 40px; background: #F4F6F9; font-family: 'Inter', system-ui, sans-serif; color: #141A24; display: flex; flex-direction: column; gap: 16px">
+  <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 16px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <nav aria-label="Caminho" style="font-size: 14px; color: #5B6474">⌂ › Cadastros › <a href="#" style="color: #5B6474">Promoções</a> › <span style="color: #141A24">Sucos 2 por 1</span></nav>
+      <h1 style="margin: 0; font-size: 22px; font-weight: 600">Sucos 2 por 1</h1>
+    </div>
+    <span style="display: inline-flex; align-items: center; height: 28px; padding: 0 10px; border-radius: 6px; font-size: 13px; font-weight: 600; background: rgb(22 136 74 / .12); color: #0F5F34">Vigente</span>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1.15fr 1fr; gap: 16px; flex: 1; min-height: 0">
+    <div style="display: flex; flex-direction: column; gap: 16px; min-width: 0">
+      <section class="panel">
+        <div class="ph"><span class="pt">Regra</span></div>
+        <div class="pb" style="grid-template-columns: 1fr">
+          <div class="fld"><label>Nome *</label><div class="v">Sucos 2 por 1</div></div>
+          <div><div class="cap" style="margin-bottom: 8px">Tipo</div><div class="seg" role="radiogroup" aria-label="Tipo de promoção"><span class="on">Leve X pague Y</span><span>% de desconto</span><span>Preço fixo</span></div></div>
+        </div>
+        <div class="pb" style="grid-template-columns: 1fr 1fr 1fr; padding-top: 4px">
+          <div class="fld"><label>Leve *</label><div class="v">2</div></div>
+          <div class="fld"><label>Pague *</label><div class="v">1</div></div>
+          <div class="fld"><label>Limite por pedido</label><div class="v" style="color: #9AA4B2">Sem limite</div></div>
+        </div>
+        <div style="padding: 0 20px 18px; display: flex; flex-direction: column; gap: 14px; font-size: 15px">
+          <div style="display: flex; align-items: center; gap: 12px"><span class="sw" style="background: rgb(37 99 235 / .5)"><i style="left: 17px; background: #2563EB"></i></span>Pode misturar produtos da lista (1 laranja + 1 limão)</div>
+          <div style="display: flex; align-items: center; gap: 12px"><span class="sw" style="background: rgb(37 99 235 / .5)"><i style="left: 17px; background: #2563EB"></i></span>O grátis é sempre o de menor preço</div>
+          <div style="display: flex; align-items: center; gap: 12px"><span class="sw" style="background: rgba(0,0,0,.38)"><i style="left: -3px; background: #fff"></i></span>Acumula com outras promoções</div>
+        </div>
+      </section>
+
+      <section class="panel" style="flex: 1">
+        <div class="ph">
+          <div><div class="pt">Produtos da promoção</div><div class="ps">related · promocao_produto · save: with_parent</div></div>
+          <button type="button" class="add">+ Adicionar produto</button>
+        </div>
+        <table>
+          <thead><tr><th>Produto</th><th>Grupo</th><th style="text-align: right">Preço</th><th></th></tr></thead>
+          <tbody>
+            <tr><td>Suco natural 500ml · Laranja</td><td style="color: #5B6474">Bebidas</td><td style="text-align: right">[R$]</td><td style="width: 1px; color: #D33A3A">✕</td></tr>
+            <tr><td>Suco natural 500ml · Limão</td><td style="color: #5B6474">Bebidas</td><td style="text-align: right">[R$]</td><td style="width: 1px; color: #D33A3A">✕</td></tr>
+            <tr><td>Suco natural 500ml · Abacaxi</td><td style="color: #5B6474">Bebidas</td><td style="text-align: right">[R$]</td><td style="width: 1px; color: #D33A3A">✕</td></tr>
+          </tbody>
+        </table>
+        <div style="padding: 12px 20px; font-size: 13px; color: #5B6474">Também dá para incluir um grupo inteiro: todo produto novo do grupo entra na promoção.</div>
+      </section>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 16px; min-width: 0">
+      <section class="panel">
+        <div class="ph"><span class="pt">Vigência</span></div>
+        <div class="pb" style="grid-template-columns: 1fr 1fr">
+          <div class="fld"><label>Início *</label><div class="v">[DATA]</div></div>
+          <div class="fld"><label>Fim</label><div class="v" style="color: #9AA4B2">Sem fim</div></div>
+          <div class="fld"><label>Das</label><div class="v">11:00</div></div>
+          <div class="fld"><label>Até</label><div class="v">15:00</div></div>
+        </div>
+        <div style="padding: 0 20px 18px; display: flex; flex-direction: column; gap: 10px">
+          <span class="cap">Dias da semana</span>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap">
+            <span class="pill on">Seg</span><span class="pill on">Ter</span><span class="pill on">Qua</span><span class="pill on">Qui</span><span class="pill on">Sex</span><span class="pill">Sáb</span><span class="pill">Dom</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="ph"><span class="pt">Onde vale</span></div>
+        <div style="padding: 18px 20px; display: flex; flex-direction: column; gap: 14px">
+          <span class="cap">Canais de venda</span>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap"><span class="pill on">Totem</span><span class="pill on">Balcão</span><span class="pill">Delivery</span></div>
+          <span class="cap">Lojas</span>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap"><span class="pill on">[LOJA 1]</span><span class="pill on">[LOJA 2]</span><span class="pill">[LOJA 3]</span></div>
+        </div>
+      </section>
+
+      <section class="panel" style="flex: 1">
+        <div class="ph"><span class="pt">Simulação</span><span class="ps">como o desconto entra no pedido</span></div>
+        <div style="padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; font-size: 14px">
+          <div style="display: flex; justify-content: space-between"><span>1× Suco · Laranja</span><span>[R$]</span></div>
+          <div style="display: flex; justify-content: space-between"><span>1× Suco · Limão</span><span>[R$]</span></div>
+          <div style="display: flex; justify-content: space-between"><span>1× Suco · Abacaxi</span><span>[R$]</span></div>
+          <div style="height: 1px; background: #E2E6EC"></div>
+          <div style="display: flex; justify-content: space-between; color: #0F5F34; font-weight: 600"><span>Leve 2 pague 1 (1 grátis)</span><span>− [menor preço]</span></div>
+          <div style="font-size: 13px; color: #5B6474">3 itens formam 1 par: paga 2. Com 4, paga 2.</div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div style="display: flex; justify-content: space-between; align-items: center">
+    <span style="font-size: 14px; font-weight: 600; color: #D33A3A; border: 1px solid rgb(211 58 58 / .5); border-radius: 8px; padding: 6px 15px">Encerrar promoção</span>
+    <div style="display: flex; gap: 12px">
+      <span style="font-size: 14px; font-weight: 600; color: #5B6474; padding: 7px 16px">Cancelar</span>
+      <span style="font-size: 14px; font-weight: 600; color: #fff; background: #2563EB; padding: 7px 16px; border-radius: 8px">Salvar</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1200,"height":1120}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

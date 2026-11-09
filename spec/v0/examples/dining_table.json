@@ -1,0 +1,80 @@
+{
+  "$schema": "../entity.schema.json",
+  "specVersion": "0",
+  "name": "dining_table",
+  "label": {
+    "singular": "Mesa",
+    "plural": "Mesas"
+  },
+  "description": "Mesas do salão. Exemplo da planta (views.map) por coordenadas, com a situação em cor e as ações no clique, e do tempo real (live).",
+  "icon": "Element3",
+  "titleField": "name",
+  "live": true,
+  "fields": [
+    { "name": "name", "type": "string", "label": "Mesa", "required": true, "unique": true, "maxLength": 40 },
+    {
+      "name": "area",
+      "type": "enum",
+      "label": "Área",
+      "required": true,
+      "default": "hall",
+      "options": [
+        { "value": "hall", "label": "Salão" },
+        { "value": "porch", "label": "Varanda" }
+      ]
+    },
+    { "name": "seats", "type": "integer", "label": "Lugares", "required": true, "min": 1, "max": 30 },
+    {
+      "name": "status",
+      "type": "enum",
+      "label": "Situação",
+      "readOnly": true,
+      "default": "free",
+      "options": [
+        { "value": "free", "label": "Livre", "color": "success" },
+        { "value": "busy", "label": "Ocupada", "color": "warning" },
+        { "value": "bill", "label": "Conta pedida", "color": "info" },
+        { "value": "blocked", "label": "Bloqueada", "color": "neutral" }
+      ]
+    },
+    { "name": "x", "type": "integer", "label": "Coluna na planta", "min": 1, "max": 40, "help": "A partir de 1, da esquerda." },
+    { "name": "y", "type": "integer", "label": "Linha na planta", "min": 1, "max": 40, "help": "A partir de 1, de cima." },
+    { "name": "w", "type": "integer", "label": "Largura na planta", "min": 1, "max": 6, "help": "Em células; vazio é 1 (mesa grande ocupa 2)." }
+  ],
+  "actions": [
+    {
+      "name": "occupy",
+      "label": "Abrir mesa",
+      "tone": "success",
+      "visibleWhen": { "field": "status", "op": "eq", "value": "free" }
+    },
+    {
+      "name": "ask_bill",
+      "label": "Pedir a conta",
+      "tone": "info",
+      "visibleWhen": { "field": "status", "op": "eq", "value": "busy" }
+    },
+    {
+      "name": "release",
+      "label": "Liberar mesa",
+      "visibleWhen": { "field": "status", "op": "in", "value": ["busy", "bill", "blocked"] }
+    }
+  ],
+  "views": {
+    "list": {
+      "columns": ["name", "area", "seats", { "field": "status", "width": 140 }],
+      "search": ["name"],
+      "filters": ["area", "status"],
+      "defaultSort": [{ "field": "name" }],
+      "presets": [
+        { "id": "salao", "label": "Salão", "where": { "field": "area", "op": "eq", "value": "hall" } },
+        { "id": "varanda", "label": "Varanda", "where": { "field": "area", "op": "eq", "value": "porch" } }
+      ]
+    },
+    "map": {
+      "color": "status",
+      "fields": ["seats"],
+      "position": { "x": "x", "y": "y", "w": "w" }
+    }
+  }
+}

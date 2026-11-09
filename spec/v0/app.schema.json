@@ -1,0 +1,975 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://c3theme.dev/spec/v0/app.schema.json",
+  "title": "C3 App v0",
+  "description": "Estrutura do sistema que a shell monta: layout (header, menu, body, footer), páginas e rotas. Rotas de entidade são derivadas; só páginas custom declaram rota.",
+  "type": "object",
+  "required": ["specVersion", "name", "entities", "layout"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "specVersion": {
+      "const": "0"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Nome exibido no header e no título da aba."
+    },
+    "homePath": {
+      "type": "string",
+      "pattern": "^/",
+      "description": "Rota aberta após o login. Padrão: primeira rota do menu."
+    },
+    "entities": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "entity.schema.json#/$defs/identifier"
+      },
+      "description": "Entidades servidas por este backend. Cada uma ganha automaticamente as rotas /{entity}, /{entity}/new e /{entity}/:id, e é descrita em GET /api/_meta/entities/{name}."
+    },
+    "pages": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/page"
+      },
+      "description": "Páginas que não são CRUD de entidade. Cada uma é um painel descrito aqui (dashboard) ou aponta para um componente registrado na shell (relatório, tela especial)."
+    },
+    "organization": {
+      "type": "object",
+      "required": ["company", "branch"],
+      "additionalProperties": false,
+      "description": "Liga o escopo por empresa e filial (ver 'scope' em entity.schema.json). Aponta quais entidades do próprio sistema são a empresa (CNPJ raiz, scope 'group') e a filial (estabelecimento, inclusive a matriz, scope 'company'). O grupo econômico não aparece aqui: é o banco inteiro. Sem 'organization', toda entidade é 'group'.",
+      "properties": {
+        "company": {
+          "$ref": "entity.schema.json#/$defs/identifier"
+        },
+        "branch": {
+          "$ref": "entity.schema.json#/$defs/identifier"
+        }
+      }
+    },
+    "auth": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Telas de entrada que a shell monta (login, cadastro, esqueci a senha, perfil). Quem autentica continua sendo o sistema: a shell chama a porta de autenticação que ele passa (AuthPort; o adaptador httpAuth segue /auth/*) e manda o token em todo pedido. Lido sem usuário em GET /_meta/login.",
+      "properties": {
+        "title": {
+          "$ref": "#/$defs/text",
+          "description": "Título da tela de login. Padrão: 'Entrar'."
+        },
+        "subtitle": {
+          "$ref": "#/$defs/text",
+          "description": "Frase abaixo do título, ex.: 'Use o usuário do posto'."
+        },
+        "identifier": {
+          "enum": ["email", "username"],
+          "default": "email",
+          "description": "O que o usuário digita para entrar: e-mail (validado) ou nome de usuário/código."
+        },
+        "remember": {
+          "type": "boolean",
+          "default": true,
+          "description": "Caixa 'Lembrar' que guarda o identificador no navegador."
+        },
+        "register": {
+          "type": "boolean",
+          "default": false,
+          "description": "Link 'Cadastre-se' e a tela de cadastro."
+        },
+        "forgotPassword": {
+          "type": "boolean",
+          "default": false,
+          "description": "Link 'Esqueci a senha' e o fluxo de código por e-mail e nova senha."
+        },
+        "profile": {
+          "type": "boolean",
+          "default": true,
+          "description": "Tela 'Meu perfil' (nome, telefone e trocar senha) no menu do usuário."
+        }
+      }
+    },
+    "layout": {
+      "$ref": "#/$defs/layout"
+    }
+  },
+  "$defs": {
+    "icon": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Za-z0-9]*$",
+      "description": "Nome de ícone do catálogo da shell (ver entity.schema.json, campo icon)."
+    },
+    "text": {
+      "$ref": "entity.schema.json#/$defs/text"
+    },
+    "component": {
+      "$ref": "entity.schema.json#/$defs/component"
+    },
+    "path": {
+      "type": "string",
+      "pattern": "^/[a-z0-9\\-/:]*$",
+      "description": "Caminho da rota na shell, com parâmetros no formato ':nome'."
+    },
+    "page": {
+      "type": "object",
+      "required": ["path"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/path"
+        },
+        "title": {
+          "$ref": "#/$defs/text",
+          "description": "Título da página e do breadcrumb."
+        },
+        "component": {
+          "$ref": "#/$defs/component",
+          "description": "Componente registrado na shell que desenha a página (página registrada). Use isto ou dashboard."
+        },
+        "config": {
+          "type": "object",
+          "description": "Configuração da página registrada (teclas, colunas, textos, atalhos), entregue ao componente como prop config. Validada pelo schema do componente (components/<component>.schema.json ao lado do app.json) no spec:check. Só com component."
+        },
+        "permission": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Código de permissão do sistema (o mesmo de access e rowAccess). Sem ele, o item some do menu e a rota mostra 'sem permissão'; GET /_meta/app devolve em pages se o usuário pode abrir. O que a página chama no backend continua conferido pelo sistema."
+        },
+        "dashboard": {
+          "$ref": "#/$defs/dashboard"
+        },
+        "layout": {
+          "enum": ["dashboard", "blank"],
+          "default": "dashboard",
+          "description": "'dashboard' renderiza dentro de header/menu/footer; 'blank' ocupa a tela toda (ex.: impressão, quiosque)."
+        }
+      },
+      "oneOf": [
+        {
+          "required": ["component"]
+        },
+        {
+          "required": ["dashboard"],
+          "not": {
+            "required": ["config"]
+          }
+        }
+      ]
+    },
+    "layout": {
+      "type": "object",
+      "required": ["menu"],
+      "additionalProperties": false,
+      "description": "As quatro regiões da shell. Body é a rota ativa (lista/form/detalhe de entidade ou página custom), por isso não é configurado aqui.",
+      "properties": {
+        "orientation": {
+          "enum": ["vertical", "horizontal", "rail"],
+          "default": "vertical",
+          "description": "Menu lateral (acordeão), barra superior ou 'rail': dois níveis, com trilho de módulos (itens de primeiro nível) e painel com as telas do módulo; filhos de filhos viram títulos de seção no painel."
+        },
+        "user": {
+          "enum": ["header", "drawer"],
+          "default": "header",
+          "description": "Onde fica o usuário logado (menu de conta com perfil e sair): avatar à direita do cabeçalho ou cartão no pé do menu lateral. Com o menu em barra superior, fica sempre no cabeçalho."
+        },
+        "header": {
+          "$ref": "#/$defs/header"
+        },
+        "menu": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/menuGroup"
+          }
+        },
+        "footer": {
+          "oneOf": [
+            {
+              "type": "null",
+              "description": "Sem rodapé."
+            },
+            {
+              "$ref": "#/$defs/footer"
+            }
+          ]
+        }
+      }
+    },
+    "header": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "search": {
+          "type": "boolean",
+          "default": true,
+          "description": "Busca global (navega por menu e entidades)."
+        },
+        "fullscreen": {
+          "type": "boolean",
+          "default": true
+        },
+        "settings": {
+          "type": "boolean",
+          "default": true,
+          "description": "Painel de aparência do usuário (cor, modo, menu, fonte, contraste, direção)."
+        },
+        "notifications": {
+          "type": "boolean",
+          "default": false,
+          "description": "Sino de notificações no header: contador de não lidas, lista, marcar todas como lidas e abrir o `to` do aviso. Exige as rotas /_notifications no backend (spec/v0/notifications.yaml); backend sem elas responde 404 e o sino fica vazio."
+        },
+        "languages": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z]{2}(-[A-Z]{2})?$"
+          },
+          "description": "Idiomas oferecidos no seletor. Vazio ou ausente esconde o seletor."
+        },
+        "userMenu": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/link"
+          },
+          "description": "Itens extras no menu do usuário (perfil e sair já existem)."
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/component"
+          },
+          "description": "Componentes custom adicionados à direita do header."
+        }
+      }
+    },
+    "footer": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "$ref": "#/$defs/text",
+          "description": "Texto à esquerda. Padrão: '© {ano} {name}'."
+        },
+        "links": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/link"
+          }
+        }
+      }
+    },
+    "link": {
+      "type": "object",
+      "required": ["label"],
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "$ref": "#/$defs/text"
+        },
+        "icon": {
+          "$ref": "#/$defs/icon"
+        },
+        "path": {
+          "$ref": "#/$defs/path"
+        },
+        "href": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "oneOf": [
+        {
+          "required": ["path"]
+        },
+        {
+          "required": ["href"]
+        }
+      ]
+    },
+    "menuGroup": {
+      "type": "object",
+      "required": ["items"],
+      "additionalProperties": false,
+      "properties": {
+        "title": {
+          "$ref": "#/$defs/text",
+          "description": "Legenda do grupo. Sem título, os itens aparecem soltos."
+        },
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/menuItem"
+          }
+        }
+      }
+    },
+    "menuItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Basta { \"entity\": \"customer\" }: título, ícone e rota saem da entidade. Com filtro: { \"entity\": \"customer\", \"preset\": \"vip-sem-empresa\", \"title\": \"VIPs\" }. Página custom: { \"path\": \"/painel\" }.",
+      "properties": {
+        "entity": {
+          "$ref": "entity.schema.json#/$defs/identifier",
+          "description": "Abre a lista da entidade. Título padrão: label.plural."
+        },
+        "preset": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "description": "Abre a lista já com um filtro nomeado da entidade (views.list.presets), ex.: 'Clientes VIP'. A mesma tela abre de vários itens de menu com filtros diferentes."
+        },
+        "view": {
+          "enum": ["list", "board", "calendar", "report", "map"],
+          "default": "list",
+          "description": "Qual tela da entidade o item abre: a lista, o quadro (views.board), o calendário (views.calendar), o relatório (views.report) ou a planta (views.map). O preset vale para todas. Só com 'entity'."
+        },
+        "badge": {
+          "type": "boolean",
+          "default": false,
+          "description": "Mostra no menu quantos registros a lista tem (com o preset, na filial ativa). É a fila de pendências: 'Pedidos em aberto (12)'. Só com 'entity'."
+        },
+        "path": {
+          "$ref": "#/$defs/path",
+          "description": "Rota de uma página declarada em 'pages'. Título padrão: title da página."
+        },
+        "href": {
+          "type": "string",
+          "format": "uri",
+          "description": "Link externo, abre em nova aba."
+        },
+        "title": {
+          "$ref": "#/$defs/text"
+        },
+        "icon": {
+          "$ref": "#/$defs/icon"
+        },
+        "children": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/menuItem"
+          },
+          "description": "Submenu recolhível."
+        }
+      },
+      "oneOf": [
+        {
+          "required": ["entity"]
+        },
+        {
+          "required": ["path"]
+        },
+        {
+          "required": ["href", "title"]
+        },
+        {
+          "required": ["children", "title"]
+        }
+      ]
+    },
+    "dashboard": {
+      "type": "object",
+      "required": ["widgets"],
+      "additionalProperties": false,
+      "description": "Painel montado pela shell a partir do contrato (GET /{entity}/_aggregate e GET da lista): indicadores, gráficos e listas curtas em uma grade de 12 colunas, na ordem declarada. Tudo respeita escopo, filial ativa e permissões do usuário; widget de entidade que o usuário não lista não aparece. Filtros do painel (filters) ficam na barra do topo e entram no recorte de cada widget que os liga (bind).",
+      "properties": {
+        "widgets": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 24,
+          "items": {
+            "$ref": "#/$defs/widget"
+          }
+        },
+        "filters": {
+          "type": "array",
+          "maxItems": 4,
+          "description": "Filtros da barra do painel: período e registro (filial, vendedor). Cada widget escolhe quais liga e a qual campo dele (bind); widget sem bind não muda. O valor escolhido fica na URL (f.<nome>), então voltar e compartilhar funcionam.",
+          "items": {
+            "$ref": "#/$defs/dashboardFilter"
+          }
+        },
+        "actions": {
+          "type": "array",
+          "maxItems": 4,
+          "description": "Botões no topo do painel, à direita: atalhos para a lista e para criar.",
+          "items": {
+            "type": "object",
+            "required": ["label", "path"],
+            "additionalProperties": false,
+            "properties": {
+              "label": {
+                "$ref": "#/$defs/text"
+              },
+              "path": {
+                "type": "string",
+                "pattern": "^/"
+              },
+              "icon": {
+                "type": "string",
+                "pattern": "^[A-Z][A-Za-z0-9]*$"
+              },
+              "variant": {
+                "enum": ["contained", "outlined"],
+                "default": "outlined"
+              }
+            }
+          }
+        }
+      }
+    },
+    "widget": {
+      "oneOf": [
+        {
+          "type": "object",
+          "description": "Indicador: um número (contagem ou soma) que leva à lista com o mesmo filtro.",
+          "required": ["type", "title", "entity"],
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "const": "kpi"
+            },
+            "title": {
+              "$ref": "#/$defs/text"
+            },
+            "entity": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,62}$",
+              "description": "Entidade de app.entities lida pelo widget."
+            },
+            "preset": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]*$",
+              "description": "Preset de views.list.presets da entidade: o filtro do widget e o destino do clique."
+            },
+            "where": {
+              "$ref": "entity.schema.json#/$defs/condition",
+              "description": "Filtro extra, somado ao preset (e)."
+            },
+            "width": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12,
+              "description": "Largura em colunas de 12, no desktop. Em tela de celular, todo widget ocupa a linha inteira. Padrão: kpi 3, chart 6, list 6, alert 12, ranking 6, feed 6."
+            },
+            "measure": {
+              "type": "string",
+              "pattern": "^(count|sum:[a-z][a-z0-9_]{0,62})$",
+              "default": "count",
+              "description": "'count' conta os registros; 'sum:<campo>' soma um campo integer ou decimal."
+            },
+            "bind": {
+              "type": "object",
+              "description": "Filtros do painel que este widget usa: nome do filtro -> campo do widget (período em date/datetime, registro em reference da mesma entidade). Somados (e) ao preset e ao where.",
+              "additionalProperties": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{0,62}$"
+              },
+              "propertyNames": {
+                "pattern": "^[a-z][a-z0-9_]{0,62}$"
+              }
+            },
+            "icon": {
+              "type": "string",
+              "pattern": "^[A-Z][A-Za-z0-9]*$",
+              "description": "Ícone do catálogo num quadrado colorido (tone), à esquerda do título e do valor."
+            },
+            "tone": {
+              "enum": ["neutral", "primary", "info", "success", "warning", "danger"],
+              "default": "neutral",
+              "description": "Cor do ícone e da barra de progresso."
+            },
+            "count": {
+              "type": "boolean",
+              "default": false,
+              "description": "Mostra embaixo do valor quantos registros ele soma (\"25 faturas\")."
+            },
+            "progress": {
+              "type": "object",
+              "required": ["label"],
+              "additionalProperties": false,
+              "description": "Barra de progresso com o %: part (somado ao filtro do widget) sobre whole (ausente: o filtro do próprio widget). Ex.: Total faturado com 'recebido' = pagas sobre o total.",
+              "properties": {
+                "label": {
+                  "$ref": "#/$defs/text"
+                },
+                "part": {
+                  "$ref": "entity.schema.json#/$defs/condition",
+                  "description": "Parte, somada (e) ao filtro do widget. Ausente: o próprio widget."
+                },
+                "whole": {
+                  "$ref": "entity.schema.json#/$defs/condition",
+                  "description": "Todo, no lugar do filtro do widget (o preset e o where não entram). Ausente: o filtro do widget."
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "description": "Gráfico de um campo agrupado: barras (enum, boolean, reference) ou linha no tempo (date, datetime).",
+          "required": ["type", "title", "entity", "groupBy"],
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "const": "chart"
+            },
+            "title": {
+              "$ref": "#/$defs/text"
+            },
+            "entity": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,62}$",
+              "description": "Entidade de app.entities lida pelo widget."
+            },
+            "preset": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]*$",
+              "description": "Preset de views.list.presets da entidade: o filtro do widget e o destino do clique."
+            },
+            "where": {
+              "$ref": "entity.schema.json#/$defs/condition",
+              "description": "Filtro extra, somado ao preset (e)."
+            },
+            "width": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12,
+              "description": "Largura em colunas de 12, no desktop. Em tela de celular, todo widget ocupa a linha inteira. Padrão: kpi 3, chart 6, list 6, alert 12, ranking 6, feed 6."
+            },
+            "groupBy": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,62}$",
+              "description": "Campo enum, boolean, reference, date ou datetime."
+            },
+            "measure": {
+              "type": "string",
+              "pattern": "^(count|sum:[a-z][a-z0-9_]{0,62})$",
+              "default": "count",
+              "description": "'count' conta os registros; 'sum:<campo>' soma um campo integer ou decimal."
+            },
+            "interval": {
+              "enum": ["day", "month", "year"],
+              "default": "month",
+              "description": "Só com groupBy de data."
+            },
+            "chart": {
+              "enum": ["bar", "line", "area", "donut"],
+              "description": "'bar' (padrão sem data): barras deitadas; 'line' (padrão com data): linha no tempo; 'area': linhas suaves com área e legenda, uma por série; 'donut': rosca com legenda (cor, rótulo, % e valor)."
+            },
+            "bind": {
+              "type": "object",
+              "description": "Filtros do painel que este widget usa: nome do filtro -> campo do widget (período em date/datetime, registro em reference da mesma entidade). Somados (e) ao preset e ao where.",
+              "additionalProperties": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{0,62}$"
+              },
+              "propertyNames": {
+                "pattern": "^[a-z][a-z0-9_]{0,62}$"
+              }
+            },
+            "subtitle": {
+              "$ref": "#/$defs/text",
+              "description": "Linha embaixo do título."
+            },
+            "series": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 5,
+              "description": "Só em 'area': várias linhas no mesmo eixo, cada uma com seu filtro (somado ao do widget), medida e cor (faturado x recebido).",
+              "items": {
+                "type": "object",
+                "required": ["label"],
+                "additionalProperties": false,
+                "properties": {
+                  "label": {
+                    "$ref": "#/$defs/text"
+                  },
+                  "where": {
+                    "$ref": "entity.schema.json#/$defs/condition"
+                  },
+                  "measure": {
+                    "type": "string",
+                    "pattern": "^(count|sum:[a-z][a-z0-9_]{0,62})$",
+                    "default": "count",
+                    "description": "'count' conta os registros; 'sum:<campo>' soma um campo integer ou decimal."
+                  },
+                  "tone": {
+                    "enum": ["neutral", "primary", "info", "success", "warning", "danger"]
+                  }
+                }
+              }
+            },
+            "ranges": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 4,
+              "items": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 400
+              },
+              "description": "Só em 'area': escolha dos últimos N períodos no cabeçalho ('6 meses', '12 meses'), na ordem declarada; o maior é o padrão."
+            },
+            "axisScale": {
+              "type": "integer",
+              "minimum": 2,
+              "description": "Só em 'area': o eixo mostra o valor dividido por este número (1000 = em mil); diga a unidade no subtitle. A dica do ponto continua com o valor inteiro."
+            }
+          }
+        },
+        {
+          "type": "object",
+          "description": "Lista curta (os primeiros registros) com link para cada um e para a lista completa.",
+          "required": ["type", "title", "entity"],
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "const": "list"
+            },
+            "title": {
+              "$ref": "#/$defs/text"
+            },
+            "entity": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,62}$",
+              "description": "Entidade de app.entities lida pelo widget."
+            },
+            "preset": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]*$",
+              "description": "Preset de views.list.presets da entidade: o filtro do widget e o destino do clique."
+            },
+            "where": {
+              "$ref": "entity.schema.json#/$defs/condition",
+              "description": "Filtro extra, somado ao preset (e)."
+            },
+            "width": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12,
+              "description": "Largura em colunas de 12, no desktop. Em tela de celular, todo widget ocupa a linha inteira. Padrão: kpi 3, chart 6, list 6, alert 12, ranking 6, feed 6."
+            },
+            "columns": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 4,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{0,62}$"
+              },
+              "description": "Campos mostrados. Padrão: o titleField."
+            },
+            "sort": {
+              "type": "string",
+              "description": "Como no GET da lista (ex.: 'due_date' ou '-total')."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10,
+              "default": 5
+            },
+            "bind": {
+              "type": "object",
+              "description": "Filtros do painel que este widget usa: nome do filtro -> campo do widget (período em date/datetime, registro em reference da mesma entidade). Somados (e) ao preset e ao where.",
+              "additionalProperties": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{0,62}$"
+              },
+              "propertyNames": {
+                "pattern": "^[a-z][a-z0-9_]{0,62}$"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "description": "Aviso (\"12 vendas sem NFC-e\"): conta os registros do recorte e só aparece com contagem acima de zero. Leva à lista com o mesmo recorte.",
+          "required": ["type", "entity", "text"],
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "const": "alert"
+            },
+            "entity": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,62}$",
+              "description": "Entidade de app.entities lida pelo widget."
+            },
+            "preset": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]*$",
+              "description": "Preset de views.list.presets da entidade: o filtro do widget e o destino do clique."
+            },
+            "where": {
+              "$ref": "entity.schema.json#/$defs/condition",
+              "description": "Filtro extra, somado ao preset (e)."
+            },
+            "bind": {
+              "type": "object",
+              "description": "Filtros do painel que este widget usa: nome do filtro -> campo do widget (período em date/datetime, registro em reference da mesma entidade). Somados (e) ao preset e ao where.",
+              "additionalProperties": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{0,62}$"
+              },
+              "propertyNames": {
+                "pattern": "^[a-z][a-z0-9_]{0,62}$"
+              }
+            },
+            "width": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12,
+              "description": "Largura em colunas de 12, no desktop. Em tela de celular, todo widget ocupa a linha inteira. Padrão: kpi 3, chart 6, list 6, alert 12, ranking 6, feed 6."
+            },
+            "text": {
+              "$ref": "#/$defs/text",
+              "description": "Texto do aviso; {count} vira a contagem."
+            },
+            "tone": {
+              "enum": ["info", "warning", "error"],
+              "default": "warning"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "description": "Ranking: os maiores grupos pela medida (o cliente que mais deve), com iniciais, a contagem, o valor e um destaque.",
+          "required": ["type", "title", "entity", "groupBy"],
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "const": "ranking"
+            },
+            "title": {
+              "$ref": "#/$defs/text"
+            },
+            "entity": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,62}$",
+              "description": "Entidade de app.entities lida pelo widget."
+            },
+            "preset": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]*$",
+              "description": "Preset de views.list.presets da entidade: o filtro do widget e o destino do clique."
+            },
+            "where": {
+              "$ref": "entity.schema.json#/$defs/condition",
+              "description": "Filtro extra, somado ao preset (e)."
+            },
+            "width": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12,
+              "description": "Largura em colunas de 12, no desktop. Em tela de celular, todo widget ocupa a linha inteira. Padrão: kpi 3, chart 6, list 6, alert 12, ranking 6, feed 6."
+            },
+            "bind": {
+              "type": "object",
+              "description": "Filtros do painel que este widget usa: nome do filtro -> campo do widget (período em date/datetime, registro em reference da mesma entidade). Somados (e) ao preset e ao where.",
+              "additionalProperties": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{0,62}$"
+              },
+              "propertyNames": {
+                "pattern": "^[a-z][a-z0-9_]{0,62}$"
+              }
+            },
+            "groupBy": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,62}$",
+              "description": "Campo enum, boolean, reference, date ou datetime."
+            },
+            "measure": {
+              "type": "string",
+              "pattern": "^(count|sum:[a-z][a-z0-9_]{0,62})$",
+              "default": "count",
+              "description": "'count' conta os registros; 'sum:<campo>' soma um campo integer ou decimal."
+            },
+            "subtitle": {
+              "$ref": "#/$defs/text",
+              "description": "Linha embaixo do título."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20,
+              "default": 5
+            },
+            "caption": {
+              "$ref": "#/$defs/text",
+              "description": "Segunda linha do grupo: {count} vira a quantidade de registros e {label} o nome da entidade, no singular ou no plural (\"{count} {label} em aberto\")."
+            },
+            "flag": {
+              "type": "object",
+              "required": ["where", "label"],
+              "additionalProperties": false,
+              "description": "Parte do grupo que pede atenção (vencidas): chip com {value} (a medida dessa parte) e a cor; sem ela, otherwise.",
+              "properties": {
+                "where": {
+                  "$ref": "entity.schema.json#/$defs/condition"
+                },
+                "label": {
+                  "$ref": "#/$defs/text"
+                },
+                "tone": {
+                  "enum": ["neutral", "primary", "info", "success", "warning", "danger"],
+                  "default": "danger"
+                },
+                "otherwise": {
+                  "type": "object",
+                  "required": ["label"],
+                  "additionalProperties": false,
+                  "properties": {
+                    "label": {
+                      "$ref": "#/$defs/text"
+                    },
+                    "tone": {
+                      "enum": ["neutral", "primary", "info", "success", "warning", "danger"],
+                      "default": "warning"
+                    }
+                  }
+                }
+              }
+            },
+            "action": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,62}$",
+              "description": "Ação de registro (sem input, confirm nem arquivo) da entidade do groupBy, que precisa ser reference: um botão em cada linha roda a ação no registro do grupo (\"Cobrar\")."
+            }
+          }
+        },
+        {
+          "type": "object",
+          "description": "Avisos recentes: ícone e cor pelo enum kind, o título do registro, o texto e há quanto tempo (time), do mais novo ao mais velho.",
+          "required": ["type", "title", "entity", "kind", "time"],
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "const": "feed"
+            },
+            "title": {
+              "$ref": "#/$defs/text"
+            },
+            "entity": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,62}$",
+              "description": "Entidade de app.entities lida pelo widget."
+            },
+            "preset": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]*$",
+              "description": "Preset de views.list.presets da entidade: o filtro do widget e o destino do clique."
+            },
+            "where": {
+              "$ref": "entity.schema.json#/$defs/condition",
+              "description": "Filtro extra, somado ao preset (e)."
+            },
+            "width": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12,
+              "description": "Largura em colunas de 12, no desktop. Em tela de celular, todo widget ocupa a linha inteira. Padrão: kpi 3, chart 6, list 6, alert 12, ranking 6, feed 6."
+            },
+            "bind": {
+              "type": "object",
+              "description": "Filtros do painel que este widget usa: nome do filtro -> campo do widget (período em date/datetime, registro em reference da mesma entidade). Somados (e) ao preset e ao where.",
+              "additionalProperties": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{0,62}$"
+              },
+              "propertyNames": {
+                "pattern": "^[a-z][a-z0-9_]{0,62}$"
+              }
+            },
+            "kind": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,62}$",
+              "description": "Campo enum: a cor vem do color da opção."
+            },
+            "text": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,62}$",
+              "description": "Campo da linha de baixo."
+            },
+            "time": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,62}$",
+              "description": "Campo date ou datetime: a ordem e o 'há 12 min'."
+            },
+            "icons": {
+              "type": "object",
+              "description": "Ícone do catálogo por valor do enum kind.",
+              "additionalProperties": {
+                "type": "string",
+                "pattern": "^[A-Z][A-Za-z0-9]*$"
+              }
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20,
+              "default": 5
+            }
+          }
+        }
+      ]
+    },
+    "dashboardFilter": {
+      "oneOf": [
+        {
+          "type": "object",
+          "description": "Período relativo ao relógio do sistema: hoje, esta semana, este mês, mês passado, últimos 7 ou 30 dias, este ano, tudo. Liga-se a campo date ou datetime: início incluso, fim excluso.",
+          "required": ["name", "type"],
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,62}$"
+            },
+            "type": {
+              "const": "period"
+            },
+            "label": {
+              "$ref": "#/$defs/text"
+            },
+            "default": {
+              "enum": ["today", "week", "month", "lastMonth", "last7", "last30", "year", "all"],
+              "default": "all",
+              "description": "Período ao abrir o painel."
+            }
+          }
+        },
+        {
+          "type": "object",
+          "description": "Um registro de outra entidade (filial, vendedor), escolhido por busca. Liga-se a campo reference para a mesma entidade; vazio não filtra.",
+          "required": ["name", "type", "entity"],
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,62}$"
+            },
+            "type": {
+              "const": "reference"
+            },
+            "entity": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,62}$",
+              "description": "Entidade de app.entities."
+            },
+            "label": {
+              "$ref": "#/$defs/text"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

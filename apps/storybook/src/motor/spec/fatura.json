@@ -1,0 +1,206 @@
+{
+  "$schema": "../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "fatura",
+  "label": {
+    "singular": "Fatura",
+    "plural": "Faturas",
+    "gender": "f"
+  },
+  "fields": [
+    {
+      "name": "numero",
+      "type": "string",
+      "label": "Fatura",
+      "required": true,
+      "readOnly": true
+    },
+    {
+      "name": "cliente",
+      "type": "reference",
+      "entity": "cliente",
+      "label": "Cliente",
+      "required": true
+    },
+    {
+      "name": "vendedor",
+      "type": "reference",
+      "entity": "vendedor",
+      "label": "Vendedor"
+    },
+    {
+      "name": "vencimento",
+      "type": "date",
+      "label": "Vencimento",
+      "required": true
+    },
+    {
+      "name": "emissao",
+      "type": "date",
+      "label": "Emissão",
+      "required": true
+    },
+    {
+      "name": "agendado",
+      "type": "datetime",
+      "label": "Agendado para"
+    },
+    {
+      "name": "total",
+      "type": "decimal",
+      "label": "Valor",
+      "scale": 2,
+      "currency": "BRL",
+      "min": 0,
+      "required": true
+    },
+    {
+      "name": "status",
+      "type": "enum",
+      "label": "Status",
+      "default": "aberta",
+      "options": [
+        {
+          "value": "aberta",
+          "label": "Aberta",
+          "color": "info"
+        },
+        {
+          "value": "paga",
+          "label": "Paga",
+          "color": "success"
+        },
+        {
+          "value": "atrasada",
+          "label": "Atrasada",
+          "color": "danger"
+        },
+        {
+          "value": "cancelada",
+          "label": "Cancelada",
+          "color": "neutral"
+        }
+      ]
+    },
+    {
+      "name": "motivo",
+      "type": "text",
+      "label": "Motivo do cancelamento",
+      "readOnly": true
+    }
+  ],
+  "titleField": "numero",
+  "views": {
+    "list": {
+      "columns": [
+        {
+          "field": "numero",
+          "link": true
+        },
+        {
+          "field": "cliente",
+          "avatar": {
+            "letters": 1,
+            "tone": "neutral"
+          },
+          "weight": "normal"
+        },
+        "emissao",
+        "vencimento",
+        "total",
+        "status"
+      ],
+      "search": ["numero"],
+      "searchHint": "Número da fatura",
+      "filters": ["status"],
+      "rowActions": ["view", "edit"],
+      "rowActionsStyle": "quiet",
+      "totals": [
+        {
+          "field": "total"
+        }
+      ],
+      "defaultSort": [
+        {
+          "field": "emissao",
+          "direction": "desc"
+        }
+      ],
+      "pageSize": 10,
+      "dateRange": {
+        "field": "emissao",
+        "label": "Emitidas"
+      },
+      "presets": [
+        {
+          "id": "atrasadas",
+          "label": "Atrasadas",
+          "where": {
+            "field": "status",
+            "op": "eq",
+            "value": "atrasada"
+          }
+        }
+      ]
+    },
+    "report": {
+      "title": "Faturas por situação e cliente",
+      "groupBy": ["status", "cliente"],
+      "columns": ["numero", "emissao", "vencimento", "total"],
+      "subtotals": ["total"],
+      "sort": "-total"
+    }
+  },
+  "actions": [
+    {
+      "name": "marcar_paga",
+      "label": "Marcar como paga",
+      "icon": "TickCircle",
+      "tone": "success",
+      "bulk": true,
+      "visibleWhen": {
+        "field": "status",
+        "op": "in",
+        "value": ["aberta", "atrasada"]
+      },
+      "successMessage": "Fatura marcada como paga.",
+      "inverse": "reabrir"
+    },
+    {
+      "name": "reabrir",
+      "label": "Reabrir",
+      "visibleWhen": {
+        "field": "status",
+        "op": "eq",
+        "value": "paga"
+      },
+      "confirm": "A fatura volta para aberta e o recebimento é estornado.",
+      "confirmLabel": "Reabrir fatura"
+    },
+    {
+      "name": "cancelar",
+      "label": "Cancelar fatura",
+      "icon": "CloseCircle",
+      "tone": "danger",
+      "description": "A fatura sai da cobrança e o cliente recebe o aviso.",
+      "visibleWhen": {
+        "field": "status",
+        "op": "in",
+        "value": ["aberta", "atrasada"]
+      },
+      "confirmLabel": "Cancelar fatura",
+      "successMessage": "Fatura cancelada.",
+      "input": {
+        "fields": [
+          {
+            "name": "motivo",
+            "type": "text",
+            "label": "Motivo",
+            "required": true,
+            "maxLength": 300
+          }
+        ]
+      }
+    }
+  ]
+}

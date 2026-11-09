@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Clientes · Listagem</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2563EB;text-decoration:none}a:hover{color:#1A45A5}
+.cap{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#5B6474}
+.ni{display:flex;align-items:center;gap:10px;min-height:40px;padding:0 12px;border-radius:8px;font-size:14px;font-weight:500;color:#141A24;margin-bottom:2px}
+.ni svg{width:20px;height:20px;color:#5B6474}
+.ni.on{background:rgb(37 99 235 / .08);color:#2563EB;font-weight:600}
+.ni.on svg{color:#2563EB}
+.btn{font-family:inherit;font-size:14px;font-weight:600;line-height:1.75;border-radius:8px;padding:5px 15px;border:1px solid rgb(91 100 116 / .5);color:#5B6474;background:transparent;display:inline-flex;align-items:center;gap:8px}
+.btn svg{width:18px;height:18px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{font-size:12px;font-weight:600;letter-spacing:.02em;color:#5B6474;background:#F4F6F9;text-align:left;padding:12px 16px;white-space:nowrap;border-bottom:1px solid #E2E6EC}
+td{padding:10px 16px;border-bottom:1px solid #E2E6EC;white-space:nowrap}
+th:first-child,td:first-child{padding-left:20px}
+.chip{display:inline-flex;align-items:center;height:24px;padding:0 8px;border-radius:6px;font-size:13px;font-weight:500}
+.av{display:inline-grid;place-items:center;border-radius:50%;width:32px;height:32px;font-size:13px;font-weight:600;background:rgb(37 99 235 / .12);color:#1A45A5;flex-shrink:0}
+.ib{width:32px;height:32px;border-radius:8px;display:inline-grid;place-items:center;color:#5B6474}
+.ib:hover{background:rgba(20,26,36,.06)}
+</style>
+</helmet>
+<div style="width: 1200px; height: 1120px; display: flex; background: #F4F6F9; font-family: 'Inter', system-ui, sans-serif; color: #141A24; overflow: hidden">
+  <aside style="width: 240px; flex-shrink: 0; background: #FFFFFF; border-right: 1px solid #E2E6EC">
+    <div style="height: 64px; display: flex; align-items: center; gap: 10px; padding: 0 20px"><span aria-hidden="true" style="width: 32px; height: 32px; border-radius: 8px; background: #2563EB; color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 13px">C</span><span style="font-size: 16px; font-weight: 600">C3Theme</span></div>
+    <nav style="padding: 8px 12px">
+      <div class="cap" style="padding: 8px 12px 4px">Principal</div>
+      <a class="ni" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9h-6v-6H9v6H3z"/></svg>Início</a>
+      <div class="cap" style="padding: 12px 12px 4px">Cadastros</div>
+      <a class="ni on" href="CrudLista.dc.html"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M2 20c1-4 4-6 7-6s6 2 7 6z" opacity=".5"/></svg>Clientes</a>
+      <div class="cap" style="padding: 12px 12px 4px">Páginas</div>
+      <a class="ni" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>Meu perfil</a>
+      <a class="ni" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4l6 6-9 9H5v-6z"/></svg>Componentes</a>
+    </nav>
+  </aside>
+
+  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+    <header style="height: 64px; display: flex; align-items: center; gap: 12px; padding: 0 24px; border-bottom: 1px solid #E2E6EC">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#5B6474" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+      <span style="flex: 1"></span>
+      <span style="display: flex; align-items: center; gap: 8px; height: 36px; width: 240px; padding: 0 12px; border: 1px solid #E2E6EC; border-radius: 8px; background: #fff; font-size: 14px; color: #5B6474; box-sizing: border-box">Buscar tela…</span>
+      <span style="width: 36px; height: 36px; border-radius: 50%; background: rgb(37 99 235 / .12); color: #1A45A5; font-size: 13px; font-weight: 600; display: grid; place-items: center">UD</span>
+    </header>
+
+    <main style="flex: 1; padding: 24px; display: flex; flex-direction: column; gap: 20px; min-height: 0">
+      <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <nav aria-label="Caminho" style="display: flex; align-items: center; gap: 6px; font-size: 14px; color: #5B6474">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-label="Início" role="img"><path d="M3 11l9-7 9 7v9h-6v-6H9v6H3z"/></svg>
+            <span aria-hidden="true">›</span><span>Cadastros</span><span aria-hidden="true">›</span><span style="color: #141A24">Clientes</span>
+          </nav>
+          <h1 style="margin: 0; font-size: 22px; font-weight: 600">Clientes</h1>
+        </div>
+        <a href="CrudEditar.dc.html" style="display: inline-flex; align-items: center; gap: 8px; background: #2563EB; color: #fff; font-size: 14px; font-weight: 600; padding: 7px 16px; border-radius: 8px">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Novo cliente</a>
+      </div>
+
+      <section style="background: #FFFFFF; border: 1px solid #E2E6EC; border-radius: 24px; overflow: hidden">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 20px; min-height: 64px; box-sizing: border-box">
+          <label style="display: flex; align-items: center; gap: 8px; height: 40px; width: 280px; box-sizing: border-box; padding: 0 12px; border: 1px solid #E2E6EC; border-radius: 8px; color: #5B6474">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+            <input type="search" aria-label="Buscar na tabela" placeholder="Buscar clientes…" style="border: none; outline: none; font: inherit; font-size: 15px; flex: 1; min-width: 0; background: transparent">
+          </label>
+          <div style="display: flex; gap: 8px">
+            <button type="button" class="btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>Agrupar por</button>
+            <button type="button" class="btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>Colunas (6/9)</button>
+          </div>
+        </div>
+        <table>
+          <thead><tr>
+            <th style="color: #141A24">Nome <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align: -2px"><path d="M12 19V5M6 11l6-6 6 6"/></svg></th>
+            <th>CPF/CNPJ</th><th>Cidade</th><th>UF</th><th>Situação</th><th style="text-align: right">Limite</th><th><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Ações</span></th>
+          </tr></thead>
+          <tbody>
+            <sc-for list="{{rows}}" as="r" hint-placeholder-count="10">
+              <tr>
+                <td><a href="CrudEditar.dc.html" style="display: flex; align-items: center; gap: 12px; color: inherit"><span class="av">{{r.ini}}</span><span><span style="display: block; font-weight: 500">{{r.nome}}</span><span style="display: block; font-size: 12px; color: #5B6474">{{r.email}}</span></span></a></td>
+                <td>{{r.doc}}</td><td>{{r.cidade}}</td><td>{{r.uf}}</td>
+                <td><span class="chip" style="background: {{r.sb}}; color: {{r.sf}}">{{r.sit}}</span></td>
+                <td style="text-align: right">{{r.lim}}</td>
+                <td style="width: 1px; padding-right: 20px">
+                  <a class="ib" href="CrudEditar.dc.html" aria-label="Editar {{r.nome}}"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4z"/></svg></a>
+                  <a class="ib" href="CrudExcluir.dc.html" aria-label="Excluir {{r.nome}}" style="color: #D33A3A"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></a>
+                </td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+        <div style="display: flex; justify-content: flex-end; align-items: center; gap: 28px; padding: 12px 20px; font-size: 14px">
+          <span>Linhas por página: 10 ▾</span><span>1–10 de 20</span><span style="color: #9AA4B2">‹</span><span>›</span>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1200,"height":1120}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const S = {
+      ativo: { sit: 'Ativo', sb: 'rgb(22 136 74 / .12)', sf: '#0F5F34' },
+      pendente: { sit: 'Pendente', sb: 'rgb(199 119 0 / .12)', sf: '#8B5300' },
+      inativo: { sit: 'Inativo', sb: 'rgba(20,26,36,.04)', sf: '#5B6474' }
+    };
+    const base = [
+      ['Aline Duarte', 'aline.duarte', '766.398.426-28', 'Olinda', 'PE', 'ativo', 'R$ 6.500,00'],
+      ['Ana Beatriz Souza', 'ana.souza', '100.200.300-10', 'Curitiba', 'PR', 'ativo', 'R$ 15.000,00'],
+      ['Beatriz Mendes', 'beatriz.mendes', '618.354.398-24', 'Uberlândia', 'MG', 'inativo', 'R$ 21.000,00'],
+      ['Bruno Castro', 'bruno.castro', '803.409.433-29', 'Anápolis', 'GO', 'ativo', 'R$ 27.000,00'],
+      ['Camila Barbosa', 'camila.barbosa', '544.332.384-22', 'Londrina', 'PR', 'ativo', 'R$ 9.500,00'],
+      ['Carlos Henrique Lima', 'carlos.lima', '137.211.307-11', 'Recife', 'PE', 'ativo', 'R$ 8.000,00'],
+      ['Eduardo Ribeiro', 'eduardo.ribeiro', '433.299.363-19', 'Florianópolis', 'SC', 'inativo', 'R$ 5.000,00'],
+      ['Felipe Araújo', 'felipe.araujo', '729.387.419-27', 'Caxias do Sul', 'RS', 'ativo', 'R$ 48.000,00'],
+      ['Fernanda Rocha', 'fernanda.rocha', '174.222.314-12', 'Porto Alegre', 'RS', 'pendente', 'R$ 42.000,00'],
+      ['Gustavo Pereira', 'gustavo.pereira', '581.343.391-23', 'Niterói', 'RJ', 'ativo', 'R$ 14.000,00']
+    ];
+    return {
+      rows: base.map(([nome, mail, doc, cidade, uf, s, lim]) => ({
+        nome, doc, cidade, uf, lim, email: mail + '@exemplo.com.br',
+        ini: nome.split(' ').slice(0, 2).map((p) => p[0]).join(''), ...S[s]
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+# Path item de GET /{entity}/_events, referenciado por openapi.yaml (que já passou do limite de tamanho).
+parameters:
+  - $ref: 'openapi.yaml#/components/parameters/entity'
+get:
+  summary: Tempo real da entidade (SSE)
+  description: >-
+    Só para entidade com `live` (senão 404); exige list na entidade (403). A resposta é text/event-stream e fica
+    aberta. Primeiro vem `event: ready` (a assinatura vale a partir daqui: quem reconecta relê a tela, porque pode ter
+    perdido avisos), depois um `event: change` por registro criado, alterado, excluído ou tocado por uma ação, com
+    `data: { "change": "created" | "updated" | "deleted" | "changed", "id": "<id>" | null }`. created e updated
+    só chegam a quem enxerga o registro (escopo de filial e rowAccess); deleted não tem o que conferir e leva só o
+    id; changed (sem id) diz "relê tudo": ação da lista, ação em conjunto, gravação do sistema em lote ou assinante
+    que ficou para trás. Linhas de comentário (`:`) mantêm a conexão viva. O aviso não traz o registro: a tela relê
+    pela listagem, com as permissões de sempre. A conexão fecha quando a sessão cai ou a permissão sai; a
+    reconexão recebe o 401/403. O canal é do processo: gravação feita fora do motor (outro programa no mesmo banco,
+    outra instância) só chega se o sistema avisar (no c3-engine, Live::notify).
+  operationId: events
+  responses:
+    '200':
+      description: Fluxo de eventos (SSE).
+      content:
+        text/event-stream:
+          schema:
+            type: string
+            example: "event: ready\ndata: {}\n\nevent: change\ndata: {\"change\":\"created\",\"id\":\"42\"}\n\n"
+    '401': { $ref: 'openapi.yaml#/components/responses/Error' }
+    '403': { $ref: 'openapi.yaml#/components/responses/Error' }
+    '404': { $ref: 'openapi.yaml#/components/responses/Error' }

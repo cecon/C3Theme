@@ -1,0 +1,62 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Introdução" />
+
+# C3 UI
+
+Catálogo dos componentes do C3. Sempre que o motor (`@c3theme/engine`) consegue montar a peça, a história é montada
+a partir do JSON da spec, como num sistema de verdade: é o caminho que o C3 recomenda. A aba **Code** dessas histórias
+mostra o JSON, não o código React. A vitrine completa fica em [cecon.github.io/C3Theme](https://cecon.github.io/C3Theme/).
+
+## Pelo motor e uso direto
+
+- **Pelo motor**: a spec fica em `apps/storybook/src/motor/spec` (validada pelo `pnpm spec:check`) e os registros num
+  adaptador em memória (`createMemoryClient`), no lugar do backend.
+- **Uso direto** (tag `uso-direto`, nome da história termina em "(uso direto)"): o motor ainda não alcança a variação,
+  ou a peça é de baixo nível (tema, chat, fluxo, molduras). É lacuna anotada, não exemplo a seguir num sistema.
+
+## Exceções do ADR 0001
+
+Ficam em código por decisão, não por lacuna: as primitivas do `@c3theme/ui` (Tema, chip, avatar, botão, painel,
+progresso, entradas, catálogo, peças das páginas registradas como ligar aparelho e pedidos de acesso), o Chat, o
+Fluxo e a moldura do app de desktop.
+
+## Lacunas do motor
+
+Cada uma é uma história "(uso direto)" e vira trabalho no motor (spec, shell e os dois backends) quando um sistema
+precisar:
+
+| #   | Lacuna                                                                    | Onde aparece                     |
+| --- | ------------------------------------------------------------------------- | -------------------------------- |
+| 1   | `enum` em seleção nativa ou em rádios                                     | Campos/Seleção                   |
+| 2   | `reference` com vários valores                                            | Campos/Busca                     |
+| 3   | Data com mínimo e máximo (`min`/`max` são só de número)                   | Campos/Data e hora               |
+| 4   | Envio de arquivo com progresso (vários arquivos)                          | Campos/Arquivos                  |
+| 5   | Unidade como sufixo do decimal ("kg"); hoje vai no rótulo                 | Campos/Número e moeda            |
+| 6   | Lista compacta e listrada                                                 | Tabela/DataTable                 |
+| 7   | Desfazer no adaptador em memória (ele não versiona com `_version`)        | Componentes/Avisos               |
+| 8   | Barra de relatório com atalhos de período e Imprimir na lista             | Layout/Consulta por período      |
+| 9   | Usuário no cabeçalho ou no menu sem a sessão do `auth`                    | Layout/AppLayout                 |
+| 10  | `layout.header.languages` e `userMenu` (na spec, mas a shell não desenha) | Layout/Cabeçalho                 |
+| 11  | Assistente em passos (cadastro guiado)                                    | Componentes/Assistente em passos |
+| 12  | Painel de preferências com seções e switches                              | Componentes/Configurações        |
+
+## Barra de cima
+
+Tudo que está na barra vale para todas as histórias:
+
+- **Visual**: C3 ou Angle (cores, fonte e densidade do template Angle).
+- **Marca**: cor primária do visual C3 (no Angle a marca não vale).
+- **Modo**: claro ou escuro.
+- **Direção**: LTR ou RTL (o emotion espelha margens e posições).
+- **Idioma**: textos dos componentes e formatos de número e data.
+
+## Acessibilidade
+
+A aba **Accessibility** roda o axe em cada história; no CI, `pnpm a11y:storybook` reprova achado no claro e no escuro.
+
+## Como escrever uma história
+
+Uma pasta por grupo em `apps/storybook/src`. Para montar pelo motor: ponha o campo ou a tela na spec de `src/motor/spec`,
+use o decorator `withMotor` e `parameters.docs.source = jsonSource`. Componente controlado em uso direto
+(`value` + `onChange`) usa o `stateful` de `src/support`.

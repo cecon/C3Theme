@@ -1,0 +1,17 @@
+{
+  "$schema": "../../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "fatura_item",
+  "label": { "singular": "Item", "plural": "Itens" },
+  "titleField": "descricao",
+  "fields": [
+    { "name": "fatura", "type": "reference", "entity": "fatura", "label": "Fatura", "required": true },
+    { "name": "descricao", "type": "string", "label": "Descrição", "required": true, "maxLength": 200 },
+    { "name": "quantidade", "type": "integer", "label": "Qtd.", "required": true, "min": 1, "default": 1 },
+    { "name": "preco", "type": "decimal", "label": "Preço unit.", "scale": 2, "currency": "BRL", "required": true, "min": 0 }
+  ],
+  "views": {
+    "list": { "columns": ["descricao", "quantidade", "preco"] },
+    "form": { "sections": [{ "rows": [["descricao"], ["quantidade", "preco"]] }] }
+  }
+}

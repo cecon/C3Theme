@@ -1,0 +1,46 @@
+{
+  "$schema": "../../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "receita_mes",
+  "label": {
+    "singular": "Receita do mês",
+    "plural": "Receita por mês",
+    "gender": "f"
+  },
+  "titleField": "mes",
+  "fields": [
+    {
+      "name": "mes",
+      "type": "date",
+      "label": "Mês",
+      "required": true
+    },
+    {
+      "name": "faturado",
+      "type": "decimal",
+      "label": "Faturado",
+      "scale": 2,
+      "currency": "BRL",
+      "required": true
+    },
+    {
+      "name": "recebido",
+      "type": "decimal",
+      "label": "Recebido",
+      "scale": 2,
+      "currency": "BRL",
+      "required": true
+    }
+  ],
+  "views": {
+    "list": {
+      "columns": ["mes", "faturado", "recebido"],
+      "defaultSort": [
+        {
+          "field": "mes",
+          "direction": "asc"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "c3",
+  "version": "0.2.1",
+  "description": "Skills para usar o C3: spec do motor em JSON, backend c3-engine, front com @c3theme/ui e @c3theme/engine, chat e assistente com @c3theme/chat.",
+  "author": { "name": "cecon" }
+}

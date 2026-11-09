@@ -1,0 +1,16 @@
+{
+  "specVersion": "0",
+  "name": "unit",
+  "label": { "singular": "Unidade", "plural": "Unidades" },
+  "icon": "Ruler",
+  "titleField": "code",
+  "fields": [
+    { "name": "code", "type": "string", "label": "Sigla", "required": true, "unique": true, "maxLength": 6, "createOnly": true },
+    { "name": "name", "type": "string", "label": "Descrição", "required": true, "maxLength": 40 },
+    { "name": "fractional", "type": "boolean", "label": "Aceita fração", "default": false, "help": "KG e L aceitam 0,350; UN e CX não." }
+  ],
+  "views": {
+    "list": { "columns": ["code", "name", "fractional"], "search": ["code", "name"], "defaultSort": [{ "field": "code" }] },
+    "form": { "sections": [{ "rows": [["code", "name", "fractional"]] }] }
+  }
+}

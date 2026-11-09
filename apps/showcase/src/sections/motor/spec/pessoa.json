@@ -1,0 +1,69 @@
+{
+  "$schema": "../../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "pessoa",
+  "label": { "singular": "Pessoa", "plural": "Pessoas" },
+  "titleField": "nome",
+  "fields": [
+    { "name": "nome", "type": "string", "label": "Nome", "required": true, "maxLength": 120 },
+    { "name": "email", "type": "email", "label": "E-mail", "required": true },
+    { "name": "cpf", "type": "string", "label": "CPF", "format": "cpf" },
+    { "name": "telefone", "type": "string", "label": "Telefone" },
+    { "name": "cidade", "type": "string", "label": "Cidade" },
+    { "name": "uf", "type": "string", "label": "UF", "maxLength": 2 },
+    {
+      "name": "departamento",
+      "type": "enum",
+      "label": "Departamento",
+      "options": [
+        { "value": "Financeiro", "label": "Financeiro" },
+        { "value": "Comercial", "label": "Comercial" },
+        { "value": "Tecnologia", "label": "Tecnologia" },
+        { "value": "Pessoas", "label": "Pessoas" },
+        { "value": "Operações", "label": "Operações" },
+        { "value": "Marketing", "label": "Marketing" },
+        { "value": "Jurídico", "label": "Jurídico" }
+      ]
+    },
+    { "name": "cargo", "type": "string", "label": "Cargo" },
+    { "name": "idade", "type": "integer", "label": "Idade", "min": 16, "max": 100 },
+    { "name": "salario", "type": "decimal", "label": "Salário", "scale": 2, "currency": "BRL", "min": 0 },
+    {
+      "name": "situacao",
+      "type": "enum",
+      "label": "Situação",
+      "default": "Ativo",
+      "options": [
+        { "value": "Ativo", "label": "Ativo", "color": "success" },
+        { "value": "Férias", "label": "Férias", "color": "info" },
+        { "value": "Afastado", "label": "Afastado", "color": "warning" },
+        { "value": "Desligado", "label": "Desligado", "color": "danger" }
+      ]
+    },
+    { "name": "admissao", "type": "date", "label": "Admissão" },
+    { "name": "progresso", "type": "integer", "label": "Meta do trimestre (%)", "min": 0, "max": 100 }
+  ],
+  "views": {
+    "list": {
+      "columns": ["nome", "departamento", "cidade", "salario", { "field": "situacao", "width": 120 }],
+      "search": ["nome", "email", "cidade"],
+      "filters": ["departamento", "situacao"],
+      "defaultSort": [{ "field": "nome" }],
+      "pageSize": 10,
+      "totals": [{ "field": "salario" }]
+    },
+    "form": {
+      "sections": [
+        {
+          "title": "Dados pessoais",
+          "rows": [
+            ["nome", "email"],
+            ["cpf", "telefone"],
+            ["cidade", "uf"]
+          ]
+        },
+        { "title": "Trabalho", "rows": [["departamento", "cargo"], ["salario", "admissao"], ["situacao", "progresso"], ["idade"]] }
+      ]
+    }
+  }
+}

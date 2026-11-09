@@ -1,0 +1,13 @@
+[package]
+name = "{{api}}"
+description = "Backend de {{title}} no c3-engine: telas em spec/, banco em migrations/, regras em src/main.rs (Hooks)."
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+axum.workspace = true
+c3-engine = { path = "../c3-engine", features = ["sqlx"] }
+sqlx.workspace = true
+tokio.workspace = true

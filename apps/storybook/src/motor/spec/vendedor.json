@@ -1,0 +1,8 @@
+{
+  "$schema": "../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "vendedor",
+  "label": { "singular": "Vendedor", "plural": "Vendedores", "gender": "m" },
+  "titleField": "nome",
+  "fields": [{ "name": "nome", "type": "string", "label": "Nome", "required": true }]
+}

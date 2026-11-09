@@ -1,0 +1,32 @@
+{
+  "$schema": "../../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "evento",
+  "label": { "singular": "Evento", "plural": "Eventos", "new": "Novo evento" },
+  "titleField": "titulo",
+  "fields": [
+    { "name": "titulo", "type": "string", "label": "Título", "required": true, "maxLength": 160 },
+    { "name": "inicio", "type": "datetime", "label": "Início", "required": true },
+    { "name": "fim", "type": "datetime", "label": "Fim" },
+    { "name": "dia_inteiro", "type": "boolean", "label": "Dia inteiro" },
+    {
+      "name": "cor",
+      "type": "enum",
+      "label": "Cor",
+      "default": "info",
+      "options": [
+        { "value": "info", "label": "Azul", "color": "info" },
+        { "value": "success", "label": "Verde", "color": "success" },
+        { "value": "warning", "label": "Amarela", "color": "warning" },
+        { "value": "danger", "label": "Vermelha", "color": "danger" },
+        { "value": "neutral", "label": "Neutra", "color": "neutral" }
+      ]
+    },
+    { "name": "descricao", "type": "text", "label": "Descrição", "maxLength": 1000 }
+  ],
+  "views": {
+    "list": { "columns": ["titulo", "inicio", "fim", "cor"], "search": ["titulo"], "defaultSort": [{ "field": "inicio" }] },
+    "form": { "sections": [{ "rows": [["titulo"], ["inicio", "fim"], ["dia_inteiro", "cor"], ["descricao"]] }] },
+    "calendar": { "start": "inicio", "end": "fim", "allDay": "dia_inteiro", "color": "cor" }
+  }
+}

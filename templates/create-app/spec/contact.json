@@ -1,0 +1,50 @@
+{
+  "$schema": "../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "contact",
+  "label": { "singular": "Contato", "plural": "Contatos", "gender": "m" },
+  "icon": "Profile2User",
+  "titleField": "name",
+  "fields": [
+    { "name": "name", "type": "string", "label": "Nome", "required": true, "maxLength": 120 },
+    { "name": "email", "type": "email", "label": "E-mail", "unique": true },
+    { "name": "phone", "type": "string", "label": "Telefone", "format": "phone" },
+    {
+      "name": "status",
+      "type": "enum",
+      "label": "Situação",
+      "required": true,
+      "default": "active",
+      "options": [
+        { "value": "active", "label": "Ativo", "color": "success" },
+        { "value": "inactive", "label": "Inativo", "color": "neutral" }
+      ]
+    },
+    { "name": "notes", "type": "text", "label": "Observações", "maxLength": 2000 },
+    { "name": "created_at", "type": "datetime", "label": "Criado em", "readOnly": true }
+  ],
+  "views": {
+    "list": {
+      "columns": ["name", "email", "phone", { "field": "status", "width": 120 }, "created_at"],
+      "search": ["name", "email"],
+      "filters": ["status"],
+      "presets": [
+        {
+          "id": "ativos",
+          "label": "Ativos",
+          "where": { "field": "status", "op": "eq", "value": "active" },
+          "default": true,
+          "defaults": { "status": "active" }
+        }
+      ],
+      "defaultSort": [{ "field": "created_at", "direction": "desc" }],
+      "pageSize": 25
+    },
+    "form": {
+      "sections": [
+        { "title": "Dados do contato", "rows": [["name"], ["email", "phone"], ["status"]] },
+        { "title": "Observações", "rows": [["notes"]] }
+      ]
+    }
+  }
+}

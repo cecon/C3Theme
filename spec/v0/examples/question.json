@@ -1,0 +1,107 @@
+{
+  "$schema": "../entity.schema.json",
+  "specVersion": "0",
+  "name": "question",
+  "label": {
+    "singular": "Pergunta",
+    "plural": "Perguntas"
+  },
+  "icon": "MessageQuestion",
+  "titleField": "internal_name",
+  "description": "Pergunta feita na venda (proteína, guarnições). As opções são gravadas junto com ela; o produto escolhe quais perguntas faz.",
+  "fields": [
+    {
+      "name": "internal_name",
+      "type": "string",
+      "label": "Nome interno",
+      "required": true,
+      "unique": true,
+      "maxLength": 60
+    },
+    {
+      "name": "prompt",
+      "type": "string",
+      "label": "Texto mostrado na venda",
+      "required": true,
+      "maxLength": 120
+    },
+    {
+      "name": "choice",
+      "type": "enum",
+      "label": "Tipo de escolha",
+      "required": true,
+      "default": "multiple",
+      "help": "Uma opção vira rádio; várias vira caixa de marcar.",
+      "options": [
+        { "value": "single", "label": "Uma opção" },
+        { "value": "multiple", "label": "Várias opções" }
+      ]
+    },
+    {
+      "name": "min_choices",
+      "type": "integer",
+      "label": "Mínimo de escolhas",
+      "required": true,
+      "default": 1,
+      "min": 0,
+      "max": 20,
+      "help": "0 deixa a pergunta opcional."
+    },
+    {
+      "name": "max_choices",
+      "type": "integer",
+      "label": "Máximo de escolhas",
+      "required": true,
+      "default": 1,
+      "min": 1,
+      "max": 20,
+      "help": "Mín. = máx.: escolhe exatamente esse número."
+    },
+    {
+      "name": "allow_repeat",
+      "type": "boolean",
+      "label": "Pode repetir a mesma opção",
+      "default": false,
+      "visibleWhen": { "field": "choice", "op": "eq", "value": "multiple" }
+    },
+    {
+      "name": "active",
+      "type": "boolean",
+      "label": "Ativa",
+      "default": true
+    }
+  ],
+  "views": {
+    "list": {
+      "columns": ["internal_name", "prompt", "choice", "min_choices", "max_choices", "active"],
+      "filters": ["choice", "active"],
+      "search": ["internal_name", "prompt"],
+      "defaultSort": [{ "field": "internal_name" }]
+    },
+    "form": {
+      "sections": [
+        {
+          "title": "Pergunta",
+          "rows": [
+            ["internal_name", "prompt"],
+            ["choice", "min_choices", "max_choices"],
+            ["allow_repeat", "active"]
+          ]
+        },
+        {
+          "title": "Opções",
+          "description": "O produto vinculado dá baixa no estoque e leva a tributação da opção. Sem vínculo, a opção é só texto no pedido.",
+          "related": {
+            "entity": "question_option",
+            "field": "question_id",
+            "save": "with_parent",
+            "columns": ["position", "name", "product_id", "extra_price", "active"],
+            "sort": "position",
+            "minItems": 1,
+            "maxItems": 50
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "$schema": "../entity.schema.json",
+  "specVersion": "0",
+  "name": "operator",
+  "label": {
+    "singular": "Operador",
+    "plural": "Operadores"
+  },
+  "icon": "UserOctagon",
+  "titleField": "name",
+  "description": "Usuário do caixa. A senha é só de escrita: nunca volta na leitura e quem faz o hash é o sistema.",
+  "fields": [
+    {
+      "name": "name",
+      "type": "string",
+      "label": "Nome",
+      "required": true,
+      "maxLength": 80
+    },
+    {
+      "name": "login",
+      "type": "string",
+      "label": "Login",
+      "required": true,
+      "maxLength": 30,
+      "pattern": "[a-z0-9.]+",
+      "createOnly": true
+    },
+    {
+      "name": "password",
+      "type": "string",
+      "label": "Senha",
+      "help": "Mínimo de 6 caracteres.",
+      "writeOnly": true,
+      "required": true,
+      "minLength": 6,
+      "maxLength": 64
+    }
+  ],
+  "views": {
+    "list": {
+      "columns": ["name", "login"],
+      "search": ["name", "login"],
+      "defaultSort": [{ "field": "name" }]
+    },
+    "form": {
+      "sections": [{ "rows": [["name", "login"], ["password"]] }]
+    }
+  }
+}

@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Chat · c3.record na área de trabalho</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2563EB;text-decoration:none}a:hover{color:#1A45A5}
+.cap{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#5B6474}
+.msg-u{align-self:flex-end;max-width:340px;background:#2563EB;color:#fff;border-radius:16px 16px 4px 16px;padding:10px 14px;font-size:14px;line-height:1.45}
+.msg-a{align-self:flex-start;font-size:14px;line-height:1.5;display:flex;gap:10px}
+.av{width:28px;height:28px;border-radius:8px;background:rgb(37 99 235 / .12);color:#1A45A5;display:grid;place-items:center;flex-shrink:0;font-size:12px;font-weight:700}
+.panel{background:#fff;border:1px solid #E2E6EC;border-radius:24px;overflow:hidden}
+.ph{padding:12px 20px;min-height:52px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #E2E6EC;font-size:15px;font-weight:600}
+.pb{padding:22px 20px 18px;display:grid;gap:22px 16px}
+.fld{position:relative}
+.fld label{position:absolute;top:-8px;left:10px;padding:0 4px;background:#fff;font-size:12px;color:#5B6474;line-height:16px;z-index:1}
+.fld .v{font-size:14px;height:48px;box-sizing:border-box;padding:0 12px;border:1px solid #E2E6EC;border-radius:8px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.sug .v{background:rgb(37 99 235 / .04);border-color:rgb(37 99 235 / .4)}
+.crit .v{background:rgb(199 119 0 / .06);border:2px solid #C77700;padding-left:11px}
+.tagS{font-size:11px;font-weight:600;color:#2563EB;white-space:nowrap}
+.from{font-size:11px;color:#5B6474;padding:4px 12px 0}
+.chip{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:600}
+.confirm{font-family:inherit;font-size:12px;font-weight:700;color:#fff;background:#C77700;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;white-space:nowrap}
+.n{width:22px;height:22px;border-radius:50%;background:#141A24;color:#fff;font-size:11px;font-weight:700;display:inline-grid;place-items:center;flex-shrink:0}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1120px; display: flex; background: #F4F6F9; font-family: 'Inter', system-ui, sans-serif; color: #141A24; overflow: hidden">
+  <section aria-label="Assistente" style="width: 440px; flex-shrink: 0; background: #fff; border-right: 1px solid #E2E6EC; display: flex; flex-direction: column">
+    <header style="height: 64px; flex-shrink: 0; display: flex; align-items: center; gap: 12px; padding: 0 20px; border-bottom: 1px solid #E2E6EC">
+      <span class="av">IA</span><div style="flex: 1"><div style="font-size: 15px; font-weight: 600">Assistente</div><div style="font-size: 12px; color: #5B6474">Compras</div></div>
+    </header>
+    <div style="flex: 1; min-height: 0; overflow: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px">
+      <div class="msg-u">Faz um pedido igual ao último da Acme, mas com 40 caixas e prazo de 45 dias.</div>
+      <div class="msg-a"><span class="av">IA</span><div>Montei o rascunho a partir do pedido 1234. Confira os campos marcados antes de gravar.</div></div>
+      <div style="margin-left: 38px; border: 1px solid #2563EB; border-radius: 14px; background: rgb(37 99 235 / .04); padding: 12px 14px; display: flex; align-items: center; gap: 12px">
+        <span style="width: 36px; height: 36px; border-radius: 10px; background: #2563EB; color: #fff; display: grid; place-items: center"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5"/></svg></span>
+        <div style="flex: 1"><div style="font-size: 14px; font-weight: 600">Rascunho de pedido de compra</div><div style="font-size: 12px; color: #5B6474">c3.record · 14 campos · 4 sugeridos · 2 a confirmar</div></div>
+        <span style="font-size: 13px; font-weight: 600; color: #2563EB">Aberto →</span>
+      </div>
+      <div style="margin-left: 38px; font-size: 12px; color: #5B6474">Mais de 6 campos: o card vira resumo e o formulário abre na área de trabalho.</div>
+    </div>
+    <footer style="flex-shrink: 0; padding: 14px 20px 18px; border-top: 1px solid #E2E6EC">
+      <div style="background: #fff; border: 1px solid #D5DAE1; border-radius: 18px; box-shadow: 0 1px 2px rgba(16,24,40,.05), 0 6px 16px rgba(16,24,40,.06)">
+        <div style="padding: 12px 16px 4px; font-size: 15px; color: #9AA4B2">Peça algo · / comandos · @ registros</div>
+        <div style="display: flex; align-items: center; gap: 6px; padding: 6px 8px 8px">
+          <span aria-hidden="true" style="width: 32px; height: 32px; color: #5B6474; display: grid; place-items: center; font-size: 22px">+</span>
+          <span style="display: inline-flex; align-items: center; height: 26px; padding: 0 9px; border-radius: 8px; background: rgb(37 99 235 / .1); color: #1A45A5; font-size: 12px; font-weight: 600">@ Rascunho de pedido ✕</span>
+          <span style="flex: 1"></span>
+          <span aria-hidden="true" style="width: 34px; height: 34px; border-radius: 50%; background: #C9D0DA; color: #fff; display: grid; place-items: center">↑</span>
+        </div>
+      </div>
+    </footer>
+  </section>
+
+  <main aria-label="Área de trabalho" style="flex: 1; min-width: 0; padding: 24px 28px; display: flex; flex-direction: column; gap: 16px; overflow: hidden">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 16px">
+      <div>
+        <div style="display: flex; align-items: center; gap: 8px"><span class="chip" style="background: rgb(37 99 235 / .12); color: #1A45A5">✦ Pedido pelo assistente</span><span class="chip" style="background: rgba(20,26,36,.06); color: #404651">rascunho · não gravado</span></div>
+        <h1 style="margin: 8px 0 0; font-size: 22px; font-weight: 600">Novo pedido de compra</h1>
+      </div>
+      <span class="cap">19 · c3.record</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 16px; flex: 1; min-height: 0">
+      <div style="display: flex; flex-direction: column; gap: 16px; min-width: 0">
+        <section class="panel">
+          <div class="ph">Dados gerais<span style="font-size: 12px; font-weight: 500; color: #5B6474">EntityForm da entidade pedido_compra</span></div>
+          <div class="pb" style="grid-template-columns: 1fr 1fr 1fr">
+            <div class="fld sug"><label>Fornecedor *</label><div class="v">Acme Ltda <span class="tagS">✦ sugerido</span></div><div class="from">veio do pedido 1234</div></div>
+            <div class="fld"><label>Data</label><div class="v">[DATA]</div></div>
+            <div class="fld sug"><label>Prazo de pagamento</label><div class="v">45 dias <span class="tagS">✦ da mensagem</span></div><div class="from">"prazo de 45 dias"</div></div>
+            <div class="fld sug"><label>Centro de custo</label><div class="v">[CENTRO] <span class="tagS">✦ sugerido</span></div><div class="from">veio do pedido 1234</div></div>
+            <div class="fld crit"><label style="color: #8B5300">CFOP * · crítico</label><div class="v">[CFOP] <button type="button" class="confirm">Confirmar</button></div><div class="from" style="color: #8B5300">sugerido · campo crítico pede um toque</div></div>
+            <div class="fld"><label>Comprador</label><div class="v">Usuário Demo</div></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="ph">Itens<span style="font-size: 12px; font-weight: 500; color: #5B6474">related · save: with_parent</span></div>
+          <table style="border-collapse: collapse; width: 100%; font-size: 14px">
+            <thead><tr style="background: #F4F6F9; font-size: 12px; color: #5B6474; text-align: left"><th style="padding: 10px 20px; font-weight: 600">Produto</th><th style="padding: 10px 16px; font-weight: 600; text-align: right">Qtd.</th><th style="padding: 10px 16px; font-weight: 600; text-align: right">Preço</th><th style="padding: 10px 20px; font-weight: 600; text-align: right">Total</th></tr></thead>
+            <tbody>
+              <tr style="border-top: 1px solid #E2E6EC"><td style="padding: 12px 20px">[PRODUTO] caixa</td><td style="padding: 12px 16px; text-align: right; color: #1A45A5; font-weight: 600">40 ✦</td><td style="padding: 12px 16px; text-align: right">[R$]</td><td style="padding: 12px 20px; text-align: right">[R$]</td></tr>
+            </tbody>
+          </table>
+          <div style="padding: 12px 20px; display: flex; align-items: center; gap: 10px; border-top: 1px solid #E2E6EC">
+            <span style="flex: 1; font-size: 14px; font-weight: 600">Valor total · crítico</span>
+            <span style="font-size: 16px; font-weight: 700">[R$]</span><button type="button" class="confirm">Confirmar</button>
+          </div>
+        </section>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; background: #fff; border: 1px solid #E2E6EC; border-radius: 16px; padding: 12px 16px">
+          <span style="font-size: 13px; color: #5B6474">Grava por <code>POST /pedido_compra</code> com <b>as suas</b> permissões e validações · <b style="color: #8B5300">2 campos a confirmar</b></span>
+          <div style="display: flex; gap: 10px">
+            <span style="font-size: 14px; font-weight: 600; color: #5B6474; padding: 6px 14px">Descartar</span>
+            <span style="font-size: 14px; font-weight: 600; color: rgba(0,0,0,.38); background: rgba(0,0,0,.12); padding: 6px 16px; border-radius: 8px" aria-disabled="true">Gravar</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 16px; min-width: 0">
+        <section class="panel">
+          <div class="ph">Na edição: o que vai mudar</div>
+          <div style="padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; font-size: 14px">
+            <div style="font-size: 12px; color: #5B6474">Pedido 1234 · diff antes de gravar</div>
+            <div style="display: flex; justify-content: space-between; gap: 8px"><span>Prazo</span><span><s style="color: #942929">30 dias</s> → <b style="color: #0F5F34">45 dias</b></span></div>
+            <div style="display: flex; justify-content: space-between; gap: 8px"><span>Desconto</span><span><s style="color: #942929">0%</s> → <b style="color: #0F5F34">5%</b></span></div>
+            <div style="display: flex; justify-content: space-between; gap: 8px"><span>Itens</span><span><b style="color: #0F5F34">+1</b> · <b style="color: #1A45A5">1 alterado</b></span></div>
+          </div>
+        </section>
+        <section class="panel" style="flex: 1">
+          <div class="ph">Regras desta tela</div>
+          <div style="padding: 14px 18px; display: flex; flex-direction: column; gap: 12px; font-size: 13px; line-height: 1.45; color: #404651">
+            <div style="display: flex; gap: 10px"><span class="n">1</span><span><b>O agente propõe, o motor executa.</b> É o mesmo EntityForm, com permissão e validação do servidor.</span></div>
+            <div style="display: flex; gap: 10px"><span class="n">2</span><span><b>✦ Sugerido</b> sempre mostra a origem: pedido anterior, mensagem, lookup.</span></div>
+            <div style="display: flex; gap: 10px"><span class="n">3</span><span><b>Crítico na spec</b> (valor, CFOP, conta) preenchido pela IA pede um toque. Fricção só onde dói.</span></div>
+            <div style="display: flex; gap: 10px"><span class="n">4</span><span><b>Gravar</b> só libera com os críticos confirmados.</span></div>
+            <div style="display: flex; gap: 10px"><span class="n">5</span><span><b>No celular</b>, abre como folha de baixo em tela cheia.</span></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1120}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

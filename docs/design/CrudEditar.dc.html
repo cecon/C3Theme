@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Clientes · Edição</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#2563EB;text-decoration:none}a:hover{color:#1A45A5}
+.cap{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#5B6474}
+.ni{display:flex;align-items:center;gap:10px;min-height:40px;padding:0 12px;border-radius:8px;font-size:14px;font-weight:500;color:#141A24;margin-bottom:2px}
+.ni svg{width:20px;height:20px;color:#5B6474}
+.ni.on{background:rgb(37 99 235 / .08);color:#2563EB;font-weight:600}
+.ni.on svg{color:#2563EB}
+.panel{background:#fff;border:1px solid #E2E6EC;border-radius:24px;overflow:hidden}
+.ph{padding:14px 20px;min-height:60px;box-sizing:border-box;display:flex;align-items:center;border-bottom:1px solid #E2E6EC;font-size:16px;font-weight:600}
+.pb{padding:24px 20px 20px;display:grid;gap:24px 20px}
+.fld{position:relative;display:flex;flex-direction:column;gap:4px}
+.fld label{position:absolute;top:-8px;left:10px;padding:0 4px;background:#fff;font-size:12px;color:#5B6474;line-height:16px}
+.fld input,.fld .sel{font-family:inherit;font-size:15px;color:#141A24;height:56px;box-sizing:border-box;padding:0 14px;border:1px solid #E2E6EC;border-radius:8px;background:#fff;width:100%;outline:none}
+.fld input:focus{border:2px solid #2563EB;padding-left:13px}
+.sel{display:flex;align-items:center;justify-content:space-between}
+.help{font-size:12px;padding:0 14px}
+</style>
+</helmet>
+<div style="width: 1200px; height: 1120px; display: flex; background: #F4F6F9; font-family: 'Inter', system-ui, sans-serif; color: #141A24; overflow: hidden">
+  <aside style="width: 240px; flex-shrink: 0; background: #FFFFFF; border-right: 1px solid #E2E6EC">
+    <div style="height: 64px; display: flex; align-items: center; gap: 10px; padding: 0 20px"><span aria-hidden="true" style="width: 32px; height: 32px; border-radius: 8px; background: #2563EB; color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 13px">C</span><span style="font-size: 16px; font-weight: 600">C3Theme</span></div>
+    <nav style="padding: 8px 12px">
+      <div class="cap" style="padding: 8px 12px 4px">Principal</div>
+      <a class="ni" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9h-6v-6H9v6H3z"/></svg>Início</a>
+      <div class="cap" style="padding: 12px 12px 4px">Cadastros</div>
+      <a class="ni on" href="CrudLista.dc.html"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M2 20c1-4 4-6 7-6s6 2 7 6z" opacity=".5"/></svg>Clientes</a>
+      <div class="cap" style="padding: 12px 12px 4px">Páginas</div>
+      <a class="ni" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>Meu perfil</a>
+      <a class="ni" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4l6 6-9 9H5v-6z"/></svg>Componentes</a>
+    </nav>
+  </aside>
+
+  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+    <header style="height: 64px; display: flex; align-items: center; gap: 12px; padding: 0 24px; border-bottom: 1px solid #E2E6EC">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#5B6474" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+      <span style="flex: 1"></span>
+      <span style="display: flex; align-items: center; height: 36px; width: 240px; padding: 0 12px; border: 1px solid #E2E6EC; border-radius: 8px; background: #fff; font-size: 14px; color: #5B6474; box-sizing: border-box">Buscar tela…</span>
+      <span style="width: 36px; height: 36px; border-radius: 50%; background: rgb(37 99 235 / .12); color: #1A45A5; font-size: 13px; font-weight: 600; display: grid; place-items: center">UD</span>
+    </header>
+
+    <main style="flex: 1; padding: 24px; display: flex; flex-direction: column; gap: 20px">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <nav aria-label="Caminho" style="display: flex; align-items: center; gap: 6px; font-size: 14px; color: #5B6474">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-label="Início" role="img"><path d="M3 11l9-7 9 7v9h-6v-6H9v6H3z"/></svg>
+          <span aria-hidden="true">›</span><span>Cadastros</span><span aria-hidden="true">›</span><a href="CrudLista.dc.html" style="color: #5B6474">Clientes</a><span aria-hidden="true">›</span><span style="color: #141A24">Fernanda Rocha</span>
+        </nav>
+        <h1 style="margin: 0; font-size: 22px; font-weight: 600">Fernanda Rocha</h1>
+      </div>
+
+      <form style="display: flex; flex-direction: column; gap: 20px">
+        <section class="panel">
+          <div class="ph">Dados gerais</div>
+          <div class="pb" style="grid-template-columns: repeat(2, minmax(0, 1fr))">
+            <div class="fld"><label for="nome">Nome *</label><input id="nome" value="Fernanda Rocha"></div>
+            <div class="fld"><label for="email" style="color: #D33A3A">E-mail *</label><input id="email" value="fernanda.rocha@exemplo" style="border-color: #D33A3A"><span class="help" style="color: #D33A3A">E-mail inválido.</span></div>
+            <div class="fld"><label for="doc">CPF/CNPJ</label><input id="doc" value="174.222.314-12"></div>
+            <div class="fld"><label for="tel">Telefone</label><input id="tel" type="tel" value="(13) 98026-1058"></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="ph">Endereço</div>
+          <div class="pb" style="grid-template-columns: 2fr 1fr">
+            <div class="fld"><label for="cidade">Cidade *</label><input id="cidade" value="Porto Alegre"></div>
+            <div class="fld"><label for="uf">UF</label><div id="uf" class="sel">RS<svg viewBox="0 0 24 24" width="20" height="20" fill="#5B6474" aria-hidden="true"><path d="M7 10l5 5 5-5z"/></svg></div></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="ph">Classificação</div>
+          <div class="pb" style="grid-template-columns: repeat(3, minmax(0, 1fr))">
+            <div class="fld"><label for="seg">Segmento</label><div id="seg" class="sel">Indústria<svg viewBox="0 0 24 24" width="20" height="20" fill="#5B6474" aria-hidden="true"><path d="M7 10l5 5 5-5z"/></svg></div></div>
+            <div class="fld"><label for="sit">Situação</label><div id="sit" class="sel">Pendente<svg viewBox="0 0 24 24" width="20" height="20" fill="#5B6474" aria-hidden="true"><path d="M7 10l5 5 5-5z"/></svg></div></div>
+            <div class="fld"><label for="lim">Limite de crédito</label><div style="display: flex; align-items: center; height: 56px; border: 1px solid #E2E6EC; border-radius: 8px; padding: 0 14px; gap: 8px; box-sizing: border-box"><span style="color: #5B6474">R$</span><input id="lim" value="42000" style="border: none; height: 100%; padding: 0"></div></div>
+          </div>
+        </section>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px">
+          <a href="CrudExcluir.dc.html" style="font-size: 14px; font-weight: 600; color: #D33A3A; border: 1px solid rgb(211 58 58 / .5); border-radius: 8px; padding: 6px 15px">Excluir cliente</a>
+          <div style="display: flex; gap: 12px; align-items: center">
+            <a href="CrudLista.dc.html" style="font-size: 14px; font-weight: 600; color: #5B6474; padding: 7px 16px; border-radius: 8px">Cancelar</a>
+            <a href="CrudLista.dc.html" style="font-size: 14px; font-weight: 600; color: #fff; background: #2563EB; padding: 7px 16px; border-radius: 8px">Salvar alterações</a>
+          </div>
+        </div>
+      </form>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1200,"height":1120}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

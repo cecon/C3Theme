@@ -1,0 +1,55 @@
+{
+  "$schema": "../../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "tarefa",
+  "label": { "singular": "Tarefa", "plural": "Tarefas", "new": "Novo cartão" },
+  "titleField": "titulo",
+  "fields": [
+    { "name": "titulo", "type": "string", "label": "Título", "required": true, "maxLength": 160 },
+    { "name": "codigo", "type": "string", "label": "História", "maxLength": 12 },
+    {
+      "name": "etapa",
+      "type": "enum",
+      "label": "Etapa",
+      "default": "afazer",
+      "options": [
+        { "value": "afazer", "label": "A fazer" },
+        { "value": "andamento", "label": "Em andamento" },
+        { "value": "revisao", "label": "Em revisão" },
+        { "value": "concluido", "label": "Concluído", "color": "success" }
+      ]
+    },
+    { "name": "responsavel", "type": "reference", "entity": "membro", "label": "Responsável" },
+    {
+      "name": "prioridade",
+      "type": "enum",
+      "label": "Prioridade",
+      "default": "media",
+      "options": [
+        { "value": "baixa", "label": "Baixa", "color": "success" },
+        { "value": "media", "label": "Média", "color": "warning" },
+        { "value": "alta", "label": "Alta", "color": "danger" }
+      ]
+    },
+    { "name": "prazo", "type": "date", "label": "Prazo" },
+    { "name": "descricao", "type": "text", "label": "Descrição", "maxLength": 2000 },
+    { "name": "comentarios", "type": "integer", "label": "Comentários", "readOnly": true }
+  ],
+  "views": {
+    "list": {
+      "columns": ["titulo", "etapa", "responsavel", "prioridade", "prazo"],
+      "search": ["titulo"],
+      "filters": ["etapa", "prioridade"]
+    },
+    "form": { "sections": [{ "rows": [["titulo"], ["etapa", "prioridade"], ["responsavel", "prazo"], ["descricao"]] }] },
+    "board": {
+      "groupBy": "etapa",
+      "code": "codigo",
+      "fields": ["prioridade"],
+      "due": "prazo",
+      "assignee": "responsavel",
+      "counters": [{ "field": "comentarios", "icon": "MessageText1", "label": "comentários" }],
+      "done": "concluido"
+    }
+  }
+}

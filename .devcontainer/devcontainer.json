@@ -1,0 +1,21 @@
+{
+  // Demo do motor no Codespaces: backend c3-example (Rust) + shell (@c3theme/engine-demo).
+  // Abre sozinho na porta 5173; os logs ficam em /tmp/c3-*.log.
+  "name": "C3Theme engine demo",
+  "image": "mcr.microsoft.com/devcontainers/rust:1-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": { "version": "22", "pnpmVersion": "10.32.1" }
+  },
+  "hostRequirements": { "cpus": 2 },
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "postStartCommand": "bash .devcontainer/start.sh",
+  "forwardPorts": [5173],
+  "portsAttributes": {
+    "5173": { "label": "Demo do motor", "onAutoForward": "openBrowser" },
+    "3001": { "label": "API c3-example", "onAutoForward": "silent" }
+  },
+  "customizations": {
+    "codespaces": { "openFiles": ["spec/README.md"] },
+    "vscode": { "extensions": ["rust-lang.rust-analyzer", "dbaeumer.vscode-eslint", "esbenp.prettier-vscode"] }
+  }
+}

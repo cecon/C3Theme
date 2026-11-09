@@ -1,0 +1,20 @@
+{
+  "specVersion": "0",
+  "name": "product_supplier",
+  "label": { "singular": "Fornecedor do produto", "plural": "Fornecedores do produto" },
+  "icon": "Truck",
+  "titleField": "supplier_id",
+  "fields": [
+    { "name": "product_id", "type": "reference", "entity": "product", "label": "Produto", "required": true, "onDelete": "cascade" },
+    {
+      "name": "supplier_id",
+      "type": "reference",
+      "entity": "supplier",
+      "label": "Fornecedor",
+      "required": true,
+      "filter": { "field": "active", "op": "eq", "value": true }
+    },
+    { "name": "supplier_code", "type": "string", "label": "Código no fornecedor", "maxLength": 40 },
+    { "name": "last_cost", "type": "decimal", "label": "Último custo", "scale": 4, "min": 0, "readOnly": true }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "$schema": "../../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "cliente",
+  "label": { "singular": "Cliente", "plural": "Clientes", "new": "Novo cliente" },
+  "titleField": "nome",
+  "fields": [
+    { "name": "nome", "type": "string", "label": "Nome", "required": true, "maxLength": 120 },
+    { "name": "email", "type": "email", "label": "E-mail", "required": true },
+    { "name": "telefone", "type": "string", "label": "Telefone", "format": "phone" },
+    { "name": "cpf", "type": "string", "label": "CPF", "format": "cpf" },
+    { "name": "idade", "type": "integer", "label": "Idade", "min": 18, "max": 120 },
+    { "name": "cargo", "type": "string", "label": "Profissão" },
+    { "name": "cidade", "type": "string", "label": "Cidade" },
+    { "name": "uf", "type": "string", "label": "UF", "maxLength": 2 },
+    {
+      "name": "status",
+      "type": "enum",
+      "label": "Situação",
+      "default": "ativo",
+      "options": [
+        { "value": "ativo", "label": "Ativo", "color": "success" },
+        { "value": "pendente", "label": "Pendente", "color": "warning" },
+        { "value": "inativo", "label": "Inativo", "color": "danger" }
+      ]
+    },
+    { "name": "desde", "type": "date", "label": "Cliente desde", "readOnly": true },
+    { "name": "pedidos", "type": "integer", "label": "Pedidos", "readOnly": true },
+    { "name": "total_gasto", "type": "decimal", "label": "Total gasto", "scale": 2, "currency": "BRL", "readOnly": true },
+    { "name": "sobre", "type": "text", "label": "Sobre", "maxLength": 500 }
+  ],
+  "views": {
+    "list": {
+      "columns": [
+        { "field": "nome", "label": "Cliente", "avatar": true, "secondary": "email" },
+        "telefone",
+        { "field": "cidade", "join": ["uf"] },
+        "total_gasto",
+        "status"
+      ],
+      "search": ["nome", "email", "cidade"],
+      "filters": [{ "field": "status", "all": "Todas" }],
+      "open": "dialog",
+      "rowActions": ["view", "edit", "delete"],
+      "expand": {
+        "fields": [
+          { "field": "email", "icon": "Sms" },
+          { "field": "telefone", "icon": "Call" },
+          { "field": "cpf", "icon": "Personalcard" },
+          { "field": "cidade", "icon": "Location" }
+        ],
+        "stats": ["pedidos", "total_gasto", "desde"],
+        "notes": [{ "field": "sobre", "label": "Observações" }]
+      },
+      "pageSize": 10
+    },
+    "form": {
+      "sections": [
+        { "title": "Contato", "rows": [["nome"], ["email", "telefone"], ["cpf", "idade"]] },
+        { "title": "Perfil", "rows": [["cargo", "status"], ["cidade", "uf"], ["sobre"]] }
+      ]
+    }
+  }
+}

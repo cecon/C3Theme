@@ -1,0 +1,23 @@
+{
+  "name": "@c3theme/c3-example-node",
+  "version": "0.1.0",
+  "license": "UNLICENSED",
+  "private": true,
+  "description": "O CRM de exemplo da spec (o mesmo de crates/c3-example) sobre o @c3theme/engine-node, alvo da suíte de conformidade",
+  "type": "module",
+  "scripts": {
+    "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.build.json && node ../../scripts/fix-dist-imports.mjs dist",
+    "start": "node dist/main.js",
+    "typecheck": "tsc --noEmit -p ."
+  },
+  "dependencies": {
+    "@c3theme/engine-node": "workspace:*",
+    "better-sqlite3": "^12.11.1"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^22.20.5",
+    "typescript": "~6.0.3",
+    "@c3theme/conformance": "workspace:*"
+  }
+}

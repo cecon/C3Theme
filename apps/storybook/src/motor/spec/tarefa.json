@@ -1,0 +1,117 @@
+{
+  "$schema": "../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "tarefa",
+  "label": {
+    "singular": "Tarefa",
+    "plural": "Tarefas",
+    "gender": "f"
+  },
+  "icon": "TaskSquare",
+  "titleField": "titulo",
+  "fields": [
+    {
+      "name": "titulo",
+      "type": "string",
+      "label": "Título",
+      "required": true,
+      "maxLength": 120
+    },
+    {
+      "name": "codigo",
+      "type": "string",
+      "label": "Código",
+      "readOnly": true
+    },
+    {
+      "name": "etapa",
+      "type": "enum",
+      "label": "Etapa",
+      "required": true,
+      "default": "a_fazer",
+      "options": [
+        {
+          "value": "a_fazer",
+          "label": "A fazer"
+        },
+        {
+          "value": "fazendo",
+          "label": "Fazendo",
+          "color": "info"
+        },
+        {
+          "value": "revisao",
+          "label": "Em revisão",
+          "color": "warning"
+        },
+        {
+          "value": "feito",
+          "label": "Feito",
+          "color": "success"
+        }
+      ]
+    },
+    {
+      "name": "prioridade",
+      "type": "enum",
+      "label": "Prioridade",
+      "default": "media",
+      "options": [
+        {
+          "value": "baixa",
+          "label": "Baixa",
+          "color": "neutral"
+        },
+        {
+          "value": "media",
+          "label": "Média",
+          "color": "info"
+        },
+        {
+          "value": "alta",
+          "label": "Alta",
+          "color": "danger"
+        }
+      ]
+    },
+    {
+      "name": "responsavel",
+      "type": "reference",
+      "entity": "vendedor",
+      "label": "Responsável"
+    },
+    {
+      "name": "prazo",
+      "type": "date",
+      "label": "Prazo"
+    },
+    {
+      "name": "comentarios",
+      "type": "integer",
+      "label": "Comentários",
+      "min": 0,
+      "readOnly": true
+    }
+  ],
+  "views": {
+    "list": {
+      "columns": ["codigo", "titulo", "etapa", "responsavel", "prazo"],
+      "search": ["titulo"]
+    },
+    "board": {
+      "groupBy": "etapa",
+      "code": "codigo",
+      "fields": ["prioridade"],
+      "due": "prazo",
+      "assignee": "responsavel",
+      "counters": [
+        {
+          "field": "comentarios",
+          "icon": "MessageText1",
+          "label": "comentários"
+        }
+      ],
+      "done": "feito"
+    }
+  }
+}
