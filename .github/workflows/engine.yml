@@ -49,6 +49,9 @@ jobs:
       # acessibilidade: axe em todas as histórias, claro e escuro; achado novo reprova
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm a11y:storybook
+      # e2e: fluxos de usuário no navegador contra o build de produção da vitrine (motor) e do Storybook
+      - run: pnpm --filter @c3theme/showcase build
+      - run: pnpm e2e
       - run: cargo fmt --check
       - run: cargo clippy --all-targets -- -D warnings
       # adaptador rusqlite: workspace próprio (outro libsqlite3-sys)
