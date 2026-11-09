@@ -16,8 +16,7 @@ const EntityDashboard = lazy(() => import('@c3theme/engine').then((m) => ({ defa
 export const CODE_PATH: Record<string, string> = {
   pessoa: '/tabelas/dados/paginacao',
   'fatura/new': '/apps/faturas/nova',
-  'tarefa/board': '/apps/kanban/quadro',
-  'evento/calendar': '/apps/calendario'
+  'tarefa/board': '/apps/kanban/quadro'
 };
 
 /** Arquivos da spec que uma tela da entidade lê: ela, as filhas e os alvos de reference. */
@@ -35,7 +34,7 @@ export const FILES: Record<string, string[]> = {
 };
 
 /** Telas que já substituíram a versão em código no menu: aparecem como a tela do sistema, sem a barra do JSON. */
-const SWAPPED = new Set(['cliente', 'fatura']);
+const SWAPPED = new Set(['cliente', 'fatura', 'evento']);
 
 interface ScreenProps {
   files: string[];

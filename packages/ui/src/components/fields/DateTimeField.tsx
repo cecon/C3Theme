@@ -85,7 +85,7 @@ export default function DateTimeField(props: DateTimeFieldProps) {
         helperText={problem}
         placeholder="00:00"
         {...{ required, disabled, size }}
-        sx={{ width: 120, flexShrink: 0 }}
+        sx={{ width: 92, flexShrink: 0 }}
         slotProps={{ inputLabel: { shrink: true }, htmlInput: { readOnly, inputMode: 'numeric', autoComplete: 'off', maxLength: 5 } }}
       />
     </Stack>

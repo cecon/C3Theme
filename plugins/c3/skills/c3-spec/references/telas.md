@@ -80,6 +80,7 @@ Resumo. Quem decide são o `spec/v0/app.schema.json` e o `entity.schema.json` do
 - `views.form.actions: "footer"` põe Cancelar e gravar no fim; `submitLabel: { "new": "Criar fatura", "edit": "Salvar alterações" }` troca o texto.
 - `summary` na seção e `computed` na lista `with_parent` mostram contas enquanto o usuário digita: `"sum(fatura_item, quantidade * preco)"`, `"subtotal * desconto / 100"`. Só exibição: o total gravado continua regra do backend (hook de gravação), com a mesma conta.
 - `unit` no campo integer/decimal: "%" ou "kg" depois do número.
+- `{ "field": "cor", "display": "swatches" }`: enum com `color` em todas as opções vira bolinhas de cor. Com `actions: "footer"`, o formulário aberto num diálogo (calendário) usa o rodapé do diálogo.
 
 ## Mestre-detalhe
 

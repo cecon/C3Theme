@@ -2,7 +2,8 @@
 
 import type { Access, Condition, Denied, Text, WireRecord } from './types';
 
-export type FormFieldDef = string | { field: string; component?: string };
+/** Campo do formulário: o nome, ou com o widget trocado (`component`) ou a aparência (`display: "swatches"`, enum em bolinhas). */
+export type FormFieldDef = string | { field: string; component?: string; display?: 'swatches' };
 
 /** Valor calculado para mostrar (fórmula de formulas.mjs), formatado como dinheiro quando tem `currency`. */
 export interface ComputedValue {

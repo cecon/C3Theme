@@ -45,6 +45,12 @@ export function checkForm(entity, fields, entities, file, errors) {
   }
   for (const [i, s] of form.sections.entries()) {
     const where = `${file} views.form.sections[${i}]`;
+    for (const item of (s.rows ?? []).flat())
+      if (item.display === 'swatches') {
+        const f = fields.get(item.field);
+        if (f?.type !== 'enum' || !f.options?.every((o) => o.color))
+          errors.push(`${where}: display 'swatches' só vale em enum com color em todas as opções ('${item.field}')`);
+      }
     const vars = new Set();
     for (const [j, line] of (s.summary ?? []).entries()) {
       checkFormula(line.value, fields, vars, lists, `${where}.summary[${j}]`, errors);

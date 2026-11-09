@@ -6,7 +6,7 @@ import { ComponentType, lazy } from 'react';
 import type { RouteObject } from 'react-router';
 
 // third-party
-import { Calendar1, Kanban, ReceiptText, UserSquare } from 'iconsax-reactjs';
+import { Kanban, ReceiptText, UserSquare } from 'iconsax-reactjs';
 
 import { Loadable } from '@c3theme/ui';
 import type { Section } from '../../section';
@@ -40,8 +40,7 @@ export const section: Section = {
     items: [
       { id: 'motor-pessoas', title: 'Pessoas', icon: UserSquare, url: '/pessoa' },
       { id: 'motor-faturas-nova', title: 'Nova fatura', icon: ReceiptText, url: '/fatura/new' },
-      { id: 'motor-quadro', title: 'Quadro', icon: Kanban, url: '/tarefa/board' },
-      { id: 'motor-calendario', title: 'Calendário', icon: Calendar1, url: '/evento/calendar' }
+      { id: 'motor-quadro', title: 'Quadro', icon: Kanban, url: '/tarefa/board' }
     ]
   },
   routes: [

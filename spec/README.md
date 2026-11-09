@@ -343,6 +343,9 @@ A filha continua sendo uma entidade, com campos, tipos, validações, tabela e m
 - **Fórmula** (`summary` da seção e `computed` da lista): números, campos integer/decimal, `+ - * /`, parênteses e `sum(lista, conta)` sobre as linhas de uma lista `with_parent` do formulário. Uma linha do resumo com `name` pode ser citada pelas de baixo. Campo vazio vale 0; divisão por zero dá 0. O `spec:check` confere os nomes com o avaliador de referência (`packages/engine/src/formulas.mjs`).
 - **Só exibição**: as contas não vão no corpo e o backend não as conhece. O valor que fica gravado (o `total` readOnly da fatura) é regra do sistema, no hook de gravação, e precisa fazer a mesma conta. A fórmula mostra ao usuário o que vai acontecer; quem decide é o backend.
 - `unit` no campo integer/decimal põe o texto depois do número ("%", "kg"), no campo e na leitura; não muda o que trafega.
+- **Num diálogo** (calendário, lista com `open: "dialog"`), `actions: "footer"` vira um diálogo comum: título ("Editar evento", ou o `label.new`), campos sem cartão e Excluir, Cancelar e gravar no rodapé.
+- **`display: "swatches"`** no item da linha (`{ "field": "cor", "display": "swatches" }`): enum com `color` em todas as opções vira bolinhas de cor.
+- **Dia inteiro**: numa entidade com `views.calendar.allDay`, o formulário edita início e fim só como data enquanto o dia inteiro está ligado, e mostra o fim como o último dia (no fio ele continua exclusivo). Ligar leva as horas à meia-noite; desligar sugere das 9h às 10h.
 
 O widget é escolhido na **view**, não no campo: o tipo define o componente padrão, que é decisão da shell e não aparece na spec, e `{ "field": "placa", "component": "placa-input" }` troca só naquele formulário ou coluna.
 

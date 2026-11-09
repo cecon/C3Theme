@@ -748,7 +748,7 @@
             "actions": {
               "enum": ["top", "footer"],
               "default": "top",
-              "description": "Onde ficam Cancelar e Salvar enquanto edita. 'footer': no fim do formulário, alinhados à direita, sem o título do registro em cima (o título da página já diz o que é). Num diálogo, ficam sempre em cima."
+              "description": "Onde ficam Cancelar e Salvar enquanto edita. 'footer': no fim do formulário, alinhados à direita, sem o título do registro em cima (o título da página já diz o que é). Num diálogo (calendário, lista com open dialog), vira um diálogo comum: título (\"Editar evento\", `label.new` no novo), campos sem cartão e Excluir, Cancelar e gravar no rodapé."
             },
             "submitLabel": {
               "type": "object",
@@ -1202,6 +1202,10 @@
             "component": {
               "$ref": "#/$defs/component",
               "description": "Widget usado neste formulário no lugar do padrão do tipo."
+            },
+            "display": {
+              "enum": ["swatches"],
+              "description": "Aparência do widget padrão. 'swatches': enum com `color` em todas as opções vira bolinhas de cor (cor do evento, da etiqueta), com o nome da opção na dica e para o leitor de tela."
             }
           }
         }

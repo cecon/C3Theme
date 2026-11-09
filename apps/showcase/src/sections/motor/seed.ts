@@ -92,7 +92,7 @@ const eventos: WireRecord[] = SAMPLE_EVENTS.map((e) => ({
   inicio: e.start.toISOString(),
   fim: e.end.toISOString(),
   dia_inteiro: e.allDay,
-  cor: e.tone === 'primary' ? 'info' : e.tone === 'secondary' ? 'neutral' : e.tone,
+  cor: e.tone === 'secondary' ? 'neutral' : e.tone,
   descricao: e.description
 }));
 
