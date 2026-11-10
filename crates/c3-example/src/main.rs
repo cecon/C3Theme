@@ -221,6 +221,7 @@ impl c3_engine::Hooks for TestUsers {
     async fn preview_action(&self, call: PreviewCall<'_>) -> Result<Preview, ApiError> {
         match (call.entity, call.action) {
             ("product", "discount") => discount::preview(call),
+            ("product", "reprice") => prices::preview(&self.pool, call).await,
             ("sales_order", "invoice") => invoices::preview(call),
             _ => Ok(Preview::default()),
         }

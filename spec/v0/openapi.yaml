@@ -560,7 +560,8 @@ components:
           schema: { $ref: '#/components/schemas/Error' }
     Preview:
       description: >-
-        Prévia do sistema. fill sugere valor para campos vazios do input (formato trafegado); table é só leitura,
+        Prévia do sistema. fill sugere valor para campos vazios do input (formato trafegado) e, numa grade, traz as
+        linhas que trocam as da tela (só as colunas da grade); table é só leitura,
         com cada linha restrita às chaves de columns.
       content:
         application/json:

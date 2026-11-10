@@ -58,3 +58,33 @@ pub fn cents(s: &str) -> Option<i64> {
     let frac = format!("{frac:0<2}");
     Some(int.parse::<i64>().ok()? * 100 + frac.get(..2)?.parse::<i64>().ok()?)
 }
+
+/// Prévia do reajuste: com o percentual, a grade se refaz com o preço de hoje mais o reajuste (`fill.prices`); o
+/// que o usuário digitou numa linha do mesmo produto a shell mantém.
+pub async fn preview(pool: &SqlitePool, call: c3_engine::PreviewCall<'_>) -> Result<c3_engine::Preview, ApiError> {
+    let signed = |s: &str| s.strip_prefix('-').map_or_else(|| cents(s), |abs| cents(abs).map(|c| -c));
+    let Some(percent) = call.input["percent"].as_str().and_then(signed) else {
+        return Ok(c3_engine::Preview::default());
+    };
+    let rows = sqlx::query("SELECT id, name, price FROM product WHERE active = 1 ORDER BY name LIMIT 200")
+        .fetch_all(pool)
+        .await?;
+    let lines: Vec<Value> = rows
+        .iter()
+        .map(|r| {
+            let now: i64 = r.get("price");
+            // percent em centésimos (12,5% = 1250): preço × (10000 + p) / 10000, arredondado
+            let next = (now * (10_000 + percent) + 5_000).div_euclid(10_000).max(0);
+            json!({
+                "product": { "id": r.get::<i64, _>("id").to_string(), "title": r.get::<String, _>("name") },
+                "price": format!("{}.{:02}", next / 100, next % 100),
+                "cents": next,
+            })
+        })
+        .collect();
+    Ok(c3_engine::Preview {
+        message: Some(format!("{} produto(s) com o reajuste.", lines.len())),
+        fill: Map::from_iter([("prices".to_owned(), Value::Array(lines))]),
+        table: None,
+    })
+}

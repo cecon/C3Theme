@@ -85,9 +85,11 @@
       "icon": "Tag",
       "target": "list",
       "prefill": true,
+      "preview": true,
       "successMessage": "Preços aplicados.",
       "input": {
         "fields": [
+          { "name": "percent", "type": "decimal", "label": "Reajuste (%)", "scale": 2, "min": -90, "max": 500, "help": "Refaz a grade com o preço de hoje mais o reajuste." },
           {
             "name": "prices",
             "type": "grid",

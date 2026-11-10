@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 
 import { evaluate } from '../conditions.mjs';
 import { gridInputs, plainInputs } from '../actionTypes';
-import { gridBody, newRow, setCell, type GridRow } from './gridRows';
+import { gridBody, mergeGridFill, newRow, setCell, type GridRow } from './gridRows';
 import { suggestions } from './suggest';
 import type { ActionDef, FieldDef, FieldType, WireRecord } from '../types';
 
@@ -16,6 +16,8 @@ export default function useActionInput(action: ActionDef | null) {
   const [touched, setTouched] = useState(false);
   // o último valor que a prévia sugeriu em cada campo: enquanto o usuário não trocar, a próxima prévia atualiza
   const suggested = useRef<Record<string, unknown>>({});
+  // as últimas linhas que o sistema mandou em cada grade (prefill ou prévia), para saber o que o usuário mudou
+  const sentRows = useRef<Record<string, GridRow[]>>({});
   const fields = plainInputs(action);
   const grids = gridInputs(action);
   const types = Object.fromEntries(fields.map((f) => [f.name, f.type])) as Record<string, FieldType>;
@@ -31,6 +33,7 @@ export default function useActionInput(action: ActionDef | null) {
   /** Abre o diálogo de `next`: input com os defaults e, por cima, os valores iniciais do sistema (`prefill`). */
   const reset = (next: ActionDef, initial: WireRecord = {}) => {
     suggested.current = {};
+    sentRows.current = Object.fromEntries(gridInputs(next).map((g) => [g.name, (initial[g.name] as GridRow[] | undefined) ?? []]));
     setLocalErrors({});
     setTouched(false);
     const defaults = plainInputs(next).filter((f) => f.default !== undefined);
@@ -100,6 +103,7 @@ export default function useActionInput(action: ActionDef | null) {
 
   /**
    * Sugestões da prévia: entram no campo vazio ou que ainda tem a sugestão anterior. O que o usuário digitou fica.
+   * Linhas de uma grade trocam as da tela (`mergeGridFill`).
    */
   const fill = (values: Record<string, unknown>) =>
     setInput((r) => {
@@ -110,6 +114,13 @@ export default function useActionInput(action: ActionDef | null) {
         suggested.current
       );
       suggested.current = { ...suggested.current, ...next };
+      // grade na prévia: as linhas do sistema trocam as da tela, mantendo o que o usuário digitou na mesma linha
+      for (const g of grids) {
+        const rows = values[g.name];
+        if (!Array.isArray(rows)) continue;
+        next[g.name] = mergeGridFill(g, (r[g.name] as GridRow[] | undefined) ?? [], sentRows.current[g.name] ?? [], rows as GridRow[]);
+        sentRows.current[g.name] = rows as GridRow[];
+      }
       return Object.keys(next).length ? { ...r, ...next } : r;
     });
 

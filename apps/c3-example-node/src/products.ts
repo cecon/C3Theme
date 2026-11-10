@@ -27,6 +27,22 @@ export async function pricesPrefill(db: Db, call: PrefillCall): Promise<Rec> {
   return { prices };
 }
 
+/**
+ * Prévia do reajuste: com o percentual, a grade se refaz com o preço de hoje mais o reajuste (`fill.prices`); o que
+ * o usuário digitou numa linha do mesmo produto a shell mantém.
+ */
+export async function pricesPreview(db: Db, call: PreviewCall): Promise<Preview> {
+  const percent = cents(call.input.percent);
+  if (percent === undefined) return {};
+  const list = await rows(db, 'SELECT id, name, price FROM product WHERE active = 1 ORDER BY name LIMIT 200');
+  const prices = list.map(([id, name, price]) => {
+    // percent em centésimos (12,5% = 1250): preço × (10000 + p) / 10000, arredondado
+    const next = Math.max(0, Math.floor((Number(price) * (10_000 + percent) + 5_000) / 10_000));
+    return { product: { id: String(id), title: name }, price: decimal(next), cents: next };
+  });
+  return { message: `${prices.length} produto(s) com o reajuste.`, fill: { prices } };
+}
+
 /** Grava os preços; o motor já validou cada linha. Aqui só o que é do negócio: o produto existir. */
 export function applyPrices(db: Db, call: ListActionCall): Promise<ActionOutcome> {
   const lines = Array.isArray(call.input.prices) ? (call.input.prices as Rec[]) : [];

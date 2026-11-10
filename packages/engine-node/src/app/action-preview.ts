@@ -8,6 +8,7 @@ import type { EngineRequest } from '../ports/request';
 import { bulkBody, checkActionRecord, findAction } from './action';
 import { checkInput, parseActionInput } from './action-input';
 import { allowListAction, listInput } from './action-list';
+import { gridRows } from './action-prefill';
 import { checkAll } from './action-together';
 import { Ctx, allowRead } from './ctx';
 import type { Engine } from './engine';
@@ -50,8 +51,13 @@ export async function preview(
     input = await checkInput(conn, ctx, action, owner, parseActionInput(action, listInput(body())), true);
   }
   const p = await engine.hooks.previewAction({ entity: name, action: actionName, id, record, ids, input, ctx: ctx.requestContext() });
-  // só campos simples do input; grade não recebe sugestão
-  const fill = Object.fromEntries(Object.entries(p.fill ?? {}).filter(([k]) => fieldOf(action.input, k)));
+  // campos simples do input e grades (as linhas trocam as da tela; só as colunas que a grade declara)
+  const fill: Rec = {};
+  for (const [k, v] of Object.entries(p.fill ?? {})) {
+    const grid = action.grids.find((g) => g.name === k);
+    if (fieldOf(action.input, k)) fill[k] = v;
+    else if (grid) fill[k] = gridRows(grid, v);
+  }
   const table = p.table
     ? {
         columns: p.table.columns,
