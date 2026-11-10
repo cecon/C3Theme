@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useSWRConfig } from 'swr';
 
-import { ApiError, type RefusedRecord } from '../api';
+import { ApiError, type RefusedRecord, type SourceParams } from '../api';
 import { useEngine } from '../context';
 import type { ActionResult, BulkResult, FieldErrors, WireRecord } from '../types';
 
@@ -75,10 +75,10 @@ export default function useAction(entity: string) {
    * `refused` (e não em `error`: a tela mostra quem foi barrado); outro erro fica em `error`/`fieldErrors`.
    */
   const runTogether = useCallback(
-    async (ids: string[], action: string, input?: WireRecord): Promise<TogetherOutcome> => {
+    async (ids: string[], action: string, input?: WireRecord, params?: SourceParams): Promise<TogetherOutcome> => {
       setState({ running: true, fieldErrors: {} });
       try {
-        const result = await client.togetherAction(entity, action, ids, input);
+        const result = await client.togetherAction(entity, action, ids, input, params);
         for (const id of ids) mutate(['c3-record', entity, id]);
         mutate((key) => Array.isArray(key) && key[0] === 'c3-list');
         setState({ running: false, fieldErrors: {} });

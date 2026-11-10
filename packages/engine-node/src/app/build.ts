@@ -106,14 +106,16 @@ function checkOrganization(app: App, entities: Map<string, Entity>): void {
 
 function checkReferences(entities: Map<string, Entity>, maxUpload: number): void {
   for (const entity of entities.values()) {
-    const all = [...entity.fields, ...entity.actions.flatMap((a) => [...a.input.fields, ...a.grids.flatMap((g) => g.row.fields)])];
-    for (const f of all) {
+    // cada campo com o "dono" das variáveis do filtro: a entidade, o input da ação ou a linha da grade
+    const own = (e: Entity) => e.fields.map((f) => [e, f] as const);
+    const all = [...own(entity), ...entity.actions.flatMap((a) => [...own(a.input), ...a.grids.flatMap((g) => own(g.row))])];
+    for (const [source, f] of all) {
       if (f.type === 'file' && f.maxSize > maxUpload)
         throw new Error(`${entity.name}.${f.name}: maxSize ${f.maxSize} acima do maxUploadSize do app (${maxUpload} bytes)`);
       if (f.reference === undefined) continue;
       const target = entities.get(f.reference);
       if (!target) throw new Error(`${entity.name}.${f.name} referencia entidade desconhecida`);
-      checkRefFilter(entity, f, target);
+      checkRefFilter(source, f, target);
       const title = titleFieldOf(target);
       if (!title || !isTextual(title.type)) throw new Error(`${target.name} precisa de um titleField de texto para ser referenciada`);
     }

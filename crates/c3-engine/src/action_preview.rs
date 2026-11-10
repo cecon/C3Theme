@@ -11,6 +11,7 @@ use serde_json::{json, Map, Value};
 use crate::action::{bulk_body, check_record, find, Body};
 use crate::action_input::check_partial;
 use crate::action_list::list_input;
+use crate::action_prefill::grid_rows;
 use crate::action_together::check_all;
 use crate::crud::{allow_read, parse_path_id, Owner};
 use crate::error::ApiError;
@@ -132,8 +133,16 @@ pub(crate) async fn preview(
         ctx: &rc,
     };
     let Preview { message, fill, table } = engine.0.hooks.preview_action(call).await?;
-    // só campos simples do input; grade não recebe sugestão
-    let fill: Map<String, Value> = fill.into_iter().filter(|(k, _)| action.input.field(k).is_some()).collect();
+    // campos simples do input e grades (as linhas trocam as da tela; só as colunas que a grade declara)
+    let mut out = Map::new();
+    for (k, v) in fill {
+        if action.input.field(&k).is_some() {
+            out.insert(k, v);
+        } else if let Some(grid) = action.grids.iter().find(|g| g.name == k) {
+            out.insert(k, grid_rows(grid, v));
+        }
+    }
+    let fill = out;
     let table = table.map(|mut t| {
         for row in &mut t.rows {
             row.retain(|k, _| t.columns.iter().any(|c| c.name == *k));

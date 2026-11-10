@@ -10,6 +10,7 @@ import type { Rec, SqlValue } from '../domain/types';
 import { isIntColumn } from '../domain/value';
 import { parseInput } from './action-input';
 import type { Ctx } from './ctx';
+import { rowToJson, selectSql } from './read';
 import { checkFields } from './validation';
 
 const PREFIX = 'p.';
@@ -23,6 +24,30 @@ export function guardRows(entity: Entity): void {
 export async function fromSql(ctx: Ctx, entity: Entity, q: Record<string, string>): Promise<[string, SqlValue[]]> {
   const src = entity.source;
   if (!src) return [`"${entity.name}"`, []];
+  return (await sourceSql(ctx, entity, src, q))[0];
+}
+
+/**
+ * Linhas marcadas de uma consulta do sistema, para a ação em conjunto: a consulta roda com os parâmetros da URL
+ * (`p.<nome>`, os mesmos da lista na tela), uma vez, e cada id é procurado nela, no escopo de leitura. Devolve as
+ * linhas achadas (por id) e os parâmetros validados, que o sistema recebe junto.
+ */
+export async function pickedRows(ctx: Ctx, entity: Entity, src: Source, ids: number[]): Promise<[Map<number, Rec>, Rec]> {
+  const [[from, values], params] = await sourceSql(ctx, entity, src, ctx.req.query);
+  if (!ids.length) return [new Map(), params];
+  const scope = ctx.readScope(entity, 't');
+  const sql = `${selectSql(ctx, entity, from)} WHERE t."id" IN (${ids.map(() => '?').join(', ')})${scope ? ` AND ${scope}` : ''}`;
+  const rows = await (await ctx.engine.store.conn()).query(sql, [...values, ...ids]);
+  const found = new Map<number, Rec>();
+  for (const row of rows) {
+    const rec = rowToJson(entity, row);
+    found.set(Number(rec.id), rec);
+  }
+  return [found, params];
+}
+
+/** O SELECT do sistema com os parâmetros validados (400/422), e os parâmetros. */
+async function sourceSql(ctx: Ctx, entity: Entity, src: Source, q: Record<string, string>): Promise<[[string, SqlValue[]], Rec]> {
   const engine = ctx.engine;
   const raw = { ...sourceDefaults(src, engine.hooks.clock(ctx.req)), ...fromQuery(src, q) };
   const params = parseInput(src.params, raw);
@@ -30,7 +55,7 @@ export async function fromSql(ctx: Ctx, entity: Entity, q: Record<string, string
   await checkFields(await engine.store.conn(), ctx, src.params, {}, params, false, errors);
   if (!errors.isEmpty()) throw ApiError.validation(errors);
   const out = await engine.hooks.source({ entity: entity.name, params, ctx: ctx.requestContext() });
-  return [`(${out.sql})`, out.values];
+  return [[`(${out.sql})`, out.values], params];
 }
 
 /** `default` de cada parâmetro no formato trafegado, com as datas relativas já resolvidas. */

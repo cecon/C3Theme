@@ -38,7 +38,7 @@ export async function prefill(engine: Engine, req: EngineRequest, name: string, 
 }
 
 /** Linhas da grade só com as colunas que ela declara; o que não é lista vira lista vazia. */
-function gridRows(grid: GridInput, value: unknown): Rec[] {
+export function gridRows(grid: GridInput, value: unknown): Rec[] {
   if (!Array.isArray(value)) return [];
   return value.filter(isObject).map((row) => Object.fromEntries(Object.entries(row).filter(([c]) => fieldOf(grid.row, c))));
 }

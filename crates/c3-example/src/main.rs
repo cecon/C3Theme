@@ -16,6 +16,7 @@ mod operators;
 mod orders;
 mod prices;
 mod products;
+mod referrals;
 mod search;
 mod shutdown;
 mod sources;
@@ -191,6 +192,7 @@ impl c3_engine::Hooks for TestUsers {
         let branch: i64 = match (call.entity, call.action, &call.ctx.active_branch) {
             ("product", "reprice", _) => return prices::apply(&self.pool, call).await,
             ("product", "scale_file", _) => return products::scale_file(&self.pool, call).await,
+            ("customer", "referrals", _) => return referrals::apply(&self.pool, call).await,
             ("seller", "apply_schedule", Some(b)) => b.parse().map_err(|_| ApiError::internal())?,
             ("seller", "apply_schedule", None) => return Err(ApiError::bad_request("Escolha a filial ativa.")),
             _ => return Err(ApiError::internal()),
@@ -214,6 +216,8 @@ impl c3_engine::Hooks for TestUsers {
     async fn run_bulk_action(&self, call: BulkActionCall<'_>) -> Result<ActionOutcome, ApiError> {
         match (call.entity, call.action) {
             ("sales_order", "invoice") => invoices::run(&self.pool, call).await,
+            ("product", "labels") => prices::labels(call),
+            ("customer_pending", "postpone") => sources::postpone(&self.pool, call).await,
             _ => Err(ApiError::internal()),
         }
     }
@@ -221,6 +225,7 @@ impl c3_engine::Hooks for TestUsers {
     async fn preview_action(&self, call: PreviewCall<'_>) -> Result<Preview, ApiError> {
         match (call.entity, call.action) {
             ("product", "discount") => discount::preview(call),
+            ("product", "reprice") => prices::preview(&self.pool, call).await,
             ("sales_order", "invoice") => invoices::preview(call),
             _ => Ok(Preview::default()),
         }

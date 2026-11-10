@@ -2,7 +2,7 @@
 // ajustar o preço de 50 produtos). Aqui só a declaração; a validação das linhas fica em app/action-grid.ts.
 
 import { type Entity, fieldsOnly } from './entity';
-import { onlyForRecords, parseFields } from './field';
+import { notForInput, parseFields } from './field';
 import { isObject } from './types';
 
 /** Teto de linhas de uma grade (o corpo da requisição tem 2 MB). */
@@ -15,6 +15,11 @@ export interface GridInput {
   row: Entity;
   minItems: number;
   maxItems: number;
+  /**
+   * `fromSelection`: a coluna `reference` da própria entidade que a shell preenche com as linhas marcadas (uma por
+   * registro); só em ação `bulk: "together"`, e o motor confere que as linhas são exatamente a seleção.
+   */
+  fromSelection?: string;
 }
 
 /** Separa as grades (`grid`) do input cru da spec; os outros seguem para `parseFields`. */
@@ -45,9 +50,12 @@ export function splitGrids(label: string, raw: unknown[], ident: (n: string) => 
     const [cols, conditions] = parseFields(at, sub, ident);
     if (conditions.some((c) => c[1] !== undefined || c[2] !== undefined || c[3] !== undefined))
       throw new Error(`${at}: campo da linha não tem visibleWhen, requiredWhen nem readOnlyWhen`);
-    const bad = cols.find((c) => onlyForRecords(c) || c.type === 'file');
-    if (bad) throw new Error(`${at}.${bad.name}: campo da linha não pode ser file, createOnly nem ter filter ou access`);
-    grids.push({ name, row: fieldsOnly(at, cols), minItems, maxItems });
+    const bad = cols.find((c) => notForInput(c) || c.type === 'file');
+    if (bad) throw new Error(`${at}.${bad.name}: campo da linha não pode ser file, createOnly nem ter access`);
+    const fromSelection = typeof f.fromSelection === 'string' ? f.fromSelection : undefined;
+    if (fromSelection !== undefined && !cols.some((c) => c.name === fromSelection && c.type === 'reference'))
+      throw new Error(`${at}.fromSelection: '${fromSelection}' precisa ser uma coluna reference da grade`);
+    grids.push({ name, row: fieldsOnly(at, cols), minItems, maxItems, fromSelection });
   }
   return [fields, grids];
 }

@@ -47,4 +47,16 @@ export function previewTests({ test, call, tag }) {
     );
     assert.equal((await call('POST', '/product/999999/_actions/discount/_preview', {})).status, 404);
   });
+
+  test('ações', 'prévia: fill refaz a grade do input só com as colunas dela', async () => {
+    const agua = await call('POST', '/product', { name: `Água fill ${tag}`, product_group: 'drinks', price: '4.00' });
+    assert.equal(agua.status, 201, JSON.stringify(agua.body));
+    const preview = (input) => call('POST', '/product/_actions/reprice/_preview', { input });
+    const res = await preview({ percent: '10' });
+    assert.equal(res.status, 200, JSON.stringify(res.body));
+    // o exemplo manda também `cents`, que a grade não declara: o motor tira
+    const line = res.body.fill.prices.find((l) => l.product?.id === agua.body.data.id);
+    assert.deepEqual(line, { product: { id: agua.body.data.id, title: agua.body.data.name }, price: '4.40' });
+    assert.deepEqual((await preview({})).body.fill, {}, 'sem o percentual, a grade fica');
+  });
 }

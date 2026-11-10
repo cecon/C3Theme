@@ -16,7 +16,7 @@ import {
   type SqlValue
 } from '@c3theme/engine-node';
 
-import { type Db, brl, tx } from './db';
+import { type Db, brl, exec, tx } from './db';
 
 export function invoicePreview(call: PreviewCall): Preview {
   const n = call.ids.length;
@@ -82,6 +82,25 @@ export function source(call: SourceCall): SourceSql {
     values.push(call.params.stage);
   }
   return { sql: `${sql} GROUP BY a.customer_id`, values };
+}
+
+/**
+ * Adiar as pendências dos clientes marcados (`customer_pending.postpone`, em conjunto sobre a consulta): só as
+ * atividades que entram na posição consultada, com os mesmos parâmetros da lista na tela.
+ */
+export async function postpone(db: Db, call: BulkActionCall): Promise<ActionOutcome> {
+  const days = Number(call.input.days);
+  const until = typeof call.params.until === 'string' ? call.params.until : '';
+  const stage = typeof call.params.stage === 'string' ? call.params.stage : undefined;
+  let done = 0;
+  for (const id of call.ids) {
+    const sql =
+      "UPDATE activity SET due_date = date(due_date, ?) WHERE customer_id = ? AND due_date <= ? AND stage IN ('todo', 'doing')" +
+      (stage ? ' AND stage = ?' : '');
+    const values: SqlValue[] = [`+${days} days`, Number(id), until, ...(stage ? [stage] : [])];
+    done += (await exec(db, sql, values)).rowsAffected;
+  }
+  return { message: `${done} atividade(s) adiada(s) em ${days} dia(s).` };
 }
 
 export function readAttachment(db: Db, call: FileCall): FileContent {

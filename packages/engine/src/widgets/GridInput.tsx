@@ -148,6 +148,7 @@ export default function GridInput({
                             onChange={(v) => form.changeCell(grid.name, i, f.name, v)}
                             error={error(key)}
                             required={f.required}
+                            record={row}
                           />
                         )}
                       </TableCell>

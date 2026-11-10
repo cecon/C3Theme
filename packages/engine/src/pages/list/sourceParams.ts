@@ -1,3 +1,4 @@
+import { useSearchParams } from 'react-router';
 import type { EntityDef, WireRecord } from '../../types';
 
 /** Prefixo dos parâmetros da consulta na URL da tela e da API. */
@@ -26,4 +27,10 @@ export function readSourceParams(def: EntityDef, params: URLSearchParams): Recor
 /** Mudanças de URL para aplicar `draft`: todos os parâmetros vão, vazios também (para não voltar ao default). */
 export function paramChanges(def: EntityDef, draft: WireRecord): Record<string, string> {
   return Object.fromEntries((def.params?.fields ?? []).map((f) => [PARAM_PREFIX + f.name, paramText(draft[f.name])]));
+}
+
+/** Parâmetros da consulta na URL da lista (`enabled` falso: nenhum), para a ação em conjunto ler as mesmas linhas. */
+export function useUrlSourceParams(def: EntityDef, enabled: boolean): Record<string, string> | undefined {
+  const [search] = useSearchParams();
+  return enabled ? readSourceParams(def, search) : undefined;
 }

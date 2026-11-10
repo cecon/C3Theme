@@ -511,7 +511,7 @@ O valor de uma folha pode ser `{ "$field": "nome" }`: o valor desse campo **no f
 
 - Variável vazia (cliente ainda não escolhido, `id` no registro novo): a folha não restringe nada. Por isso a variável não entra em `not` (use `ne`) e só vale com `eq`, `ne`, `lt`, `lte`, `gt` e `gte`, e o campo dela precisa ser do mesmo tipo do filtrado (reference para a mesma entidade). O `spec:check` e o boot do c3-engine conferem.
 - A shell resolve as variáveis com o formulário atual e manda o filtro no `where` da listagem; trocar o cliente refaz a lista. Uma opção já escolhida que deixou de valer só é recusada ao salvar.
-- Não existe em input de ação (por enquanto).
+- **No input de ação** vale igual, no campo simples e na coluna de uma grade: `{"$field": ...}` lê o próprio input, e na grade a **mesma linha** (a variação só do produto da linha: `{ "field": "produto_id", "op": "eq", "value": { "$field": "produto_id" } }`). Quando o campo lido muda, a shell limpa a escolha que dependia dele (no input, a do campo; na grade, a da mesma linha). O backend confere ao rodar (422 `not_allowed` em `campo` ou `grade.N.coluna`). `readOnly` no input só trava a tela, como na grade: o valor (do `prefill`, por exemplo) vai ao sistema e é validado.
 
 ## Listagem: paginação, ordenação, busca, filtros
 
@@ -553,7 +553,8 @@ Consulta que só existe com um valor pedido antes (posição do estoque numa dat
 
 - **Parâmetros:** mesmos tipos e regras do input de ação. Vão na URL como `p.<nome>=valor` (`GET /api/estoque_posicao?p.data=2026-11-05`); parâmetro desconhecido é `400`, valor inválido ou obrigatório vazio é `422` com o erro no campo. Sem `p.` na URL, valem os `default`; data relativa no `default` é resolvida pelo relógio do sistema, e o `/_meta/entities/{e}` devolve os valores resolvidos em `paramDefaults`.
 - **Backend:** `Hooks::source(entidade, parâmetros)` devolve `(sql, valores)`: um SELECT com `id` (estável e único na consulta), uma coluna por campo e, com `scope`, as de empresa e filial. O motor usa `FROM (sql) t` na lista, na contagem e no `_aggregate`, com os valores antes dos do `where`. Filiais, `rowAccess`, busca, filtros, ordem, página, totais e exportação ficam por fora, iguais. A consulta roda uma vez por pedido (página, contagem e totais são três), então consulta pesada pede índice no sistema.
-- **Só leitura:** criar, alterar, excluir e abrir uma linha são `405`; as capabilities vêm sem create, update e delete. Só ação de lista (`target: list`). Nenhuma entidade aponta para ela (`reference` ou `related`): o boot e o `spec:check` recusam.
+- **Só leitura:** criar, alterar, excluir e abrir uma linha são `405`; as capabilities vêm sem create, update e delete. Ação só da lista (`target: list`) ou em conjunto (`bulk: "together"`). Nenhuma entidade aponta para ela (`reference` ou `related`): o boot e o `spec:check` recusam.
+- **Ação em conjunto nas linhas marcadas:** `POST /{entity}/_actions/{name}?p.<nome>=...` com `{ ids, input }`, com os parâmetros que valem na lista (a shell manda os da URL). O motor roda a consulta uma vez com eles e procura cada id nela, no escopo de leitura: id fora da consulta recusa o pedido (404). O sistema recebe as linhas em `records` e os parâmetros validados em `params` (`BulkActionCall::params`); a lista se relê com os mesmos parâmetros. A prévia (`_preview`) lê igual. Rodar no detalhe de uma linha é `405`.
 - **Shell:** uma faixa acima dos filtros com os parâmetros e "Consultar", que põe os valores na URL (voltar e compartilhar funcionam). A linha não abre registro.
 
 ## Configuração de registro único (singleton)
@@ -741,6 +742,7 @@ Há lote que é um fato só: receber vários recebíveis de cartão é um movime
 - **No detalhe de um registro**, a ação aparece como as outras e o sistema recebe só aquele id; a resposta relê o registro.
 - **`summary`** (opcional): campos `integer` ou `decimal` somados sobre as linhas marcadas, na barra da seleção e no diálogo. A shell soma o que já está na tela (a seleção é da página).
 - **`preview: true`**: a prévia vai a `POST /{entity}/_actions/{name}/_preview` com `{ ids, input }`, com as mesmas conferências por registro. Serve para o que depende do input, como a taxa da antecipação, que muda com a data.
+- **Um valor por linha marcada** (`fromSelection`): uma grade do input com `"fromSelection": "product"` abre com uma linha por registro marcado, para o usuário digitar um valor em cada um (quantas etiquetas de cada produto). A coluna citada é `reference` para a própria entidade e identifica a linha; as outras colunas `readOnly` com o nome de um campo da entidade vêm do registro (código, preço) e as editáveis abrem com o default. O sistema recebe `[{ "product": "3", "copies": 2 }, ...]`. O motor confere que as linhas são exatamente os registros marcados, uma por registro (no detalhe, só aquele); fora disso, 422 `selection` na grade. Só em `bulk: "together"`.
 - Não tem Desfazer (`inverse`): o fato envolve vários registros. No c3-engine, o sistema executa em `Hooks::run_bulk_action` (`BulkActionCall` com `ids`, `records` e `input`).
 
 Para fatos que só mudam por ação (venda, título, nota), o campo de situação é `readOnly` e o sistema devolve `update` e `delete` falsos quando for o caso: o CRUD não mexe no fato e as ações são a única porta de escrita.
@@ -804,9 +806,13 @@ POST /api/product/7/_actions/discount/_preview   { "percent": "10" }
 ```
 
 - **Rotas**: `POST /{entity}/{id}/_actions/{name}/_preview` com o input, ou `POST /{entity}/_actions/{name}/_preview` com `{ input }` na ação da lista. As conferências são as de rodar a ação (permissão, escopo, `visibleWhen`, formato, faixa, `reference`), mas o input pode estar pela metade: falta de campo (`required`, `min_items`) não barra. Nada é gravado.
-- **`fill`** sugere valor para campos simples do input. A shell só põe a sugestão em campo vazio ou que ainda tem a sugestão anterior; o que o usuário digitou fica, e é isso que vai ao confirmar. **`table`** é só leitura; o motor tira das linhas o que não está em `columns`.
+- **`fill`** sugere valor para campos simples do input. A shell só põe a sugestão em campo vazio ou que ainda tem a sugestão anterior; o que o usuário digitou fica, e é isso que vai ao confirmar. Para uma **grade** do input, `fill` traz as linhas (`{ "prices": [ ... ] }`, só as colunas que a grade declara; o motor tira o resto): elas trocam as da tela, e assim a grade se refaz quando o usuário muda um campo do cabeçalho (outro dia, outro percentual). Numa linha de mesma chave (as colunas `readOnly`, como o produto), a célula que o usuário mudou fica; sem coluna `readOnly`, as linhas do sistema entram inteiras. **`table`** é só leitura; o motor tira das linhas o que não está em `columns`.
 - **Quando a shell pede**: ao abrir o diálogo e ao sair de cada campo, só se o input mudou. Não é a cada tecla: a prévia costuma ir ao banco (ou ao motor fiscal) e não vale um pedido por caractere. Resposta de um pedido velho é descartada. Em lote não há prévia.
 - **No c3-engine**: `Hooks::preview_action(PreviewCall)` devolve `Preview { message, fill, table }` (padrão: vazio).
+
+### Bipar em sequência
+
+Ação de registro que lê um item por vez (código de barras, etiqueta de balança) declara `"repeat": true`. Depois do sucesso o diálogo continua aberto: o input volta aos padrões, o foco volta ao primeiro campo e a mensagem do sistema ("CAFÉ: contado 3.") aparece no próprio diálogo, com as últimas leituras embaixo. Erro fica no diálogo, como sempre. Esc fecha. O registro se relê a cada leitura. Só a shell muda: o backend roda cada leitura como uma ação comum. Em lote e na ação da lista o `repeat` não vale.
 
 ### Arquivo e registro aberto pela ação
 

@@ -124,6 +124,7 @@ mod tests {
                 ids,
                 records: &records,
                 input: &input,
+                params: &Map::new(),
                 ctx: &ctx,
                 store: &store,
             },

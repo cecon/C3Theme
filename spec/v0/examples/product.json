@@ -85,9 +85,19 @@
       "icon": "Tag",
       "target": "list",
       "prefill": true,
+      "preview": true,
       "successMessage": "Preços aplicados.",
       "input": {
         "fields": [
+          {
+            "name": "percent",
+            "type": "decimal",
+            "label": "Reajuste (%)",
+            "scale": 2,
+            "min": -90,
+            "max": 500,
+            "help": "Refaz a grade com o preço de hoje mais o reajuste."
+          },
           {
             "name": "prices",
             "type": "grid",
@@ -123,6 +133,29 @@
         "fields": [
           { "name": "percent", "type": "decimal", "label": "Desconto (%)", "scale": 2, "min": 0, "max": 90, "required": true },
           { "name": "price", "type": "decimal", "label": "Preço novo", "scale": 2, "min": 0, "required": true }
+        ]
+      }
+    },
+    {
+      "name": "labels",
+      "label": "Imprimir etiquetas",
+      "description": "Uma linha por produto marcado: informe quantas etiquetas de cada um.",
+      "icon": "Printer",
+      "bulk": "together",
+      "input": {
+        "fields": [
+          {
+            "name": "items",
+            "type": "grid",
+            "label": "Etiquetas",
+            "required": true,
+            "fromSelection": "product",
+            "fields": [
+              { "name": "product", "type": "reference", "entity": "product", "label": "Produto", "required": true, "readOnly": true },
+              { "name": "price", "type": "decimal", "label": "Preço", "scale": 2, "readOnly": true },
+              { "name": "copies", "type": "integer", "label": "Etiquetas", "min": 1, "max": 99, "default": 1, "required": true }
+            ]
+          }
         ]
       }
     },

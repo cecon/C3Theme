@@ -84,13 +84,15 @@ pub(crate) fn parse_action(
     };
     check_summary(&label, &a.summary, bulk, fields)?;
     let (plain, rows) = split_spec(&label, a.input.fields, ident)?;
-    let (input_fields, input_conditions) = parse_fields(&label, plain, ident)?;
+    let (mut input_fields, input_conditions) = parse_fields(&label, plain, ident)?;
+    // readOnly no input só trava a tela (o valor veio do prefill): para o motor o valor vem e é validado
+    input_fields.iter_mut().for_each(|f| f.read_only = false);
     if let Some(r) = rows.iter().find(|r| input_fields.iter().any(|f| f.name == r.name)) {
         return Err(format!("{label}: campo '{}' repetido", r.name));
     }
-    if let Some(f) = input_fields.iter().find(|f| f.only_for_records()) {
+    if let Some(f) = input_fields.iter().find(|f| f.not_for_input()) {
         return Err(format!(
-            "{label}: campo '{}' do input não pode ser readOnly, createOnly nem ter filter ou access",
+            "{label}: campo '{}' do input não pode ser createOnly nem ter access",
             f.name
         ));
     }
@@ -99,6 +101,15 @@ pub(crate) fn parse_action(
             "{label}: campo '{}' do input não pode ter readOnlyWhen",
             input_fields[*i].name
         ));
+    }
+    if let Some(r) = rows.iter().find(|r| r.from_selection.is_some()) {
+        let col = r.row.field(r.from_selection.as_deref().unwrap_or_default());
+        if !together || col.and_then(|c| c.reference.as_deref()) != Some(name) {
+            return Err(format!(
+                "{label}.{}: fromSelection só em ação bulk \"together\", numa coluna reference para '{name}'",
+                r.name
+            ));
+        }
     }
     let mut input = Entity::fields_only(label, input_fields);
     resolve_conditions(&mut input, input_conditions)?;

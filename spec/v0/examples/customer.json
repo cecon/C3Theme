@@ -262,6 +262,42 @@
       },
       "confirm": "O cliente volta a ativo e o motivo da perda é apagado.",
       "successMessage": "Cliente reativado."
+    },
+    {
+      "name": "referrals",
+      "label": "Registrar indicações",
+      "description": "Escolha quem indicou e, em cada linha, a empresa e o cliente indicado (só clientes dessa empresa).",
+      "icon": "People",
+      "target": "list",
+      "input": {
+        "fields": [
+          {
+            "name": "referrer",
+            "type": "reference",
+            "entity": "customer",
+            "label": "Quem indicou",
+            "required": true,
+            "filter": { "field": "status", "op": "ne", "value": "churned" }
+          },
+          {
+            "name": "links",
+            "type": "grid",
+            "label": "Indicados",
+            "required": true,
+            "fields": [
+              { "name": "company", "type": "reference", "entity": "company", "label": "Empresa", "required": true },
+              {
+                "name": "customer",
+                "type": "reference",
+                "entity": "customer",
+                "label": "Cliente",
+                "required": true,
+                "filter": { "field": "company_id", "op": "eq", "value": { "$field": "company" } }
+              }
+            ]
+          }
+        ]
+      }
     }
   ]
 }

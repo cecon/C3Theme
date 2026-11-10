@@ -52,4 +52,24 @@ export function sourceTests({ test, call, tag }) {
     assert.deepEqual(meta.body.paramDefaults, { until: new Date().toISOString().slice(0, 10) });
     assert.deepEqual([meta.body.capabilities.create, meta.body.capabilities.update, meta.body.capabilities.delete], [false, false, false]);
   });
+
+  test('consulta do sistema', 'ação em conjunto nas linhas marcadas, com os parâmetros da lista', async () => {
+    const created = await call('POST', '/customer', { status: 'lead', name: `Adiar ${tag}` });
+    const customer = created.body.data.id;
+    for (const [due_date, stage] of [
+      ['2020-01-10', 'todo'],
+      ['2020-02-10', 'doing'],
+      ['2020-03-10', 'todo']
+    ])
+      await call('POST', '/activity', { subject: `Adiar ${tag}`, stage, due_date, customer_id: customer });
+    const postpone = (params, body) => call('POST', `/customer_pending/_actions/postpone?${new URLSearchParams(params)}`, body);
+    const res = await postpone({ 'p.until': '2020-02-15' }, { ids: [customer], input: { days: 60 } });
+    assert.equal(res.status, 200, JSON.stringify(res.body));
+    assert.equal(res.body.message, '2 atividade(s) adiada(s) em 60 dia(s).', 'só as que entram na posição pedida');
+    // a linha some da consulta com os mesmos parâmetros: não está mais na lista, então 404
+    const gone = await postpone({ 'p.until': '2020-02-15' }, { ids: [customer], input: { days: 1 } });
+    assert.equal(gone.status, 404, JSON.stringify(gone.body));
+    assert.equal((await postpone({ 'p.nope': '1' }, { ids: [customer], input: { days: 1 } })).status, 400);
+    assert.equal((await call('POST', `/customer_pending/${customer}/_actions/postpone`, { days: 1 })).status, 405);
+  });
 }

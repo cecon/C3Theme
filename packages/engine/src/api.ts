@@ -35,6 +35,15 @@ export class ApiError extends Error {
   }
 }
 
+/** Parâmetros de uma consulta do sistema (`source: system`), sem o prefixo `p.` da URL. */
+export type SourceParams = Record<string, string>;
+
+/** `path?p.data=...`: os parâmetros da consulta na URL, como na lista. */
+const withParams = (path: string, params?: SourceParams) => {
+  const entries = Object.entries(params ?? {});
+  return entries.length ? `${path}?${new URLSearchParams(entries.map(([k, v]) => [`p.${k}`, v]))}` : path;
+};
+
 export interface ListParams {
   page?: number;
   pageSize?: number;
@@ -78,11 +87,18 @@ export interface C3Client {
   /** A mesma ação, com o mesmo input, em cada id (até 100). Cada registro passa ou falha sozinho. */
   bulkAction(entity: string, action: string, ids: string[], input?: WireRecord): Promise<BulkResult>;
   /** Ação em conjunto (`bulk: 'together'`): uma execução sobre todos os ids, tudo ou nada. */
-  togetherAction(entity: string, action: string, ids: string[], input?: WireRecord): Promise<ActionResult>;
+  togetherAction(entity: string, action: string, ids: string[], input?: WireRecord, params?: SourceParams): Promise<ActionResult>;
   /** Ação da lista (`target: list`), sem registro. */
   listAction(entity: string, action: string, input?: WireRecord): Promise<ActionResult>;
   /** Prévia de uma ação `preview` com o input como está (sem `id`: ação da lista, ou a seleção em `ids`). Nada é gravado. */
-  preview(entity: string, action: string, id: string | undefined, input: WireRecord, ids?: string[]): Promise<ActionPreview>;
+  preview(
+    entity: string,
+    action: string,
+    id: string | undefined,
+    input: WireRecord,
+    ids?: string[],
+    params?: SourceParams
+  ): Promise<ActionPreview>;
   /** Valores iniciais do input de uma ação `prefill` (sem `id`: ação da lista). Nada é gravado. */
   prefill(entity: string, action: string, id?: string): Promise<WireRecord>;
   /** Consulta de `entity.lookups`: devolve só os campos que dá para preencher. Nada é gravado. */
@@ -227,12 +243,13 @@ export function createClient(
     action: (entity, id, action, input = {}, opts) =>
       call<ActionResult>('POST', `/${e(entity)}/${e(id)}/_actions/${e(action)}`, input, opts),
     bulkAction: (entity, action, ids, input = {}) => call<BulkResult>('POST', `/${e(entity)}/_actions/${e(action)}`, { ids, input }),
-    togetherAction: (entity, action, ids, input = {}) => call<ActionResult>('POST', `/${e(entity)}/_actions/${e(action)}`, { ids, input }),
+    togetherAction: (entity, action, ids, input = {}, params) =>
+      call<ActionResult>('POST', withParams(`/${e(entity)}/_actions/${e(action)}`, params), { ids, input }),
     listAction: (entity, action, input = {}) => call<ActionResult>('POST', `/${e(entity)}/_actions/${e(action)}`, { input }),
-    preview: (entity, action, id, input, ids) =>
+    preview: (entity, action, id, input, ids, params) =>
       id
         ? call<ActionPreview>('POST', `/${e(entity)}/${e(id)}/_actions/${e(action)}/_preview`, input)
-        : call<ActionPreview>('POST', `/${e(entity)}/_actions/${e(action)}/_preview`, ids ? { ids, input } : { input }),
+        : call<ActionPreview>('POST', withParams(`/${e(entity)}/_actions/${e(action)}/_preview`, params), ids ? { ids, input } : { input }),
     prefill: (entity, action, id) =>
       call<{ data: WireRecord }>('GET', `/${e(entity)}${id ? `/${e(id)}` : ''}/_actions/${e(action)}/_prefill`).then((r) => r.data),
     file: (entity, id, field) => blob(`/${e(entity)}/${e(id)}/_files/${e(field)}`),

@@ -76,7 +76,7 @@ pub(crate) async fn prefill(engine: &Engine, req: &Parts, name: &str, id: Option
 }
 
 /// Linhas da grade só com as colunas que ela declara; o que não é lista vira lista vazia.
-fn grid_rows(grid: &GridInput, value: Value) -> Value {
+pub(crate) fn grid_rows(grid: &GridInput, value: Value) -> Value {
     let Value::Array(rows) = value else {
         return Value::Array(Vec::new());
     };

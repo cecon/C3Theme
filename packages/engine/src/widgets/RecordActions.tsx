@@ -20,8 +20,11 @@ import useActionReply from '../hooks/useActionReply';
 import useTaskTelemetry from '../hooks/useTaskTelemetry';
 import ActionBody from './ActionBody';
 import BulkReport, { type Report } from './BulkReport';
+import { useRepeatLog } from './RepeatLog';
 import { loadPrefill } from './prefill';
+import { selectionInput } from '../hooks/gridRows';
 import { summaryText } from '../pages/list/selectionSum';
+import { useUrlSourceParams } from '../pages/list/sourceParams';
 import { plain, rowTitle, scopeText } from './bulkText';
 import type { RefusedRecord } from '../api';
 import type { ActionDef, BulkItem, FieldType, WireRecord } from '../types';
@@ -59,6 +62,8 @@ export default function RecordActions({ entity, id, record, rows, onBulkDone }: 
   // a tarefa vai do clique até rodar com sucesso; fechar o diálogo antes disso é abandono
   const task = useTaskTelemetry();
   const [menu, setMenu] = useState<HTMLElement | null>(null);
+  // ação `repeat` (bipar em sequência): o resultado de cada leitura fica no diálogo
+  const repeat = useRepeatLog();
   const [report, setReport] = useState<Report<ActionDef> | null>(null);
   const closeReport = () => {
     onBulkDone?.(report?.keep ?? report?.failed.map((f) => f.id) ?? []);
@@ -66,6 +71,8 @@ export default function RecordActions({ entity, id, record, rows, onBulkDone }: 
   };
 
   const bulk = rows !== undefined;
+  // consulta do sistema: a ação em conjunto lê as linhas com os parâmetros da lista (os da URL)
+  const sourceParams = useUrlSourceParams(def, bulk);
   const types = useMemo(() => Object.fromEntries(def.fields.map((f) => [f.name, f.type])) as Record<string, FieldType>, [def]);
   const targets = useMemo(() => (bulk ? rows : record ? [record] : []).map((r) => ({ row: r, values: plain(r) })), [bulk, rows, record]);
   // linhas em que a ação vale agora; em lote, as outras nem vão ao servidor
@@ -89,7 +96,8 @@ export default function RecordActions({ entity, id, record, rows, onBulkDone }: 
     const out = await runTogether(
       chosen.map((r) => r.id!),
       action.name,
-      body
+      body,
+      sourceParams
     );
     if (out.ok) {
       notify(out.result.message ?? success(action));
@@ -125,7 +133,8 @@ export default function RecordActions({ entity, id, record, rows, onBulkDone }: 
               onClick: () => void undoer.undo(id!, action, version).then((o) => notify(o.message, o.ok ? 'success' : 'warning'))
             }
           : undefined;
-      notify(result.message ?? success(action), 'success', undo);
+      if (action.repeat) repeat.push(result.message ?? success(action));
+      else notify(result.message ?? success(action), 'success', undo);
       deliver(result);
       return true;
     }
@@ -163,9 +172,17 @@ export default function RecordActions({ entity, id, record, rows, onBulkDone }: 
       return;
     }
     reset();
+    repeat.clear();
     const initial = await loadPrefill(client, entity, action, bulk ? undefined : id);
     if (!initial) return task.abandon();
-    form.reset(action, initial);
+    form.reset(action, {
+      ...initial,
+      ...selectionInput(
+        action,
+        eligible(action).map((t) => t.row),
+        (r) => rowTitle(def, r)
+      )
+    });
     setOpen(action);
   }
 
@@ -175,7 +192,12 @@ export default function RecordActions({ entity, id, record, rows, onBulkDone }: 
     // recusada em conjunto: o diálogo fecha e o relatório diz quem barrou
     if (done === 'refused') task.abandon();
     else if (done) task.done();
-    if (done) setOpen(null);
+    // bipar em sequência: o diálogo fica, o input volta aos padrões e o foco ao primeiro campo
+    if (done === true && open?.repeat && !bulk) {
+      reset();
+      form.reset(open);
+      task.start({ entity, op: 'action', action: open.name });
+    } else if (done) setOpen(null);
   }
 
   // sem ação para mostrar, segue montado enquanto o diálogo ou o relatório estão abertos
@@ -259,6 +281,8 @@ export default function RecordActions({ entity, id, record, rows, onBulkDone }: 
           error={fieldErrorText}
           bulk={bulk}
           ids={bulk && open?.bulk === 'together' ? eligible(open).map((t) => t.row.id!) : undefined}
+          params={sourceParams}
+          log={open?.repeat && !bulk ? repeat.items : undefined}
         />
       </ActionDialog>
 
@@ -268,15 +292,7 @@ export default function RecordActions({ entity, id, record, rows, onBulkDone }: 
 
   function bulkScope(a: ActionDef) {
     const chosen = eligible(a).map((t) => t.row);
-    const sums = a.summary?.length
-      ? summaryText(
-          def,
-          chosen,
-          a.summary.map((s) => s.field),
-          intl.locale,
-          text
-        )
-      : '';
-    return scopeText(a, chosen.length, rows!.length, sums);
+    const fields = a.summary?.map((s) => s.field) ?? [];
+    return scopeText(a, chosen.length, rows!.length, fields.length ? summaryText(def, chosen, fields, intl.locale, text) : '');
   }
 }

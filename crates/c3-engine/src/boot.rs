@@ -43,9 +43,10 @@ fn check_sources(entities: &HashMap<String, spec::Entity>, children: &Children) 
         if children.parent_of(name).is_some() {
             return Err(format!("{name}: consulta do sistema não pode ser filha with_parent"));
         }
-        if let Some(a) = e.actions.iter().find(|a| !a.list) {
+        // a linha não abre registro: só a ação da lista e a em conjunto sobre as linhas marcadas
+        if let Some(a) = e.actions.iter().find(|a| !a.list && !a.together) {
             return Err(format!(
-                "{name}.actions.{}: consulta do sistema só tem ação de lista (target 'list')",
+                "{name}.actions.{}: consulta do sistema só tem ação de lista (target 'list') ou em conjunto (bulk \"together\")",
                 a.name
             ));
         }

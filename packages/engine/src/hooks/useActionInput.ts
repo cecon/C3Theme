@@ -2,9 +2,15 @@ import { useRef, useState } from 'react';
 
 import { evaluate } from '../conditions.mjs';
 import { gridInputs, plainInputs } from '../actionTypes';
-import { gridBody, newRow, setCell, type GridRow } from './gridRows';
+import { gridBody, mergeGridFill, newRow, setCell, type GridRow } from './gridRows';
 import { suggestions } from './suggest';
 import type { ActionDef, FieldDef, FieldType, WireRecord } from '../types';
+
+/** Reference cujo `filter` lê `name` (`{"$field": name}`): a escolha dele deixa de valer quando `name` muda. */
+const cleared = (list: FieldDef[], name: string) => {
+  const needle = JSON.stringify({ $field: name });
+  return Object.fromEntries(list.filter((f) => f.filter && JSON.stringify(f.filter).includes(needle)).map((f) => [f.name, null]));
+};
 
 /**
  * Estado do input de uma ação no diálogo (de registro, em lote ou da lista): valores, grades, condições dos campos,
@@ -16,6 +22,8 @@ export default function useActionInput(action: ActionDef | null) {
   const [touched, setTouched] = useState(false);
   // o último valor que a prévia sugeriu em cada campo: enquanto o usuário não trocar, a próxima prévia atualiza
   const suggested = useRef<Record<string, unknown>>({});
+  // as últimas linhas que o sistema mandou em cada grade (prefill ou prévia), para saber o que o usuário mudou
+  const sentRows = useRef<Record<string, GridRow[]>>({});
   const fields = plainInputs(action);
   const grids = gridInputs(action);
   const types = Object.fromEntries(fields.map((f) => [f.name, f.type])) as Record<string, FieldType>;
@@ -31,6 +39,7 @@ export default function useActionInput(action: ActionDef | null) {
   /** Abre o diálogo de `next`: input com os defaults e, por cima, os valores iniciais do sistema (`prefill`). */
   const reset = (next: ActionDef, initial: WireRecord = {}) => {
     suggested.current = {};
+    sentRows.current = Object.fromEntries(gridInputs(next).map((g) => [g.name, (initial[g.name] as GridRow[] | undefined) ?? []]));
     setLocalErrors({});
     setTouched(false);
     const defaults = plainInputs(next).filter((f) => f.default !== undefined);
@@ -41,7 +50,7 @@ export default function useActionInput(action: ActionDef | null) {
     setLocalErrors((e) => Object.fromEntries(Object.entries(e).filter(([k]) => k !== prefix && !k.startsWith(`${prefix}.`))));
 
   const change = (name: string, v: unknown) => {
-    setInput((r) => ({ ...r, [name]: v }));
+    setInput((r) => ({ ...r, [name]: v, ...cleared(fields, name) }));
     drop(name);
   };
 
@@ -49,7 +58,8 @@ export default function useActionInput(action: ActionDef | null) {
 
   const changeCell = (grid: string, i: number, name: string, v: unknown) => {
     setTouched(true);
-    setInput((r) => ({ ...r, [grid]: setCell((r[grid] as GridRow[] | undefined) ?? [], i, name, v) }));
+    const cols = grids.find((g) => g.name === grid)?.fields ?? [];
+    setInput((r) => ({ ...r, [grid]: setCell((r[grid] as GridRow[] | undefined) ?? [], i, name, v, cleared(cols, name)) }));
     drop(`${grid}.${i}.${name}`);
   };
 
@@ -100,6 +110,7 @@ export default function useActionInput(action: ActionDef | null) {
 
   /**
    * Sugestões da prévia: entram no campo vazio ou que ainda tem a sugestão anterior. O que o usuário digitou fica.
+   * Linhas de uma grade trocam as da tela (`mergeGridFill`).
    */
   const fill = (values: Record<string, unknown>) =>
     setInput((r) => {
@@ -110,6 +121,13 @@ export default function useActionInput(action: ActionDef | null) {
         suggested.current
       );
       suggested.current = { ...suggested.current, ...next };
+      // grade na prévia: as linhas do sistema trocam as da tela, mantendo o que o usuário digitou na mesma linha
+      for (const g of grids) {
+        const rows = values[g.name];
+        if (!Array.isArray(rows)) continue;
+        next[g.name] = mergeGridFill(g, (r[g.name] as GridRow[] | undefined) ?? [], sentRows.current[g.name] ?? [], rows as GridRow[]);
+        sentRows.current[g.name] = rows as GridRow[];
+      }
       return Object.keys(next).length ? { ...r, ...next } : r;
     });
 

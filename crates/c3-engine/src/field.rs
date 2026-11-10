@@ -130,6 +130,12 @@ impl Field {
     pub(crate) fn only_for_records(&self) -> bool {
         self.read_only || self.create_only || self.ref_filter.is_some() || !self.access.is_free()
     }
+
+    /// O que não vale em campo do input de ação nem em coluna de grade: só faz sentido num registro gravado.
+    /// (`readOnly` ali só trava a tela e `filter` restringe as opções, com `$field` lendo o próprio input/linha.)
+    pub(crate) fn not_for_input(&self) -> bool {
+        self.create_only || !self.access.is_free()
+    }
 }
 
 /// `writeOnly` só em `string`, e nunca junto com o que faria o valor aparecer ou vazar.

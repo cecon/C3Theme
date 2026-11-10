@@ -30,6 +30,16 @@
     { "name": "late_count", "type": "integer", "label": "Atrasadas na data" },
     { "name": "oldest_due", "type": "date", "label": "Prazo mais antigo" }
   ],
+  "actions": [
+    {
+      "name": "postpone",
+      "label": "Adiar pendências",
+      "description": "Empurra o prazo das atividades em aberto dos clientes marcados, só as que entram na posição consultada.",
+      "icon": "CalendarEdit",
+      "bulk": "together",
+      "input": { "fields": [{ "name": "days", "type": "integer", "label": "Dias", "min": 1, "max": 90, "default": 7, "required": true }] }
+    }
+  ],
   "views": {
     "list": {
       "columns": ["customer_id", "open_count", "late_count", "oldest_due"],

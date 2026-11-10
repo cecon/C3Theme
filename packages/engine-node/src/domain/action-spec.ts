@@ -2,7 +2,7 @@
 
 import type { Condition } from './condition';
 import { type Entity, fieldsOnly, resolveConditions } from './entity';
-import { type Field, onlyForRecords, parseFields } from './field';
+import { type Field, notForInput, parseFields } from './field';
 import { type GridInput, splitGrids } from './grid-spec';
 import { type Rec, isObject } from './types';
 
@@ -45,10 +45,15 @@ export function parseAction(name: string, a: Rec, fields: Field[], ident: (n: st
   const [inputFields, inputConditions] = parseFields(label, plain, ident);
   const dup = grids.find((g) => inputFields.some((f) => f.name === g.name));
   if (dup) throw new Error(`${label}: campo '${dup.name}' repetido`);
-  const bad = inputFields.find(onlyForRecords);
-  if (bad) throw new Error(`${label}: campo '${bad.name}' do input não pode ser readOnly, createOnly nem ter filter ou access`);
+  // readOnly no input só trava a tela (o valor veio do prefill): para o motor o valor vem e é validado
+  for (const f of inputFields) f.readOnly = false;
+  const bad = inputFields.find(notForInput);
+  if (bad) throw new Error(`${label}: campo '${bad.name}' do input não pode ser createOnly nem ter access`);
   const locked = inputConditions.find((c) => c[3] !== undefined);
   if (locked) throw new Error(`${label}: campo '${inputFields[locked[0]].name}' do input não pode ter readOnlyWhen`);
+  const picked = grids.find((g) => g.fromSelection !== undefined);
+  if (picked && (!together || picked.row.fields.find((c) => c.name === picked.fromSelection)?.reference !== name))
+    throw new Error(`${label}.${picked.name}: fromSelection só em ação bulk "together", numa coluna reference para '${name}'`);
   const input = fieldsOnly(label, inputFields);
   resolveConditions(input, inputConditions);
   const list = a.target === 'list';

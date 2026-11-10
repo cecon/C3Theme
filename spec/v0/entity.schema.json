@@ -83,7 +83,7 @@
     },
     "source": {
       "enum": ["system"],
-      "description": "Consulta do sistema: a entidade não tem tabela; as linhas vêm de um SELECT que o sistema monta com os parâmetros (Hooks::source no c3-engine), com coluna id estável e uma por campo. Só leitura: lista, busca, filtros, totais, exportação e ações de lista. Criar, alterar, excluir e abrir uma linha são 405; nenhuma entidade aponta para ela."
+      "description": "Consulta do sistema: a entidade não tem tabela; as linhas vêm de um SELECT que o sistema monta com os parâmetros (Hooks::source no c3-engine), com coluna id estável e uma por campo. Só leitura: lista, busca, filtros, totais, exportação, ações de lista e ações em conjunto (bulk \"together\") nas linhas marcadas, que recebem os parâmetros da lista. Criar, alterar, excluir e abrir uma linha são 405; nenhuma entidade aponta para ela."
     },
     "params": {
       "type": "object",
@@ -1427,6 +1427,10 @@
           "maximum": 500,
           "default": 200
         },
+        "fromSelection": {
+          "$ref": "#/$defs/identifier",
+          "description": "Ação em conjunto (bulk \"together\"): a grade abre com uma linha por registro marcado, e esta é a coluna reference para a própria entidade que identifica a linha. As outras colunas readOnly com o nome de um campo da entidade vêm do registro; as editáveis abrem com o default. O motor confere que as linhas são exatamente a seleção (422 'selection' na grade)."
+        },
         "fields": {
           "type": "array",
           "minItems": 1,
@@ -1539,6 +1543,11 @@
           "type": "boolean",
           "default": false,
           "description": "Antes de abrir o diálogo, a shell pede os valores iniciais do input ao sistema: GET /{entity}/{id}/_actions/{name}/_prefill (ou /{entity}/_actions/{name}/_prefill na ação da lista). Ex.: a conferência do caixa abre com uma linha por forma de pagamento e o valor do sistema."
+        },
+        "repeat": {
+          "type": "boolean",
+          "default": false,
+          "description": "Ação de registro que fica aberta para a próxima leitura (bipar em sequência). Depois do sucesso o diálogo continua aberto, o input volta aos padrões com o foco no primeiro campo, e a mensagem do sistema aparece no próprio diálogo, com as últimas leituras abaixo. Esc fecha. Em lote e na ação da lista não vale."
         },
         "preview": {
           "type": "boolean",

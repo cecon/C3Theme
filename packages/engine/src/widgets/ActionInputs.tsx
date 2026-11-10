@@ -37,6 +37,8 @@ export default function ActionInputs({
               onChange={(v) => form.change(f.name, v)}
               error={error(f.name)}
               required={form.required(f)}
+              readOnly={f.readOnly}
+              record={form.input}
             />
           </Grid>
         ));

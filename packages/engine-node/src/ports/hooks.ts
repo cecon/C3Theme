@@ -101,6 +101,8 @@ export interface BulkActionCall {
   ids: string[];
   records: Rec[];
   input: Rec;
+  /** Consulta do sistema (`source: system`): os parâmetros que valiam na lista (`p.<nome>` da URL). Vazio numa tabela. */
+  params: Rec;
   ctx: RequestContext;
   store: Store;
 }
