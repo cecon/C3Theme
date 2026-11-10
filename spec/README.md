@@ -277,7 +277,7 @@ A filha continua sendo uma entidade, com campos, tipos, validações, tabela e m
 
 - `option` é o `reference` da filha cujos registros são as opções; `groupBy` (opcional) é um campo da entidade das opções que agrupa a lista. Os outros campos editáveis da filha viram colunas da matriz (o "Altera" de cada permissão), editáveis só na linha marcada.
 - O contrato é o de qualquer `with_parent`: cada opção marcada é uma linha (`{ "permission_id": "4", "can_write": true }`), desmarcar tira a linha. A mesma opção duas vezes é `422 duplicate` em `{filha}.{posição}.{option}`; quem quer garantir no banco põe `UNIQUE (pai, opção)`.
-- **Na shell**: todas as opções com uma caixa de marcar, agrupadas, com "marcar todas" por grupo e busca acima de 12 opções; no detalhe, só as marcadas. As opções vêm da listagem normal da entidade (página a página). O teto é o `maxItems` (até 500): ao chegar nele, as caixas desmarcadas travam. Catálogo maior que isso não é lista de marcar.
+- **Na shell**: todas as opções com uma caixa de marcar, agrupadas, com "marcar todas" por grupo e busca acima de 12 opções; Shift+clique marca ou desmarca o intervalo entre duas caixas (na ordem da tela, com a busca) e arrastar o mouse por cima das caixas aplica a todas o estado da primeira; no detalhe, só as marcadas. As opções vêm da listagem normal da entidade (página a página). O teto é o `maxItems` (até 500): ao chegar nele, as caixas desmarcadas travam. Catálogo maior que isso não é lista de marcar.
 
 **Abas no formulário.** Cadastro grande (produto, pessoa) separa as seções em abas com `tab` em cada seção, sem bloco novo no JSON:
 
