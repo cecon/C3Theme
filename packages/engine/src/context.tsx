@@ -3,7 +3,7 @@ import { useIntl } from 'react-intl';
 
 import type { C3Client } from './api';
 import type { TelemetryPort } from './telemetry';
-import type { AppDef, Capabilities, EntityDef, FieldDef, OrgContext, Text } from './types';
+import type { AppDef, Capabilities, EntityDef, FieldDef, OrgContext, Text, WireRecord } from './types';
 
 /** Componente custom registrado na shell e citado na spec por nome (`component`). */
 export type C3Components = Record<string, ComponentType<any>>;
@@ -56,6 +56,15 @@ export function branchLabel(org: OrgState, id: string): { branch: string; compan
   const b = org.context.branches.find((x) => x.id === id);
   const c = org.context.companies.find((x) => x.id === b?.company);
   return { branch: b?.title ?? `Filial ${id}`, company: c?.title ?? '' };
+}
+
+/** Dono do registro no formulário: no novo, onde vai ser gravado (a filial ativa); no existente, de quem é. */
+export function ownerLabel(org: OrgState, scope: EntityDef['scope'], record: WireRecord | undefined): string {
+  if (!record) {
+    const { branch, company } = branchLabel(org, org.active);
+    return scope === 'branch' ? `Será gravado em ${branch} · ${company}` : `Será gravado em ${company}`;
+  }
+  return [record._branch?.title, record._company?.title].filter(Boolean).join(' · ');
 }
 
 export function useEntity(name: string) {
