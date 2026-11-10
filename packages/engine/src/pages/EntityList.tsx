@@ -24,12 +24,15 @@ import { actionButtons, allowedRowActions } from './list/RowActionsCell';
 import GalleryGrid from './gallery/GalleryGrid';
 import { useRowDelete } from './list/useRowDelete';
 import BulkBar from './list/BulkBar';
+import EditBar from './list/EditBar';
+import useInlineEdit from './list/useInlineEdit';
 import ListToolbar from './list/ListToolbar';
 import PresetTabs from './list/PresetTabs';
 import ParamsBar from './list/ParamsBar';
 import { useExportCsv } from './list/useExportCsv';
 import { useListQuery } from './list/useListQuery';
 import { refreshMs, totalFields, useListTotals } from './list/useListTotals';
+import { useListOpening } from './list/useListOpening';
 import { summaryFields } from './list/selectionSum';
 import { ViewSwitcher } from './views/ViewBar';
 import { useLive } from '../live/useLive';
@@ -96,6 +99,7 @@ export default function EntityList({ entity, view = 'list' }: { entity: string; 
   const inDialog = list.open === 'dialog';
 
   const columns = listColumns(def);
+  const inlineEdit = useInlineEdit(entity, def, () => void mutate());
   // com mais de uma filial (ou empresa) na tela, a dona de cada linha vira coluna
   const showOwner =
     scoped &&
@@ -123,7 +127,13 @@ export default function EntityList({ entity, view = 'list' }: { entity: string; 
     ),
     query
   );
-  const { exporting, exportCsv } = useExportCsv(entity, query, exportFields, optionLabel, totals);
+  const openingValue = useListOpening(entity, list.opening, query);
+  const opening = openingValue && {
+    field: list.opening!.field,
+    value: openingValue.value,
+    label: text(list.opening!.label ?? 'Saldo anterior')
+  };
+  const { exporting, exportCsv } = useExportCsv(entity, query, exportFields, optionLabel, totals, opening);
 
   return (
     <Panel flush>
@@ -178,6 +188,8 @@ export default function EntityList({ entity, view = 'list' }: { entity: string; 
         />
       )}
 
+      <EditBar edit={inlineEdit} />
+
       {error && (
         <Alert severity="error" sx={{ mx: 2, mb: 2 }}>
           {error.message}
@@ -222,6 +234,8 @@ export default function EntityList({ entity, view = 'list' }: { entity: string; 
           }
           openable={!def.source}
           onOpen={inDialog ? (row) => setDialog({ id: row.id! }) : undefined}
+          inlineEdit={inlineEdit}
+          opening={opening}
         />
       )}
 

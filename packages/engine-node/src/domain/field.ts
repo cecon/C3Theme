@@ -41,6 +41,8 @@ export interface Field {
   refFilter?: unknown;
   /** Códigos de permissão para ver e para alterar (somado ao da seção). */
   access: Access;
+  /** Só em string: campo text do mesmo registro com as opções em JSON (`[{ "value": "A", "label": "…" }]`). */
+  optionsFrom?: string;
 }
 
 /** visibleWhen/requiredWhen/readOnlyWhen de cada campo (pelo índice), ainda em JSON. */
@@ -163,8 +165,15 @@ export function parseFields(owner: string, raw: unknown[], ident: (n: string) =>
       accept: (Array.isArray(item.accept) ? (item.accept as string[]) : []).map((e) => e.toLowerCase()),
       maxSize: num(item, 'maxSize') ?? MAX_FILE_SIZE,
       refFilter: opt(item, 'filter'),
-      access: parseAccess(item.access)
+      access: parseAccess(item.access),
+      optionsFrom: str(item, 'optionsFrom')
     });
   });
+  for (const f of fields) {
+    if (f.optionsFrom === undefined) continue;
+    const source = fields.find((x) => x.name === f.optionsFrom && x !== f);
+    if (f.type !== 'string' || source?.type !== 'text' || source.writeOnly)
+      throw new Error(`${owner}.${f.name}: optionsFrom só em campo string, apontando para outro campo text do registro`);
+  }
   return [fields, conditions];
 }

@@ -1,0 +1,22 @@
+{
+  "$schema": "../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "movimento",
+  "label": { "singular": "Movimento de estoque", "plural": "Movimentos de estoque", "gender": "m" },
+  "fields": [
+    { "name": "data", "type": "date", "label": "Data", "required": true },
+    { "name": "produto", "type": "reference", "entity": "produto", "label": "Produto", "required": true },
+    { "name": "historico", "type": "string", "label": "Histórico", "maxLength": 80 },
+    { "name": "quantidade", "type": "integer", "label": "Quantidade", "required": true },
+    { "name": "saldo", "type": "integer", "label": "Saldo", "readOnly": true }
+  ],
+  "views": {
+    "list": {
+      "columns": ["data", "produto", "historico", "quantidade", "saldo"],
+      "filters": ["produto"],
+      "dateRange": { "field": "data" },
+      "defaultSort": [{ "field": "data" }],
+      "opening": { "field": "saldo", "dateField": "data", "groupBy": ["produto"], "measure": "last" }
+    }
+  }
+}

@@ -70,6 +70,9 @@ export function labels(call: BulkActionCall): ActionOutcome {
 }
 
 /** TXT de carga da balança: `código;nome;preço` com o preço em centavos. */
+/** Programa da balança: centenas de MB, então a resposta é só o endereço (`link`) e o arquivo não passa pelo motor. */
+export const SCALE_APP = 'https://github.com/cecon/C3Theme/releases/latest';
+
 export async function scaleFile(db: Db, call: ListActionCall): Promise<ActionOutcome> {
   const onlyActive = call.input.only_active !== false;
   const list = await rows(db, 'SELECT id, name, price FROM product WHERE active = 1 OR ? = 0 ORDER BY id', [onlyActive ? 1 : 0]);

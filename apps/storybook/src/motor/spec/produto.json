@@ -20,5 +20,15 @@
     { "name": "custo", "type": "decimal", "label": "Custo médio", "scale": 2, "currency": "BRL", "readOnly": true },
     { "name": "estoque", "type": "integer", "label": "Estoque", "min": 0 },
     { "name": "ativo", "type": "boolean", "label": "Ativo", "default": true }
-  ]
+  ],
+  "views": {
+    "list": {
+      "columns": [
+        "nome",
+        { "field": "preco", "edit": "batch" },
+        { "field": "estoque", "edit": "batch" },
+        { "field": "ativo", "edit": "instant" }
+      ]
+    }
+  }
 }

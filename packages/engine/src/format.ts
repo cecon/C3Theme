@@ -3,7 +3,7 @@
 import { formatDecimal, formatMoney } from '@c3theme/ui';
 
 import { maskDocument } from './documents.mjs';
-import type { EntityDef, FieldDef, RefValue } from './types';
+import type { EntityDef, FieldDef, RefValue, WireRecord } from './types';
 
 export function formatDate(v: string, locale: string) {
   const [y, m, d] = v.split('-').map(Number);
@@ -41,6 +41,26 @@ export const isNumeric = (field: FieldDef) => field.type === 'integer' || field.
 /** Opção de um enum pelo valor trafegado ou pelo texto dele (filtro na URL, valor de <select>). */
 export function findOption(field: FieldDef | undefined, v: unknown) {
   return field?.options?.find((o) => String(o.value) === String(v));
+}
+
+/**
+ * Opções que o próprio registro traz (`optionsFrom`): o JSON `[{ "value", "label" }]` do campo apontado. Sem lista
+ * (vazio, `[]`, texto que não é a lista), `undefined`: o campo fica texto livre.
+ */
+export function recordOptions(field: FieldDef, record: WireRecord | undefined): { value: string; label: string }[] | undefined {
+  const raw = field.optionsFrom && record?.[field.optionsFrom];
+  if (typeof raw !== 'string' || !raw) return undefined;
+  let list: unknown;
+  try {
+    list = JSON.parse(raw);
+  } catch {
+    return undefined;
+  }
+  if (!Array.isArray(list)) return undefined;
+  const options = list
+    .filter((o): o is { value: string; label?: unknown } => typeof o === 'object' && o !== null && typeof o.value === 'string')
+    .map((o) => ({ value: o.value, label: typeof o.label === 'string' && o.label ? o.label : o.value }));
+  return options.length ? options : undefined;
 }
 
 /** Texto curto de um valor (lista, detalhe). */

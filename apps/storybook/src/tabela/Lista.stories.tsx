@@ -27,5 +27,27 @@ export const Clientes: Story = {};
 /** `actions[].bulk`: marque linhas e o lote aparece; `totals` soma o valor; `rowActionsStyle: quiet`. */
 export const Faturas: Story = { name: 'Faturas, com seleção e lote', args: { entity: 'fatura' } };
 
+/**
+ * `columns[].edit`: preço e estoque em `batch` (edite várias linhas e clique em Salvar alterações) e o ativo em
+ * `instant` (grava ao clicar). O erro de cada linha aparece na célula.
+ */
+export const EditarNaLinha: Story = { name: 'Produtos, editando na linha', args: { entity: 'produto' } };
+
+/**
+ * `views.list.opening`: com o período a partir de março e um produto no filtro, a primeira linha é o saldo anterior
+ * (o saldo da última linha antes de 01/03). Tire o produto ou a data inicial e a linha some.
+ */
+export const SaldoAnterior: Story = {
+  name: 'Kardex, com saldo anterior',
+  args: { entity: 'movimento' },
+  parameters: { route: '/?f.produto=1&f.data.de=2026-03-01' }
+};
+
+/**
+ * Seção `related` com `editable`, `search` e `presets`: a contagem do inventário na própria linha. Digite e tecle
+ * Enter: grava e desce para o item de baixo. A aba "Só não contados" e a busca vêm da lista da filha.
+ */
+export const Inventario: Story = { name: 'Inventário, contando na seção', args: { entity: 'inventario', screen: 'form', id: '1' } };
+
 /** O mesmo registro aberto: o formulário vem dos campos, sem `views.form`. */
 export const Registro: Story = { name: 'Registro aberto', args: { screen: 'form', id: '3' } };

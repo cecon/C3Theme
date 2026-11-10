@@ -38,6 +38,12 @@ export interface RelatedDef {
   computed?: ComputedValue[];
   /** Só da shell: lista que o usuário só lê (capabilities.fields); não vai no corpo. */
   denied?: Denied;
+  /** Só em separately: colunas que se digitam na linha, gravando pelo PATCH da filha. */
+  editable?: string[];
+  editMode?: 'instant' | 'batch';
+  /** Só em separately: a busca e os presets da filha na seção. */
+  search?: boolean;
+  presets?: boolean;
 }
 
 export interface FormSection {

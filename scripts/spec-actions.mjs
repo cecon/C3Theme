@@ -1,7 +1,7 @@
 // Ações: o input (campos, grade e disposição) e o Desfazer (`inverse`, `undoable: false`). As mesmas recusas do boot
 // do c3-engine.
 
-import { checkFieldRules, checkRefFilter } from './spec-fields.mjs';
+import { checkFieldRules, checkOptionsFrom, checkRefFilter } from './spec-fields.mjs';
 
 export function checkInverse(entity, action, where, errors) {
   if (action.inverse === undefined) return;
@@ -31,6 +31,7 @@ export function checkSummary(action, fields, where, errors) {
 function checkInputField(f, where, ctx, errors, source) {
   const { entities, WIRE } = ctx;
   checkFieldRules(f, `${where}: '${f.name}'`, errors);
+  checkOptionsFrom(f, source, `${where}: '${f.name}'`, errors);
   if (f.type === 'reference' && !entities.has(f.entity))
     errors.push(`${where}: '${f.name}' referencia entidade desconhecida '${f.entity}'`);
   // `{"$field": nome}` no filtro lê o próprio input (ou a mesma linha da grade)

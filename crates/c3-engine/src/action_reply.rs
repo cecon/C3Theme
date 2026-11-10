@@ -22,6 +22,9 @@ pub struct ActionOutcome {
     pub file: Option<FileContent>,
     /// Registro que a shell abre depois (o rascunho criado pela ação).
     pub open: Option<OpenRecord>,
+    /// Endereço que a shell abre na mesma aba (o download de um instalador de centenas de MB, sem passar pelo
+    /// motor): `https://`, `http://` ou um caminho do próprio servidor (`/`). Outro formato é 500.
+    pub link: Option<String>,
 }
 
 /// Registro que a shell abre: `/{entity}/{id}`. Sem `entity`, a da própria ação.
@@ -53,6 +56,14 @@ impl ActionOutcome {
             id: id.into(),
         });
         self
+    }
+
+    /// Abre (ou baixa por) este endereço na mesma aba: o arquivo não passa pelo motor.
+    pub fn link(url: impl Into<String>) -> Self {
+        ActionOutcome {
+            link: Some(url.into()),
+            ..Default::default()
+        }
     }
 
     pub fn with_message(mut self, message: impl Into<String>) -> Self {
@@ -127,7 +138,7 @@ fn build(
     outcome: ActionOutcome,
     data: Option<Value>,
 ) -> Result<ActionReply, ApiError> {
-    let ActionOutcome { message, file, open } = outcome;
+    let ActionOutcome { message, file, open, link } = outcome;
     let broken = |what: &str| {
         eprintln!("c3-engine: ação {}.{} {what}", entity.name, action.name);
         ApiError::internal()
@@ -148,6 +159,14 @@ fn build(
             return Err(broken(&format!("pediu para abrir '{target}', que não está no app")));
         }
         body["open"] = json!({ "entity": target, "id": o.id });
+    }
+    if let Some(url) = link {
+        // só endereço web ou do próprio servidor: nada de javascript: nem data:
+        let web = url.starts_with("https://") || url.starts_with("http://") || (url.starts_with('/') && !url.starts_with("//"));
+        if !web || body.get("open").is_some() {
+            return Err(broken("devolveu link fora de http(s):// ou /, ou junto com open"));
+        }
+        body["link"] = json!(url);
     }
     Ok(ActionReply::Json(body))
 }
@@ -203,5 +222,20 @@ mod tests {
         };
         assert_eq!(v["open"], json!({ "entity": "product", "id": "7" }));
         assert_eq!(v["message"], "ok");
+    }
+
+    #[test]
+    fn link_so_web_ou_do_servidor() {
+        let (e, a) = action(false);
+        for bad in ["javascript:alert(1)", "//outro.com/x", "data:text/html,oi"] {
+            assert!(build(|_| true, &e, &a, ActionOutcome::link(bad), None).is_err(), "{bad}");
+        }
+        assert!(build(|_| true, &e, &a, ActionOutcome::link("/x").open(None, "1"), None).is_err());
+        for ok in ["https://releases.exemplo.com/pdv.exe", "/downloads/kds.msi"] {
+            let Ok(ActionReply::Json(v)) = build(|_| true, &e, &a, ActionOutcome::link(ok), None) else {
+                panic!("esperava JSON");
+            };
+            assert_eq!(v["link"], ok);
+        }
     }
 }

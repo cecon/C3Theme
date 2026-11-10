@@ -24,6 +24,10 @@ import type { ColumnDef, RelatedDef, Text } from '../types';
 import { columnCell } from '../skeletonShape';
 import EntityDialog from './EntityDialog';
 import { Cell } from './list/Cell';
+import EditBar from './list/EditBar';
+import { EditCell } from './list/EditCell';
+import useInlineEdit from './list/useInlineEdit';
+import RelatedToolbar from './RelatedToolbar';
 
 const PAGE_SIZE = 10;
 
@@ -37,11 +41,25 @@ export default function RelatedSection({ parentId, related, title }: { parentId:
   const child = entities[related.entity];
 
   const listDef = child?.def.views?.list;
+  const [q, setQ] = useState('');
+  const [presetId, setPresetId] = useState(related.presets ? (listDef?.presets?.find((p) => p.default)?.id ?? '') : '');
+  const preset = listDef?.presets?.find((p) => p.id === presetId);
   const sort = related.sort ?? (listDef?.defaultSort ?? []).map((s) => (s.direction === 'desc' ? '-' : '') + s.field).join(',');
-  const where = { field: related.field, op: 'eq' as const, value: parentId };
-  const { data, mutate } = useSWR(child ? ['c3-list', related.entity, 'related', related.field, parentId, page, sort] : null, () =>
-    client.list(related.entity, { page, pageSize: PAGE_SIZE, sort: sort || undefined, where })
+  const own = { field: related.field, op: 'eq' as const, value: parentId };
+  const where = preset ? { and: [own, preset.where] } : own;
+  const key = child ? ['c3-list', related.entity, 'related', related.field, parentId, page, sort, q, presetId] : null;
+  const { data, mutate } = useSWR(key, () =>
+    client.list(related.entity, { page, pageSize: PAGE_SIZE, sort: sort || undefined, q: q || undefined, where })
   );
+  const edit = useInlineEdit(
+    related.entity,
+    child?.def ?? { name: related.entity, label: { singular: '', plural: '' }, fields: [] },
+    () => void mutate()
+  );
+  const mode = related.editMode ?? 'instant';
+  // Enter desce para a mesma coluna da linha de baixo, como na grade do input
+  const down = (i: number, field: string) => () =>
+    document.querySelector<HTMLElement>(`[data-edit-cell="${data?.data[i + 1]?.id}:${field}"] input`)?.focus();
 
   if (!child) return null;
   const { def, capabilities } = child;
@@ -73,6 +91,22 @@ export default function RelatedSection({ parentId, related, title }: { parentId:
         )
       }
     >
+      <RelatedToolbar
+        def={def}
+        search={related.search}
+        presets={related.presets}
+        q={q}
+        onSearch={(v) => {
+          setQ(v);
+          setPage(1);
+        }}
+        preset={presetId}
+        onPreset={(id) => {
+          setPresetId(id);
+          setPage(1);
+        }}
+      />
+      {mode === 'batch' && <EditBar edit={edit} />}
       <TableContainer>
         <Table size="small" aria-busy={!data || undefined}>
           <TableHead>
@@ -84,13 +118,28 @@ export default function RelatedSection({ parentId, related, title }: { parentId:
           </TableHead>
           <TableBody>
             {!data && <TableSkeletonRows rows={3} columns={columns.map(columnCell)} />}
-            {data?.data.map((row) => (
+            {data?.data.map((row, i) => (
               <TableRow key={row.id} hover sx={{ cursor: 'pointer' }} onClick={() => setOpen({ id: row.id })}>
-                {columns.map((f) => (
-                  <TableCell key={f.name}>
-                    <Cell field={f} row={row} locale={intl.locale} optionLabel={optionLabel(f.name)} />
-                  </TableCell>
-                ))}
+                {columns.map((f) => {
+                  const cell = <Cell field={f} row={row} locale={intl.locale} optionLabel={optionLabel(f.name)} />;
+                  return (
+                    <TableCell key={f.name} sx={related.editable?.includes(f.name) ? { py: 0.5, minWidth: 120 } : undefined}>
+                      {related.editable?.includes(f.name) ? (
+                        <EditCell
+                          entity={related.entity}
+                          field={f}
+                          row={row}
+                          mode={mode}
+                          edit={edit}
+                          readView={cell}
+                          onEnter={down(i, f.name)}
+                        />
+                      ) : (
+                        cell
+                      )}
+                    </TableCell>
+                  );
+                })}
               </TableRow>
             ))}
           </TableBody>
@@ -99,7 +148,7 @@ export default function RelatedSection({ parentId, related, title }: { parentId:
 
       {data && data.meta.total === 0 && (
         <Box sx={{ py: 3, textAlign: 'center' }}>
-          <Typography color="text.secondary">Nada cadastrado ainda.</Typography>
+          <Typography color="text.secondary">{q || preset ? 'Nenhum resultado com estes filtros.' : 'Nada cadastrado ainda.'}</Typography>
         </Box>
       )}
       {data && data.meta.total > PAGE_SIZE && (

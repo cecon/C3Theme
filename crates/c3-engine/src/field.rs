@@ -53,6 +53,7 @@ pub struct RawField {
     read_only_when: Option<Value>,
     filter: Option<Value>,
     access: Option<Value>,
+    options_from: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -91,6 +92,9 @@ pub struct Field {
     pub ref_filter: Option<Value>,
     /// Códigos de permissão para ver e para alterar (spec: `access`, somado ao da seção; ver `access.rs`).
     pub access: Access,
+    /// Só em string (spec: `optionsFrom`): campo text do mesmo registro com as opções em JSON
+    /// (`[{ "value": "A", "label": "…" }]`). Com a lista, o valor precisa ser um dos `value`; sem, vale o texto livre.
+    pub options_from: Option<String>,
 }
 
 /// O `id` implícito, como uma condição o enxerga: um reference (string no fio, inteiro na coluna). Só condições
@@ -121,6 +125,7 @@ pub(crate) fn id_field() -> &'static Field {
         max_size: 0,
         ref_filter: None,
         access: Access::default(),
+        options_from: None,
     });
     &ID
 }
@@ -193,6 +198,21 @@ fn check_file(owner: &str, f: &RawField) -> Result<(), String> {
     Ok(())
 }
 
+/// `optionsFrom` num campo string, apontando para outro campo text do mesmo registro.
+fn check_options_from(owner: &str, fields: &[Field]) -> Result<(), String> {
+    for f in fields {
+        let Some(from) = &f.options_from else { continue };
+        let source = fields.iter().find(|x| &x.name == from && x.name != f.name);
+        if f.ty != FieldType::String || source.is_none_or(|x| x.ty != FieldType::Text || x.write_only) {
+            return Err(format!(
+                "{owner}.{}: optionsFrom só em campo string, apontando para outro campo text do registro",
+                f.name
+            ));
+        }
+    }
+    Ok(())
+}
+
 pub(crate) fn parse_fields(owner: &str, raw: Vec<RawField>, ident: &dyn Fn(&str) -> bool) -> Result<(Vec<Field>, FieldConditions), String> {
     let mut conditions = Vec::new();
     let mut fields: Vec<Field> = Vec::new();
@@ -248,41 +268,12 @@ pub(crate) fn parse_fields(owner: &str, raw: Vec<RawField>, ident: &dyn Fn(&str)
             read_only_when: None,
             ref_filter: f.filter,
             access: Access::parse(f.access.as_ref()),
+            options_from: f.options_from,
         });
     }
+    check_options_from(owner, &fields)?;
     Ok((fields, conditions))
 }
 
 #[cfg(test)]
-mod tests {
-    use serde_json::json;
-
-    use super::*;
-
-    fn flags(values: &[i64]) -> Result<(Vec<Field>, FieldConditions), String> {
-        let options: Vec<_> = values.iter().map(|v| json!({ "value": v, "label": v.to_string() })).collect();
-        let raw: RawField = serde_json::from_value(json!({ "name": "days", "type": "flags", "options": options })).unwrap();
-        parse_fields("t", vec![raw], &|_| true)
-    }
-
-    #[test]
-    fn flags_aceita_potencias_de_2_ate_2_30() {
-        assert!(flags(&[1, 2, 4, 64]).is_ok());
-        assert!(flags(&[1 << 30]).is_ok());
-    }
-
-    #[test]
-    fn flags_recusa_o_que_nao_e_um_bit_so() {
-        for bad in [&[3][..], &[0], &[-2], &[1 << 31], &[1, 2, 6]] {
-            let err = flags(bad).err().unwrap_or_else(|| panic!("{bad:?} deveria ser recusado"));
-            assert!(err.contains("potências de 2"), "{bad:?}: {err}");
-        }
-        assert!(flags(&[]).is_err(), "flags sem opções");
-    }
-
-    #[test]
-    fn flags_recusa_bit_repetido() {
-        let err = flags(&[1, 2, 2]).unwrap_err();
-        assert!(err.contains("repetida"), "{err}");
-    }
-}
+mod tests;

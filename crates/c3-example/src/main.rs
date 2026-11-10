@@ -191,7 +191,7 @@ impl c3_engine::Hooks for TestUsers {
     async fn run_list_action(&self, call: ListActionCall<'_>) -> Result<ActionOutcome, ApiError> {
         let branch: i64 = match (call.entity, call.action, &call.ctx.active_branch) {
             ("product", "reprice", _) => return prices::apply(&self.pool, call).await,
-            ("product", "scale_file", _) => return products::scale_file(&self.pool, call).await,
+            ("product", "scale_file" | "scale_app", _) => return products::scale(&self.pool, call).await,
             ("customer", "referrals", _) => return referrals::apply(&self.pool, call).await,
             ("seller", "apply_schedule", Some(b)) => b.parse().map_err(|_| ApiError::internal())?,
             ("seller", "apply_schedule", None) => return Err(ApiError::bad_request("Escolha a filial ativa.")),
@@ -280,6 +280,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .entity(include_str!("../../../spec/v0/examples/promotion.json"))
         .entity(include_str!("../../../spec/v0/examples/promotion_product.json"))
         .entity(include_str!("../../../spec/v0/examples/store_settings.json"))
+        .entity(include_str!("../../../spec/v0/examples/system_param.json"))
         .entity(include_str!("../../../spec/v0/examples/customer_pending.json"))
         .hooks(TestUsers {
             pool: pool.clone(),

@@ -47,7 +47,7 @@
   ],
   "views": {
     "list": {
-      "columns": ["name", "product_group", "price", "active"],
+      "columns": ["name", "product_group", { "field": "price", "edit": "batch" }, { "field": "active", "edit": "instant" }],
       "filters": ["product_group", "active"],
       "search": ["name"],
       "defaultSort": [{ "field": "name" }]
@@ -122,6 +122,13 @@
       "input": {
         "fields": [{ "name": "only_active", "type": "boolean", "label": "Só os ativos", "default": true }]
       }
+    },
+    {
+      "name": "scale_app",
+      "label": "Programa da balança",
+      "description": "Baixa o instalador do programa que carrega a balança.",
+      "icon": "Download",
+      "target": "list"
     },
     {
       "name": "discount",

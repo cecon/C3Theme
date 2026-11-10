@@ -1,0 +1,33 @@
+{
+  "$schema": "../entity.schema.json",
+  "specVersion": "0",
+  "name": "system_param",
+  "label": {
+    "singular": "Parâmetro do sistema",
+    "plural": "Parâmetros do sistema"
+  },
+  "description": "Exemplo de opções vindas do registro (optionsFrom): cada parâmetro traz a sua lista; sem lista, o valor é texto livre.",
+  "icon": "Setting4",
+  "scope": "group",
+  "titleField": "label",
+  "fields": [
+    { "name": "code", "type": "string", "label": "Código", "required": true, "unique": true, "maxLength": 40, "createOnly": true },
+    { "name": "label", "type": "string", "label": "Parâmetro", "required": true, "maxLength": 80 },
+    {
+      "name": "options",
+      "type": "text",
+      "label": "Opções (JSON)",
+      "help": "Lista [{\"value\": \"...\", \"label\": \"...\"}]. Vazio, o valor é texto livre."
+    },
+    { "name": "value", "type": "string", "label": "Valor", "maxLength": 200, "optionsFrom": "options" }
+  ],
+  "views": {
+    "list": { "columns": ["label", { "field": "value", "edit": "instant" }], "search": ["label", "code"] },
+    "form": {
+      "sections": [
+        { "title": "Parâmetro", "rows": [["code", "label"], ["value"]] },
+        { "title": "Opções", "rows": [["options"]] }
+      ]
+    }
+  }
+}

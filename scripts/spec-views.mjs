@@ -1,5 +1,6 @@
 // Regras do menu e das views de quadro e calendário que o JSON Schema não expressa sozinho.
 
+import { checkEditColumn } from './spec-fields.mjs';
 import { checkSource } from './spec-source.mjs';
 
 const DATES = new Set(['date', 'datetime']);
@@ -72,6 +73,8 @@ export function checkBoardCalendar(entity, fields, file, errors) {
 /** Totais, singleton e consulta do sistema: regras da lista que o JSON Schema não expressa. */
 export function checkListRules(entity, fields, entities, file, errors, wire) {
   checkTotals(entity, fields, file, errors);
+  checkOpening(entity, fields, file, errors);
+  checkRelatedEdit(entity, entities, file, errors);
   checkSingleton(entity, entities, file, errors);
   checkSource(entity, entities, file, errors, wire);
   checkCards(entity, fields, file, errors);
@@ -139,5 +142,35 @@ function checkTotals(entity, fields, file, errors) {
     else if (!columns.includes(t.field)) errors.push(`${where}: '${t.field}' não está nas colunas da lista`);
     if (seen.has(t.field)) errors.push(`${where}: '${t.field}' repetido`);
     seen.add(t.field);
+  }
+}
+
+/** Saldo anterior: campo integer ou decimal nas colunas, data date ou datetime, groupBy de campos que existem. */
+function checkOpening(entity, fields, file, errors) {
+  const o = entity.views?.list?.opening;
+  if (!o) return;
+  const where = `${file} views.list.opening`;
+  const f = fields.get(o.field);
+  if (!f || !['integer', 'decimal'].includes(f.type)) errors.push(`${where}: '${o.field}' precisa ser campo integer ou decimal`);
+  if (!['date', 'datetime'].includes(fields.get(o.dateField)?.type))
+    errors.push(`${where}: '${o.dateField}' precisa ser campo date ou datetime`);
+  for (const g of o.groupBy ?? []) if (!fields.has(g)) errors.push(`${where}: groupBy cita campo inexistente '${g}'`);
+  if (entity.singleton) errors.push(`${where}: singleton não tem lista`);
+}
+
+/** `related` com colunas editáveis, busca e presets: campos que a filha grava, e a busca e os presets que ela tem. */
+function checkRelatedEdit(entity, entities, file, errors) {
+  for (const s of entity.views?.form?.sections ?? []) {
+    const r = s.related;
+    const child = r && entities.get(r.entity)?.entity;
+    if (!child) continue;
+    const where = `${file} related '${r.entity}'`;
+    for (const name of r.editable ?? []) {
+      const f = child.fields.find((x) => x.name === name);
+      if (!f || name === r.field) errors.push(`${where}.editable: '${name}' não é campo editável da filha`);
+      else checkEditColumn(f, child, `${where}.editable '${name}'`, errors);
+    }
+    if (r.search && !child.views?.list?.search?.length) errors.push(`${where}.search: a filha não tem views.list.search`);
+    if (r.presets && !child.views?.list?.presets?.length) errors.push(`${where}.presets: a filha não tem views.list.presets`);
   }
 }

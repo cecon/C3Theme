@@ -17,7 +17,8 @@ export function useExportCsv(
   query: ListQuery,
   fields: FieldDef[],
   optionLabel: (f: FieldDef) => (v: string) => string,
-  totals?: ListTotals
+  totals?: ListTotals,
+  opening?: { field: string; value: number | string; label: string }
 ) {
   const { client } = useEngine();
   const text = useText();
@@ -41,7 +42,8 @@ export function useExportCsv(
         intl.locale,
         (f) => text(f.label, f.name),
         (f, v) => optionLabel(f)(v),
-        totals
+        totals,
+        opening
       );
       download(`${entity}-${new Date().toISOString().slice(0, 10)}.csv`, csv);
       if (total > rows.length) {

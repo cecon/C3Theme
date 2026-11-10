@@ -53,6 +53,8 @@ export interface FieldDef {
   grouping?: boolean;
   /** O valor como o banco grava (texto ou inteiro), sem tradução; o `label` é o que a tela mostra. */
   options?: { value: EnumValue; label: Text; color?: Tone }[];
+  /** Só em string: campo text do mesmo registro com as opções em JSON; com a lista, a tela mostra um select. */
+  optionsFrom?: string;
   entity?: string;
   /** `file`: extensões aceitas, com ponto (".pfx"). */
   accept?: string[];
@@ -81,6 +83,19 @@ export type Denied = 'hidden' | 'readOnly';
 
 export type { ColumnDef, ExpandItem, GalleryView, ListExpand, ListLook, RecordImageDef, RowAction } from './viewTypes';
 export type { ComputedValue, FormFieldDef, FormSection, FormView, PairingDef, PairingState, RelatedDef, SummaryLine } from './formTypes';
+
+/** `views.list.opening`: o saldo antes da data inicial do filtro, num grupo só (um produto num almoxarifado). */
+export interface ListOpening {
+  /** Campo do saldo (integer ou decimal). */
+  field: string;
+  /** Campo date ou datetime do período. */
+  dateField: string;
+  /** Campos que o filtro precisa fixar (eq) para a linha valer. */
+  groupBy?: string[];
+  /** `sum` (padrão): soma do campo antes da data; `last`: o valor da última linha antes dela (saldo acumulado). */
+  measure?: 'sum' | 'last';
+  label?: Text;
+}
 
 export interface Preset {
   id: string;
@@ -123,6 +138,8 @@ export interface EntityDef {
       /** Relê a página a cada N segundos (mínimo 3), só com a aba visível. */
       refreshSeconds?: number;
       totals?: { field: string; measure?: 'sum' }[];
+      /** Linha "Saldo anterior" no topo, com o período filtrado (ver `useListOpening`). */
+      opening?: ListOpening;
     };
     form?: FormView;
     gallery?: GalleryView;
@@ -260,6 +277,8 @@ export interface ActionResult {
   file?: { name: string; blob: Blob };
   /** Registro que a shell abre depois (o rascunho criado pela ação). */
   open?: { entity: string; id: string };
+  /** Endereço que a shell abre (ou baixa) na mesma aba: o arquivo não passa pelo motor. */
+  link?: string;
 }
 
 /** Resultado de um id na ação em lote: o mesmo da ação de um registro, ou o erro dele. */

@@ -164,3 +164,20 @@ export function parseOptions(values: unknown[]): SqlValue[] {
 }
 
 export { isTextual };
+
+/**
+ * `optionsFrom`: com a lista de opções no próprio registro (JSON `[{ "value": ... }]` no campo text apontado), o
+ * valor precisa ser um dos `value`. Sem lista (vazio, `[]` ou texto que não é a lista), vale o texto livre.
+ */
+export function inRecordOptions(f: Field, v: SqlValue, record: Record<string, unknown>): boolean {
+  const raw = f.optionsFrom === undefined ? undefined : record[f.optionsFrom];
+  if (typeof v !== 'string' || typeof raw !== 'string') return true;
+  let list: unknown;
+  try {
+    list = JSON.parse(raw);
+  } catch {
+    return true;
+  }
+  if (!Array.isArray(list) || list.length === 0) return true;
+  return list.some((o) => typeof o === 'object' && o !== null && (o as { value?: unknown }).value === v);
+}

@@ -306,6 +306,10 @@
                 "enum": ["cpf", "cnpj", "cpf_cnpj", "phone"],
                 "description": "Só em string. 'phone': telefone brasileiro com DDD, trafega só os 10 ou 11 dígitos (erro 'pattern' fora disso), a shell mostra e digita como (11) 98123-4567. Os outros: documento brasileiro com dígito verificador. Trafega sem máscara: CPF com 11 dígitos; CNPJ com 12 caracteres [0-9A-Z] e 2 dígitos (alfanumérico desde jul/2026). 'cpf_cnpj' aceita os dois pelo tamanho. Erro: 'pattern' (forma) ou 'check_digit'. A shell mostra e digita com máscara."
               },
+              "optionsFrom": {
+                "type": "string",
+                "description": "Só em type string: nome de outro campo text do mesmo registro que guarda as opções em JSON ([{\"value\": \"A\", \"label\": \"Opção A\"}], value string). Cada registro tem a sua lista (parâmetro do sistema). Com a lista, a shell mostra um select e o motor só aceita um dos value (422 invalid_option); sem lista (vazio, [] ou texto que não é a lista), o campo é texto livre."
+              },
               "writeOnly": {
                 "type": "boolean",
                 "default": false,
@@ -546,6 +550,10 @@
                       "weight": {
                         "enum": ["normal", "bold"],
                         "description": "Peso do valor. Padrão: negrito quando a coluna tem secondary, normal sem."
+                      },
+                      "edit": {
+                        "enum": ["instant", "batch"],
+                        "description": "Edita o campo na própria linha. 'instant': o switch, o select ou o número grava ao mudar (um PATCH da linha). 'batch': as mudanças se juntam e gravam no 'Salvar alterações' da lista, um PATCH por linha alterada. Mesmas regras do formulário (permissão, readOnlyWhen, validação, _version); o erro aparece na célula. Não vale em campo readOnly, createOnly, writeOnly, text ou file, nem em entidade com source."
                       }
                     }
                   }
@@ -735,6 +743,27 @@
                     "default": "sum"
                   }
                 }
+              }
+            },
+            "opening": {
+              "type": "object",
+              "required": ["field", "dateField"],
+              "additionalProperties": false,
+              "description": "Linha 'Saldo anterior' no topo da lista (kardex): com o filtro de período ativo (gte/gt em dateField, o 'de' do dateRange) e cada groupBy fixado por eq no filtro, a shell pede o saldo antes da data inicial com o mesmo where (sem os limites do período e com 'antes do início'). Sai também na segunda linha do CSV. Sem data inicial, ou com um groupBy solto, a linha não aparece.",
+              "properties": {
+                "field": { "$ref": "#/$defs/identifier", "description": "Campo integer ou decimal do saldo, que aparece numa coluna." },
+                "dateField": { "$ref": "#/$defs/identifier", "description": "Campo date ou datetime do período." },
+                "groupBy": {
+                  "type": "array",
+                  "items": { "$ref": "#/$defs/identifier" },
+                  "description": "Campos que o filtro precisa fixar (produto, almoxarifado) para o saldo ser de um grupo só."
+                },
+                "measure": {
+                  "enum": ["sum", "last"],
+                  "default": "sum",
+                  "description": "'sum': soma do campo nas linhas antes da data (movimento com sinal). 'last': o valor da última linha antes da data, por data e id (o campo já é o saldo acumulado)."
+                },
+                "label": { "$ref": "#/$defs/text", "description": "Padrão: 'Saldo anterior'." }
               }
             }
           }
@@ -965,6 +994,14 @@
                         "display": { "const": "table" }
                       }
                     },
+                    "else": {
+                      "properties": {
+                        "editable": false,
+                        "editMode": false,
+                        "search": false,
+                        "presets": false
+                      }
+                    },
                     "properties": {
                       "entity": {
                         "$ref": "#/$defs/identifier",
@@ -997,6 +1034,27 @@
                             "currency": { "type": "string", "pattern": "^[A-Z]{3}$" }
                           }
                         }
+                      },
+                      "editable": {
+                        "type": "array",
+                        "minItems": 1,
+                        "items": { "$ref": "#/$defs/identifier" },
+                        "description": "Só em separately: colunas que se digitam na própria linha (a contagem do inventário). Cada mudança grava pelo PATCH da filha, com as regras dela (permissão, readOnlyWhen, validação, _version); Enter desce para a mesma coluna da linha de baixo. Não vale em campo readOnly, createOnly, writeOnly, text ou file."
+                      },
+                      "editMode": {
+                        "enum": ["instant", "batch"],
+                        "default": "instant",
+                        "description": "'instant': grava ao sair do campo (switch e select, ao mudar). 'batch': junta as linhas e grava no 'Salvar alterações' da seção, um PATCH por linha."
+                      },
+                      "search": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Só em separately: a busca da filha (views.list.search) no topo da seção."
+                      },
+                      "presets": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Só em separately: os filtros nomeados da filha (views.list.presets) como abas da seção ('só não contados', 'só com diferença')."
                       },
                       "sort": {
                         "type": "string",

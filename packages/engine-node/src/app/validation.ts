@@ -10,7 +10,7 @@ import type { Field } from '../domain/field';
 import { isNewFile } from '../domain/file';
 import { refCondition } from '../domain/ref-filter';
 import { BRANCH_COL, COMPANY_COL, type Rec, type SqlValue, isObject, isTextual } from '../domain/types';
-import { isEmpty, toSql, validEmail } from '../domain/value';
+import { inRecordOptions, isEmpty, toSql, validEmail } from '../domain/value';
 import { type Conn, StoreError, intAt } from '../ports/store';
 import type { Ctx, Owner } from './ctx';
 import { writable } from './read';
@@ -62,6 +62,7 @@ export async function checkFields(
       continue;
     }
     checkRules(f, c.value, errors);
+    if (!inRecordOptions(f, c.value, record)) errors.add(f.name, 'invalid_option', 'Opção inválida.');
     if (f.reference !== undefined && typeof c.value === 'number') {
       const target = ctx.engine.entities.get(f.reference)!;
       const filter = refCondition(f, record, target);

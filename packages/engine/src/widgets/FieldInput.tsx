@@ -23,7 +23,7 @@ import type { FileValue } from '@c3theme/ui';
 
 import { useEngine, useText } from '../context';
 import { fromDay, toDay } from '../calendarForm';
-import { datetimeToLocalInput, displayValue, findOption, formatDate, localInputToDatetime } from '../format';
+import { datetimeToLocalInput, displayValue, findOption, formatDate, localInputToDatetime, recordOptions } from '../format';
 import DocumentInput from './DocumentInput';
 import PasswordInput from './PasswordInput';
 import ReferenceInput from './ReferenceInput';
@@ -135,8 +135,21 @@ export default function FieldInput(props: FieldInputProps) {
       />
     );
   }
+  // opções que o próprio registro traz (`optionsFrom`); sem lista, segue o texto livre
+  const fromRecord = recordOptions(field, props.record);
+  if (fromRecord && !readOnly)
+    return (
+      <SelectField
+        {...{ label, hint, required, error }}
+        helperText={helper}
+        options={fromRecord}
+        value={(value ?? null) as string | null}
+        onChange={onChange}
+      />
+    );
   if (readOnly) {
-    const shown = displayValue(field, value, intl.locale, (v) => text(findOption(field, v)?.label, v));
+    const listed = fromRecord?.find((o) => o.value === value)?.label;
+    const shown = listed ?? displayValue(field, value, intl.locale, (v) => text(findOption(field, v)?.label, v));
     return (
       <TextField
         label={withHint(label, hint)}

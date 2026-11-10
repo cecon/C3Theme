@@ -2,7 +2,7 @@
   "$schema": "../../../../../spec/v0/app.schema.json",
   "specVersion": "0",
   "name": "Storybook pelo motor",
-  "entities": ["produto", "fatura", "loja", "cliente", "vendedor", "fornecedor", "tarefa", "evento", "mesa"],
+  "entities": ["produto", "fatura", "loja", "cliente", "vendedor", "fornecedor", "tarefa", "evento", "mesa", "movimento", "inventario", "inventario_item"],
   "layout": {
     "orientation": "vertical",
     "header": {

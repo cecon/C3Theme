@@ -1,4 +1,5 @@
-// O que a ação devolve: o aviso, o arquivo de uma ação `returns: "file"` e o registro que a shell abre depois (`open`).
+// O que a ação devolve: o aviso, o arquivo de uma ação `returns: "file"`, o registro que a shell abre depois (`open`)
+// e o endereço que ela abre na mesma aba (`link`).
 
 import type { Action } from '../domain/action-spec';
 import type { Entity } from '../domain/entity';
@@ -30,6 +31,13 @@ export function buildReply(
     const target = outcome.open.entity ?? entity.name;
     if (!known(target)) throw broken(`pediu para abrir '${target}', que não está no app`);
     body.open = { entity: target, id: outcome.open.id };
+  }
+  if (outcome.link !== undefined) {
+    // só endereço web ou do próprio servidor: nada de javascript: nem data:
+    const url = outcome.link;
+    const web = url.startsWith('https://') || url.startsWith('http://') || (url.startsWith('/') && !url.startsWith('//'));
+    if (!web || body.open) throw broken('devolveu link fora de http(s):// ou /, ou junto com open');
+    body.link = url;
   }
   return { kind: 'json', body };
 }

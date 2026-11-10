@@ -11,7 +11,16 @@ import addFormats from 'ajv-formats';
 import { parse as parseYaml } from 'yaml';
 import { conditionFields, evaluate } from '../packages/engine/src/conditions.mjs';
 import { WIRE, makeCheckCondition } from './spec-conditions.mjs';
-import { checkAccess, checkChecklist, checkDocumentCases, checkFieldRules, checkRefFilter, notWriteOnly } from './spec-fields.mjs';
+import {
+  checkAccess,
+  checkChecklist,
+  checkDocumentCases,
+  checkEditColumn,
+  checkFieldRules,
+  checkOptionsFrom,
+  checkRefFilter,
+  notWriteOnly
+} from './spec-fields.mjs';
 import { checkAgentParts } from './spec-agent-ui.mjs';
 import { checkDashboards } from './spec-dashboard.mjs';
 import { checkActionInput, checkInverse, checkSummary } from './spec-actions.mjs';
@@ -116,6 +125,7 @@ for (const { entity, file } of entities.values()) {
   checkAccess(entity, fields, entities, checkCondition, file, errors);
   for (const f of fields.values()) {
     checkFieldRules(f, `${file}: '${f.name}'`, errors, app.maxUploadSize);
+    checkOptionsFrom(f, [...fields.values()], `${file}: '${f.name}'`, errors);
     if (f.type === 'reference' && !entities.has(f.entity))
       errors.push(`${file}: '${f.name}' referencia entidade desconhecida '${f.entity}'`);
     else if (f.filter) checkRefFilter(f, entity, entities.get(f.entity).entity, checkCondition, `${file} ${f.name}.filter`, errors);
@@ -140,6 +150,8 @@ for (const { entity, file } of entities.values()) {
     const photoName = typeof col === 'object' && (typeof col.avatar === 'string' ? col.avatar : col.avatar?.photo);
     const photo = photoName && readable(photoName, 'views.list.columns avatar');
     if (photo && photo.type !== 'string') errors.push(`${file}: avatar '${photoName}' precisa ser campo string (endereço da foto)`);
+    if (typeof col === 'object' && col.edit)
+      checkEditColumn(fields.get(col.field), entity, `${file}: views.list.columns '${col.field}'`, errors);
   }
   const period = list.dateRange && readable(list.dateRange.field, 'views.list.dateRange');
   if (period && period.type !== 'date') errors.push(`${file}: dateRange em '${period.name}' precisa ser campo date`);

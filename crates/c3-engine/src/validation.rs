@@ -105,6 +105,9 @@ pub(crate) async fn check_fields(
             }
             Ok(sv) => {
                 check_rules(f, &sv, errors);
+                if !value::in_record_options(f, &sv, record) {
+                    errors.add(&f.name, "invalid_option", "Opção inválida.");
+                }
                 if let (Some(target), SqlValue::Int(id)) = (&f.reference, &sv) {
                     let target = &ctx.engine.0.entities[target];
                     let filter = ref_filter::condition(f, record, target);

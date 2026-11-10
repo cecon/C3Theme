@@ -10,7 +10,7 @@ import { validateMenu, validateMenuChildren } from './menu';
 import { writeOperator } from './operators';
 import { writeOrder } from './orders';
 import { applyReferrals } from './referrals';
-import { applyPrices, discountPreview, labels, pricesPrefill, pricesPreview, scaleFile } from './products';
+import { applyPrices, discountPreview, labels, pricesPrefill, pricesPreview, SCALE_APP, scaleFile } from './products';
 import { actionAllowed, capabilities, orgAccess, permitted, user, userValue } from './users';
 
 export function exampleHooks(db: Db): Hooks {
@@ -30,6 +30,7 @@ export function exampleHooks(db: Db): Hooks {
       const key = `${call.entity}.${call.action}`;
       if (key === 'product.reprice') return applyPrices(db, call);
       if (key === 'product.scale_file') return scaleFile(db, call);
+      if (key === 'product.scale_app') return { link: SCALE_APP, message: 'Baixando o programa da balança.' };
       if (key === 'customer.referrals') return applyReferrals(db, call);
       if (key !== 'seller.apply_schedule') throw ApiError.internal();
       // aplica uma jornada a todos os vendedores do canal, na filial ativa (seller é por filial)

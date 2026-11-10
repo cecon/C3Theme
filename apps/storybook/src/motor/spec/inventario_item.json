@@ -1,0 +1,19 @@
+{
+  "$schema": "../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "inventario_item",
+  "label": { "singular": "Item do inventário", "plural": "Itens do inventário", "gender": "m" },
+  "fields": [
+    { "name": "inventario", "type": "reference", "entity": "inventario", "label": "Inventário", "required": true },
+    { "name": "produto", "type": "reference", "entity": "produto", "label": "Produto", "required": true },
+    { "name": "codigo", "type": "string", "label": "Código de barras", "maxLength": 14 },
+    { "name": "esperado", "type": "integer", "label": "Esperado", "readOnly": true },
+    { "name": "contado", "type": "integer", "label": "Contado", "min": 0 }
+  ],
+  "views": {
+    "list": {
+      "search": ["codigo"],
+      "presets": [{ "id": "nao-contados", "label": "Só não contados", "where": { "field": "contado", "op": "null", "value": true } }]
+    }
+  }
+}
