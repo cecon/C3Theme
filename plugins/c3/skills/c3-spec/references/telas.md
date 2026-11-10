@@ -52,7 +52,7 @@ Resumo. Quem decide são o `spec/v0/app.schema.json` e o `entity.schema.json` do
 - `presetTabs: { "all": "Todas" }` (presets como abas com contagem), `dateRange: { "field": "emissao", "label": "Emitidas" }` (período de/até), `searchHint`, `export: false` e `link: true` na coluna.
 - `rowActions: ["view", "edit", "delete"]` põe Ver/Editar/Excluir na linha; com `delete`, vem a marcação e "Excluir (n)". `label.new` ("Nova fatura") troca o texto do botão de criar e `label.gender: "f"` acerta "selecionadas"/"Excluída". `rowActionsStyle: "quiet"` deixa os ícones cinza; `open: "dialog"` abre ver e criar num diálogo sobre a lista. `filters: [{ "field": "status", "all": "Todas" }]` troca o "Todos" do filtro.
 - `refreshSeconds: 30` (3 a 3600) relê a página e os totais sozinha, só com a aba visível, sem perder seleção: fila que muda (requisições, comandas em uso). Não é tempo real.
-- `"live": true` na entidade (ou `{ "sound": { "on": ["created"] } }`) relê lista, quadro, calendário e relatório na hora, por SSE (KDS, bicos, comandas). Gravação feita fora do motor precisa de `Live::notify` no backend. O formulário aberto não relê.
+- `"live": true` na entidade (ou `{ "sound": { "on": ["created"] } }`) relê lista, quadro, calendário e relatório na hora, por SSE (KDS, bicos, comandas). Gravação feita fora do motor precisa de `Live::notify` no backend. O registro aberto relê em leitura, não em edição.
 - A lista já exporta CSV (até 10 mil linhas) e já tem o esqueleto de carregamento: não escreva isso de novo.
 - Itens de menu: `{ "entity": "product" }` (título, ícone e rota saem da entidade), `{ "entity", "preset", "title", "icon", "badge": true }`, `{ "entity", "view": "board" }`, `{ "path": "/painel" }`, `{ "href": "https://..." }` e `children` para submenu.
 

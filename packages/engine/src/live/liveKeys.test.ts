@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { EntityDef } from '../types';
-import { liveKeyOf, nextWait, soundOn } from './liveKeys';
+import { liveKeyOf, nextWait, soundOn, watchRecord } from './liveKeys';
 
 const def = (live: EntityDef['live']) => ({ name: 'ticket', live }) as EntityDef;
 
@@ -17,6 +17,21 @@ describe('liveKeyOf', () => {
     expect(match(['c3-list', 'ticket', 'singleton'])).toBe(false);
     expect(match(['c3-list', 'note', 1])).toBe(false);
     expect(match('c3-list')).toBe(false);
+  });
+});
+
+describe('watchRecord', () => {
+  it('o registro aberto em leitura entra quando o aviso é dele ou não diz qual', () => {
+    const a = watchRecord('ticket', '1');
+    const b = watchRecord('ticket', '1');
+    expect(liveKeyOf('ticket', '1')(['c3-record', 'ticket', '1'])).toBe(true);
+    expect(liveKeyOf('ticket')(['c3-record', 'ticket', '1'])).toBe(true);
+    expect(liveKeyOf('ticket', '2')(['c3-record', 'ticket', '1'])).toBe(false);
+    expect(liveKeyOf('note', '1')(['c3-record', 'ticket', '1'])).toBe(false);
+    a();
+    expect(liveKeyOf('ticket', '1')(['c3-record', 'ticket', '1'])).toBe(true);
+    b();
+    expect(liveKeyOf('ticket', '1')(['c3-record', 'ticket', '1'])).toBe(false);
   });
 });
 

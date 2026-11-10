@@ -2,12 +2,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import useSWR, { useSWRConfig } from 'swr';
 
-// material-ui
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
-
 import { evaluate } from '../conditions.mjs';
 import { FormSkeleton, notify, Panel } from '@c3theme/ui';
 import { ApiError } from '../api';
@@ -22,6 +20,7 @@ import FormSections from './FormSections';
 import { formBlocks } from '../skeletonShape';
 import LossDialog from './LossDialog';
 import useLeaveGuard from '../hooks/useLeaveGuard';
+import { useLiveRecord } from '../live/useLiveRecord';
 import useFormTelemetry from '../hooks/useFormTelemetry';
 import { changedFields } from '../telemetry';
 import { fieldTypes, fieldVisible, lostSections, sectionGates } from '../sectionVisibility';
@@ -86,6 +85,7 @@ export default function EntityForm({ entity, id, embedded }: { entity: string; i
   }, [dirty, onDirtyChange]);
   useLeaveGuard(dirty);
   const taskDone = useFormTelemetry(entity, isNew, editing);
+  useLiveRecord(def, id, !editing, !embedded); // em leitura, o aviso do `live` relê o registro (#8)
 
   const types = useMemo(() => fieldTypes(def), [def]);
   const gates = useMemo(() => sectionGates(def), [def]);
