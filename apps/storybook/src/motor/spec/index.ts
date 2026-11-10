@@ -12,6 +12,7 @@ import inventario from './inventario.json';
 import inventarioItem from './inventario_item.json';
 import loja from './loja.json';
 import mesa from './mesa.json';
+import notaItem from './nota_item.json';
 import movimento from './movimento.json';
 import produto from './produto.json';
 import tarefa from './tarefa.json';
@@ -32,5 +33,6 @@ export const ENTITIES = [
   movimento,
   inventario,
   inventarioItem,
-  configuracaoLoja
+  configuracaoLoja,
+  notaItem
 ] as unknown as EntityDef[];

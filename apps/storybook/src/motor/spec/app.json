@@ -15,7 +15,8 @@
     "movimento",
     "inventario",
     "inventario_item",
-    "configuracao_loja"
+    "configuracao_loja",
+    "nota_item"
   ],
   "layout": {
     "orientation": "vertical",

@@ -899,6 +899,19 @@ A ação pode devolver mais que o aviso: um arquivo para baixar (SPED, TXT da ba
 
 Fica para depois: ação que gera arquivo com andamento e ação longa em segundo plano.
 
+### Abrir o cadastro de outra entidade
+
+Item da nota que ainda não é produto se cadastra a partir do item, no formulário completo do produto (todas as abas e validações), e o produto criado fica vinculado ao item:
+
+```json
+{ "name": "cadastrar_produto", "label": "Cadastrar produto", "visibleWhen": { "field": "produto", "op": "null", "value": true },
+  "opensForm": { "entity": "produto", "values": { "nome": "descricao", "ncm": "ncm" }, "assignTo": "produto" } }
+```
+
+- A shell abre o formulário de criar da entidade num diálogo. `values` leva campo de destino ← campo deste registro (vazio fica de fora).
+- Ao salvar, `assignTo` (reference deste registro para a entidade aberta) recebe o id criado por `PATCH`, com as regras de alteração de sempre. Cancelar não grava nada.
+- Roda só na shell: sem `input`, `confirm`, `bulk`, `target: list`, `prefill`, `preview`, `returns`, `repeat` nem `inverse`. A permissão é a da ação, a de criar na entidade aberta e a de alterar este registro.
+
 ## Versão e Desfazer
 
 Todo registro trafegado traz `_version`, uma versão opaca de como **este usuário** o vê (hoje, um hash dos campos visíveis, com `reference` pelo id; filhas `with_parent` e títulos de `reference` não contam). Não precisa de coluna no banco do sistema e não revela campo escondido por `access`. A mesma linha tem a mesma versão na lista, na leitura e na resposta da gravação.

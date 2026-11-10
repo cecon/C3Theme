@@ -1641,6 +1641,24 @@
           "const": "file",
           "description": "A ação pode responder um arquivo (SPED, TXT da balança, CSV): o corpo é o próprio arquivo, com Content-Type e Content-Disposition, e o aviso vem no cabeçalho C3-Message (UTF-8 com %XX). A shell baixa. Sem arquivo, a resposta é o JSON de sempre. Em lote, só com bulk 'together' (um arquivo para todos)."
         },
+        "opensForm": {
+          "type": "object",
+          "required": ["entity"],
+          "additionalProperties": false,
+          "description": "Abre o formulário completo de criar de outra entidade num diálogo (todas as abas e validações do cadastro), com valores do registro, e grava o id criado no registro de origem. Ex.: cadastrar o produto a partir do item da nota. Roda só na shell: sem input, confirm, bulk, target list, prefill, preview, returns, repeat nem inverse.",
+          "properties": {
+            "entity": { "$ref": "#/$defs/identifier", "description": "Entidade do formulário aberto (em app.entities)." },
+            "values": {
+              "type": "object",
+              "description": "Campo da entidade aberta ← campo deste registro: os valores iniciais do formulário (vazios ficam de fora).",
+              "additionalProperties": { "$ref": "#/$defs/identifier" }
+            },
+            "assignTo": {
+              "$ref": "#/$defs/identifier",
+              "description": "Campo reference deste registro, para a entidade aberta, que recebe o id criado (PATCH depois de salvar)."
+            }
+          }
+        },
         "inverse": {
           "$ref": "#/$defs/identifier",
           "description": "Ação que desfaz esta (ex.: 'approve' tem inverse 'reopen'). Depois de rodar, a shell oferece Desfazer, que roda a inversa com If-Match na versão de depois da ação e C3-Undo: true; se alguém mexeu no registro no meio, o backend responde 412 e nada muda. A inversa é outra ação de registro da mesma entidade, sem input (o Desfazer é um clique). Sem inverse, a ação não tem Desfazer. Proibido em entidade com undoable false."
