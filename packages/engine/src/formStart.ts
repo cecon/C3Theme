@@ -18,7 +18,7 @@ const isRelative = (v: unknown): v is Record<string, unknown> => !!v && typeof v
 
 /**
  * Valores de `views.form.initial` (data relativa resolvida pelo relógio do navegador) e, em cada lista with_parent
- * editada no lugar com `minItems`, essa quantidade de linhas com os padrões da filha, para o usuário já digitar.
+ * editada no lugar com `minItems` (menos a checklist), essa quantidade de linhas com os padrões da filha, para o usuário já digitar.
  */
 export function formStart(def: EntityDef, childDef: (entity: string) => EntityDef | undefined, now = new Date()): WireRecord {
   const out: WireRecord = {};
@@ -30,6 +30,8 @@ export function formStart(def: EntityDef, childDef: (entity: string) => EntityDe
     const rel = s.related;
     const child = rel && childDef(rel.entity);
     if (!rel || !child || rel.save !== 'with_parent' || rel.maxItems === 1 || !rel.minItems) continue;
+    // na checklist cada linha é uma opção marcada: minItems é só validação, linha vazia ficaria invisível
+    if (rel.display === 'checklist') continue;
     if (!editsInline(child, rel.field)) continue;
     const blank = Object.fromEntries(child.fields.filter((f) => !f.readOnly && f.default !== undefined).map((f) => [f.name, f.default]));
     out[rel.entity] = Array.from({ length: rel.minItems }, () => ({ ...blank }));

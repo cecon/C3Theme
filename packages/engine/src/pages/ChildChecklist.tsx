@@ -85,6 +85,14 @@ export default function ChildChecklist({ related, title, rows, onChange, errors,
     groups.set(key, [...(groups.get(key) ?? []), o]);
   }
   const full = rows.length >= max;
+  // erros de linhas que a matriz não desenha (sem opção ou com opção fora da lista) vão para o alerta da seção
+  const drawn = new Set((data?.rows ?? []).map((o) => o.id));
+  const sectionError = [
+    errors[related.entity],
+    ...rows.flatMap((r, i) => (!data || drawn.has(refId(r[related.option!])) ? [] : Object.values(rowErrors(errors, related.entity, i))))
+  ]
+    .filter(Boolean)
+    .join(' ');
   const gestures = bindGestures([...groups.values()].flat(), (o) => byOption.has(o.id), toggle);
 
   return (
@@ -93,9 +101,9 @@ export default function ChildChecklist({ related, title, rows, onChange, errors,
       subtitle={`${rows.length} ${t('of', 'de')} ${data?.total ?? '…'} ${t('checked', 'marcadas')}`}
       flush
     >
-      {errors[related.entity] && (
+      {sectionError && (
         <Alert severity="error" sx={{ borderRadius: 0 }}>
-          {errors[related.entity]}
+          {sectionError}
         </Alert>
       )}
       {editing && capped > 0 && (

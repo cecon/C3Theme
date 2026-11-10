@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import CommandSearch from '../CommandSearch';
 import { NavContext, type NavGroup } from '../nav';
-import { matchRange } from './highlight';
+import { matchRange } from './matchText';
 import type { RecordSearch } from './types';
 
 afterEach(cleanup);
