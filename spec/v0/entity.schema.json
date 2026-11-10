@@ -104,7 +104,7 @@
       "description": "Configuração de registro único (loja, e-mail, juros e multa): um registro por escopo (o grupo, cada empresa ou cada filial, conforme 'scope'). /{entity} abre o formulário dele, sem lista; vazio, o formulário novo (com create). Criar o segundo é 409, excluir é 405 e capabilities.delete vem false. Não combina com quadro, calendário, presets, totais, ação em lote, ação de lista nem filha with_parent."
     },
     "live": {
-      "description": "Tempo real: quem está com a lista, o quadro, o calendário ou o relatório da entidade aberto fica sabendo na hora quando um registro entra, muda, sai ou passa por uma ação, e a tela relê o que mostra (GET /{entity}/_events, SSE). Para fila de cozinha (KDS), bicos da pista, requisições e comandas. true liga; o objeto liga e escolhe o som. Gravação feita fora do backend do motor só chega se o sistema avisar (Live::notify). O formulário aberto não é relido: a versão do registro (If-Match) já barra salvar por cima.",
+      "description": "Tempo real: quem está com a lista, o quadro, o calendário ou o relatório da entidade aberto fica sabendo na hora quando um registro entra, muda, sai ou passa por uma ação, e a tela relê o que mostra (GET /{entity}/_events, SSE). Para fila de cozinha (KDS), bicos da pista, requisições e comandas. true liga; o objeto liga e escolhe o som. Gravação feita fora do backend do motor só chega se o sistema avisar (Live::notify). O registro aberto em leitura é relido quando o aviso é dele; em edição, não: a versão do registro (If-Match) já barra salvar por cima.",
       "oneOf": [
         { "type": "boolean" },
         {
@@ -335,9 +335,9 @@
               "maxSize": {
                 "type": "integer",
                 "minimum": 1,
-                "maximum": 1048576,
+                "maximum": 33554432,
                 "default": 1048576,
-                "description": "Tamanho máximo do arquivo em bytes, depois de decodificado. Teto de 1 MB (em base64 o corpo cresce 4/3). Erro: 'too_large'."
+                "description": "Tamanho máximo do arquivo em bytes, depois de decodificado. Sem ele, 1 MB. Não passa do maxUploadSize do app (1 MB se o app não declara). Erro: 'too_large'."
               }
             }
           }
@@ -363,6 +363,11 @@
                 "minLength": 1,
                 "maxLength": 8,
                 "description": "Texto depois do número, no campo e na leitura (\"%\", \"kg\"). Não muda o que trafega: o percentual de 10% trafega 10."
+              },
+              "grouping": {
+                "type": "boolean",
+                "default": true,
+                "description": "Só integer: false mostra o número sem separador de milhar na lista e no detalhe (porta 8788, ano 2026, código). O campo continua numérico, com min e max."
               }
             }
           }

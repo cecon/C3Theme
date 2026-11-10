@@ -6,8 +6,16 @@ use serde_json::Value;
 
 use super::Field;
 
-/// Teto de `maxSize`, em bytes. Em base64 o corpo cresce 4/3 e precisa caber no limite de 2 MB do servidor.
+/// `maxSize` de quem não declara e teto padrão do app (`maxUploadSize`), em bytes: 1 MB.
 pub const MAX_SIZE: usize = 1 << 20;
+/// O maior `maxUploadSize` que o app pode escolher: 32 MB. Em base64 o corpo cresce 4/3 (ver [`body_limit`]).
+pub const UPLOAD_CEILING: usize = 32 << 20;
+
+/// Limite do corpo do pedido para o teto de upload: o arquivo em base64 (4/3) e folga para o resto do JSON,
+/// nunca abaixo dos 2 MB de sempre.
+pub fn body_limit(max_upload: usize) -> usize {
+    (max_upload.div_ceil(3) * 4 + (512 << 10)).max(2 << 20)
+}
 
 /// Arquivo novo (com `data`). Sem `data`, é o que veio da leitura (metadados): o gravado fica.
 pub(crate) fn is_new(v: &Value) -> bool {
@@ -64,7 +72,14 @@ fn decoded_len(s: &str) -> Option<usize> {
 
 #[cfg(test)]
 mod tests {
-    use super::decoded_len;
+    use super::{body_limit, decoded_len, MAX_SIZE, UPLOAD_CEILING};
+
+    #[test]
+    fn corpo_acompanha_o_teto() {
+        assert_eq!(body_limit(MAX_SIZE), 2 << 20);
+        assert!(body_limit(4 << 20) > (4 << 20) * 4 / 3);
+        assert!(body_limit(UPLOAD_CEILING) < 44 << 20);
+    }
 
     #[test]
     fn tamanho_do_base64() {

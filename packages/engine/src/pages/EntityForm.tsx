@@ -2,16 +2,14 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import useSWR, { useSWRConfig } from 'swr';
 
-// material-ui
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
-
 import { evaluate } from '../conditions.mjs';
 import { FormSkeleton, notify, Panel } from '@c3theme/ui';
 import { ApiError } from '../api';
-import { branchLabel, useEngine, useText } from '../context';
+import { ownerLabel, useEngine, useText } from '../context';
 import FieldInput from '../widgets/FieldInput';
 import RecordActions from '../widgets/RecordActions';
 import { initialRecord, newLabel, toInput, urlValues, withParent } from '../formValues';
@@ -22,6 +20,8 @@ import FormSections from './FormSections';
 import { formBlocks } from '../skeletonShape';
 import LossDialog from './LossDialog';
 import useLeaveGuard from '../hooks/useLeaveGuard';
+import useSaveUndo from '../hooks/useSaveUndo';
+import { useLiveRecord } from '../live/useLiveRecord';
 import useFormTelemetry from '../hooks/useFormTelemetry';
 import { changedFields } from '../telemetry';
 import { fieldTypes, fieldVisible, lostSections, sectionGates } from '../sectionVisibility';
@@ -86,6 +86,8 @@ export default function EntityForm({ entity, id, embedded }: { entity: string; i
   }, [dirty, onDirtyChange]);
   useLeaveGuard(dirty);
   const taskDone = useFormTelemetry(entity, isNew, editing);
+  const undoSave = useSaveUndo(entity);
+  useLiveRecord(def, id, !editing, !embedded); // em leitura, o aviso do `live` relê o registro (#8)
 
   const types = useMemo(() => fieldTypes(def), [def]);
   const gates = useMemo(() => sectionGates(def), [def]);
@@ -139,7 +141,7 @@ export default function EntityForm({ entity, id, embedded }: { entity: string; i
       const body = toInput(def, record, visible, (e) => entities[e]?.def);
       const saved = isNew ? await client.create(entity, body) : await client.update(entity, id!, body);
       taskDone({ fields: changedFields(initial, record) });
-      notify('Salvo.');
+      notify('Salvo.', 'success', isNew ? undefined : undoSave(loaded, saved));
       mutate((key) => Array.isArray(key) && key[0] === 'c3-list' && key[1] === entity);
       if (embedded) {
         embedded.onClose(true, saved);
@@ -201,14 +203,7 @@ export default function EntityForm({ entity, id, embedded }: { entity: string; i
   // capabilities são da filial ativa; o registro pode ser de outra filial (lista com várias)
   const canUpdate = capabilities.update && (loaded?._can?.update ?? true);
   const canDelete = capabilities.delete && (loaded?._can?.delete ?? true);
-  // dono do registro: no novo, onde vai ser gravado (a filial ativa); no existente, de quem é
-  let owner: string | undefined;
-  if (scoped && isNew) {
-    const { branch, company } = branchLabel(scoped, scoped.active);
-    owner = def.scope === 'branch' ? `Será gravado em ${branch} · ${company}` : `Será gravado em ${company}`;
-  } else if (scoped) {
-    owner = [loaded?._branch?.title, loaded?._company?.title].filter(Boolean).join(' · ');
-  }
+  const owner = scoped && ownerLabel(scoped, def.scope, isNew ? undefined : loaded);
   const DetailComponent = !editing && def.views?.detail?.component ? components[def.views.detail.component] : undefined;
   const form = def.views?.form;
   // botões no fim (da página ou do diálogo): o título da página já diz o que é

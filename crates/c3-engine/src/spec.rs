@@ -163,6 +163,8 @@ struct RawList {
 pub struct App {
     pub entities: Vec<String>,
     pub organization: Option<Organization>,
+    /// Teto do `maxSize` dos campos `file` (`maxUploadSize`, em bytes). Sem ele, 1 MB.
+    pub max_upload: usize,
     pub raw: Value,
 }
 
@@ -177,14 +179,25 @@ pub struct Organization {
 struct RawApp {
     entities: Vec<String>,
     organization: Option<Organization>,
+    #[serde(rename = "maxUploadSize")]
+    max_upload_size: Option<usize>,
 }
 
 pub fn parse_app(json: &str) -> Result<App, String> {
     let raw: Value = serde_json::from_str(json).map_err(|e| format!("app.json inválido: {e}"))?;
     let app: RawApp = serde_json::from_value(raw.clone()).map_err(|e| format!("app.json inválido: {e}"))?;
+    let max_upload = app.max_upload_size.unwrap_or(crate::field::file::MAX_SIZE);
+    if !(crate::field::file::MAX_SIZE..=crate::field::file::UPLOAD_CEILING).contains(&max_upload) {
+        return Err(format!(
+            "app.json: maxUploadSize entre {} e {} bytes (1 MB a 32 MB)",
+            crate::field::file::MAX_SIZE,
+            crate::field::file::UPLOAD_CEILING
+        ));
+    }
     Ok(App {
         entities: app.entities,
         organization: app.organization,
+        max_upload,
         raw,
     })
 }

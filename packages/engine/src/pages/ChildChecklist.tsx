@@ -21,6 +21,7 @@ import { displayValue, findOption } from '../format';
 import { defaults, rowErrors } from '../formValues';
 import FieldInput from '../widgets/FieldInput';
 import type { ChildRowsProps } from './ChildRows';
+import useChecklistGestures from './useChecklistGestures';
 import type { FieldDef, RefValue, WireRecord } from '../types';
 
 /** Acima disso a lista ganha uma busca. */
@@ -50,6 +51,7 @@ export default function ChildChecklist({ related, title, rows, onChange, errors,
   const sort = [related.groupBy, titleField].filter(Boolean).join(',');
   const { data, error } = useSWR(target ? ['c3-checklist', target.name, sort] : null, () => fetchAll(client, target!.name, { sort }));
 
+  const bindGestures = useChecklistGestures();
   const byOption = useMemo(() => new Map(rows.map((r, i) => [refId(r[related.option!]), i])), [rows, related.option]);
   if (!def || !optField || !target || !titleField) return null;
 
@@ -83,6 +85,7 @@ export default function ChildChecklist({ related, title, rows, onChange, errors,
     groups.set(key, [...(groups.get(key) ?? []), o]);
   }
   const full = rows.length >= max;
+  const gestures = bindGestures([...groups.values()].flat(), (o) => byOption.has(o.id), toggle);
 
   return (
     <Panel
@@ -163,14 +166,17 @@ export default function ChildChecklist({ related, title, rows, onChange, errors,
                   const on = i !== undefined;
                   const errs = on ? rowErrors(errors, related.entity, i) : {};
                   const msg = Object.values(errs).join(' ');
+                  const box = gestures.box(o);
                   return (
-                    <TableRow key={o.id} hover={editing} selected={Boolean(msg)}>
-                      <TableCell sx={{ pl: group ? 4 : 1 }}>
+                    <TableRow key={o.id} hover={editing} selected={Boolean(msg)} onPointerEnter={() => editing && gestures.enter(o)}>
+                      <TableCell sx={{ pl: group ? 4 : 1, userSelect: editing ? 'none' : undefined }}>
                         <Checkbox
                           size="small"
                           checked={on}
                           disabled={!editing || (!on && full)}
-                          onChange={(e) => toggle([o], e.target.checked)}
+                          onChange={(e) => box.onChange(e.target.checked)}
+                          onClick={box.onClick}
+                          onPointerDown={box.onPointerDown}
                           slotProps={{ input: { 'aria-label': optionTitle(o) } }}
                         />
                         {optionTitle(o)}

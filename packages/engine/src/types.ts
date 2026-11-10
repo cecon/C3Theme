@@ -49,6 +49,8 @@ export interface FieldDef {
   currency?: string;
   /** Só em integer e decimal: texto depois do número ("%", "kg"), no campo e na leitura. */
   unit?: string;
+  /** Só em integer: `false` mostra sem separador de milhar (porta, ano, código). */
+  grouping?: boolean;
   /** O valor como o banco grava (texto ou inteiro), sem tradução; o `label` é o que a tela mostra. */
   options?: { value: EnumValue; label: Text; color?: Tone }[];
   entity?: string;

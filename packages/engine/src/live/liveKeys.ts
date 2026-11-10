@@ -3,13 +3,34 @@
 import type { EntityDef } from '../types';
 import type { LiveChange } from './sse';
 
+/** Registros abertos em leitura, por entidade: o aviso relê esses também (#8). */
+const watched = new Map<string, Map<string, number>>();
+
+/** Marca o registro como aberto em leitura; devolve o que desmarca. Duas telas no mesmo registro contam duas vezes. */
+export function watchRecord(entity: string, id: string): () => void {
+  const ids = watched.get(entity) ?? new Map<string, number>();
+  watched.set(entity, ids);
+  ids.set(id, (ids.get(id) ?? 0) + 1);
+  return () => {
+    const n = (ids.get(id) ?? 1) - 1;
+    if (n > 0) ids.set(id, n);
+    else ids.delete(id);
+  };
+}
+
 /**
- * Chaves do SWR que um aviso da entidade relê: lista, totais, quadro, calendário, relatório e checklist. O formulário
- * aberto (`c3-record`) e a configuração de registro único ficam: reler por cima do que o usuário digita perde o que
- * ele digitou, e a versão do registro (If-Match) já barra salvar por cima de quem mudou antes.
+ * Chaves do SWR que um aviso da entidade relê: lista, totais, quadro, calendário, relatório e checklist, e o registro
+ * aberto em leitura (`watchRecord`) quando o aviso é dele ou não diz qual (`changed`). Formulário em edição e
+ * configuração de registro único ficam: reler por cima do que o usuário digita perde o que ele digitou, e a versão do
+ * registro (If-Match) já barra salvar por cima de quem mudou antes.
  */
-export const liveKeyOf = (entity: string) => (key: unknown) =>
-  Array.isArray(key) && (key[0] === 'c3-list' || key[0] === 'c3-checklist') && key[1] === entity && key[2] !== 'singleton';
+export const liveKeyOf =
+  (entity: string, id: string | null = null) =>
+  (key: unknown) => {
+    if (!Array.isArray(key) || key[1] !== entity) return false;
+    if (key[0] === 'c3-record') return (id === null || key[2] === id) && Boolean(watched.get(entity)?.has(key[2] as string));
+    return (key[0] === 'c3-list' || key[0] === 'c3-checklist') && key[2] !== 'singleton';
+  };
 
 /** Avisos que tocam o som (`live.sound.on`). */
 export function soundOn(def: EntityDef): LiveChange[] {

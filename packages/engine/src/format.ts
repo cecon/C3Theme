@@ -50,7 +50,7 @@ export function displayValue(field: FieldDef, v: unknown, locale: string, option
     case 'decimal':
       return withUnit(formatAmount(String(v), field, locale), field.unit);
     case 'integer':
-      return withUnit(Number(v).toLocaleString(locale), field.unit);
+      return withUnit(Number(v).toLocaleString(locale, { useGrouping: field.grouping !== false }), field.unit);
     case 'date':
       return formatDate(String(v), locale);
     case 'datetime':

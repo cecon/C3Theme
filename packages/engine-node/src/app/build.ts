@@ -45,7 +45,7 @@ export async function buildEngine(o: EngineOptions): Promise<Engine> {
     const app = parseApp(o.app);
     const entities = loadEntities(app, o.entities);
     checkOrganization(app, entities);
-    checkReferences(entities);
+    checkReferences(entities, app.maxUpload);
     const children = parseChildren(entities);
     checkLookups(entities);
     const rowAccess = new Map([...entities.values()].map((e) => [e.name, parseRowRules(e)]));
@@ -90,10 +90,12 @@ function checkOrganization(app: App, entities: Map<string, Entity>): void {
   }
 }
 
-function checkReferences(entities: Map<string, Entity>): void {
+function checkReferences(entities: Map<string, Entity>, maxUpload: number): void {
   for (const entity of entities.values()) {
     const all = [...entity.fields, ...entity.actions.flatMap((a) => [...a.input.fields, ...a.grids.flatMap((g) => g.row.fields)])];
     for (const f of all) {
+      if (f.type === 'file' && f.maxSize > maxUpload)
+        throw new Error(`${entity.name}.${f.name}: maxSize ${f.maxSize} acima do maxUploadSize do app (${maxUpload} bytes)`);
       if (f.reference === undefined) continue;
       const target = entities.get(f.reference);
       if (!target) throw new Error(`${entity.name}.${f.name} referencia entidade desconhecida`);

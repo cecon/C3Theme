@@ -42,11 +42,14 @@ function fileRules(f, where, errors) {
 }
 
 /** Confere as regras próprias de um campo; `where` é "arquivo: 'campo'". */
-export function checkFieldRules(f, where, errors) {
+export function checkFieldRules(f, where, errors, maxUpload = 1 << 20) {
   writeOnlyRules(f, where, errors);
   formatRules(f, where, errors);
   flagsRules(f, where, errors);
   fileRules(f, where, errors);
+  // o teto é do app (maxUploadSize, 1 MB sem ele)
+  if (f.type === 'file' && f.maxSize > maxUpload)
+    errors.push(`${where}: maxSize ${f.maxSize} acima do maxUploadSize do app (${maxUpload})`);
 }
 
 /** Roda spec/v0/conformance/documents.json contra o validador da shell; devolve quantos casos rodaram. */

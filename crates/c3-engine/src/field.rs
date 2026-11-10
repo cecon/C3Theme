@@ -163,7 +163,8 @@ fn check_flags(owner: &str, f: &RawField) -> Result<(), String> {
     Ok(())
 }
 
-/// `accept` e `maxSize` só em `file`; extensão começa com ponto, e o tamanho cabe no teto do motor.
+/// `accept` e `maxSize` só em `file`; extensão começa com ponto, e o tamanho cabe no teto do motor (o do app,
+/// `maxUploadSize`, é conferido no `build`).
 fn check_file(owner: &str, f: &RawField) -> Result<(), String> {
     if f.ty != FieldType::File {
         return match f.accept.is_empty() && f.max_size.is_none() {
@@ -174,8 +175,8 @@ fn check_file(owner: &str, f: &RawField) -> Result<(), String> {
     if f.accept.iter().any(|e| !e.starts_with('.') || e.len() < 2) {
         return Err(format!("{owner}.{}: accept lista extensões com ponto (\".pfx\")", f.name));
     }
-    if f.max_size.is_some_and(|n| n == 0 || n > file::MAX_SIZE) {
-        return Err(format!("{owner}.{}: maxSize entre 1 e {} bytes", f.name, file::MAX_SIZE));
+    if f.max_size.is_some_and(|n| n == 0 || n > file::UPLOAD_CEILING) {
+        return Err(format!("{owner}.{}: maxSize entre 1 e {} bytes", f.name, file::UPLOAD_CEILING));
     }
     if f.unique || f.default.is_some() || f.write_only || f.format.is_some() {
         return Err(format!(

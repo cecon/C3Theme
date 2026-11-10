@@ -4,6 +4,7 @@
 import { type Action, checkInverses, parseAction } from './action-spec';
 import { parseCondition } from './condition';
 import { type Field, type FieldConditions, ID_FIELD, parseFields } from './field';
+import { MAX_FILE_SIZE, UPLOAD_CEILING } from './file';
 import { type Source, parseSource } from './source-spec';
 import { type Rec, type Scope, isIdent, isObject, isTextual } from './types';
 
@@ -29,6 +30,8 @@ export interface Entity {
 export interface App {
   entities: string[];
   organization?: { company: string; branch: string };
+  /** Teto do `maxSize` dos campos `file` (`maxUploadSize`, em bytes). Sem ele, 1 MB. */
+  maxUpload: number;
   raw: Rec;
 }
 
@@ -76,7 +79,10 @@ export function parseApp(json: string | Rec): App {
       throw new Error('app.json inválido: organization precisa de company e branch');
     organization = { company: o.company, branch: o.branch };
   }
-  return { entities: raw.entities as string[], organization, raw };
+  const maxUpload = raw.maxUploadSize ?? MAX_FILE_SIZE;
+  if (typeof maxUpload !== 'number' || !Number.isInteger(maxUpload) || maxUpload < MAX_FILE_SIZE || maxUpload > UPLOAD_CEILING)
+    throw new Error(`app.json: maxUploadSize entre ${MAX_FILE_SIZE} e ${UPLOAD_CEILING} bytes (1 MB a 32 MB)`);
+  return { entities: raw.entities as string[], organization, maxUpload, raw };
 }
 
 /** Condições ainda em JSON: as dos campos e o visibleWhen de cada ação (na ordem de `actions`). */

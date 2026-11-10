@@ -14,11 +14,12 @@ const DEBOUNCE_MS = 300;
  * Tempo real da entidade (`live`): enquanto a tela está aberta, assina GET /{entity}/_events e relê lista, totais,
  * quadro ou calendário a cada aviso; toca o som de `live.sound.on`. Caiu a conexão: reconecta (1 s, dobrando até
  * 30 s) e relê ao voltar, porque pode ter perdido avisos. 401, 403 e 404 param de tentar. Trocar de filial reassina.
+ * `enabled` falso não assina (o formulário dentro de uma lista usa a assinatura dela).
  */
-export function useLive(def: EntityDef) {
+export function useLive(def: EntityDef, enabled = true) {
   const { client, org } = useEngine();
   const { mutate } = useSWRConfig();
-  const live = def.live && !def.singleton ? JSON.stringify(def.live) : '';
+  const live = enabled && def.live && !def.singleton ? JSON.stringify(def.live) : '';
   const entity = def.name;
   const sound = soundOn(def).join(',');
 
@@ -27,9 +28,16 @@ export function useLive(def: EntityDef) {
     const ctrl = new AbortController();
     const on = sound.split(',');
     let timer: ReturnType<typeof setTimeout> | undefined;
-    const refresh = () => {
+    // avisos juntos de registros diferentes viram "relê todos os abertos"
+    let pending: string | null | undefined;
+    const refresh = (id: string | null = null) => {
       clearTimeout(timer);
-      timer = setTimeout(() => mutate(liveKeyOf(entity)), DEBOUNCE_MS);
+      pending = pending === undefined || pending === id ? id : null;
+      timer = setTimeout(() => {
+        const only = pending ?? null;
+        pending = undefined;
+        mutate(liveKeyOf(entity, only));
+      }, DEBOUNCE_MS);
     };
     (async () => {
       let wait = 1000;
@@ -47,7 +55,7 @@ export function useLive(def: EntityDef) {
               }
               if (m.type !== 'change') return;
               if (on.includes(m.change)) beep();
-              refresh();
+              refresh(m.id);
             },
             ctrl.signal
           );
