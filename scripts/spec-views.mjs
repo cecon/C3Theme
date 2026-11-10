@@ -1,5 +1,6 @@
 // Regras do menu e das views de quadro e calendário que o JSON Schema não expressa sozinho.
 
+import { checkEditColumn } from './spec-fields.mjs';
 import { checkSource } from './spec-source.mjs';
 
 const DATES = new Set(['date', 'datetime']);
@@ -73,6 +74,7 @@ export function checkBoardCalendar(entity, fields, file, errors) {
 export function checkListRules(entity, fields, entities, file, errors, wire) {
   checkTotals(entity, fields, file, errors);
   checkOpening(entity, fields, file, errors);
+  checkRelatedEdit(entity, entities, file, errors);
   checkSingleton(entity, entities, file, errors);
   checkSource(entity, entities, file, errors, wire);
   checkCards(entity, fields, file, errors);
@@ -154,4 +156,21 @@ function checkOpening(entity, fields, file, errors) {
     errors.push(`${where}: '${o.dateField}' precisa ser campo date ou datetime`);
   for (const g of o.groupBy ?? []) if (!fields.has(g)) errors.push(`${where}: groupBy cita campo inexistente '${g}'`);
   if (entity.singleton) errors.push(`${where}: singleton não tem lista`);
+}
+
+/** `related` com colunas editáveis, busca e presets: campos que a filha grava, e a busca e os presets que ela tem. */
+function checkRelatedEdit(entity, entities, file, errors) {
+  for (const s of entity.views?.form?.sections ?? []) {
+    const r = s.related;
+    const child = r && entities.get(r.entity)?.entity;
+    if (!child) continue;
+    const where = `${file} related '${r.entity}'`;
+    for (const name of r.editable ?? []) {
+      const f = child.fields.find((x) => x.name === name);
+      if (!f || name === r.field) errors.push(`${where}.editable: '${name}' não é campo editável da filha`);
+      else checkEditColumn(f, child, `${where}.editable '${name}'`, errors);
+    }
+    if (r.search && !child.views?.list?.search?.length) errors.push(`${where}.search: a filha não tem views.list.search`);
+    if (r.presets && !child.views?.list?.presets?.length) errors.push(`${where}.presets: a filha não tem views.list.presets`);
+  }
 }

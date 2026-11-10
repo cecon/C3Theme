@@ -79,6 +79,16 @@ export const SEED: MemorySeed = {
     cliente: clientes,
     produto: produtos,
     movimento: movimentos,
+    inventario: [{ id: '1', descricao: 'Inventário de março', data: '2026-03-31' }],
+    // o café e o feijão já foram contados; o resto falta
+    inventario_item: produtos.map((p, i) => ({
+      id: String(i + 1),
+      inventario: '1',
+      produto: p.id,
+      codigo: `789100000${i + 1}`,
+      esperado: p.estoque,
+      contado: i % 2 ? p.estoque : null
+    })),
     fatura: faturas,
     tarefa: tarefas,
     evento: eventos,

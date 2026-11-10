@@ -13,7 +13,8 @@ export function EditCell({
   row,
   mode,
   edit,
-  readView
+  readView,
+  onEnter
 }: {
   entity: string;
   field: FieldDef;
@@ -21,6 +22,8 @@ export function EditCell({
   mode: 'instant' | 'batch';
   edit: InlineEdit;
   readView: React.ReactNode;
+  /** Enter no campo: grava (no `instant`) e chama isto, para descer de linha. */
+  onEnter?: () => void;
 }) {
   if (edit.locked(row, field)) return <>{readView}</>;
   return (
@@ -30,7 +33,13 @@ export function EditCell({
       sx={{ '& .MuiInputLabel-root, & .MuiFormControlLabel-label': visuallyHidden, '& legend': { display: 'none' } }}
       onClick={(e) => e.stopPropagation()}
       onBlur={() => edit.commit(row, field)}
-      onKeyDown={(e) => e.key === 'Enter' && edit.commit(row, field)}
+      onKeyDown={(e) => {
+        if (e.key !== 'Enter') return;
+        // dentro do formulário do pai, o Enter não envia nada
+        e.preventDefault();
+        edit.commit(row, field);
+        onEnter?.();
+      }}
       data-edit-cell={`${row.id}:${field.name}`}
     >
       <FieldInput

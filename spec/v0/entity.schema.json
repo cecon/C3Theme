@@ -994,6 +994,14 @@
                         "display": { "const": "table" }
                       }
                     },
+                    "else": {
+                      "properties": {
+                        "editable": false,
+                        "editMode": false,
+                        "search": false,
+                        "presets": false
+                      }
+                    },
                     "properties": {
                       "entity": {
                         "$ref": "#/$defs/identifier",
@@ -1026,6 +1034,27 @@
                             "currency": { "type": "string", "pattern": "^[A-Z]{3}$" }
                           }
                         }
+                      },
+                      "editable": {
+                        "type": "array",
+                        "minItems": 1,
+                        "items": { "$ref": "#/$defs/identifier" },
+                        "description": "Só em separately: colunas que se digitam na própria linha (a contagem do inventário). Cada mudança grava pelo PATCH da filha, com as regras dela (permissão, readOnlyWhen, validação, _version); Enter desce para a mesma coluna da linha de baixo. Não vale em campo readOnly, createOnly, writeOnly, text ou file."
+                      },
+                      "editMode": {
+                        "enum": ["instant", "batch"],
+                        "default": "instant",
+                        "description": "'instant': grava ao sair do campo (switch e select, ao mudar). 'batch': junta as linhas e grava no 'Salvar alterações' da seção, um PATCH por linha."
+                      },
+                      "search": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Só em separately: a busca da filha (views.list.search) no topo da seção."
+                      },
+                      "presets": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Só em separately: os filtros nomeados da filha (views.list.presets) como abas da seção ('só não contados', 'só com diferença')."
                       },
                       "sort": {
                         "type": "string",

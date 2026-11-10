@@ -43,5 +43,11 @@ export const SaldoAnterior: Story = {
   parameters: { route: '/?f.produto=1&f.data.de=2026-03-01' }
 };
 
+/**
+ * Seção `related` com `editable`, `search` e `presets`: a contagem do inventário na própria linha. Digite e tecle
+ * Enter: grava e desce para o item de baixo. A aba "Só não contados" e a busca vêm da lista da filha.
+ */
+export const Inventario: Story = { name: 'Inventário, contando na seção', args: { entity: 'inventario', screen: 'form', id: '1' } };
+
 /** O mesmo registro aberto: o formulário vem dos campos, sem `views.form`. */
 export const Registro: Story = { name: 'Registro aberto', args: { screen: 'form', id: '3' } };

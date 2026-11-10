@@ -55,12 +55,12 @@ function wrap(client: Partial<C3Client>, children: ReactNode) {
 
 describe('useListOpening', () => {
   it('sum pelo _aggregate; last pela última linha antes da data', async () => {
-    const aggregate = vi.fn(async () => [{ key: null, value: 42 }]);
+    const aggregate = vi.fn(async (_e: string, _p: unknown) => [{ key: null, value: 42 }]);
     wrap({ aggregate } as never, <Probe o={opening} where={{ and: [prod, from] }} />);
     await waitFor(() => expect(screen.getByTestId('got').textContent).toBe('42@2026-03-01'));
     expect(aggregate.mock.calls[0][1]).toMatchObject({ measure: ['sum:saldo'] });
     cleanup();
-    const list = vi.fn(async () => ({ data: [{ id: '9', saldo: 30 }], meta: { total: 1 } }));
+    const list = vi.fn(async (_e: string, _p: unknown) => ({ data: [{ id: '9', saldo: 30 }], meta: { total: 1 } }));
     wrap({ list } as never, <Probe o={{ ...opening, measure: 'last' }} where={{ and: [prod, from] }} />);
     await waitFor(() => expect(screen.getByTestId('got').textContent).toBe('30@2026-03-01'));
     expect(list.mock.calls[0][1]).toMatchObject({ sort: '-data,-id' });

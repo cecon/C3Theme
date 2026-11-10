@@ -293,6 +293,8 @@ Fora do painel, telas que não são CRUD vão em `pages` com `component` (`{ "pa
 
 **Mestre-detalhe (1:N).** Uma seção do formulário pode listar os filhos do registro: `{ "title": "Clientes", "related": { "entity": "customer", "field": "company_id" } }` mostra, na tela da empresa, os clientes cujo `company_id` aponta para ela. A seção só aparece em registro já salvo. Adicionar e editar abrem o formulário da entidade filha num diálogo, com `field` preenchido e travado. As permissões são as da filha. Os filhos passam pelo CRUD normal da filha, sem endpoint novo: cada filho grava sozinho.
 
+**Digitar na seção e filtrar os filhos** (só em `separately`): `"editable": ["counted"]` faz a coluna virar campo na própria linha (a contagem do inventário inteiro numa tabela). Cada mudança grava pelo `PATCH` da filha, com as regras dela (permissão, `readOnlyWhen`, validação, `If-Match` com a `_version`), ao sair do campo ou no Enter, e o Enter desce para a mesma coluna da linha de baixo, sem enviar o formulário do pai; o erro aparece na célula. `"editMode": "batch"` junta as linhas e grava no "Salvar alterações" da seção, um `PATCH` por linha. `"search": true` põe no topo da seção a busca da filha (`views.list.search`), e `"presets": true` os filtros nomeados dela como abas ("Todos", "Só não contados", "Só com diferença"), começando pelo `default`. O `spec:check` confere que a filha tem a busca e os presets, e que a coluna é um campo que ela grava (não `readOnly`, `createOnly`, `writeOnly`, `text` nem `file`).
+
 **Filhos gravados junto com o pai.** Quando o filho só existe dentro do pai (itens do pedido, endereços da pessoa, códigos de barras do produto, faixas da tabela de preço), a seção ganha `"save": "with_parent"`:
 
 ```json

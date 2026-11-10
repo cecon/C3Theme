@@ -1,0 +1,29 @@
+{
+  "$schema": "../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "inventario",
+  "label": { "singular": "Inventário", "plural": "Inventários", "gender": "m" },
+  "titleField": "descricao",
+  "fields": [
+    { "name": "descricao", "type": "string", "label": "Descrição", "required": true, "maxLength": 80 },
+    { "name": "data", "type": "date", "label": "Data", "required": true }
+  ],
+  "views": {
+    "form": {
+      "sections": [
+        { "title": "Inventário", "rows": [["descricao", "data"]] },
+        {
+          "title": "Contagem",
+          "related": {
+            "entity": "inventario_item",
+            "field": "inventario",
+            "columns": ["produto", "codigo", "esperado", "contado"],
+            "editable": ["contado"],
+            "search": true,
+            "presets": true
+          }
+        }
+      ]
+    }
+  }
+}
