@@ -6,6 +6,12 @@ import { gridBody, mergeGridFill, newRow, setCell, type GridRow } from './gridRo
 import { suggestions } from './suggest';
 import type { ActionDef, FieldDef, FieldType, WireRecord } from '../types';
 
+/** Reference cujo `filter` lê `name` (`{"$field": name}`): a escolha dele deixa de valer quando `name` muda. */
+const cleared = (list: FieldDef[], name: string) => {
+  const needle = JSON.stringify({ $field: name });
+  return Object.fromEntries(list.filter((f) => f.filter && JSON.stringify(f.filter).includes(needle)).map((f) => [f.name, null]));
+};
+
 /**
  * Estado do input de uma ação no diálogo (de registro, em lote ou da lista): valores, grades, condições dos campos,
  * erros locais e o corpo que vai ao servidor.
@@ -44,7 +50,7 @@ export default function useActionInput(action: ActionDef | null) {
     setLocalErrors((e) => Object.fromEntries(Object.entries(e).filter(([k]) => k !== prefix && !k.startsWith(`${prefix}.`))));
 
   const change = (name: string, v: unknown) => {
-    setInput((r) => ({ ...r, [name]: v }));
+    setInput((r) => ({ ...r, [name]: v, ...cleared(fields, name) }));
     drop(name);
   };
 
@@ -52,7 +58,8 @@ export default function useActionInput(action: ActionDef | null) {
 
   const changeCell = (grid: string, i: number, name: string, v: unknown) => {
     setTouched(true);
-    setInput((r) => ({ ...r, [grid]: setCell((r[grid] as GridRow[] | undefined) ?? [], i, name, v) }));
+    const cols = grids.find((g) => g.name === grid)?.fields ?? [];
+    setInput((r) => ({ ...r, [grid]: setCell((r[grid] as GridRow[] | undefined) ?? [], i, name, v, cleared(cols, name)) }));
     drop(`${grid}.${i}.${name}`);
   };
 

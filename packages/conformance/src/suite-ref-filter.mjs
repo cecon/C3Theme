@@ -49,4 +49,19 @@ export function refFilterTests({ test, call, as, tag, nextNumber }) {
     assert.equal(res.status, 200, JSON.stringify(res.body));
     assert.ok(!res.body.data.some((c) => c.id === ana.id));
   });
+
+  test('filtro', 'input da ação: filter no reference e $field da mesma linha da grade', async () => {
+    const [a, b] = [await company('Input A'), await company('Input B')];
+    const ana = await customer({ name: 'Ana input', company_id: a.id });
+    const bia = await customer({ name: 'Bia input', company_id: b.id });
+    const lost = await customer({ name: 'Perdida input', status: 'churned', churn_reason: 'preço' });
+    const run = (input) => call('POST', '/customer/_actions/referrals', { input });
+    const refused = await run({ referrer: lost.id, links: [{ company: a.id, customer: ana.id }] });
+    assert.deepEqual(fieldCodes(refused, 'referrer'), ['not_allowed'], 'filtro fixo no campo do input');
+    const cross = await run({ referrer: bia.id, links: [{ company: a.id, customer: bia.id }] });
+    assert.deepEqual(fieldCodes(cross, 'links.0.customer'), ['not_allowed'], '$field lê a empresa da mesma linha');
+    const ok = await run({ referrer: bia.id, links: [{ company: a.id, customer: ana.id }] });
+    assert.equal(ok.status, 200, JSON.stringify(ok.body));
+    assert.equal((await call('GET', `/customer/${ana.id}`)).body.data.referred_by.id, bia.id);
+  });
 }

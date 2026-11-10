@@ -511,7 +511,7 @@ O valor de uma folha pode ser `{ "$field": "nome" }`: o valor desse campo **no f
 
 - Variável vazia (cliente ainda não escolhido, `id` no registro novo): a folha não restringe nada. Por isso a variável não entra em `not` (use `ne`) e só vale com `eq`, `ne`, `lt`, `lte`, `gt` e `gte`, e o campo dela precisa ser do mesmo tipo do filtrado (reference para a mesma entidade). O `spec:check` e o boot do c3-engine conferem.
 - A shell resolve as variáveis com o formulário atual e manda o filtro no `where` da listagem; trocar o cliente refaz a lista. Uma opção já escolhida que deixou de valer só é recusada ao salvar.
-- Não existe em input de ação (por enquanto).
+- **No input de ação** vale igual, no campo simples e na coluna de uma grade: `{"$field": ...}` lê o próprio input, e na grade a **mesma linha** (a variação só do produto da linha: `{ "field": "produto_id", "op": "eq", "value": { "$field": "produto_id" } }`). Quando o campo lido muda, a shell limpa a escolha que dependia dele (no input, a do campo; na grade, a da mesma linha). O backend confere ao rodar (422 `not_allowed` em `campo` ou `grade.N.coluna`). `readOnly` no input só trava a tela, como na grade: o valor (do `prefill`, por exemplo) vai ao sistema e é validado.
 
 ## Listagem: paginação, ordenação, busca, filtros
 

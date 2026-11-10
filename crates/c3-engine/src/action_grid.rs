@@ -71,9 +71,9 @@ pub(crate) fn split_spec(label: &str, raw: Vec<Value>, ident: &dyn Fn(&str) -> b
         if conditions.iter().any(|c| c.1.is_some() || c.2.is_some() || c.3.is_some()) {
             return Err(format!("{at}: campo da linha não tem visibleWhen, requiredWhen nem readOnlyWhen"));
         }
-        if let Some(c) = sub.iter().find(|c| c.only_for_records() || c.ty == crate::FieldType::File) {
+        if let Some(c) = sub.iter().find(|c| c.not_for_input() || c.ty == crate::FieldType::File) {
             return Err(format!(
-                "{at}.{}: campo da linha não pode ser file, createOnly nem ter filter ou access",
+                "{at}.{}: campo da linha não pode ser file, createOnly nem ter access",
                 c.name
             ));
         }

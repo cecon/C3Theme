@@ -65,6 +65,12 @@ export const ID_FIELD: Field = {
 /** O que só vale num registro gravado, nunca no input de uma ação. */
 export const onlyForRecords = (f: Field): boolean => f.readOnly || f.createOnly || f.refFilter !== undefined || !isFreeAccess(f.access);
 
+/**
+ * O que não vale em campo do input de ação nem em coluna de grade: só faz sentido num registro gravado. (`readOnly`
+ * ali só trava a tela e `filter` restringe as opções, com `$field` lendo o próprio input ou linha.)
+ */
+export const notForInput = (f: Field): boolean => f.createOnly || !isFreeAccess(f.access);
+
 const bool = (raw: Rec, k: string): boolean => raw[k] === true;
 const num = (raw: Rec, k: string): number | undefined => (typeof raw[k] === 'number' ? (raw[k] as number) : undefined);
 const str = (raw: Rec, k: string): string | undefined => (typeof raw[k] === 'string' ? (raw[k] as string) : undefined);

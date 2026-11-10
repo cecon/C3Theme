@@ -226,13 +226,13 @@ impl EngineBuilder {
         }
         org::check_spec(&app, &entities).map_err(err)?;
         for entity in entities.values() {
-            let rows = entity.actions.iter().flat_map(|a| a.grids.iter().flat_map(|r| &r.row.fields));
-            for f in entity
-                .fields
-                .iter()
-                .chain(entity.actions.iter().flat_map(|a| &a.input.fields))
-                .chain(rows)
-            {
+            // cada campo com o "dono" das variáveis do filtro: a entidade, o input da ação ou a linha da grade
+            fn own(e: &spec::Entity) -> impl Iterator<Item = (&spec::Entity, &spec::Field)> + '_ {
+                e.fields.iter().map(move |f| (e, f))
+            }
+            let inputs = entity.actions.iter().flat_map(|a| own(&a.input));
+            let rows = entity.actions.iter().flat_map(|a| a.grids.iter().flat_map(|r| own(&r.row)));
+            for (source, f) in own(entity).chain(inputs).chain(rows) {
                 if f.ty == FieldType::File && f.max_size > app.max_upload {
                     return Err(err(format!(
                         "{}.{}: maxSize {} acima do maxUploadSize do app ({} bytes)",
@@ -243,7 +243,7 @@ impl EngineBuilder {
                     let target = entities
                         .get(target)
                         .ok_or_else(|| err(format!("{}.{} referencia entidade desconhecida", entity.name, f.name)))?;
-                    ref_filter::check(entity, f, target).map_err(err)?;
+                    ref_filter::check(source, f, target).map_err(err)?;
                     if !target.title_field().is_some_and(|t| t.ty.is_textual()) {
                         return Err(err(format!(
                             "{} precisa de um titleField de texto para ser referenciada",

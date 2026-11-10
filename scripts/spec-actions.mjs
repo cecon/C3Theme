@@ -1,7 +1,7 @@
 // Ações: o input (campos, grade e disposição) e o Desfazer (`inverse`, `undoable: false`). As mesmas recusas do boot
 // do c3-engine.
 
-import { checkFieldRules } from './spec-fields.mjs';
+import { checkFieldRules, checkRefFilter } from './spec-fields.mjs';
 
 export function checkInverse(entity, action, where, errors) {
   if (action.inverse === undefined) return;
@@ -28,24 +28,34 @@ export function checkSummary(action, fields, where, errors) {
 }
 
 /** Campos do input: as regras dos campos da entidade, sem o que só vale para registro gravado. */
-function checkInputField(f, where, ctx, errors) {
+function checkInputField(f, where, ctx, errors, source) {
   const { entities, WIRE } = ctx;
   checkFieldRules(f, `${where}: '${f.name}'`, errors);
   if (f.type === 'reference' && !entities.has(f.entity))
     errors.push(`${where}: '${f.name}' referencia entidade desconhecida '${f.entity}'`);
+  // `{"$field": nome}` no filtro lê o próprio input (ou a mesma linha da grade)
+  else if (f.filter)
+    checkRefFilter(
+      f,
+      { name: 'input', fields: source },
+      entities.get(f.entity).entity,
+      ctx.checkCondition,
+      `${where} ${f.name}.filter`,
+      errors
+    );
   if (f.default !== undefined && !WIRE[f.type](f.default)) errors.push(`${where}: default de '${f.name}' fora do formato de ${f.type}`);
 }
 
-/** Grade (`type: grid`): colunas sem file, createOnly, filter, access nem condições; readOnly só trava a célula. */
+/** Grade (`type: grid`): colunas sem file, createOnly, access nem condições; readOnly só trava a célula. */
 function checkGrid(g, where, ctx, errors) {
   const at = `${where} grade '${g.name}'`;
   const names = new Set(g.fields.map((c) => c.name));
   if (names.size !== g.fields.length) errors.push(`${at}: colunas repetidas`);
   if ((g.minItems ?? 0) > (g.maxItems ?? 200)) errors.push(`${at}: minItems maior que maxItems`);
   for (const c of g.fields) {
-    checkInputField(c, at, ctx, errors);
-    if (c.type === 'file' || c.createOnly || c.filter || c.access || c.visibleWhen || c.requiredWhen || c.readOnlyWhen)
-      errors.push(`${at}: '${c.name}' não pode ser file nem ter createOnly, filter, access ou condições`);
+    checkInputField(c, at, ctx, errors, g.fields);
+    if (c.type === 'file' || c.createOnly || c.access || c.visibleWhen || c.requiredWhen || c.readOnlyWhen)
+      errors.push(`${at}: '${c.name}' não pode ser file nem ter createOnly, access ou condições`);
   }
 }
 
@@ -59,9 +69,9 @@ export function checkActionInput(input, where, ctx, errors) {
       checkGrid(f, where, ctx, errors);
       continue;
     }
-    checkInputField(f, where, ctx, errors);
-    if (f.readOnly || f.createOnly || f.readOnlyWhen || f.access)
-      errors.push(`${where}: '${f.name}' do input não pode ser readOnly, createOnly, readOnlyWhen nem access`);
+    checkInputField(f, where, ctx, errors, [...plain.values()]);
+    if (f.createOnly || f.readOnlyWhen || f.access)
+      errors.push(`${where}: '${f.name}' do input não pode ser createOnly, readOnlyWhen nem access`);
     if (f.visibleWhen) ctx.checkCondition(f.visibleWhen, plain, `${where} ${f.name}.visibleWhen`);
     if (f.requiredWhen) ctx.checkCondition(f.requiredWhen, plain, `${where} ${f.name}.requiredWhen`);
   }

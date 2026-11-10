@@ -34,9 +34,9 @@ export function gridBody(grid: GridFieldDef, rows: GridRow[] | undefined): { row
 export const newRow = (grid: GridFieldDef): GridRow =>
   Object.fromEntries(grid.fields.filter((f) => f.default !== undefined).map((f) => [f.name, f.default]));
 
-/** Troca uma célula sem mexer nas outras linhas. */
-export const setCell = (rows: GridRow[], i: number, name: string, v: unknown): GridRow[] =>
-  rows.map((r, j) => (j === i ? { ...r, [name]: v } : r));
+/** Troca uma célula sem mexer nas outras linhas (`also`: outras células da mesma linha, como a escolha dependente). */
+export const setCell = (rows: GridRow[], i: number, name: string, v: unknown, also: GridRow = {}): GridRow[] =>
+  rows.map((r, j) => (j === i ? { ...r, [name]: v, ...also } : r));
 
 /** Chave da linha para casar a grade nova com a da tela: as colunas `readOnly` (o produto, a forma de pagamento). */
 const rowKey = (grid: GridFieldDef, row: GridRow) => {
