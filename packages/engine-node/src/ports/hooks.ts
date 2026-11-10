@@ -154,7 +154,10 @@ export interface Preview {
 export interface LookupCall {
   entity: string;
   lookup: string;
+  /** Valor da origem, conferido. Origem `reference`: o id, de um registro no escopo da filial ativa. */
   value: string;
+  /** Os campos de `with` como estão no formulário, conferidos como na gravação; vazio chega `null`. */
+  with: Rec;
   ctx: RequestContext;
 }
 

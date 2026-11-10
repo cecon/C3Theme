@@ -32,7 +32,7 @@ import PresetTabs from './list/PresetTabs';
 import ParamsBar from './list/ParamsBar';
 import { useExportCsv } from './list/useExportCsv';
 import { useListQuery } from './list/useListQuery';
-import { refreshMs, totalFields, useListTotals } from './list/useListTotals';
+import { refreshMs, useListTotals } from './list/useListTotals';
 import { useListOpening } from './list/useListOpening';
 import { summaryFields } from './list/selectionSum';
 import { ViewSwitcher } from './views/ViewBar';
@@ -122,10 +122,7 @@ export default function EntityList({ entity, view = 'list' }: { entity: string; 
   ];
   const totals = useListTotals(
     entity,
-    totalFields(
-      def,
-      columns.map((c) => c.field)
-    ),
+    columns.map((c) => c.field),
     query
   );
   const openingValue = useListOpening(entity, list.opening, query);

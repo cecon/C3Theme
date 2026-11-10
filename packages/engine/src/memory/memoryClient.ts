@@ -32,6 +32,8 @@ export interface MemorySeed {
    * Na ação `steps`, devolva `progress` e receba o `cursor` da etapa anterior.
    */
   listActions?: Record<string, Record<string, (input: WireRecord, cursor: unknown) => ActionResult | Promise<ActionResult>>>;
+  /** Consultas (`lookups`), no lugar do backend: `lookups.orcamento.media = (valor, with) => ({ mes_01: '150.00' })`. */
+  lookups?: Record<string, Record<string, (value: string, withValues: WireRecord) => WireRecord>>;
   /** Avisos do sino (`header.notifications`). Sem eles, o sino aparece vazio. */
   notifications?: C3Notification[];
   /**
@@ -163,7 +165,11 @@ export function createMemoryClient(seed: MemorySeed): C3Client {
       }).then((r) => r),
     preview: () => wait(() => unsupported('A prévia')),
     prefill: () => wait(() => ({})),
-    lookup: () => wait(() => unsupported('A consulta')),
+    lookup: (entity, name, value, withValues = {}) =>
+      wait(() => {
+        const handler = seed.lookups?.[entity]?.[name];
+        return handler ? handler(value, withValues) : unsupported('A consulta');
+      }),
     file: () => wait(() => unsupported('O arquivo')),
     notifications: (limit) => wait(() => bell.list(limit)),
     readNotifications: (ids) => wait(() => bell.read(ids)),

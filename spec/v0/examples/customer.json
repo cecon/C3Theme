@@ -116,6 +116,17 @@
       "readOnly": true
     }
   ],
+  "lookups": [
+    {
+      "name": "suggest_credit",
+      "field": "company_id",
+      "with": ["name", "vip"],
+      "fills": ["credit_limit"],
+      "trigger": "button",
+      "overwrite": true,
+      "label": "Sugerir limite"
+    }
+  ],
   "views": {
     "list": {
       "columns": [

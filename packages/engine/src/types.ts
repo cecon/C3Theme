@@ -6,7 +6,7 @@ import type { AuthConfig } from './auth/port';
 import type { DashboardDef } from './dashboard';
 import type { BoardView, CalendarView, ColumnDef, GalleryView, ListLook, ListOpening, MapView, ReportView } from './viewTypes';
 import type { ActionDef, GridFieldDef } from './actionTypes';
-import type { FormView } from './formTypes';
+import type { FormView, LookupDef } from './formTypes';
 import type { WizardDef } from './wizard';
 import type { AuthorizationConfig } from './authorization/AuthorizationDialog';
 
@@ -97,6 +97,7 @@ export type {
   RowStyle
 } from './viewTypes';
 export type { ComputedValue, FormFieldDef, FormSection, FormView, PairingDef, PairingState, RelatedDef, SummaryLine } from './formTypes';
+export type { LookupDef } from './formTypes';
 
 export interface Preset {
   id: string;
@@ -138,7 +139,8 @@ export interface EntityDef {
       pageSize?: 10 | 25 | 50 | 100;
       /** Relê a página a cada N segundos (mínimo 3), só com a aba visível. */
       refreshSeconds?: number;
-      totals?: { field: string; measure?: 'sum' }[];
+      /** `ratio`: Σ numerator ÷ Σ denominator × factor (margem %), vazio quando o denominador soma zero. */
+      totals?: { field: string; measure?: 'sum' | 'ratio'; numerator?: string; denominator?: string; factor?: number }[];
       /** Linha "Saldo anterior" no topo, com o período filtrado (ver `useListOpening`). */
       opening?: ListOpening;
     };
@@ -154,16 +156,6 @@ export interface EntityDef {
   lookups?: LookupDef[];
   /** Linhas que cada código de permissão enxerga; o backend filtra, a shell só repassa. */
   rowAccess?: { permission: string; where: Condition }[];
-}
-
-/** Consultar e preencher: o valor de `field` vai ao backend, que devolve valores para `fills`. */
-export interface LookupDef {
-  name: string;
-  field: string;
-  fills: string[];
-  /** 'change': consulta sozinha quando o valor fica válido; 'button' (padrão): botão ao lado do campo. */
-  trigger?: 'change' | 'button';
-  label?: Text;
 }
 
 /** Telas de uma entidade que o menu e a troca de visão abrem. */

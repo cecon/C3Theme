@@ -2,7 +2,7 @@
 import { createTheme } from '@mui/material/styles';
 import { describe, expect, it } from 'vitest';
 
-import { negativeSx, negativeTone, rowLook, rowLookSx, rowStyler } from './rowStyle';
+import { cellTone, cellToneSx, negativeSx, negativeTone, rowLook, rowLookSx, rowStyler } from './rowStyle';
 import type { FieldDef, RowStyle } from './types';
 
 const styles: RowStyle[] = [
@@ -57,7 +57,37 @@ describe('negativeTone', () => {
   it('negativeSx devolve a cor do tom (escuro no claro, claro no escuro)', () => {
     const sx = negativeSx(saldo, '-1');
     const theme = createTheme({ cssVariables: { colorSchemeSelector: 'class' }, colorSchemes: { light: true, dark: true } });
-    expect(sx && sx(theme)).toMatchObject({ color: theme.palette.error.dark });
+    expect((sx as (t: unknown) => { color: string })(theme).color).toContain('--mui-palette-error-dark');
     expect(negativeSx(saldo, '1')).toBe(false);
+  });
+});
+
+describe('cellTone (#56)', () => {
+  const situacao = {
+    name: 'situacao_03',
+    type: 'enum',
+    options: [
+      { value: 'OK', label: 'Dentro' },
+      { value: 'ACIMA', label: 'Acima', color: 'danger' }
+    ]
+  } as FieldDef;
+  it('o map pelo valor do outro campo; sem map, a cor da opção; vazio ou fora do map, nada', () => {
+    const map = { ALERTA: 'warning', ACIMA: 'danger' } as const;
+    expect(cellTone({ field: situacao, map }, { situacao_03: 'ALERTA' })).toBe('warning');
+    expect(cellTone({ field: situacao, map }, { situacao_03: 'OK' })).toBeUndefined();
+    expect(cellTone({ field: situacao }, { situacao_03: 'ACIMA' })).toBe('danger');
+    expect(cellTone({ field: situacao }, { situacao_03: 'OK' })).toBeUndefined();
+    expect(cellTone({ field: situacao }, { situacao_03: null })).toBeUndefined();
+    expect(cellTone(undefined, {})).toBeUndefined();
+    expect(
+      cellTone({ field: { name: 'ref', type: 'reference' } as FieldDef, map: { '7': 'info' } }, { ref: { id: '7', title: 'x' } })
+    ).toBe('info');
+  });
+  it('cellToneSx: o fundo suave do tema; neutro ou sem tom, nada', () => {
+    const theme = createTheme({ cssVariables: true });
+    const sx = cellToneSx({ field: situacao }, { situacao_03: 'ACIMA' });
+    expect((sx as (t: unknown) => { bgcolor: string })(theme).bgcolor).toContain('error');
+    expect(cellToneSx({ field: situacao }, { situacao_03: 'OK' })).toBe(false);
+    expect(cellToneSx({ field: situacao, map: { OK: 'neutral' } }, { situacao_03: 'OK' })).toBe(false);
   });
 });

@@ -8,7 +8,7 @@ import Typography from '@mui/material/Typography';
 
 import { SoftAvatar } from '@c3theme/ui';
 import { displayValue } from '../../format';
-import type { FieldDef, WireRecord } from '../../types';
+import type { FieldDef, Tone, WireRecord } from '../../types';
 import { Cell } from './Cell';
 import { avatarSpec, avatarTone, initialsOf, joined } from './richCell';
 import type { ColumnAvatar } from '../../viewTypes';
@@ -20,6 +20,8 @@ export interface ColumnExtras {
   avatar?: boolean | string | ColumnAvatar;
   link?: boolean;
   weight?: 'normal' | 'bold';
+  /** Tom da célula pelo valor de outro campo (`tone`): o campo já ligado e o mapa valor → tom. */
+  tone?: { field: FieldDef; map?: Record<string, Tone> };
 }
 
 export const hasExtras = (x: ColumnExtras) => Boolean(x.secondary || x.join?.length || x.avatar || x.link);

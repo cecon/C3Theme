@@ -6,6 +6,15 @@ use c3_engine::{ApiError, LookupCall};
 use serde_json::{json, Map, Value};
 
 pub fn run(call: LookupCall<'_>) -> Result<Map<String, Value>, ApiError> {
+    // origem reference (a empresa) e `with` (campos do formulário ainda não salvo): o limite depende do vip
+    if call.lookup == "suggest_credit" {
+        let limit = if call.with["vip"] == Value::Bool(true) {
+            "5000.00"
+        } else {
+            "1000.00"
+        };
+        return Ok(json!({ "credit_limit": limit }).as_object().cloned().unwrap_or_default());
+    }
     let data = match (call.lookup, call.value) {
         ("cep", "01310100") => json!({ "street": "Avenida Paulista", "city": "São Paulo", "state": "SP" }),
         ("cep", "99999999") => return Err(ApiError::unavailable("Consulta de CEP fora do ar. Preencha à mão.")),

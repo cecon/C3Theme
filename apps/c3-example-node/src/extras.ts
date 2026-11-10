@@ -52,6 +52,8 @@ export function invoice(db: Db, call: BulkActionCall): Promise<ActionOutcome> {
 
 /** Tabela fixa no lugar do ViaCEP e da Receita, para a suíte ver os três desfechos (achou, não achou, fora do ar). */
 export function lookup(call: LookupCall): Rec {
+  // origem reference (a empresa) e `with` (campos do formulário ainda não salvo): o limite depende do vip
+  if (call.lookup === 'suggest_credit') return { credit_limit: call.with.vip === true ? '5000.00' : '1000.00' };
   const key = `${call.lookup}:${call.value}`;
   switch (key) {
     case 'cep:01310100':

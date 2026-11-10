@@ -1,6 +1,6 @@
 // Views de quadro, calendário, relatório e planta da entidade (spec/v0/entity.schema.json, views.board, .calendar, .report e .map).
 
-import type { Condition, EnumValue, Text } from './types';
+import type { Condition, EnumValue, Text, Tone } from './types';
 
 /** Quadro (kanban): colunas pelos valores de um enum; arrastar grava o campo. */
 export interface BoardView {
@@ -80,6 +80,8 @@ export type ColumnDef =
       avatar?: boolean | string | ColumnAvatar;
       /** Peso do valor; padrão negrito com `secondary`. */
       weight?: 'normal' | 'bold';
+      /** Fundo suave da célula pelo valor de outro campo da linha: `map` valor → tom, ou a cor da opção do enum. */
+      tone?: CellTone;
       /** Edita na própria linha: `instant` grava ao mudar; `batch` junta as linhas e grava no "Salvar alterações". */
       edit?: 'instant' | 'batch';
     };
@@ -161,4 +163,10 @@ export interface ColumnAvatar {
   photo?: string;
   letters?: 1 | 2;
   tone?: 'auto' | 'neutral';
+}
+
+/** `columns[].tone` (#56): a situação do mês colore a célula do mês. */
+export interface CellTone {
+  field: string;
+  map?: Record<string, Tone>;
 }

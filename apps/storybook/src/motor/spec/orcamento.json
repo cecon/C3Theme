@@ -1,0 +1,72 @@
+{
+  "$schema": "../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "orcamento",
+  "label": {
+    "singular": "Orçamento",
+    "plural": "Orçamentos",
+    "gender": "m"
+  },
+  "fields": [
+    {
+      "name": "conta",
+      "type": "reference",
+      "entity": "conta_contabil",
+      "label": "Conta",
+      "required": true
+    },
+    {
+      "name": "ano",
+      "type": "integer",
+      "label": "Ano",
+      "required": true,
+      "grouping": false,
+      "default": 2026
+    },
+    {
+      "name": "mes_01",
+      "type": "decimal",
+      "scale": 2,
+      "currency": "BRL",
+      "label": "Jan"
+    },
+    {
+      "name": "mes_02",
+      "type": "decimal",
+      "scale": 2,
+      "currency": "BRL",
+      "label": "Fev"
+    },
+    {
+      "name": "mes_03",
+      "type": "decimal",
+      "scale": 2,
+      "currency": "BRL",
+      "label": "Mar"
+    }
+  ],
+  "lookups": [
+    {
+      "name": "media",
+      "field": "conta",
+      "with": ["ano"],
+      "fills": ["mes_01", "mes_02", "mes_03"],
+      "trigger": "button",
+      "overwrite": true,
+      "label": "Sugerir pela média"
+    }
+  ],
+  "views": {
+    "form": {
+      "sections": [
+        {
+          "title": "Orçamento",
+          "rows": [
+            ["conta", "ano"],
+            ["mes_01", "mes_02", "mes_03"]
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -21,7 +21,7 @@ import { ArrowDown2, ArrowRight2 } from 'iconsax-reactjs';
 import { tableEdgesSx, TableSkeletonRows } from '@c3theme/ui';
 import { useEngine, useText } from '../../context';
 import { displayValue, findOption, isNumeric } from '../../format';
-import { negativeSx } from '../../rowStyle';
+import { cellToneSx, negativeSx } from '../../rowStyle';
 import { columnCell } from '../../skeletonShape';
 import type { FieldDef, ListExpand, RowAction, Text, WireRecord } from '../../types';
 import { ColumnCell, ColumnExtras } from './ColumnCell';
@@ -232,7 +232,11 @@ export default function ListTable({
                     />
                   );
                   return (
-                    <TableCell key={c.field} align={align(c)} sx={c.edit ? { py: 0.75, minWidth: 140 } : undefined}>
+                    <TableCell
+                      key={c.field}
+                      align={align(c)}
+                      sx={[Boolean(c.edit) && { py: 0.75, minWidth: 140 }, cellToneSx(c.extras.tone, row)]}
+                    >
                       {c.edit && inlineEdit ? (
                         <EditCell entity={entity} field={c.def} row={row} mode={c.edit} edit={inlineEdit} readView={cell} />
                       ) : (

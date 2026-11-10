@@ -31,3 +31,11 @@ describe('planUndo', () => {
     expect(planUndo(fill, now)).toEqual({ street: undefined, state: undefined });
   });
 });
+
+describe('overwrite (#57)', () => {
+  it('troca também o que o usuário digitou; o Desfazer volta', () => {
+    const fill = planFill(['mes_01', 'mes_02'], { mes_01: '10.00', mes_02: '12.00' }, { mes_01: '99.00', mes_02: '' }, {}, true);
+    expect(fill.patch).toEqual({ mes_01: '10.00', mes_02: '12.00' });
+    expect(planUndo(fill, { mes_01: '10.00', mes_02: '12.00' })).toEqual({ mes_01: '99.00', mes_02: '' });
+  });
+});

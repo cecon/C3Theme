@@ -17,7 +17,9 @@
     "inventario_item",
     "configuracao_loja",
     "nota_item",
-    "conta_contabil"
+    "conta_contabil",
+    "orcado_realizado",
+    "orcamento"
   ],
   "layout": {
     "orientation": "vertical",

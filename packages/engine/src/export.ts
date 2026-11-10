@@ -34,7 +34,7 @@ export function toCsv(
   locale: string,
   label: (f: FieldDef) => string,
   optionLabel: (f: FieldDef, v: string) => string,
-  totals?: Record<string, number | string>,
+  totals?: Record<string, number | string | null>,
   /** Linha "Saldo anterior" logo depois do cabeçalho (`views.list.opening`). */
   opening?: { field: string; value: number | string; label: string }
 ) {
