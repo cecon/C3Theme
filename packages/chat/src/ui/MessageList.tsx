@@ -22,7 +22,7 @@ import { useChatText } from './text';
 import TypingIndicator from './TypingIndicator';
 import useChatScroll from './useChatScroll';
 
-export interface MessageListProps extends Pick<MessageBubbleProps, 'renderText' | 'onRetry'> {
+export interface MessageListProps extends Pick<MessageBubbleProps, 'renderText' | 'onRetry' | 'onEditFailed' | 'onDiscard'> {
   messages: Message[];
   /**
    * `people` (padrão): conversa entre pessoas, tudo em balão. `assistant`: as respostas recebidas saem sem balão,
@@ -119,6 +119,8 @@ export default function MessageList(props: MessageListProps) {
       animate={props.animate}
       renderText={props.renderText}
       onRetry={props.onRetry}
+      onEditFailed={props.onEditFailed}
+      onDiscard={props.onDiscard}
       onRegenerate={props.onRegenerate}
       onOpenWorkspace={props.onOpenWorkspace}
       onAnswer={props.onAnswer}

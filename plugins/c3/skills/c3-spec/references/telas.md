@@ -75,6 +75,7 @@ Resumo. Quem decide são o `spec/v0/app.schema.json` e o `entity.schema.json` do
 - `afterCreate` (ao lado de `sections`): para onde ir depois de criar pela tela cheia, como `"/conversa/{id}"`. `{campo}` vira o valor gravado (de um reference, o id). Sem ele, abre o registro criado.
 - `autosave: true` (ao lado de `sections`, só em `singleton`): a configuração abre editável e cada campo grava sozinho ao mudar (switch, select) ou ao sair (texto), sem Editar nem Salvar. Booleano vira linha de ajuste com switch à direita. Sem `titleField`, o título do singleton é o `label.singular`.
 - `views.detail.component` troca o detalhe. Sem ele, o detalhe é o formulário em modo leitura.
+- `pairing` na seção: ligar aparelho por QR ou código pelos campos do registro (`status`, `qr`, `code`, `states`) e ações de registro nos botões (`actions.qr/code/cancel/retry`). Não escreva componente custom para isso.
 - `width` (de 12) na seção: seções seguidas que somam até 12 dividem a linha (Observações 7, Resumo 5).
 - `views.form.initial`: valores do registro novo só no formulário; data aceita `{ "$date": "today", "offset": 15 }`. O `default` do campo vale também pela API.
 - `views.form.actions: "footer"` põe Cancelar e gravar no fim; `submitLabel: { "new": "Criar fatura", "edit": "Salvar alterações" }` troca o texto.
@@ -124,7 +125,7 @@ Resumo. Quem decide são o `spec/v0/app.schema.json` e o `entity.schema.json` do
 
 - `measure`: `count` (padrão) ou `sum:<campo integer ou decimal>`. O `groupBy` do chart aceita enum, boolean, reference ou data (com `interval`).
 - KPI completo: `"icon": "ReceiptText", "tone": "primary", "count": true, "progress": { "label": "do total", "whole": { ... } }` (ícone, "25 faturas" e barra com %). Gráfico: `"chart": "area"` com `series` (cada uma com `where` e `tone`) e `"ranges": [6, 12]`; `"chart": "donut"` para a rosca com legenda.
-- `{ "type": "ranking", "groupBy": "cliente_id", "measure": "sum:total", "caption": "{count} {label} em aberto", "flag": { "where": ..., "label": "{value} vencido" }, "action": "cobrar" }`: maiores grupos com chip e botão de ação do registro apontado. `{ "type": "feed", "entity": "aviso", "kind": "tipo", "text": "detalhe", "time": "quando", "icons": { ... } }`: avisos recentes. Não escreva componente de painel para isso.
+- `{ "type": "ranking", "groupBy": "cliente_id", "measure": "sum:total", "caption": "{count} {label} em aberto", "flag": { "where": ..., "label": "{value} vencido" }, "action": "cobrar" }`: maiores grupos com chip e botão de ação do registro apontado. `{ "type": "feed", "entity": "aviso", "kind": "tipo", "text": "detalhe", "time": "quando", "icons": { ... } }`: avisos recentes. `{ "type": "heatmap", "entity": "turno", "groupBy": "quando", "measure": "count", "tone": "success", "bind": { "periodo": "quando" } }`: grade de atividade do ano, um quadrado por dia. Não escreva componente de painel para isso.
 - `dashboard.actions`: botões no topo (`{ "label": "Nova fatura", "path": "/fatura/new", "icon": "Add", "variant": "contained" }`).
 - `width` vai de 1 a 12. O filtro é `preset` e/ou `where`; o clique leva à lista com o mesmo recorte (`w` na URL).
 - `{ "type": "alert", "entity": "sale", "preset": "sem-nfce", "text": "{count} vendas sem NFC-e", "tone": "error" }`: só aparece com contagem acima de zero.

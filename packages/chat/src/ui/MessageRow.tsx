@@ -18,7 +18,7 @@ import HandoffMarker from './team/HandoffMarker';
 
 type AssistantPass = Pick<AssistantMessageProps, 'onOpenWorkspace' | 'onAnswer' | 'uiRenderers' | 'onAnswerUi'>;
 
-export interface MessageRowProps extends Pick<MessageBubbleProps, 'renderText' | 'onRetry'>, AssistantPass {
+export interface MessageRowProps extends Pick<MessageBubbleProps, 'renderText' | 'onRetry' | 'onEditFailed' | 'onDiscard'>, AssistantPass {
   row: ChatRow;
   assistant: boolean;
   /** Último balão do bloco: é nele que vai o avatar, na conversa entre pessoas. */
@@ -96,7 +96,15 @@ export default function MessageRow(props: MessageRowProps) {
       }}
     >
       {withAvatar && <Box sx={{ width: 32, flexShrink: 0, display: { xs: 'none', sm: 'block' } }}>{props.lastOfBlock && avatar(32)}</Box>}
-      <MessageBubble message={m} grouped={row.grouped} showAuthor={showAuthors} renderText={props.renderText} onRetry={props.onRetry} />
+      <MessageBubble
+        message={m}
+        grouped={row.grouped}
+        showAuthor={showAuthors}
+        renderText={props.renderText}
+        onRetry={props.onRetry}
+        onEditFailed={props.onEditFailed}
+        onDiscard={props.onDiscard}
+      />
     </Box>
   );
 }

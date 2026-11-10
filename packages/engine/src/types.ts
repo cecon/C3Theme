@@ -80,7 +80,7 @@ export interface Access {
 export type Denied = 'hidden' | 'readOnly';
 
 export type { ColumnDef, ExpandItem, ListExpand, ListLook, RowAction } from './viewTypes';
-export type { ComputedValue, FormFieldDef, FormSection, FormView, RelatedDef, SummaryLine } from './formTypes';
+export type { ComputedValue, FormFieldDef, FormSection, FormView, PairingDef, PairingState, RelatedDef, SummaryLine } from './formTypes';
 
 export interface Preset {
   id: string;

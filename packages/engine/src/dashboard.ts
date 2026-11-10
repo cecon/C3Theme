@@ -82,7 +82,18 @@ export interface AlertWidget extends WidgetBase {
   text: Text;
   tone?: 'info' | 'warning' | 'error';
 }
-export type WidgetDef = KpiWidget | ChartWidget | ListWidget | AlertWidget | RankingWidget | FeedWidget;
+/** Grade de atividade: uma coluna por semana, uma linha por dia da semana, mais forte quanto maior o valor do dia. */
+export interface HeatmapWidget extends WidgetBase {
+  type: 'heatmap';
+  /** Campo date ou datetime. */
+  groupBy: string;
+  measure?: Measure;
+  subtitle?: Text;
+  /** Cor das células (padrão `success`). */
+  tone?: Tone;
+  empty?: Text;
+}
+export type WidgetDef = KpiWidget | ChartWidget | ListWidget | AlertWidget | RankingWidget | FeedWidget | HeatmapWidget;
 export interface DashboardDef {
   /** Filtros que valem para os widgets que os ligam (`bind`). */
   filters?: DashboardFilter[];
@@ -111,7 +122,7 @@ export interface AggregateParams {
   params?: Record<string, string>;
 }
 
-const DEFAULT_WIDTH = { kpi: 3, chart: 6, list: 6, alert: 12, ranking: 6, feed: 6 } as const;
+const DEFAULT_WIDTH = { kpi: 3, chart: 6, list: 6, alert: 12, ranking: 6, feed: 6, heatmap: 12 } as const;
 
 export function widgetWidth(w: WidgetDef): number {
   return w.width ?? DEFAULT_WIDTH[w.type];

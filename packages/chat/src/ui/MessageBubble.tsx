@@ -26,10 +26,15 @@ export interface MessageBubbleProps {
    */
   renderText?: (text: string, message: Message) => ReactNode;
   onRetry?: (clientId: string) => void;
+  /** Mensagem que falhou: o app devolve o texto (e os anexos) ao composer e tira a mensagem. Sem ele, sem botão. */
+  onEditFailed?: (message: Message) => void;
+  /** Mensagem que falhou: o app apaga. Sem ele, sem botão. */
+  onDiscard?: (message: Message) => void;
 }
 
 /** Balão de uma mensagem: texto, anexos, hora e situação do envio. Aviso do sistema sai centralizado, sem balão. */
-export default function MessageBubble({ message: m, grouped, showAuthor, renderText, onRetry }: MessageBubbleProps) {
+export default function MessageBubble(props: MessageBubbleProps) {
+  const { message: m, grouped, showAuthor, renderText, onRetry, onEditFailed, onDiscard } = props;
   const t = useChatText();
   const time = useTimeFormat();
   const mine = m.direction === 'out';
@@ -91,10 +96,24 @@ export default function MessageBubble({ message: m, grouped, showAuthor, renderT
           {mine && m.status && <MessageStatusIcon status={m.status} />}
         </Stack>
       </Box>
-      {failed && onRetry && m.clientId && (
-        <Button size="small" color="error" onClick={() => onRetry(m.clientId!)} sx={{ mt: 0.25 }}>
-          {t('c3.chat.retry')}
-        </Button>
+      {failed && (onRetry || onEditFailed || onDiscard) && (
+        <Stack direction="row" spacing={0.5} sx={{ mt: 0.25 }}>
+          {onRetry && m.clientId && (
+            <Button size="small" color="error" onClick={() => onRetry(m.clientId!)}>
+              {t('c3.chat.retry')}
+            </Button>
+          )}
+          {onEditFailed && (
+            <Button size="small" color="inherit" onClick={() => onEditFailed(m)}>
+              {t('c3.chat.editFailed')}
+            </Button>
+          )}
+          {onDiscard && (
+            <Button size="small" color="inherit" onClick={() => onDiscard(m)}>
+              {t('c3.chat.discard')}
+            </Button>
+          )}
+        </Stack>
       )}
     </Stack>
   );

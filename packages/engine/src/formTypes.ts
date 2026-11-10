@@ -55,6 +55,26 @@ export interface FormSection {
   summary?: SummaryLine[];
   component?: string;
   related?: RelatedDef;
+  /** Ligar um aparelho por QR ou código, pelos campos do registro (#6). */
+  pairing?: PairingDef;
+}
+
+/** Estado da tela de ligar aparelho (`DeviceLink` do @c3theme/ui). */
+export type PairingState = 'connecting' | 'qr' | 'pairing-code' | 'connected' | 'logged-out' | 'error';
+
+/** Seção de ligar aparelho: campos do registro e as ações de registro de cada botão. */
+export interface PairingDef {
+  status: string;
+  /** Valor do campo `status` → estado da tela; valor fora daqui esconde a seção. */
+  states: Record<string, PairingState>;
+  qr?: string;
+  code?: string;
+  phone?: string;
+  account?: string;
+  error?: string;
+  actions?: { qr?: string; code?: string; cancel?: string; retry?: string };
+  steps?: Text[];
+  codeSteps?: Text[];
 }
 
 export interface FormView {

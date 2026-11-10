@@ -2,6 +2,11 @@
 
 Instale fixando o commit (`github:cecon/C3Theme#<sha>&path:packages/chat`). Cada entrada diz o que muda para quem usa; **Quebra** marca o que exige mudar o app.
 
+## 0.9.0 (2026-11-10)
+
+- Mensagem que falhou ganha **Editar** (`onEditFailed(message)`: o app devolve o texto e os anexos ao composer e tira a mensagem) e **Descartar** (`onDiscard(message)`: o app apaga), ao lado do Tentar de novo (#173). Passam por `MessageList` → `MessageRow` → `MessageBubble`, como o `onRetry`, e só aparecem com o callback. Nada quebra.
+- `Composer` e `AgentComposer` anexam também colando um arquivo (print) no campo de texto e soltando arquivos em cima da caixa, com realce e "Solte para anexar" enquanto arrasta (#172). `dropTarget` (ref) troca onde soltar vale, a área do chat por exemplo. Tudo entra na mesma lista do seletor, sem repetir nome e tamanho, respeitando `accept` e `disabled`. `acceptsFile` e `addFiles` no `core` para quem monta o próprio composer. Nada quebra.
+
 ## 0.8.0 (2026-11-09)
 
 - `AgentStrip` ganha `notch` (#142): largura em px do entalhe do Mac sobre o meio da faixa. Maior que zero, a faixa recolhida abre um vão do tamanho do entalhe, com avatar e atividade à esquerda (cortada com reticências antes do vão) e contador e seta à direita; o vão não recebe clique (o botão é recortado ali) e o leitor de tela lê na mesma ordem. A faixa precisa estar centrada no entalhe e ter largura para os dois lados (entalhe de 200 px pede uns 560 px). Sem `notch`, nada muda.

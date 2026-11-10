@@ -829,6 +829,39 @@
                   "component": {
                     "$ref": "#/$defs/component"
                   },
+                  "pairing": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["status", "states"],
+                    "description": "Ligar um aparelho (WhatsApp, por exemplo) por QR Code ou código de pareamento, desenhado pelos campos do registro: a situação, o texto do QR e o código. Os botões rodam ações de registro da entidade. Com live na entidade, o QR novo aparece sozinho. Só em registro gravado.",
+                    "properties": {
+                      "status": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$", "description": "Campo com a situação da conexão." },
+                      "states": {
+                        "type": "object",
+                        "description": "Valor do campo status -> estado da tela. Valor fora daqui esconde a seção (os botões de ação do registro cuidam dele).",
+                        "minProperties": 1,
+                        "additionalProperties": { "enum": ["connecting", "qr", "pairing-code", "connected", "logged-out", "error"] }
+                      },
+                      "qr": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$", "description": "Campo com o texto do QR (o QR é desenhado na tela, sem rede)." },
+                      "code": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$", "description": "Campo com o código de pareamento." },
+                      "phone": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$", "description": "Campo com o número já conhecido: 'Usar código' pede direto, sem perguntar o número." },
+                      "account": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$", "description": "Campo com a conta ligada, mostrada em 'connected'." },
+                      "error": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$", "description": "Campo com o detalhe do erro, mostrado em 'error'." },
+                      "actions": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "description": "Ação de registro da entidade por botão. Sem a ação (ou sem permissão, ou com visibleWhen falso), o botão não aparece. 'code' recebe o número no primeiro campo do input dela.",
+                        "properties": {
+                          "qr": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$", "description": "Usar QR Code (no estado do código)." },
+                          "code": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$", "description": "Usar código de pareamento: ação com input, o número vai no primeiro campo." },
+                          "cancel": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$", "description": "Cancelar enquanto conecta ou mostra o QR." },
+                          "retry": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$", "description": "Tentar de novo (erro) ou ligar de novo (logged-out)." }
+                        }
+                      },
+                      "steps": { "type": "array", "items": { "$ref": "#/$defs/text" }, "description": "Passos do QR; o padrão é genérico." },
+                      "codeSteps": { "type": "array", "items": { "$ref": "#/$defs/text" }, "description": "Passos do código de pareamento." }
+                    }
+                  },
                   "related": {
                     "type": "object",
                     "additionalProperties": false,
@@ -930,6 +963,9 @@
                   },
                   {
                     "required": ["related"]
+                  },
+                  {
+                    "required": ["pairing"]
                   }
                 ]
               }

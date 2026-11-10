@@ -433,6 +433,60 @@
       "oneOf": [
         {
           "type": "object",
+          "description": "Grade de atividade (heatmap): uma coluna por semana e uma linha por dia da semana, mais forte quanto maior o valor do dia. Usa o _aggregate do chart com interval day. Com os dados de um ano só (filtro de período 'year', por exemplo), mostra janeiro a dezembro; senão, do primeiro ao último dia que veio. Clique no dia abre a lista daquele dia.",
+          "required": ["type", "title", "entity", "groupBy"],
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "heatmap" },
+            "title": { "$ref": "#/$defs/text" },
+            "subtitle": { "$ref": "#/$defs/text" },
+            "entity": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,62}$",
+              "description": "Entidade de app.entities lida pelo widget."
+            },
+            "preset": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]*$",
+              "description": "Preset de views.list.presets da entidade: o filtro do widget e o destino do clique."
+            },
+            "where": { "$ref": "entity.schema.json#/$defs/condition", "description": "Filtro extra, somado ao preset (e)." },
+            "width": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12,
+              "description": "Largura em colunas de 12, no desktop. Padrão: 12 (o ano inteiro pede a linha toda)."
+            },
+            "groupBy": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,62}$",
+              "description": "Campo date ou datetime: o dia de cada registro."
+            },
+            "measure": {
+              "type": "string",
+              "pattern": "^(count|sum:[a-z][a-z0-9_]{0,62})$",
+              "default": "count",
+              "description": "'count' conta os registros do dia; 'sum:<campo>' soma um campo integer ou decimal."
+            },
+            "tone": {
+              "enum": ["neutral", "primary", "info", "success", "warning", "danger"],
+              "default": "success",
+              "description": "Cor das células: quatro tons, do mais claro ao mais forte, na legenda 'menos … mais'."
+            },
+            "empty": {
+              "$ref": "#/$defs/text",
+              "description": "Texto quando o período não tem nenhum registro. Padrão: 'Nenhum registro.'"
+            },
+            "bind": {
+              "type": "object",
+              "description": "Filtros do painel que este widget usa: nome do filtro -> campo do widget (período em date/datetime, registro em reference da mesma entidade). Somados (e) ao preset e ao where.",
+              "additionalProperties": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$" },
+              "propertyNames": { "pattern": "^[a-z][a-z0-9_]{0,62}$" }
+            }
+          }
+        },
+        {
+          "type": "object",
           "description": "Indicador: um número (contagem ou soma) que leva à lista com o mesmo filtro.",
           "required": ["type", "title", "entity"],
           "additionalProperties": false,

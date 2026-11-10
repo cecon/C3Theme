@@ -1,4 +1,4 @@
-import { useRef, useState, type ChangeEvent, type KeyboardEvent, type ReactNode } from 'react';
+import { useRef, useState, type KeyboardEvent, type ReactNode, type RefObject } from 'react';
 
 // material-ui
 import Box from '@mui/material/Box';
@@ -19,6 +19,8 @@ import { Add, ArrowUp, DocumentText, Paperclip2 } from 'iconsax-reactjs';
 import type useMessageQueue from '../hooks/useMessageQueue';
 import { useBytesFormat } from './format';
 import QueuedMessages from './QueuedMessages';
+import useAttachments from '../hooks/useAttachments';
+import DropHint from './DropHint';
 import { useChatText } from './text';
 
 export interface AddMenuItem {
@@ -42,6 +44,8 @@ export interface AgentComposerProps {
   /** Anexar arquivos pelo botão +. Padrão: ligado. */
   files?: boolean;
   accept?: string;
+  /** Onde soltar arquivos anexa (a área do chat, por exemplo). Padrão: a própria caixa. Colar imagem no texto também anexa. */
+  dropTarget?: RefObject<HTMLElement | null>;
   /** Mais itens no menu do + (comandos, contexto). Sem eles, o + abre direto a escolha de arquivo. */
   addItems?: AddMenuItem[];
   /** Na barra, depois do +: o seletor de modo/permissão, por exemplo (`ComposerSelect`). */
@@ -65,7 +69,12 @@ export default function AgentComposer(props: AgentComposerProps) {
   const { value, onChange, onSend, busy, onStop, queue, files: allowFiles = true, accept, addItems = [] } = props;
   const t = useChatText();
   const bytes = useBytesFormat();
-  const [files, setFiles] = useState<File[]>([]);
+  const { files, setFiles, dragging, rootRef, pick, paste } = useAttachments({
+    enabled: allowFiles,
+    accept,
+    disabled: props.disabled,
+    dropTarget: props.dropTarget
+  });
   const [menu, setMenu] = useState<HTMLElement | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -92,17 +101,19 @@ export default function AgentComposer(props: AgentComposerProps) {
     }
   }
 
-  function pick(e: ChangeEvent<HTMLInputElement>) {
-    const picked = Array.from(e.target.files ?? []);
-    setFiles((list) => [...list, ...picked.filter((p) => !list.some((l) => l.name === p.name && l.size === p.size))]);
-    e.target.value = '';
-  }
-
   const showAdd = allowFiles || addItems.length > 0;
   const showStop = busy && !!onStop && !hasContent;
   const sendLabel = busy ? t('c3.chat.queueSend') : t('c3.chat.send');
   return (
-    <Box sx={{ px: { xs: 1.5, sm: 2 }, py: 1.5 }}>
+    <Box
+      ref={rootRef}
+      sx={{
+        px: { xs: 1.5, sm: 2 },
+        py: 1.5,
+        ...(dragging && { outline: '2px dashed', outlineColor: 'primary.main', outlineOffset: 2, borderRadius: 4 })
+      }}
+    >
+      {dragging && <DropHint />}
       {queue && (
         <QueuedMessages items={queue.items} onUpdate={queue.update} onRemove={queue.remove} onSendNow={busy ? undefined : queue.sendNow} />
       )}
@@ -138,6 +149,7 @@ export default function AgentComposer(props: AgentComposerProps) {
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={onKey}
+          onPaste={paste}
           placeholder={props.placeholder ?? t('c3.chat.assistantPlaceholder')}
           disabled={props.disabled}
           multiline

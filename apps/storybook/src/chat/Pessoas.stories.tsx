@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { fn } from 'storybook/test';
 
@@ -8,11 +8,11 @@ import Paper from '@mui/material/Paper';
 import { Composer, ConversationList, MessageList, TypingIndicator } from '@c3theme/chat';
 import { ANA, CONVERSA, CONVERSAS } from './mensagens';
 
-/** Conversa entre pessoas (atendimento, WhatsApp): balões agrupados, situação do envio e reenviar. */
+/** Conversa entre pessoas (atendimento, WhatsApp): balões agrupados, situação do envio e, na que falhou, tentar de novo, editar ou descartar. */
 function Conversa({ typing }: { typing: boolean }) {
   return (
     <Paper variant="outlined" sx={{ height: 420, display: 'flex', flexDirection: 'column', maxWidth: 560 }}>
-      <MessageList title="Ana Souza" messages={CONVERSA} onRetry={fn()} typing={typing ? [ANA] : []} />
+      <MessageList title="Ana Souza" messages={CONVERSA} onRetry={fn()} onEditFailed={fn()} onDiscard={fn()} typing={typing ? [ANA] : []} />
     </Paper>
   );
 }
@@ -38,6 +38,21 @@ export const CaixaDeTexto: Story = {
       <Box sx={{ maxWidth: 560 }}>
         <Composer value={text} onChange={setText} onSend={() => setText('')} files />
       </Box>
+    );
+  }
+};
+
+/** Arraste um arquivo para qualquer ponto da conversa, ou cole um print na caixa: vira anexo. */
+export const SoltarNaConversa: Story = {
+  name: 'Soltar arquivo na conversa',
+  render: function Render() {
+    const [text, setText] = useState('');
+    const area = useRef<HTMLDivElement>(null);
+    return (
+      <Paper ref={area} variant="outlined" sx={{ height: 480, display: 'flex', flexDirection: 'column', maxWidth: 560 }}>
+        <MessageList title="Ana Souza" messages={CONVERSA} />
+        <Composer value={text} onChange={setText} onSend={() => setText('')} dropTarget={area} voice={false} />
+      </Paper>
     );
   }
 };

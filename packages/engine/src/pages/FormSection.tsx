@@ -12,6 +12,7 @@ import WithLookup from '../widgets/WithLookup';
 import ChildChecklist from './ChildChecklist';
 import ChildRecord from './ChildRecord';
 import ChildRows from './ChildRows';
+import PairingSection from './PairingSection';
 import RelatedSection from './RelatedSection';
 import SummaryLines from './SummaryLines';
 import type { Embedded } from './EntityForm';
@@ -72,6 +73,8 @@ export function sectionShown(s: Section, ctx: SectionContext, components: Record
   // filhos com CRUD próprio precisam do id do pai; dentro de um diálogo não aninha outra lista
   if (s.related) return ctx.id !== undefined && !ctx.embedded;
   if (s.component) return Boolean(components[s.component]);
+  // ligar aparelho: só com o registro gravado, fora de diálogo
+  if (s.pairing) return ctx.id !== undefined && !ctx.embedded;
   return Boolean(s.summary?.length) || shownRows(s, ctx).some((r) => r.length > 0);
 }
 
@@ -98,6 +101,7 @@ export default function FormSection({ section: s, ctx, fill }: { section: Sectio
     );
   }
   if (s.related) return <RelatedSection parentId={ctx.id!} related={s.related} title={s.title} />;
+  if (s.pairing) return <PairingSection def={def} id={ctx.id!} record={record} title={s.title} pairing={s.pairing} />;
   if (s.component) {
     const Custom = components[s.component];
     const props: CustomSectionProps = { entity: def, record, onChange: ctx.change, editing, errors, id: ctx.id, dirty: Boolean(ctx.dirty) };

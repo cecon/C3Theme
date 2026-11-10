@@ -56,8 +56,26 @@ export function checkForm(entity, fields, entities, file, errors) {
       checkFormula(line.value, fields, vars, lists, `${where}.summary[${j}]`, errors);
       if (line.name) vars.add(line.name);
     }
+    if (s.pairing) checkPairing(entity, fields, s.pairing, `${where}.pairing`, errors);
     const childFields = s.related && lists.get(s.related.entity);
     for (const [j, c] of (s.related?.computed ?? []).entries())
       checkFormula(c.value, childFields ?? new Map(), new Set(), new Map(), `${where}.related.computed[${j}]`, errors);
+  }
+}
+
+/** Seção de ligar aparelho: os campos existem e os botões são ações de registro; `code` recebe o número no input. */
+function checkPairing(entity, fields, p, where, errors) {
+  for (const key of ['status', 'qr', 'code', 'phone', 'account', 'error'])
+    if (p[key] && !fields.has(p[key])) errors.push(`${where}.${key}: '${p[key]}' não é campo de ${entity.name}`);
+  const status = fields.get(p.status);
+  if (status?.type === 'enum')
+    for (const v of Object.keys(p.states))
+      if (!status.options.some((o) => String(o.value) === v)) errors.push(`${where}.states: '${v}' não é opção de '${p.status}'`);
+  for (const [button, name] of Object.entries(p.actions ?? {})) {
+    const a = (entity.actions ?? []).find((x) => x.name === name);
+    if (!a || a.target === 'list') errors.push(`${where}.actions.${button}: '${name}' não é ação de registro de ${entity.name}`);
+    else if (button === 'code' && !a.input?.fields?.length) errors.push(`${where}.actions.code: '${name}' precisa de input (o número)`);
+    else if (button !== 'code' && (a.input || a.confirm))
+      errors.push(`${where}.actions.${button}: '${name}' roda no clique (sem input nem confirm)`);
   }
 }

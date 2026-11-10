@@ -21,6 +21,7 @@ export {
   FLAG_TONE
 } from './core/models';
 export type { ModelFlag, ModelGroup, ModelOption, ModelTag, ModelTagTone } from './core/models';
+export { acceptsFile, addFiles } from './core/files';
 export { newTaskWatch, watchTasks } from './core/telemetry';
 export type { ChatTaskEvent, ChatTelemetryPort, PartTask, TaskOf, TaskWatch } from './core/telemetry';
 export type { ChatEvent, ChatTransport, DraftStorage, MessagePage } from './core/transport';
