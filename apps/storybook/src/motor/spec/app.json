@@ -171,6 +171,7 @@
             "interval": "month",
             "measure": "sum:total",
             "chart": "area",
+            "empty": "Nenhuma fatura no período.",
             "width": 8
           },
           {

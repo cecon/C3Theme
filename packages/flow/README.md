@@ -36,7 +36,7 @@ Sem `onChange`, o editor fica só leitura.
 
 Regras do app no tipo de passo: `max` (com 1, o tipo some do menu quando já existe), `removable: false` (não sai pelo
 Delete nem pelo painel) e `defaults` (config do passo novo). No editor: `selectedId` + `onSelectedChange` para abrir o
-passo de fora e `extraIssues` (`{ nodeId, message }`) para problemas que só o app valida. Os textos em inglês estão em `FLOW_MESSAGES_EN`.
+passo de fora e `extraIssues` (`{ nodeId, message }`) para problemas que só o app valida. Saída com `optional: true` pode ficar solta (o fluxo termina ali); `validate` troca a validação do editor pela do app. Os textos em inglês estão em `FLOW_MESSAGES_EN`.
 
 ## Licença
 

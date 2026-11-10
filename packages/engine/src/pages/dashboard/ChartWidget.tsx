@@ -55,7 +55,7 @@ export default function ChartWidget({ widget, table }: { widget: Chart; table: b
   if (!items.length)
     return (
       <Typography color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>
-        Nenhum registro.
+        {widget.empty ? text(widget.empty) : 'Nenhum registro.'}
       </Typography>
     );
 

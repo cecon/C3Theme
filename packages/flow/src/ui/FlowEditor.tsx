@@ -9,7 +9,7 @@ import type { FlowCanvas } from '../canvas/port';
 import { addNode, canAdd, connect, isRemovable, moveNode, removeEdges, removeNodes, unlink, updateNode } from '../core/graph';
 import { autoLayout } from '../core/layout';
 import { runSummary } from '../core/run';
-import type { FlowExtraIssue, FlowGraph, FlowPosition, FlowRun } from '../core/types';
+import type { FlowExtraIssue, FlowGraph, FlowIssue, FlowPosition, FlowRun } from '../core/types';
 import { issuesByNode, validateFlow } from '../core/validate';
 import FlowToolbar from './FlowToolbar';
 import type { FlowNodeKind } from './kinds';
@@ -38,6 +38,8 @@ export interface FlowEditorProps {
   onSelectedChange?: (id: string | null) => void;
   /** Problemas que só o app conhece, com o texto pronto: marcados no nó e somados na barra. */
   extraIssues?: FlowExtraIssue[];
+  /** Troca a validação do editor pela do app (os mesmos códigos de `FlowIssue`). Padrão: `validateFlow`. */
+  validate?: (graph: FlowGraph, kinds: FlowNodeKind[]) => FlowIssue[];
 }
 
 const INSPECTOR_WIDTH = 320;
@@ -68,7 +70,8 @@ export default function FlowEditor({
   canvas: Canvas = ReactFlowCanvas,
   selectedId: selectedProp,
   onSelectedChange,
-  extraIssues
+  extraIssues,
+  validate = validateFlow
 }: FlowEditorProps) {
   const t = useFlowText();
   const readOnly = readOnlyProp ?? !onChange;
@@ -82,7 +85,7 @@ export default function FlowEditor({
     [onSelectedChange]
   );
   const [fitKey, setFitKey] = useState(0);
-  const issues = useMemo(() => validateFlow(value, kinds), [value, kinds]);
+  const issues = useMemo(() => validate(value, kinds), [validate, value, kinds]);
   const byNode = useMemo(() => issuesByNode(issues), [issues]);
   const model = useCanvasModel({ graph: value, kinds, run, byNode, extraIssues, selectedId, readOnly, t });
   const selected = value.nodes.find((n) => n.id === selectedId);

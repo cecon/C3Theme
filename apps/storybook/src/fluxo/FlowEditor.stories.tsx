@@ -56,3 +56,12 @@ export const RegrasDoApp: Story = {
     extraIssues: [{ nodeId: PEDIDO.nodes.find((n) => n.type === 'agente')!.id, message: 'Agente desativado na empresa' }]
   }
 };
+
+/** O "não" da condição é `optional`: sem ligação, o fluxo termina ali e a barra não conta problema. */
+export const SaidaOpcional: Story = {
+  name: 'Saída que pode ficar solta',
+  args: {
+    kinds: KINDS.map((k) => (k.type === 'condicao' ? { ...k, outputs: k.outputs.map((p) => ({ ...p, optional: p.id === 'nao' })) } : k)),
+    value: { ...PEDIDO, edges: PEDIDO.edges.filter((e) => !(e.source === 'confirmado' && e.sourcePort === 'nao')) }
+  }
+};

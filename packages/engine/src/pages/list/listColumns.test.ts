@@ -32,6 +32,8 @@ describe('colunas da lista', () => {
   it('título do registro: titleField, primeiro texto ou id', () => {
     expect(recordTitle(def)({ id: '7', nome: 'Ana' })).toBe('Ana');
     expect(recordTitle(def)({ id: '7', nome: '' })).toBe('7');
+    const ref = { ...def, titleField: 'dono', fields: [...def.fields, { name: 'dono', type: 'reference' as const, reference: 'agente' }] };
+    expect(recordTitle(ref)({ id: '7', dono: { id: '3', title: 'Atendente' } })).toBe('Atendente');
   });
 });
 

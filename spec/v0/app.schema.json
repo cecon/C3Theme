@@ -615,6 +615,10 @@
               },
               "description": "Só em 'area': escolha dos últimos N períodos no cabeçalho ('6 meses', '12 meses'), na ordem declarada; o maior é o padrão."
             },
+            "empty": {
+              "$ref": "#/$defs/text",
+              "description": "Texto do gráfico sem dados (ex.: 'Nenhum registro.'). Sem ele, 'Nenhum registro.' e, dentro do gráfico, o texto do @mui/x-charts no idioma da shell."
+            },
             "axisScale": {
               "type": "integer",
               "minimum": 2,

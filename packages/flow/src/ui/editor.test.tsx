@@ -133,4 +133,11 @@ describe('FlowEditor', () => {
     expect(screen.getByLabelText(/Agente desativado/)).toBeTruthy();
     expect(screen.getByText('1 problema')).toBeTruthy();
   });
+
+  it('validate do app troca a validação do editor', () => {
+    const validate = vi.fn(() => [{ code: 'required' as const, nodeId: 'cozinha', detail: 'agente' }]);
+    editor(undefined, { value: { ...FLOW, edges: [] }, validate });
+    expect(validate).toHaveBeenCalled();
+    expect(screen.getByText('1 problema')).toBeTruthy();
+  });
 });

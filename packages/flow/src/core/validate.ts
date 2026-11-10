@@ -66,7 +66,9 @@ export function validateFlow(graph: FlowGraph, types: FlowNodeType[]): FlowIssue
     } else {
       if (type.hasInput && !incoming.has(node.id)) issues.push({ code: 'missingInput', nodeId: node.id });
       for (const port of type.outputs) {
-        if (!outgoing.has(`${node.id}\0${port.id}`)) issues.push({ code: 'unlinkedOutput', nodeId: node.id, detail: port.id });
+        // saída `optional`: solta quer dizer "o fluxo termina aqui"
+        if (!port.optional && !outgoing.has(`${node.id}\0${port.id}`))
+          issues.push({ code: 'unlinkedOutput', nodeId: node.id, detail: port.id });
       }
     }
     for (const field of type.fields ?? []) {

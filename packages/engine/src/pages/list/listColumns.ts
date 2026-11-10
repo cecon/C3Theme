@@ -1,5 +1,6 @@
 import { defaultColumns } from '../../format';
-import type { ColumnDef, EntityDef, FieldDef } from '../../types';
+import type { ColumnDef, EntityDef } from '../../types';
+import { recordTitle as titleOf } from '../../views';
 import type { ListColumn } from './ListTable';
 
 /** Colunas da lista (as da spec ou as por convenção) já ligadas às definições dos campos que cada uma usa. */
@@ -13,7 +14,7 @@ export function listColumns(def: EntityDef): ListColumn[] {
 }
 
 /** Nome do registro para avisos e leitor de tela: o `titleField`, o primeiro texto ou o id. */
+// reference no titleField vira o `title` dele, como no formulário (#5)
 export function recordTitle(def: EntityDef): (row: Record<string, unknown>) => string {
-  const name = def.titleField ?? def.fields.find((f: FieldDef) => f.type === 'string')?.name;
-  return (row) => String((name && row[name]) || row.id || '');
+  return (row) => titleOf(def, row) || String(row.id ?? '');
 }

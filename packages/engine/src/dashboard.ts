@@ -40,6 +40,8 @@ export interface ChartWidget extends WidgetBase {
   series?: { label: Text; where?: Condition; measure?: Measure; tone?: Tone }[];
   /** Escolha dos últimos N períodos no cabeçalho ("6 meses", "12 meses"), na ordem declarada; o maior é o padrão. */
   ranges?: number[];
+  /** Texto do gráfico sem dados. Padrão: "Nenhum registro." (e o do idioma da shell dentro do gráfico). */
+  empty?: Text;
   /** Só em `area`: o eixo mostra o valor dividido por este número (1000 = em mil; diga a unidade no `subtitle`). */
   axisScale?: number;
 }
