@@ -151,6 +151,9 @@ for (const { entity, file } of entities.values()) {
     const photoName = typeof col === 'object' && (typeof col.avatar === 'string' ? col.avatar : col.avatar?.photo);
     const photo = photoName && readable(photoName, 'views.list.columns avatar');
     if (photo && photo.type !== 'string') errors.push(`${file}: avatar '${photoName}' precisa ser campo string (endereço da foto)`);
+    const toneField = typeof col === 'object' && col.tone && readable(col.tone.field, 'views.list.columns tone');
+    if (toneField && !col.tone.map && toneField.type !== 'enum')
+      errors.push(`${file}: tone da coluna '${col.field}' sem map precisa de campo enum (a cor vem das options)`);
     if (typeof col === 'object' && col.edit)
       checkEditColumn(fields.get(col.field), entity, `${file}: views.list.columns '${col.field}'`, errors);
   }

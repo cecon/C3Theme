@@ -16,16 +16,22 @@ export interface LookupButton {
   disabled: boolean;
 }
 
+/** Reference no formulário vem `{ id, title }`; a consulta manda só o id. */
+const plain = (v: unknown) => (v && typeof v === 'object' && 'id' in v ? (v as { id: unknown }).id : v);
+
 /** Mesmas regras que o backend confere na origem: sem elas a consulta voltaria 422. */
-function valid(f: FieldDef | undefined, v: unknown): v is string {
+function valid(f: FieldDef | undefined, raw: unknown): boolean {
+  const v = plain(raw);
   if (!f || typeof v !== 'string' || v === '') return false;
+  if (f.type === 'reference') return true;
   if (f.pattern && !new RegExp(f.pattern).test(v)) return false;
   return !f.format || documentError(f.format, v) === null;
 }
 
 /**
  * Consultar e preencher (`entity.lookups`). Só preenche campo vazio ou que ainda tem o valor da consulta
- * anterior: o que o usuário digitou fica. Cada preenchimento pode ser desfeito pelo aviso. Falha só avisa:
+ * anterior: o que o usuário digitou fica (com `overwrite`, troca também esse). Origem `reference` manda o id;
+ * `with` manda os outros campos do formulário. Cada preenchimento pode ser desfeito pelo aviso. Falha só avisa:
  * nunca impede salvar. Devolve, por campo, o botão de consulta (ou `undefined`).
  */
 export default function useLookups(
@@ -54,8 +60,10 @@ export default function useLookups(
     if (!valid(field(l.field), value)) return;
     queried.current[l.name] = value;
     setBusy((b) => [...b, l.name]);
+    // `with`: os outros campos como estão no formulário (vazio vai null)
+    const extra = l.with?.length ? Object.fromEntries(l.with.map((n) => [n, plain(current.current[n]) ?? null])) : undefined;
     try {
-      const data = await client.lookup(def!.name, l.name, value);
+      const data = await client.lookup(def!.name, l.name, String(plain(value)), extra);
       if (current.current[l.field] !== value) return; // o usuário já trocou o valor
       apply(l, data);
     } catch (e) {
@@ -67,7 +75,7 @@ export default function useLookups(
   }
 
   function apply(l: LookupDef, data: WireRecord) {
-    const fill = planFill(l.fills, data, current.current, filled.current);
+    const fill = planFill(l.fills, data, current.current, filled.current, l.overwrite);
     const names = Object.keys(fill.patch);
     if (!names.length) return;
     Object.assign(filled.current, fill.patch);

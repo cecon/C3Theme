@@ -102,7 +102,8 @@ export interface C3Client {
   /** Valores iniciais do input de uma ação `prefill` (sem `id`: ação da lista). Nada é gravado. */
   prefill(entity: string, action: string, id?: string): Promise<WireRecord>;
   /** Consulta de `entity.lookups`: devolve só os campos que dá para preencher. Nada é gravado. */
-  lookup(entity: string, name: string, value: string): Promise<WireRecord>;
+  /** `with`: os outros campos do formulário que a consulta declara, como estão. */
+  lookup(entity: string, name: string, value: string, withValues?: WireRecord): Promise<WireRecord>;
   /** Bytes do arquivo gravado num campo `file` do registro. */
   file(entity: string, id: string, field: string): Promise<Blob>;
   /** Tempo real (`live`): lê GET /{entity}/_events até o servidor fechar ou o `signal` abortar. */
@@ -277,7 +278,8 @@ export function createClient(
       });
       return { status: res.status, contentType: res.headers.get('content-type') ?? '', body: await res.text() };
     },
-    lookup: (entity, name, value) => call<{ data: WireRecord }>('POST', `/${e(entity)}/_lookups/${e(name)}`, { value }).then((r) => r.data)
+    lookup: (entity, name, value, withValues) =>
+      call<{ data: WireRecord }>('POST', `/${e(entity)}/_lookups/${e(name)}`, { value, with: withValues }).then((r) => r.data)
   };
 }
 

@@ -25,12 +25,13 @@ const rows = [
   { id: '1', conta: 'Caixa', tipo: 'CONTA', saldo: '-150.00' },
   { id: '2', conta: '(=) Resultado', tipo: 'TOTAL', saldo: '320.00' }
 ];
-const RED = 'rgb(198, 40, 40)';
+// toneText: o vermelho escuro do tema, pela variável CSS
+const RED = 'var(--mui-palette-error-dark)';
 
 function wrap(children: ReactNode) {
   const value = { client: {} as never, app: { name: 'x' } as never, entities: {}, components: {} };
   return render(
-    <ThemeProvider theme={createTheme()}>
+    <ThemeProvider theme={createTheme({ cssVariables: true })}>
       <IntlProvider locale="pt-BR" onError={() => {}}>
         <MemoryRouter>
           <EngineProvider value={value}>{children}</EngineProvider>

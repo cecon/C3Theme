@@ -1,0 +1,196 @@
+{
+  "$schema": "../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "orcado_realizado",
+  "label": {
+    "singular": "Orçado × realizado",
+    "plural": "Orçado × realizado",
+    "gender": "m"
+  },
+  "titleField": "conta",
+  "fields": [
+    {
+      "name": "conta",
+      "type": "string",
+      "label": "Conta",
+      "required": true,
+      "maxLength": 80
+    },
+    {
+      "name": "realizado_01",
+      "type": "decimal",
+      "scale": 2,
+      "currency": "BRL",
+      "label": "Jan"
+    },
+    {
+      "name": "orcado_01",
+      "type": "decimal",
+      "scale": 2,
+      "currency": "BRL",
+      "label": "Orçado jan"
+    },
+    {
+      "name": "situacao_01",
+      "type": "enum",
+      "label": "Situação jan",
+      "options": [
+        {
+          "value": "OK",
+          "label": "Dentro"
+        },
+        {
+          "value": "ALERTA",
+          "label": "No alerta",
+          "color": "warning"
+        },
+        {
+          "value": "ACIMA",
+          "label": "Acima",
+          "color": "danger"
+        }
+      ]
+    },
+    {
+      "name": "realizado_02",
+      "type": "decimal",
+      "scale": 2,
+      "currency": "BRL",
+      "label": "Fev"
+    },
+    {
+      "name": "orcado_02",
+      "type": "decimal",
+      "scale": 2,
+      "currency": "BRL",
+      "label": "Orçado fev"
+    },
+    {
+      "name": "situacao_02",
+      "type": "enum",
+      "label": "Situação fev",
+      "options": [
+        {
+          "value": "OK",
+          "label": "Dentro"
+        },
+        {
+          "value": "ALERTA",
+          "label": "No alerta",
+          "color": "warning"
+        },
+        {
+          "value": "ACIMA",
+          "label": "Acima",
+          "color": "danger"
+        }
+      ]
+    },
+    {
+      "name": "realizado_03",
+      "type": "decimal",
+      "scale": 2,
+      "currency": "BRL",
+      "label": "Mar"
+    },
+    {
+      "name": "orcado_03",
+      "type": "decimal",
+      "scale": 2,
+      "currency": "BRL",
+      "label": "Orçado mar"
+    },
+    {
+      "name": "situacao_03",
+      "type": "enum",
+      "label": "Situação mar",
+      "options": [
+        {
+          "value": "OK",
+          "label": "Dentro"
+        },
+        {
+          "value": "ALERTA",
+          "label": "No alerta",
+          "color": "warning"
+        },
+        {
+          "value": "ACIMA",
+          "label": "Acima",
+          "color": "danger"
+        }
+      ]
+    },
+    {
+      "name": "orcado_ano",
+      "type": "decimal",
+      "scale": 2,
+      "currency": "BRL",
+      "label": "Orçado no tri"
+    },
+    {
+      "name": "realizado_ano",
+      "type": "decimal",
+      "scale": 2,
+      "currency": "BRL",
+      "label": "Realizado no tri"
+    },
+    {
+      "name": "percentual",
+      "type": "decimal",
+      "scale": 1,
+      "unit": "%",
+      "label": "% realizado"
+    }
+  ],
+  "views": {
+    "list": {
+      "columns": [
+        "conta",
+        {
+          "field": "realizado_01",
+          "label": "Jan",
+          "secondary": "orcado_01",
+          "tone": {
+            "field": "situacao_01"
+          }
+        },
+        {
+          "field": "realizado_02",
+          "label": "Fev",
+          "secondary": "orcado_02",
+          "tone": {
+            "field": "situacao_02"
+          }
+        },
+        {
+          "field": "realizado_03",
+          "label": "Mar",
+          "secondary": "orcado_03",
+          "tone": {
+            "field": "situacao_03"
+          }
+        },
+        "orcado_ano",
+        "realizado_ano",
+        "percentual"
+      ],
+      "export": false,
+      "totals": [
+        {
+          "field": "orcado_ano"
+        },
+        {
+          "field": "realizado_ano"
+        },
+        {
+          "field": "percentual",
+          "measure": "ratio",
+          "numerator": "realizado_ano",
+          "denominator": "orcado_ano",
+          "factor": 100
+        }
+      ]
+    }
+  }
+}

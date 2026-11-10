@@ -577,6 +577,20 @@
                         "enum": ["normal", "bold"],
                         "description": "Peso do valor. Padrão: negrito quando a coluna tem secondary, normal sem."
                       },
+                      "tone": {
+                        "type": "object",
+                        "required": ["field"],
+                        "additionalProperties": false,
+                        "description": "Fundo suave da célula pelo valor de OUTRO campo da linha (a situação do mês colore o mês): 'map' valor → tom; sem map, a color da opção do campo enum. Valor fora do map, ou opção sem color, deixa a célula como está. Só exibição.",
+                        "properties": {
+                          "field": { "$ref": "#/$defs/identifier" },
+                          "map": {
+                            "type": "object",
+                            "minProperties": 1,
+                            "additionalProperties": { "enum": ["neutral", "primary", "info", "success", "warning", "danger"] }
+                          }
+                        }
+                      },
                       "edit": {
                         "enum": ["instant", "batch"],
                         "description": "Edita o campo na própria linha. 'instant': o switch, o select ou o número grava ao mudar (um PATCH da linha). 'batch': as mudanças se juntam e gravam no 'Salvar alterações' da lista, um PATCH por linha alterada. Mesmas regras do formulário (permissão, readOnlyWhen, validação, _version); o erro aparece na célula. Não vale em campo readOnly, createOnly, writeOnly, text ou file, nem em entidade com source."
@@ -760,14 +774,28 @@
                 "type": "object",
                 "required": ["field"],
                 "additionalProperties": false,
+                "if": { "required": ["measure"], "properties": { "measure": { "const": "ratio" } } },
+                "then": { "required": ["numerator", "denominator"] },
+                "else": {
+                  "not": { "anyOf": [{ "required": ["numerator"] }, { "required": ["denominator"] }, { "required": ["factor"] }] }
+                },
                 "properties": {
                   "field": {
                     "$ref": "#/$defs/identifier",
                     "description": "Campo integer ou decimal que está em views.list.columns (ou nas colunas por convenção)."
                   },
                   "measure": {
-                    "enum": ["sum"],
-                    "default": "sum"
+                    "enum": ["sum", "ratio"],
+                    "default": "sum",
+                    "description": "'sum': a soma do campo. 'ratio': Σ numerator ÷ Σ denominator × factor (a margem % do período, não a soma dos percentuais), nas casas do campo; vazio quando o denominador soma zero. A razão sai das mesmas somas do _aggregate: nenhum endpoint novo."
+                  },
+                  "numerator": { "$ref": "#/$defs/identifier", "description": "Só em ratio: campo integer ou decimal somado em cima." },
+                  "denominator": { "$ref": "#/$defs/identifier", "description": "Só em ratio: campo integer ou decimal somado embaixo." },
+                  "factor": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "default": 1,
+                    "description": "Só em ratio: multiplica a razão (100 para percentual)."
                   }
                 }
               }
@@ -1491,7 +1519,20 @@
         },
         "field": {
           "$ref": "#/$defs/identifier",
-          "description": "Campo de origem (string), cujo valor vai para a consulta."
+          "description": "Campo de origem (string ou reference), cujo valor vai para a consulta. Reference vai como o id, conferido no escopo da filial ativa."
+        },
+        "with": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 12,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/identifier" },
+          "description": "Outros campos do formulário que vão junto, como estão (ainda não salvos): POST { value, with: { campo: valor } }. O motor confere cada um como na gravação (tipo, regras, reference no escopo), sem obrigatório; vazio chega null ao sistema."
+        },
+        "overwrite": {
+          "type": "boolean",
+          "default": false,
+          "description": "true: a resposta troca também o que o usuário já preencheu (\"Sugerir pela média\" acionado pelo botão). Desfazer volta o que estava. Padrão: só preenche campo vazio ou com o valor da consulta anterior."
         },
         "fills": {
           "type": "array",

@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 
 const codes = (res, key) => (res.body?.error?.fields?.[key] ?? []).map((e) => e.code);
 
-export function lookupTests({ test, call, as }) {
+export function lookupTests({ test, call, as, tag }) {
   const lookup = (name, body) => call('POST', `/company/_lookups/${name}`, body);
 
   test('consulta', 'CEP e CNPJ devolvem só campos de fills; sem resultado → 404, fonte fora → 503', async () => {
@@ -30,6 +30,22 @@ export function lookupTests({ test, call, as }) {
     for (const bad of [{}, { value: 1 }, { value: '01310100', x: 1 }])
       assert.equal((await lookup('cep', bad)).status, 400, JSON.stringify(bad));
     assert.equal((await lookup('nope', { value: '01310100' })).status, 404);
+  });
+
+  test('consulta', 'origem reference e with: o sistema recebe os outros campos do formulário, conferidos', async () => {
+    const company = (await call('POST', '/company', { trade_name: `Limite ${tag}` })).body.data;
+    const suggest = (body) => call('POST', '/customer/_lookups/suggest_credit', body);
+    const vip = await suggest({ value: company.id, with: { name: 'Ana', vip: true } });
+    assert.equal(vip.status, 200, JSON.stringify(vip.body));
+    assert.deepEqual(vip.body.data, { credit_limit: '5000.00' });
+    // with pela metade vale (o formulário ainda não foi salvo); vazio chega null
+    assert.deepEqual((await suggest({ value: company.id, with: { name: '' } })).body.data, { credit_limit: '1000.00' });
+    assert.deepEqual((await suggest({ value: company.id })).body.data, { credit_limit: '1000.00' });
+    // reference de origem que não existe e valor fora do tipo no with: 422 no campo
+    assert.equal((await suggest({ value: '999999' })).status, 422);
+    assert.ok(codes(await suggest({ value: company.id, with: { vip: 'sim' } }), 'vip').length > 0);
+    // campo fora do with: 400
+    assert.equal((await suggest({ value: company.id, with: { email: 'a@b.c' } })).status, 400);
   });
 
   test('consulta', 'quem só lê a entidade não consulta (403)', async () => {

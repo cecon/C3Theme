@@ -13,15 +13,15 @@ export interface Fill {
 
 /**
  * Só preenche campo de `fills` vazio ou que ainda tem o valor que a consulta anterior pôs (`filled`):
- * o que o usuário digitou fica. Na ordem de `fills`.
+ * o que o usuário digitou fica (com `overwrite`, troca também esse). Na ordem de `fills`.
  */
-export function planFill(fills: string[], data: WireRecord, current: WireRecord, filled: WireRecord): Fill {
+export function planFill(fills: string[], data: WireRecord, current: WireRecord, filled: WireRecord, overwrite = false): Fill {
   const patch: WireRecord = {};
   const before: WireRecord = {};
   for (const k of fills) {
     if (!(k in data)) continue;
     const cur = current[k];
-    if (!(empty(cur) || same(cur, filled[k]))) continue;
+    if (!(overwrite || empty(cur) || same(cur, filled[k]))) continue;
     patch[k] = data[k];
     before[k] = cur;
   }

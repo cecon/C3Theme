@@ -100,3 +100,17 @@ export interface FormView {
   /** Folha para imprimir: as seções escolhidas (posições), a related inteira e as colunas em branco. */
   print?: { title?: Text; sections?: number[]; blank?: string[] };
 }
+
+/** Consultar e preencher: o valor de `field` vai ao backend, que devolve valores para `fills`. */
+export interface LookupDef {
+  name: string;
+  field: string;
+  fills: string[];
+  /** 'change': consulta sozinha quando o valor fica válido; 'button' (padrão): botão ao lado do campo. */
+  trigger?: 'change' | 'button';
+  label?: Text;
+  /** Outros campos do formulário que vão junto (ainda não salvos). */
+  with?: string[];
+  /** A resposta troca também o que o usuário já preencheu (Desfazer volta). */
+  overwrite?: boolean;
+}

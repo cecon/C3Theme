@@ -64,3 +64,22 @@ export const ItemDaNota: Story = { name: 'Item da nota, cadastrar o produto', ar
  * lotes de 15, com a barra, os contadores parciais e o Parar, que mantém o que já rodou.
  */
 export const Balancete: Story = { name: 'Balancete, linhas em destaque e ação em etapas', args: { entity: 'conta_contabil' } };
+
+/**
+ * `columns[].tone`: cada mês fica com o fundo da situação dele (amarelo no alerta, vermelho acima do orçado), vinda de
+ * outro campo da linha. No rodapé, o "% realizado" é `measure: "ratio"`: realizado ÷ orçado do trimestre × 100, e não a
+ * soma dos percentuais.
+ */
+export const OrcadoRealizado: Story = {
+  name: 'Orçado × realizado, célula pela situação e total em %',
+  args: { entity: 'orcado_realizado' }
+};
+
+/**
+ * Consulta com origem `reference` e `with`: "Sugerir pela média" manda a conta e o ano do formulário, ainda sem salvar,
+ * e `overwrite` troca até o mês já digitado (o aviso tem Desfazer).
+ */
+export const Orcamento: Story = {
+  name: 'Orçamento, sugerir pela média antes de salvar',
+  args: { entity: 'orcamento', screen: 'form', id: '1' }
+};

@@ -2,7 +2,7 @@
 
 import type { MemorySeed, WireRecord } from '@c3theme/engine';
 
-import { BALANCETE, revisar } from './balancete';
+import { BALANCETE, mediaDaConta, ORCADO_REALIZADO, revisar } from './balancete';
 import { OPENAPI } from './openapi';
 import { avisos, eventos, mesas, tarefas } from './operacao';
 import { APP, ENTITIES } from './spec';
@@ -94,6 +94,8 @@ export const SEED: MemorySeed = {
     // item da nota sem produto: a ação abre o cadastro de produto com a descrição e o valor do XML
     nota_item: [{ id: '1', descricao: 'CAFE TORRADO MOIDO 250G', ncm: '09012100', valor: '12.90', produto: null }],
     conta_contabil: BALANCETE,
+    orcado_realizado: ORCADO_REALIZADO,
+    orcamento: [{ id: '1', conta: '3', ano: 2026, mes_01: '0.00', mes_02: null, mes_03: null }],
     fatura: faturas,
     tarefa: tarefas,
     evento: eventos,
@@ -111,6 +113,8 @@ export const SEED: MemorySeed = {
   files: { '/openapi.json': OPENAPI },
   // ações da lista, como o backend: a revisão em etapas do balancete
   listActions: { conta_contabil: { revisar } },
+  // a consulta que o backend faria: a média do realizado da conta no ano do formulário
+  lookups: { orcamento: { media: mediaDaConta } },
   // a regra que o backend do sistema teria
   actions: {
     fatura: {

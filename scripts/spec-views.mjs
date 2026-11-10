@@ -143,6 +143,9 @@ function checkTotals(entity, fields, file, errors) {
     if (!f || !['integer', 'decimal'].includes(f.type)) errors.push(`${where}: '${t.field}' precisa ser campo integer ou decimal`);
     else if (!columns.includes(t.field)) errors.push(`${where}: '${t.field}' não está nas colunas da lista`);
     if (seen.has(t.field)) errors.push(`${where}: '${t.field}' repetido`);
+    for (const side of t.measure === 'ratio' ? [t.numerator, t.denominator] : [])
+      if (!['integer', 'decimal'].includes(fields.get(side)?.type))
+        errors.push(`${where}: razão de '${t.field}' cita '${side}', que precisa ser campo integer ou decimal`);
     seen.add(t.field);
   }
 }
