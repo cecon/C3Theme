@@ -89,4 +89,6 @@ export interface FormView {
   afterCreate?: string;
   /** Só singleton: cada campo grava ao mudar ou ao sair, sem Editar nem Salvar. */
   autosave?: boolean;
+  /** Cabeçalho do registro: imagem (ou avatar) à esquerda do título e uma ou duas linhas embaixo. */
+  header?: { image?: string | { component: string }; subtitle?: string; caption?: string[] };
 }

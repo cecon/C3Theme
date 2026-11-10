@@ -20,7 +20,8 @@ import type { FieldDef, WireRecord } from '../types';
 import EntityDialog from './EntityDialog';
 import { listColumns, recordTitle } from './list/listColumns';
 import ListTable, { OwnerColumn } from './list/ListTable';
-import { allowedRowActions } from './list/RowActionsCell';
+import { actionButtons, allowedRowActions } from './list/RowActionsCell';
+import GalleryGrid from './gallery/GalleryGrid';
 import { useRowDelete } from './list/useRowDelete';
 import BulkBar from './list/BulkBar';
 import ListToolbar from './list/ListToolbar';
@@ -36,7 +37,7 @@ import { useLive } from '../live/useLive';
 const PAGE_SIZES = [10, 25, 50, 100];
 
 /** Lista da entidade. O estado (página, ordem, busca, preset, filtros) mora na URL: voltar e compartilhar funcionam. */
-export default function EntityList({ entity }: { entity: string }) {
+export default function EntityList({ entity, view = 'list' }: { entity: string; view?: 'list' | 'gallery' }) {
   const { client, entities, org } = useEngine();
   const { def, capabilities } = entities[entity];
   useLive(def);
@@ -153,7 +154,7 @@ export default function EntityList({ entity }: { entity: string }) {
                 Exportar CSV
               </Button>
             )}
-            <ViewSwitcher def={def} current="list" preset={presetId} />
+            <ViewSwitcher def={def} current={view} preset={presetId} />
             <ListActions entity={entity} />
             <AddButton
               entity={entity}
@@ -185,33 +186,44 @@ export default function EntityList({ entity }: { entity: string }) {
 
       {/* troca de página ou filtro: a página anterior fica na tela e a barra do topo avisa que a nova vem aí */}
       {isLoading && data && <PageLoader />}
-      <ListTable
-        entity={entity}
-        columns={columns}
-        rows={data?.data}
-        loading={isLoading}
-        skeletonRows={Math.min(pageSize, 10)}
-        owner={owner}
-        sort={{ field: sortField, dir: sortDir }}
-        onSort={(field) => set({ sort: sortField === field && sortDir === 'asc' ? `-${field}` : field }, false)}
-        selection={bulkable || deletable ? { selected, allOnPage, togglePage, toggleRow } : undefined}
-        totals={totals}
-        expand={list.expand}
-        rowActions={
-          rowActionNames.length > 0
-            ? {
-                actions: (row) => allowedRowActions(rowActionNames, capabilities, row),
-                titleOf,
-                onView: inDialog ? (row) => setDialog({ id: row.id! }) : undefined,
-                onEdit: (row) => setDialog({ id: row.id!, edit: true }),
-                onDelete: askDelete,
-                quiet: list.rowActionsStyle === 'quiet'
-              }
-            : undefined
-        }
-        openable={!def.source}
-        onOpen={inDialog ? (row) => setDialog({ id: row.id! }) : undefined}
-      />
+      {view === 'gallery' ? (
+        <GalleryGrid
+          entity={entity}
+          rows={data?.data}
+          skeletonCards={Math.min(pageSize, 10)}
+          selection={bulkable || deletable ? { selected, toggleRow } : undefined}
+          actions={actionButtons(allowedRowActions(rowActionNames, capabilities))}
+          onOpen={inDialog ? (row) => setDialog({ id: row.id! }) : undefined}
+        />
+      ) : (
+        <ListTable
+          entity={entity}
+          columns={columns}
+          rows={data?.data}
+          loading={isLoading}
+          skeletonRows={Math.min(pageSize, 10)}
+          owner={owner}
+          sort={{ field: sortField, dir: sortDir }}
+          onSort={(field) => set({ sort: sortField === field && sortDir === 'asc' ? `-${field}` : field }, false)}
+          selection={bulkable || deletable ? { selected, allOnPage, togglePage, toggleRow } : undefined}
+          totals={totals}
+          expand={list.expand}
+          rowActions={
+            rowActionNames.length > 0
+              ? {
+                  actions: (row) => allowedRowActions(rowActionNames, capabilities, row),
+                  titleOf,
+                  onView: inDialog ? (row) => setDialog({ id: row.id! }) : undefined,
+                  onEdit: (row) => setDialog({ id: row.id!, edit: true }),
+                  onDelete: askDelete,
+                  quiet: list.rowActionsStyle === 'quiet'
+                }
+              : undefined
+          }
+          openable={!def.source}
+          onOpen={inDialog ? (row) => setDialog({ id: row.id! }) : undefined}
+        />
+      )}
 
       {data && data.meta.total === 0 && (
         <Box sx={{ py: 6, textAlign: 'center' }}>

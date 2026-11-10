@@ -698,9 +698,17 @@
               "minItems": 1,
               "uniqueItems": true,
               "items": {
-                "enum": ["view", "edit", "delete"]
+                "oneOf": [
+                  { "enum": ["view", "edit", "delete"] },
+                  {
+                    "type": "object",
+                    "required": ["action"],
+                    "additionalProperties": false,
+                    "properties": { "action": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$" } }
+                  }
+                ]
               },
-              "description": "Ícones na última coluna (\"Ações\"): 'view' abre o registro, 'edit' abre o formulário num diálogo sobre a lista, 'delete' pergunta e exclui. Cada um só aparece com a permissão dele (update, delete). Com 'delete', a lista ganha a marcação de linhas e \"Excluir (n)\" na barra."
+              "description": "{ \"action\": \"instalar\" } põe um botão com uma ação de registro sem input nem confirm, visível conforme a permissão e o visibleWhen dela (também no cartão da galeria). Ícones na última coluna (\"Ações\"): 'view' abre o registro, 'edit' abre o formulário num diálogo sobre a lista, 'delete' pergunta e exclui. Cada um só aparece com a permissão dele (update, delete). Com 'delete', a lista ganha a marcação de linhas e \"Excluir (n)\" na barra."
             },
             "refreshSeconds": {
               "type": "integer",
@@ -735,6 +743,36 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
+            "header": {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "Cabeçalho do registro gravado: a imagem (ou avatar) à esquerda do título e até duas linhas embaixo; as ações do registro continuam à direita.",
+              "properties": {
+                "image": {
+                  "oneOf": [
+                    { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$" },
+                    {
+                      "type": "object",
+                      "required": ["component"],
+                      "additionalProperties": false,
+                      "properties": { "component": { "$ref": "#/$defs/component" } }
+                    }
+                  ],
+                  "description": "Campo string com a URL da imagem, ou { component } registrado na shell que desenha o rosto do registro (recebe entity, record e size). Sem imagem, as iniciais do título."
+                },
+                "subtitle": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]{0,62}$",
+                  "description": "Campo da primeira linha embaixo do título."
+                },
+                "caption": {
+                  "type": "array",
+                  "maxItems": 4,
+                  "items": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$" },
+                  "description": "Campos da linha pequena, separados por ' · '."
+                }
+              }
+            },
             "autosave": {
               "type": "boolean",
               "default": false,
@@ -835,31 +873,75 @@
                     "required": ["status", "states"],
                     "description": "Ligar um aparelho (WhatsApp, por exemplo) por QR Code ou código de pareamento, desenhado pelos campos do registro: a situação, o texto do QR e o código. Os botões rodam ações de registro da entidade. Com live na entidade, o QR novo aparece sozinho. Só em registro gravado.",
                     "properties": {
-                      "status": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$", "description": "Campo com a situação da conexão." },
+                      "status": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]{0,62}$",
+                        "description": "Campo com a situação da conexão."
+                      },
                       "states": {
                         "type": "object",
                         "description": "Valor do campo status -> estado da tela. Valor fora daqui esconde a seção (os botões de ação do registro cuidam dele).",
                         "minProperties": 1,
                         "additionalProperties": { "enum": ["connecting", "qr", "pairing-code", "connected", "logged-out", "error"] }
                       },
-                      "qr": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$", "description": "Campo com o texto do QR (o QR é desenhado na tela, sem rede)." },
+                      "qr": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]{0,62}$",
+                        "description": "Campo com o texto do QR (o QR é desenhado na tela, sem rede)."
+                      },
                       "code": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$", "description": "Campo com o código de pareamento." },
-                      "phone": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$", "description": "Campo com o número já conhecido: 'Usar código' pede direto, sem perguntar o número." },
-                      "account": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$", "description": "Campo com a conta ligada, mostrada em 'connected'." },
-                      "error": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$", "description": "Campo com o detalhe do erro, mostrado em 'error'." },
+                      "phone": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]{0,62}$",
+                        "description": "Campo com o número já conhecido: 'Usar código' pede direto, sem perguntar o número."
+                      },
+                      "account": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]{0,62}$",
+                        "description": "Campo com a conta ligada, mostrada em 'connected'."
+                      },
+                      "error": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9_]{0,62}$",
+                        "description": "Campo com o detalhe do erro, mostrado em 'error'."
+                      },
                       "actions": {
                         "type": "object",
                         "additionalProperties": false,
                         "description": "Ação de registro da entidade por botão. Sem a ação (ou sem permissão, ou com visibleWhen falso), o botão não aparece. 'code' recebe o número no primeiro campo do input dela.",
                         "properties": {
-                          "qr": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$", "description": "Usar QR Code (no estado do código)." },
-                          "code": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$", "description": "Usar código de pareamento: ação com input, o número vai no primeiro campo." },
-                          "cancel": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$", "description": "Cancelar enquanto conecta ou mostra o QR." },
-                          "retry": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$", "description": "Tentar de novo (erro) ou ligar de novo (logged-out)." }
+                          "qr": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]{0,62}$",
+                            "description": "Usar QR Code (no estado do código)."
+                          },
+                          "code": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]{0,62}$",
+                            "description": "Usar código de pareamento: ação com input, o número vai no primeiro campo."
+                          },
+                          "cancel": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]{0,62}$",
+                            "description": "Cancelar enquanto conecta ou mostra o QR."
+                          },
+                          "retry": {
+                            "type": "string",
+                            "pattern": "^[a-z][a-z0-9_]{0,62}$",
+                            "description": "Tentar de novo (erro) ou ligar de novo (logged-out)."
+                          }
                         }
                       },
-                      "steps": { "type": "array", "items": { "$ref": "#/$defs/text" }, "description": "Passos do QR; o padrão é genérico." },
-                      "codeSteps": { "type": "array", "items": { "$ref": "#/$defs/text" }, "description": "Passos do código de pareamento." }
+                      "steps": {
+                        "type": "array",
+                        "items": { "$ref": "#/$defs/text" },
+                        "description": "Passos do QR; o padrão é genérico."
+                      },
+                      "codeSteps": {
+                        "type": "array",
+                        "items": { "$ref": "#/$defs/text" },
+                        "description": "Passos do código de pareamento."
+                      }
                     }
                   },
                   "related": {
@@ -981,6 +1063,44 @@
             }
           },
           "description": "v0: sem component, a shell mostra o formulário em modo leitura."
+        },
+        "gallery": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Lista em cartões (/{entity}/gallery), com a mesma busca, filtros, presets, paginação e seleção para o lote da lista; o seletor de visão alterna. O cartão abre o registro (ou o diálogo, com open: dialog). Ações de registro de rowActions ({ action }) aparecem como botão no cartão.",
+          "properties": {
+            "image": {
+              "oneOf": [
+                { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$" },
+                {
+                  "type": "object",
+                  "required": ["component"],
+                  "additionalProperties": false,
+                  "properties": { "component": { "$ref": "#/$defs/component" } }
+                }
+              ],
+              "description": "Campo string com a URL da imagem, ou { component } registrado na shell que desenha o rosto do registro (recebe entity, record e size). Sem imagem, as iniciais do título."
+            },
+            "title": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$", "description": "Padrão: o titleField." },
+            "subtitle": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,62}$",
+              "description": "Até duas linhas de texto embaixo do título."
+            },
+            "caption": {
+              "type": "array",
+              "maxItems": 4,
+              "items": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$" },
+              "description": "Campos da linha pequena, separados por ' · '."
+            },
+            "chip": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$", "description": "Campo num chip; enum usa a cor da opção." },
+            "size": { "enum": ["small", "large"], "default": "small", "description": "'large': cartões maiores, para destaques." },
+            "viewer": {
+              "type": "boolean",
+              "default": false,
+              "description": "Com image em campo de URL: clicar na imagem abre o visualizador em tela cheia (anterior, próxima, setas do teclado, zoom pela roda, Esc fecha)."
+            }
+          }
         },
         "board": {
           "type": "object",

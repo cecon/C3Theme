@@ -4,7 +4,7 @@ import type { Condition, FieldType } from './conditions.mjs';
 import type { DocumentFormat } from './documents.mjs';
 import type { AuthConfig } from './auth/port';
 import type { DashboardDef } from './dashboard';
-import type { BoardView, CalendarView, ColumnDef, ListLook, MapView, ReportView } from './viewTypes';
+import type { BoardView, CalendarView, ColumnDef, GalleryView, ListLook, MapView, ReportView } from './viewTypes';
 import type { ActionDef, GridFieldDef } from './actionTypes';
 import type { FormView } from './formTypes';
 
@@ -79,7 +79,7 @@ export interface Access {
 /** O que o usuário não pode com um campo ou lista with_parent (capabilities.fields). */
 export type Denied = 'hidden' | 'readOnly';
 
-export type { ColumnDef, ExpandItem, ListExpand, ListLook, RowAction } from './viewTypes';
+export type { ColumnDef, ExpandItem, GalleryView, ListExpand, ListLook, RecordImageDef, RowAction } from './viewTypes';
 export type { ComputedValue, FormFieldDef, FormSection, FormView, PairingDef, PairingState, RelatedDef, SummaryLine } from './formTypes';
 
 export interface Preset {
@@ -125,6 +125,7 @@ export interface EntityDef {
       totals?: { field: string; measure?: 'sum' }[];
     };
     form?: FormView;
+    gallery?: GalleryView;
     detail?: { component?: string };
     board?: BoardView;
     calendar?: CalendarView;
@@ -148,7 +149,7 @@ export interface LookupDef {
 }
 
 /** Telas de uma entidade que o menu e a troca de visão abrem. */
-export type EntityViewKind = 'list' | 'board' | 'calendar' | 'report' | 'map';
+export type EntityViewKind = 'list' | 'gallery' | 'board' | 'calendar' | 'report' | 'map';
 
 export interface Capabilities {
   list: boolean;

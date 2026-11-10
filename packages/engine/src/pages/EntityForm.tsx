@@ -21,6 +21,7 @@ import { formBlocks } from '../skeletonShape';
 import LossDialog from './LossDialog';
 import useLeaveGuard from '../hooks/useLeaveGuard';
 import useSaveUndo from '../hooks/useSaveUndo';
+import useRecordLead from '../hooks/useRecordLead';
 import { useLiveRecord } from '../live/useLiveRecord';
 import useFormTelemetry from '../hooks/useFormTelemetry';
 import { changedFields } from '../telemetry';
@@ -87,6 +88,7 @@ export default function EntityForm({ entity, id, embedded }: { entity: string; i
   useLeaveGuard(dirty);
   const taskDone = useFormTelemetry(entity, isNew, editing);
   const undoSave = useSaveUndo(entity);
+  const lead = useRecordLead(def, isNew ? undefined : loaded);
   useLiveRecord(def, id, !editing, !embedded); // em leitura, o aviso do `live` relê o registro (#8)
 
   const types = useMemo(() => fieldTypes(def), [def]);
@@ -254,6 +256,7 @@ export default function EntityForm({ entity, id, embedded }: { entity: string; i
         dialog={inDialog}
         title={inDialog && editing && !isNew ? `Editar ${text(def.label.singular).toLowerCase()}` : title}
         owner={owner}
+        lead={lead}
         header={!(footer && editing && !owner)}
         top={readButtons || (!footer && editButtons)}
         bottom={footer && editButtons}

@@ -13,6 +13,7 @@ export function viewPath(entity: string, view: EntityViewKind, preset?: string):
 export function availableViews(def: EntityDef): EntityViewKind[] {
   return [
     'list',
+    ...(def.views?.gallery ? ['gallery' as const] : []),
     ...(def.views?.board ? ['board' as const] : []),
     ...(def.views?.calendar ? ['calendar' as const] : []),
     ...(def.views?.report ? ['report' as const] : []),

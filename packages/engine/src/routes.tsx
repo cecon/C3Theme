@@ -17,6 +17,7 @@ import EntityReport from './pages/report/EntityReport';
 import EntityMap from './pages/map/EntityMap';
 import EntityForm from './pages/EntityForm';
 import EntityHome from './pages/EntityHome';
+import EntityList from './pages/EntityList';
 import type { AppDef, MenuItemDef, PageDef } from './types';
 import { viewPath } from './views';
 
@@ -55,7 +56,8 @@ export function buildRoutes(app: AppDef, layout: ReactNode, extra: RouteObject[]
         ...app.entities.flatMap((e) => [
           { path: e, element: <EntityHome key={e} entity={e} /> },
           { path: `${e}/new`, element: <EntityForm key={`${e}-new`} entity={e} /> },
-          // rotas fixas ganham do `:id`; o id de um registro nunca é 'board', 'calendar', 'report' nem 'map' (README da spec)
+          // rotas fixas ganham do `:id`; o id de um registro nunca é 'gallery', 'board', 'calendar', 'report' nem 'map' (README da spec)
+          { path: `${e}/gallery`, element: <EntityList key={`${e}-gallery`} entity={e} view="gallery" /> },
           { path: `${e}/board`, element: <EntityBoard key={`${e}-board`} entity={e} /> },
           { path: `${e}/calendar`, element: <EntityCalendar key={`${e}-calendar`} entity={e} /> },
           { path: `${e}/report`, element: <EntityReport key={`${e}-report`} entity={e} /> },

@@ -12,17 +12,32 @@ import Typography from '@mui/material/Typography';
 // third-party
 import { Trash } from 'iconsax-reactjs';
 
-/** Título do registro (e a filial dona) com os botões à direita. */
-export default function FormHeader({ title, owner, children }: { title: string; owner?: string; children?: ReactNode }) {
+/** Imagem à esquerda do título e linhas embaixo dele (`views.form.header`). */
+export interface FormLead {
+  image?: ReactNode;
+  lines: string[];
+}
+
+/** Título do registro (e a filial dona) com os botões à direita; com `lead`, a imagem e as linhas do cabeçalho. */
+export default function FormHeader(props: { title: string; owner?: string; lead?: FormLead; children?: ReactNode }) {
+  const { title, owner, lead, children } = props;
   return (
     <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 1, flexWrap: 'wrap' }}>
-      <Stack>
-        <Typography variant="h4">{title}</Typography>
-        {owner && (
-          <Typography variant="body2" color="text.secondary">
-            {owner}
-          </Typography>
-        )}
+      <Stack direction="row" spacing={2} sx={{ alignItems: 'center', minWidth: 0 }}>
+        {lead?.image}
+        <Stack sx={{ minWidth: 0 }}>
+          <Typography variant="h4">{title}</Typography>
+          {lead?.lines.map((l, i) => (
+            <Typography key={i} variant={i ? 'caption' : 'body1'} color="text.secondary">
+              {l}
+            </Typography>
+          ))}
+          {owner && (
+            <Typography variant="body2" color="text.secondary">
+              {owner}
+            </Typography>
+          )}
+        </Stack>
       </Stack>
       {children && (
         <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', rowGap: 1 }}>
@@ -38,6 +53,7 @@ interface FrameProps {
   dialog: boolean;
   title: string;
   owner?: string;
+  lead?: FormLead;
   /** Mostra o cabeçalho com o título na página (no rodapé editando, o título da página já basta). */
   header: boolean;
   /** Botões do cabeçalho (ou, no diálogo, do rodapé). */
@@ -49,7 +65,7 @@ interface FrameProps {
 }
 
 /** Moldura do formulário: na página, cabeçalho, seções e rodapé; num diálogo, as partes do próprio diálogo. */
-export function FormFrame({ dialog, title, owner, header, top, bottom, onSubmit, children }: FrameProps) {
+export function FormFrame({ dialog, title, owner, lead, header, top, bottom, onSubmit, children }: FrameProps) {
   const content = useRef<HTMLDivElement>(null);
   // diálogo aberto para digitar: o cursor já vai para o primeiro campo
   useEffect(() => {
@@ -71,7 +87,7 @@ export function FormFrame({ dialog, title, owner, header, top, bottom, onSubmit,
   return (
     <Stack spacing={2.5} component="form" onSubmit={onSubmit} noValidate>
       {header && (
-        <FormHeader title={title} owner={owner}>
+        <FormHeader title={title} owner={owner} lead={lead}>
           {top}
         </FormHeader>
       )}
