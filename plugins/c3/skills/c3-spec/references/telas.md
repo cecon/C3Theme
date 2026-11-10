@@ -75,6 +75,7 @@ Resumo. Quem decide são o `spec/v0/app.schema.json` e o `entity.schema.json` do
 - `afterCreate` (ao lado de `sections`): para onde ir depois de criar pela tela cheia, como `"/conversa/{id}"`. `{campo}` vira o valor gravado (de um reference, o id). Sem ele, abre o registro criado.
 - `autosave: true` (ao lado de `sections`, só em `singleton`): a configuração abre editável e cada campo grava sozinho ao mudar (switch, select) ou ao sair (texto), sem Editar nem Salvar. Booleano vira linha de ajuste com switch à direita. Sem `titleField`, o título do singleton é o `label.singular`.
 - `views.detail.component` troca o detalhe. Sem ele, o detalhe é o formulário em modo leitura.
+- `pairing` na seção: ligar aparelho por QR ou código pelos campos do registro (`status`, `qr`, `code`, `states`) e ações de registro nos botões (`actions.qr/code/cancel/retry`). Não escreva componente custom para isso.
 - `width` (de 12) na seção: seções seguidas que somam até 12 dividem a linha (Observações 7, Resumo 5).
 - `views.form.initial`: valores do registro novo só no formulário; data aceita `{ "$date": "today", "offset": 15 }`. O `default` do campo vale também pela API.
 - `views.form.actions: "footer"` põe Cancelar e gravar no fim; `submitLabel: { "new": "Criar fatura", "edit": "Salvar alterações" }` troca o texto.

@@ -240,6 +240,18 @@ Fora do painel, telas que não são CRUD vão em `pages` com `component` (`{ "pa
 - **`permission`** é um código de permissão do sistema, como em `access` e `rowAccess`. `GET /_meta/app` devolve `pages` com `{ "/balcao": true }` para cada página com `permission`, conferido por `Hooks::permitted` na filial ativa (filial do cabeçalho que não vale mais não dá erro: a resposta sai sem filial, e a shell pergunta de novo ao escolher ou trocar de filial). Vale também para página `dashboard`. Sem permissão, a shell tira o item do menu e a rota mostra "sem permissão". Isso só esconde a tela: o que o componente chama no backend continua conferido pelo sistema.
 - A shell monta só o layout (`"blank"` para tela cheia), o tema, a navegação e a permissão. Comportamento (bipagem, TEF, fila offline) é do componente e do backend do sistema. O contrato genérico não ganha nada específico de estação.
 
+**Ligar um aparelho.** Número de WhatsApp, maquininha ou outro aparelho que se liga por QR Code ou código de pareamento ganha a seção `pairing`, desenhada pelos campos do registro, sem componente custom:
+
+```json
+{ "title": "Conexão", "pairing": { "status": "situacao", "qr": "qr", "code": "codigo", "account": "numero", "error": "mensagem",
+  "states": { "conectando": "connecting", "qr": "qr", "codigo": "pairing-code", "conectado": "connected", "saiu": "logged-out", "erro": "error" },
+  "actions": { "qr": "ligar", "code": "ligar_codigo", "cancel": "desligar", "retry": "ligar" } } }
+```
+
+- `states` leva o valor do campo `status` ao estado da tela (`connecting`, `qr`, `pairing-code`, `connected`, `logged-out`, `error`). Valor fora dele (desligado) esconde a seção, e as ações do registro cuidam dele.
+- `actions` são ações de registro da entidade. Cada botão só aparece se a ação existe, o usuário pode rodá-la e o `visibleWhen` dela vale. `qr`, `cancel` e `retry` rodam no clique (sem input nem confirm); `code` recebe o número no primeiro campo do input dela, e `phone` (campo com o número já conhecido) pula a pergunta.
+- O QR é desenhado na tela a partir do texto do campo, sem rede. Com `live` na entidade, o registro relê quando o backend avisa, e o QR novo aparece sozinho. A seção só aparece em registro gravado, fora de diálogo.
+
 **Mestre-detalhe (1:N).** Uma seção do formulário pode listar os filhos do registro: `{ "title": "Clientes", "related": { "entity": "customer", "field": "company_id" } }` mostra, na tela da empresa, os clientes cujo `company_id` aponta para ela. A seção só aparece em registro já salvo. Adicionar e editar abrem o formulário da entidade filha num diálogo, com `field` preenchido e travado. As permissões são as da filha. Os filhos passam pelo CRUD normal da filha, sem endpoint novo: cada filho grava sozinho.
 
 **Filhos gravados junto com o pai.** Quando o filho só existe dentro do pai (itens do pedido, endereços da pessoa, códigos de barras do produto, faixas da tabela de preço), a seção ganha `"save": "with_parent"`:
