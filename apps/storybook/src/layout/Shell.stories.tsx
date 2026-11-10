@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import MotorShell from '../motor/MotorShell';
+import { searchFor } from '../motor/play';
 import { appSource } from '../motor/source';
 import { withMotor } from '../motor/withMotor';
 
@@ -31,3 +32,6 @@ export const MenuHorizontal: Story = { name: 'Menu horizontal', args: { orientat
 export const DoisNiveis: Story = { name: 'Dois níveis', args: { orientation: 'rail' } };
 
 export const RegistroAberto: Story = { name: 'Registro aberto', parameters: { route: '/cliente/2' } };
+
+/** `layout.header.search: { records: true }`: o Ctrl K acha telas e também registros pelo GET /_search, agrupados. */
+export const BuscaCtrlK: Story = { name: 'Busca do Ctrl K', play: searchFor('ana') };

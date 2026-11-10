@@ -196,6 +196,14 @@ Exemplo: [`activity.json`](v0/examples/activity.json).
 - **Tempo real:** o SSE manda `ready` e depois um `notification` (sem conteúdo) a cada mudança na lista do usuário; a shell relê o GET. Marcar como lido avisa as outras abas sozinho. Aviso criado pelo sistema chega se ele avisar: `let bell = Bell::new(); Engine::builder(store).bell(bell.clone())…` e, depois de gravar, `bell.notify(&usuario)` (no engine-node, `new Bell()` e `bell.notify(usuario)`). Reconexão como no `live`.
 - **Item:** `{ id, title, description?, tone?, createdAt, readAt, to? }`. `readAt` null é não lido; `unread` conta todos os não lidos do usuário, não só os da página.
 
+## Busca do Ctrl K
+
+`layout.header.search` liga a paleta do Ctrl K (⌘K). `true` (o padrão) procura as telas do menu; `false` tira a busca; `{ "records": true }` também chama `GET /_search?q=<texto>&limit=20` e mostra o que o backend achou. Contrato em [search.yaml](v0/search.yaml).
+
+- **O que entra é do sistema.** Registros de várias entidades, mensagens, um índice FTS5 sem acento: ele decide e só devolve o que o usuário pode abrir. No c3-engine, implemente `Search` e passe em `Engine::builder(store).search(..)`; no engine-node, `buildEngine({ search })`. Sem a porta, a rota responde 404 e a paleta segue só com as telas, sem mostrar erro.
+- **Item:** `{ kind, group, title, snippet, path, icon, at }`. `group` é o título do grupo, na ordem em que aparece; `snippet` é a segunda linha; `path` é a rota aberta com Enter; `icon` é um nome do catálogo do app; `at` aparece relativo ("há 2 dias"). O motor confere `q` (2 a 200 caracteres depois de aparar) e `limit` (1 a 50) e corta a resposta no limite.
+- **Na paleta:** telas primeiro, depois os grupos do backend, com as setas passando por tudo. Pede a partir de 2 letras, 200 ms depois de parar de digitar; texto novo cancela o pedido anterior. O trecho que bate fica em negrito no título e na segunda linha, ignorando acentos.
+
 ## Painel
 
 Uma página de `pages` pode ser um painel descrito no próprio app.json, sem componente: indicadores, gráficos e listas curtas lidos do contrato, com o mesmo escopo, filial ativa, `rowAccess` e permissão de campo da lista.

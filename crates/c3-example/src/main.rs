@@ -16,6 +16,7 @@ mod operators;
 mod orders;
 mod prices;
 mod products;
+mod search;
 mod shutdown;
 mod sources;
 mod tables;
@@ -275,8 +276,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .entity(include_str!("../../../spec/v0/examples/promotion_product.json"))
         .entity(include_str!("../../../spec/v0/examples/store_settings.json"))
         .entity(include_str!("../../../spec/v0/examples/customer_pending.json"))
-        .hooks(TestUsers { pool, writer })
+        .hooks(TestUsers {
+            pool: pool.clone(),
+            writer,
+        })
         .notifications(notifications::Bells::default())
+        .search(search::Products(pool))
         .build()
         .await?;
 

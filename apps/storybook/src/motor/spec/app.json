@@ -6,7 +6,7 @@
   "layout": {
     "orientation": "vertical",
     "header": {
-      "search": true,
+      "search": { "records": true },
       "notifications": true,
       "fullscreen": true,
       "settings": true

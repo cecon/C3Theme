@@ -36,6 +36,7 @@ mod org;
 mod ref_filter;
 mod relative_date;
 mod row_access;
+mod search;
 mod section;
 mod spec;
 mod spec_action;
@@ -71,6 +72,7 @@ pub use live::{Change, Live, LiveEvent};
 pub use lookup::LookupCall;
 pub use notifications::{Bell, Notification, NotificationList, Notifications};
 pub use relative_date::Clock;
+pub use search::{Search, SearchHit};
 pub use spec::{FieldType, Scope};
 pub use store::{Conn, Executed, Row, SqlValue, Store, StoreError, StoreErrorKind, Tx};
 pub use write::{ChildRow, ChildWrite, WriteCall, WriteOp};
@@ -90,6 +92,8 @@ pub(crate) struct Inner {
     /// Sino do header: a porta do sistema (sem ela, as rotas respondem 404) e o canal do tempo real.
     pub notifications: Option<Box<dyn notifications::Notifications>>,
     pub bell: Bell,
+    /// Busca do Ctrl K: a porta do sistema (sem ela, GET /_search responde 404).
+    pub search: Option<Box<dyn search::Search>>,
 }
 
 #[derive(Clone)]
@@ -106,6 +110,7 @@ impl Engine {
             live: Live::default(),
             notifications: None,
             bell: Bell::default(),
+            search: None,
             read_only: false,
         }
     }
@@ -124,6 +129,7 @@ pub struct EngineBuilder {
     live: Live,
     notifications: Option<Box<dyn notifications::Notifications>>,
     bell: Bell,
+    search: Option<Box<dyn search::Search>>,
     read_only: bool,
 }
 
@@ -164,6 +170,12 @@ impl EngineBuilder {
     /// Sino do header (`layout.header.notifications`): onde o sistema guarda os avisos de cada usuário.
     pub fn notifications(mut self, port: impl Notifications) -> Self {
         self.notifications = Some(Box::new(port));
+        self
+    }
+
+    /// Busca do Ctrl K (`header.search: { records: true }`): o que o sistema acha para o texto.
+    pub fn search(mut self, port: impl Search) -> Self {
+        self.search = Some(Box::new(port));
         self
     }
 
@@ -266,6 +278,7 @@ impl EngineBuilder {
             live: self.live,
             notifications: self.notifications,
             bell: self.bell,
+            search: self.search,
         })))
     }
 }

@@ -21,3 +21,12 @@ export const runAction =
     for (const [field, value] of Object.entries(inputs)) await userEvent.type(dialog.getByLabelText(field, { exact: false }), value);
     await userEvent.click(dialog.getByRole('button', { name: confirm }));
   };
+
+/** Abre o Ctrl K e digita: a paleta mostra as telas e os registros que o backend (aqui, em memória) achou. */
+export const searchFor =
+  (text: string): Play =>
+  async () => {
+    await userEvent.keyboard('{Control>}k{/Control}');
+    await userEvent.type(await screen.findByRole('textbox', { name: 'Ir para…' }), text);
+    await screen.findByText('Clientes', { selector: '.MuiListSubheader-root' });
+  };

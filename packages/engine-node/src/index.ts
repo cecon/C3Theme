@@ -13,4 +13,5 @@ export { type ListenerOptions, MAX_BODY, engineListener } from './http/node-http
 export * from './ports/hooks';
 export type { Notification, NotificationList, Notifications } from './ports/notifications';
 export type { EngineRequest, EngineResponse } from './ports/request';
+export type { Search, SearchHit } from './ports/search';
 export { type Conn, type Executed, type Row, type Store, StoreError, type StoreErrorKind, type Tx, inTx } from './ports/store';

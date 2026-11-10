@@ -10,6 +10,7 @@ import { applySections } from '../domain/section';
 import { type Rec, isTextual } from '../domain/types';
 import type { Hooks } from '../ports/hooks';
 import type { Notifications } from '../ports/notifications';
+import type { Search } from '../ports/search';
 import type { Store } from '../ports/store';
 import { checkDatabase, checkHooks } from './boot';
 import { Engine } from './engine';
@@ -30,6 +31,8 @@ export interface EngineOptions {
   notifications?: Notifications;
   /** Canal do sino criado antes, para o sistema avisar quando cria um aviso (`bell.notify(usuário)`). */
   bell?: Bell;
+  /** Busca do Ctrl K (`header.search: { records: true }`): o que o sistema acha para o texto (sem ela, /_search é 404). */
+  search?: Search;
   /** O motor só lê: toda gravação é do sistema (conexão com `PRAGMA query_only`). */
   readOnly?: boolean;
 }
@@ -52,7 +55,18 @@ export async function buildEngine(o: EngineOptions): Promise<Engine> {
     const hooks = new System(o.hooks ?? {});
     checkHooks(entities, children, hooks, o.readOnly === true);
     await checkDatabase(o.store, entities, o.readOnly === true);
-    return new Engine(app, entities, children, rowAccess, o.store, hooks, o.live ?? new Live(), o.bell ?? new Bell(), o.notifications);
+    return new Engine(
+      app,
+      entities,
+      children,
+      rowAccess,
+      o.store,
+      hooks,
+      o.live ?? new Live(),
+      o.bell ?? new Bell(),
+      o.notifications,
+      o.search
+    );
   } catch (e) {
     if (e instanceof BuildError) throw e;
     throw new BuildError((e as Error).message);

@@ -13,6 +13,7 @@ import type { Db } from './db';
 import { exampleHooks } from './hooks';
 import { loginRoute } from './login';
 import { exampleNotifications } from './notifications';
+import { exampleSearch } from './search';
 
 /** Raiz do repositório (migrations do exemplo em Rust e a spec de exemplo). */
 const REPO_ROOT = new URL('../../../', import.meta.url).pathname;
@@ -82,7 +83,8 @@ export async function exampleServer(file: string, root = REPO_ROOT): Promise<{ s
     app: spec(root, 'app'),
     entities: ENTITIES.map((e) => spec(root, e)),
     hooks: exampleHooks(db),
-    notifications: exampleNotifications()
+    notifications: exampleNotifications(),
+    search: exampleSearch(db)
   });
   const server = createServer(engineListener(engine, { prefix: '/api', routes: loginRoute }));
   return {

@@ -97,6 +97,19 @@ export interface C3Client {
   readNotifications?(ids?: string[]): Promise<{ unread: number }>;
   /** GET /_notifications/_events (SSE): `ready`, depois um `notification` por aviso novo para o usuário. */
   notificationEvents?(onMessage: (m: LiveMessage) => void, signal: AbortSignal): Promise<void>;
+  /** Ctrl K com `header.search: { records: true }`: GET /_search, registros e mensagens que o sistema acha. */
+  search?(q: string, limit: number, signal?: AbortSignal): Promise<SearchResult[]>;
+}
+
+/** Um achado de GET /_search (spec/v0/search.yaml). `group` agrupa na paleta; `path` é a rota da shell. */
+export interface SearchResult {
+  kind: string;
+  group: string;
+  title: string;
+  snippet?: string | null;
+  path: string;
+  icon?: string | null;
+  at?: string | null;
 }
 
 /** Aviso do sino (spec/v0/notifications.yaml). `readAt` null: não lido. `to`: rota da shell aberta ao clicar. */
@@ -129,7 +142,7 @@ export function createClient(
 ): C3Client {
   const base = apiUrl.replace(/\/$/, '');
 
-  async function call<T>(method: string, path: string, body?: unknown, opts: WriteOptions = {}): Promise<T> {
+  async function call<T>(method: string, path: string, body?: unknown, opts: WriteOptions = {}, signal?: AbortSignal): Promise<T> {
     let res: Response;
     const write = {
       ...(opts.ifMatch && { 'if-match': `"${opts.ifMatch}"` }),
@@ -139,7 +152,8 @@ export function createClient(
       res = await fetch(base + path, {
         method,
         headers: { ...(body === undefined ? {} : { 'content-type': 'application/json' }), ...write, ...headers?.() },
-        body: body === undefined ? undefined : JSON.stringify(body)
+        body: body === undefined ? undefined : JSON.stringify(body),
+        signal
       });
     } catch {
       throw new ApiError(0, 'network', 'Sem conexão com o servidor.');
@@ -226,6 +240,10 @@ export function createClient(
     notifications: (limit) => call<NotificationList>('GET', `/_notifications${limit ? `?limit=${limit}` : ''}`),
     readNotifications: (ids) => call<{ unread: number }>('POST', '/_notifications/_read', ids ? { ids } : {}),
     notificationEvents: (onMessage, signal) => stream('/_notifications/_events', onMessage, signal),
+    search: (q, limit, signal) =>
+      call<{ data: SearchResult[] }>('GET', `/_search?${new URLSearchParams({ q, limit: String(limit) })}`, undefined, {}, signal).then(
+        (r) => r.data
+      ),
     lookup: (entity, name, value) => call<{ data: WireRecord }>('POST', `/${e(entity)}/_lookups/${e(name)}`, { value }).then((r) => r.data)
   };
 }

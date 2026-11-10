@@ -12,6 +12,7 @@ import MenuCount from './widgets/MenuCount';
 import { canOpenPage } from './routes';
 import { buildMenu } from './shellMenu';
 import { useSessionUser } from './auth/sessionUser';
+import useRecordSearch from './hooks/useRecordSearch';
 
 export interface C3LayoutProps {
   /** Rodapé do drawer (ex.: usuário logado e sair), que é do sistema e não da spec. */
@@ -24,6 +25,7 @@ export default function C3Layout({ drawerFooter, desktop }: C3LayoutProps) {
   const { app, entities, components, icons, pageAccess } = useEngine();
   const text = useText();
   const header = app.layout.header ?? {};
+  const recordSearch = useRecordSearch();
 
   // página registrada sem permissão some do menu (a rota também bloqueia)
   const menu = buildMenu(app, {
@@ -47,7 +49,7 @@ export default function C3Layout({ drawerFooter, desktop }: C3LayoutProps) {
       userPlacement={app.layout.user}
       header={
         <>
-          {header.search !== false && <CommandSearch />}
+          {header.search !== false && <CommandSearch search={recordSearch} />}
           <BranchSelector />
           {header.actions?.map((name) => {
             const Action = components[name];

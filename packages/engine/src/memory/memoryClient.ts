@@ -6,6 +6,7 @@ import { ApiError, C3Client, type C3Notification } from '../api';
 import type { AppDef, BulkItem, Capabilities, EntityDef, WireRecord } from '../types';
 import { memoryNotifications } from './notifications';
 import { aggregate, list } from './query';
+import { memorySearch } from './search';
 import { def, fail, fromInput, fromSeed, saveChildren, Store, toWire, validate, validateChildren, withParentChildren } from './records';
 
 export interface MemorySeed {
@@ -153,6 +154,7 @@ export function createMemoryClient(seed: MemorySeed): C3Client {
     lookup: () => wait(() => unsupported('A consulta')),
     file: () => wait(() => unsupported('O arquivo')),
     notifications: (limit) => wait(() => bell.list(limit)),
-    readNotifications: (ids) => wait(() => bell.read(ids))
+    readNotifications: (ids) => wait(() => bell.read(ids)),
+    search: (q, limit) => wait(() => memorySearch(store, q, limit))
   };
 }
