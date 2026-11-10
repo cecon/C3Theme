@@ -24,3 +24,25 @@ describe('link', () => {
     expect(() => reply({ link: '/x', open: { id: '1' } })).toThrow();
   });
 });
+
+describe('progress (ação em etapas, #53)', () => {
+  const steps = { ...action, steps: true } as Action;
+  const stepped = (outcome: Parameters<typeof buildReply>[3]) => buildReply(() => true, entity, steps, outcome);
+
+  it('vai no JSON com o cursor só no meio da rodada', () => {
+    expect(stepped({ message: '2 de 5', progress: { total: 5, done: 2, cursor: 2 } })).toMatchObject({
+      body: { progress: { total: 5, done: 2, cursor: 2 } }
+    });
+    expect(stepped({ progress: { total: 5, done: 5, cursor: 9 } })).toMatchObject({
+      body: { progress: { total: 5, done: 5, cursor: null } }
+    });
+  });
+
+  it('sem steps, sem cursor no meio ou done passando do total é erro do sistema', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    expect(() => reply({ progress: { total: 5, done: 5 } })).toThrow();
+    expect(() => stepped({ progress: { total: 5, done: 2 } })).toThrow();
+    expect(() => stepped({ progress: { total: 2, done: 3, cursor: 1 } })).toThrow();
+    expect(() => stepped({ progress: { total: 2.5, done: 1, cursor: 1 } })).toThrow();
+  });
+});

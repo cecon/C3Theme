@@ -10,6 +10,7 @@ import Typography from '@mui/material/Typography';
 import { branchLabel, useEngine, useText } from '../../context';
 import { fetchAll } from '../../export';
 import { displayValue, findOption } from '../../format';
+import { negativeTone } from '../../rowStyle';
 import type { EntityDef, FieldDef, FormSection, WireRecord } from '../../types';
 import { recordTitle } from '../../views';
 
@@ -58,7 +59,18 @@ export default function RecordPrint({ def, record, onReady }: { def: EntityDef; 
   }, [children]); // eslint-disable-line react-hooks/exhaustive-deps
   if (!children) return null;
 
-  const show = (f: FieldDef, v: unknown) => displayValue(f, v, locale, (x) => text(findOption(f, x)?.label, x)) || '—';
+  const shown = (f: FieldDef, v: unknown) => displayValue(f, v, locale, (x) => text(findOption(f, x)?.label, x)) || '—';
+  // número negativo no tom do campo (`negativeTone`): a cor sai no papel
+  const show = (f: FieldDef, v: unknown) => {
+    const tone = negativeTone(f, v);
+    return tone ? (
+      <Box component="span" sx={{ color: `${tone}.dark`, printColorAdjust: 'exact' }}>
+        {shown(f, v)}
+      </Box>
+    ) : (
+      shown(f, v)
+    );
+  };
   const blank = new Set(print.blank ?? []);
   const where = org ? branchLabel(org, org.active) : undefined;
   const title = print.title ? text(print.title) : `${text(def.label.singular)} ${recordTitle(def, record)}`.trim();

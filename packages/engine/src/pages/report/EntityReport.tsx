@@ -17,6 +17,7 @@ import { branchLabel, useEngine, useText } from '../../context';
 import { EXPORT_LIMIT, fetchAll } from '../../export';
 import { displayValue, findOption } from '../../format';
 import { buildReport } from '../../report';
+import { rowStyler } from '../../rowStyle';
 import type { FieldDef } from '../../types';
 import ListToolbar from '../list/ListToolbar';
 import ParamsBar from '../list/ParamsBar';
@@ -110,7 +111,9 @@ export default function EntityReport({ entity }: { entity: string }) {
           <Typography color="text.secondary">Nenhuma linha com estes filtros.</Typography>
         </Box>
       )}
-      {lines.length > 0 && <ReportTable columns={columns} lines={lines} />}
+      {lines.length > 0 && (
+        <ReportTable columns={columns} lines={lines} rowSx={rowStyler(view.rowStyles ?? def.views?.list?.rowStyles, def.fields)} />
+      )}
     </Panel>
   );
 }

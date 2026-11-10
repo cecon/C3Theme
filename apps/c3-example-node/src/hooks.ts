@@ -10,6 +10,7 @@ import { validateMenu, validateMenuChildren } from './menu';
 import { writeOperator } from './operators';
 import { writeOrder } from './orders';
 import { applyReferrals } from './referrals';
+import { review } from './review';
 import { applyPrices, discountPreview, labels, pricesPrefill, pricesPreview, SCALE_APP, scaleFile } from './products';
 import { actionAllowed, capabilities, orgAccess, permitted, user, userValue } from './users';
 
@@ -32,6 +33,7 @@ export function exampleHooks(db: Db): Hooks {
       if (key === 'product.scale_file') return scaleFile(db, call);
       if (key === 'product.scale_app') return { link: SCALE_APP, message: 'Baixando o programa da balança.' };
       if (key === 'customer.referrals') return applyReferrals(db, call);
+      if (key === 'seller.review') return review(call);
       if (key !== 'seller.apply_schedule') throw ApiError.internal();
       // aplica uma jornada a todos os vendedores do canal, na filial ativa (seller é por filial)
       const branch = call.ctx.activeBranch;

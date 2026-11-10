@@ -30,14 +30,18 @@ export async function runListAction(
 ): Promise<ActionReply> {
   const ctx = await Ctx.of(engine, req);
   const owner = allowListAction(ctx, entity, action);
-  const raw = parseActionInput(action, listInput(body()));
+  const all = body();
+  const { cursor, ...rest } = all;
+  // só a ação em etapas recebe o cursor da etapa anterior; nas outras, é campo desconhecido
+  const raw = parseActionInput(action, listInput(action.steps ? rest : all));
   const input = await checkInput(await engine.store.conn(), ctx, action, owner, raw);
   const outcome = await engine.hooks.runListAction({
     entity: entity.name,
     action: action.name,
     input,
     ctx: ctx.requestContext(),
-    store: engine.store
+    store: engine.store,
+    ...(action.steps && cursor !== undefined && cursor !== null && { cursor })
   });
   return buildReply((e) => engine.entities.has(e), entity, action, outcome);
 }

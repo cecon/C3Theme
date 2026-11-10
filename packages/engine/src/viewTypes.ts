@@ -1,6 +1,6 @@
 // Views de quadro, calendário, relatório e planta da entidade (spec/v0/entity.schema.json, views.board, .calendar, .report e .map).
 
-import type { EnumValue, Text } from './types';
+import type { Condition, EnumValue, Text } from './types';
 
 /** Quadro (kanban): colunas pelos valores de um enum; arrastar grava o campo. */
 export interface BoardView {
@@ -44,6 +44,8 @@ export interface ReportView {
   subtotals?: string[];
   sort?: string;
   tree?: { parent: string };
+  /** Estilo da linha de registro; sem ele, vale o `views.list.rowStyles`. */
+  rowStyles?: RowStyle[];
 }
 
 /**
@@ -130,6 +132,28 @@ export interface ListLook {
   rowActionsStyle?: 'color' | 'quiet';
   /** Registro e novo abrem num diálogo sobre a lista, em vez da página. */
   open?: 'page' | 'dialog';
+  /** Estilo da linha pela condição: todas as que valem somam (negrito de qualquer uma, o tom da última). */
+  rowStyles?: RowStyle[];
+}
+
+/** `views.list.rowStyles[]` (e `views.report.rowStyles[]`): negrito e fundo de destaque quando a condição vale. */
+export interface RowStyle {
+  when: Condition;
+  bold?: boolean;
+  tone?: 'primary' | 'secondary' | 'info' | 'success' | 'warning' | 'error';
+}
+
+/** `views.list.opening`: o saldo antes da data inicial do filtro, num grupo só (um produto num almoxarifado). */
+export interface ListOpening {
+  /** Campo do saldo (integer ou decimal). */
+  field: string;
+  /** Campo date ou datetime do período. */
+  dateField: string;
+  /** Campos que o filtro precisa fixar (eq) para a linha valer. */
+  groupBy?: string[];
+  /** `sum` (padrão): soma do campo antes da data; `last`: o valor da última linha antes dela (saldo acumulado). */
+  measure?: 'sum' | 'last';
+  label?: Text;
 }
 
 /** Avatar da coluna em objeto: campo da foto, uma ou duas iniciais e cor por registro ou cinza. */

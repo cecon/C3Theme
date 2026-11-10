@@ -9,8 +9,10 @@ import useAction from '../hooks/useAction';
 import useActionInput from '../hooks/useActionInput';
 import useGridFullScreen from '../hooks/useGridFullScreen';
 import useActionReply from '../hooks/useActionReply';
+import useStepsRun from '../hooks/useStepsRun';
 import useTaskTelemetry from '../hooks/useTaskTelemetry';
 import ActionBody from './ActionBody';
+import StepsDialog from './StepsDialog';
 import { loadPrefill } from './prefill';
 import type { ActionDef } from '../types';
 
@@ -29,10 +31,23 @@ export default function ListActions({ entity }: { entity: string }) {
   // a tarefa vai do clique até rodar com sucesso; fechar o diálogo antes disso é abandono
   const task = useTaskTelemetry();
   const deliver = useActionReply();
+  const steps = useStepsRun(entity);
   const actions = (def.actions ?? []).filter((a) => a.target === 'list' && capabilities.actions?.[a.name]);
   if (actions.length === 0) return null;
 
+  // ação em etapas: o diálogo do input fecha e a barra assume; falha numa etapa fica na barra, não no input
+  async function stepped(action: ActionDef, body: Record<string, unknown>) {
+    setOpen(null);
+    const out = await steps.run(action.name, body);
+    if (out.kind === 'stopped') notify(`Parado em ${out.done} de ${out.total}. O que já rodou ficou gravado.`, 'warning');
+    if (out.kind !== 'finished') return true;
+    notify(out.result.message ?? (action.successMessage ? text(action.successMessage) : 'Feito.'));
+    deliver(out.result);
+    return true;
+  }
+
   async function execute(action: ActionDef, body: Record<string, unknown>) {
+    if (action.steps) return stepped(action, body);
     const result = await runList(action.name, body);
     if (result) {
       notify(result.message ?? (action.successMessage ? text(action.successMessage) : 'Feito.'));
@@ -78,7 +93,7 @@ export default function ListActions({ entity }: { entity: string }) {
             color="secondary"
             startIcon={Icon ? <Icon size={18} /> : undefined}
             onClick={() => start(a)}
-            disabled={running}
+            disabled={running || steps.state !== null}
           >
             {text(a.label)}
           </Button>
@@ -103,6 +118,12 @@ export default function ListActions({ entity }: { entity: string }) {
       >
         <ActionBody entity={entity} action={open} form={form} error={errorOf} />
       </ActionDialog>
+      <StepsDialog
+        title={text(actions.find((a) => a.name === steps.state?.action)?.label ?? '')}
+        state={steps.state}
+        onStop={steps.requestStop}
+        onClose={steps.close}
+      />
     </>
   );
 }

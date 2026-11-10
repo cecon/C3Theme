@@ -39,7 +39,18 @@ export function buildReply(
     if (!web || body.open) throw broken('devolveu link fora de http(s):// ou /, ou junto com open');
     body.link = url;
   }
+  if (outcome.progress !== undefined) body.progress = progressJson(action.steps, outcome.progress, broken);
   return { kind: 'json', body };
+}
+
+/** O `progress` da ação em etapas, conferido: a shell precisa do cursor para continuar. */
+function progressJson(steps: boolean, p: NonNullable<ActionOutcome['progress']>, broken: (what: string) => Error): Rec {
+  if (!steps) throw broken('devolveu progress sem steps: true na spec');
+  const whole = (n: unknown) => Number.isInteger(n) && (n as number) >= 0;
+  if (!whole(p.total) || !whole(p.done) || p.done > p.total) throw broken('devolveu progress com total/done inválido');
+  const more = p.done < p.total;
+  if (more && (p.cursor === undefined || p.cursor === null)) throw broken('devolveu etapa no meio (done < total) sem cursor');
+  return { total: p.total, done: p.done, cursor: more ? p.cursor : null };
 }
 
 /** O JSON, para quem não aceita arquivo (lote). */

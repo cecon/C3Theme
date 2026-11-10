@@ -17,6 +17,7 @@ mod orders;
 mod prices;
 mod products;
 mod referrals;
+mod review;
 mod search;
 mod shutdown;
 mod sources;
@@ -194,6 +195,7 @@ impl c3_engine::Hooks for TestUsers {
             ("product", "reprice", _) => return prices::apply(&self.pool, call).await,
             ("product", "scale_file" | "scale_app", _) => return products::scale(&self.pool, call).await,
             ("customer", "referrals", _) => return referrals::apply(&self.pool, call).await,
+            ("seller", "review", _) => return Ok(review::run(&call)),
             ("seller", "apply_schedule", Some(b)) => b.parse().map_err(|_| ApiError::internal())?,
             ("seller", "apply_schedule", None) => return Err(ApiError::bad_request("Escolha a filial ativa.")),
             _ => return Err(ApiError::internal()),

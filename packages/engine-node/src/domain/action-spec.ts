@@ -29,6 +29,8 @@ export interface Action {
   preview: boolean;
   /** Ação que desfaz esta: o Desfazer da shell roda a inversa, com a versão conferida. */
   inverse?: string;
+  /** `steps: true` (só ação de lista): roda em etapas, com `cursor` no corpo e `progress` na resposta. */
+  steps: boolean;
 }
 
 /** Monta a ação (nome já conferido) e devolve o `visibleWhen` cru, resolvido depois com os campos da entidade. */
@@ -64,6 +66,8 @@ export function parseAction(name: string, a: Rec, fields: Field[], ident: (n: st
   // um por um daria um arquivo por registro; em conjunto, o arquivo é um só
   if (returnsFile && bulk && !together)
     throw new Error(`${label}: ação que devolve arquivo (returns 'file') só roda em lote com bulk "together"`);
+  const steps = a.steps === true;
+  if (steps && (!list || returnsFile)) throw new Error(`${label}: steps só em ação de lista (target 'list') que não devolve arquivo`);
   const action: Action = {
     name: a.name as string,
     bulk,
@@ -74,7 +78,8 @@ export function parseAction(name: string, a: Rec, fields: Field[], ident: (n: st
     prefill: a.prefill === true,
     returnsFile,
     preview: a.preview === true,
-    inverse: typeof a.inverse === 'string' ? a.inverse : undefined
+    inverse: typeof a.inverse === 'string' ? a.inverse : undefined,
+    steps
   };
   return [action, visibleWhen];
 }

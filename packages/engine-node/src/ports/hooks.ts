@@ -88,6 +88,11 @@ export interface ActionOutcome {
    * `https://`, `http://` ou um caminho do próprio servidor (`/`). Outro formato, ou junto com `open`, é 500.
    */
   link?: string;
+  /**
+   * Andamento da ação `steps: true`: `done` de `total`; a shell chama de novo com `cursor` até `done == total`.
+   * Etapa no meio sem cursor, `done` maior que `total` ou progress em ação sem steps é 500.
+   */
+  progress?: { total: number; done: number; cursor?: unknown };
 }
 
 export interface ActionCall {
@@ -118,6 +123,8 @@ export interface ListActionCall {
   input: Rec;
   ctx: RequestContext;
   store: Store;
+  /** Ação `steps: true`: o `cursor` da etapa anterior; ausente na primeira chamada. */
+  cursor?: unknown;
 }
 
 export interface PrefillCall {

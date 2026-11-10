@@ -14,6 +14,7 @@ import { DocumentDownload, Trash } from 'iconsax-reactjs';
 import { PageLoader, Panel } from '@c3theme/ui';
 import { branchLabel, useEngine, useText } from '../context';
 import { findOption } from '../format';
+import { rowStyler } from '../rowStyle';
 import AddButton from '../widgets/AddButton';
 import ListActions from '../widgets/ListActions';
 import type { FieldDef, WireRecord } from '../types';
@@ -233,6 +234,7 @@ export default function EntityList({ entity, view = 'list' }: { entity: string; 
               : undefined
           }
           openable={!def.source}
+          rowSx={rowStyler(list.rowStyles, def.fields)}
           onOpen={inDialog ? (row) => setDialog({ id: row.id! }) : undefined}
           inlineEdit={inlineEdit}
           opening={opening}

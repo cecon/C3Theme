@@ -4,7 +4,7 @@ import type { Condition, FieldType } from './conditions.mjs';
 import type { DocumentFormat } from './documents.mjs';
 import type { AuthConfig } from './auth/port';
 import type { DashboardDef } from './dashboard';
-import type { BoardView, CalendarView, ColumnDef, GalleryView, ListLook, MapView, ReportView } from './viewTypes';
+import type { BoardView, CalendarView, ColumnDef, GalleryView, ListLook, ListOpening, MapView, ReportView } from './viewTypes';
 import type { ActionDef, GridFieldDef } from './actionTypes';
 import type { FormView } from './formTypes';
 import type { WizardDef } from './wizard';
@@ -53,6 +53,8 @@ export interface FieldDef {
   unit?: string;
   /** Só em integer: `false` mostra sem separador de milhar (porta, ano, código). */
   grouping?: boolean;
+  /** Só em integer e decimal: número negativo nesse tom na lista, no relatório e na impressão. */
+  negativeTone?: 'error' | 'warning';
   /** O valor como o banco grava (texto ou inteiro), sem tradução; o `label` é o que a tela mostra. */
   options?: { value: EnumValue; label: Text; color?: Tone }[];
   /** Só em string: campo text do mesmo registro com as opções em JSON; com a lista, a tela mostra um select. */
@@ -83,21 +85,18 @@ export interface Access {
 /** O que o usuário não pode com um campo ou lista with_parent (capabilities.fields). */
 export type Denied = 'hidden' | 'readOnly';
 
-export type { ColumnDef, ExpandItem, GalleryView, ListExpand, ListLook, RecordImageDef, RowAction } from './viewTypes';
+export type {
+  ColumnDef,
+  ExpandItem,
+  GalleryView,
+  ListExpand,
+  ListLook,
+  ListOpening,
+  RecordImageDef,
+  RowAction,
+  RowStyle
+} from './viewTypes';
 export type { ComputedValue, FormFieldDef, FormSection, FormView, PairingDef, PairingState, RelatedDef, SummaryLine } from './formTypes';
-
-/** `views.list.opening`: o saldo antes da data inicial do filtro, num grupo só (um produto num almoxarifado). */
-export interface ListOpening {
-  /** Campo do saldo (integer ou decimal). */
-  field: string;
-  /** Campo date ou datetime do período. */
-  dateField: string;
-  /** Campos que o filtro precisa fixar (eq) para a linha valer. */
-  groupBy?: string[];
-  /** `sum` (padrão): soma do campo antes da data; `last`: o valor da última linha antes dela (saldo acumulado). */
-  measure?: 'sum' | 'last';
-  label?: Text;
-}
 
 export interface Preset {
   id: string;
@@ -287,6 +286,8 @@ export interface ActionResult {
   open?: { entity: string; id: string };
   /** Endereço que a shell abre (ou baixa) na mesma aba: o arquivo não passa pelo motor. */
   link?: string;
+  /** Ação `steps`: `done` de `total`; a shell chama de novo com o `cursor` até `done == total`. */
+  progress?: { total: number; done: number; cursor: unknown };
 }
 
 /** Resultado de um id na ação em lote: o mesmo da ação de um registro, ou o erro dele. */

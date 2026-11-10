@@ -59,7 +59,7 @@ pub use action::ActionCall;
 pub use action_list::ListActionCall;
 pub use action_prefill::PrefillCall;
 pub use action_preview::{Preview, PreviewCall, PreviewColumn, PreviewTable};
-pub use action_reply::{ActionOutcome, OpenRecord};
+pub use action_reply::{ActionOutcome, OpenRecord, Progress};
 pub use action_together::BulkActionCall;
 pub use agent_ui_state::{check_agent_reply, supersede_agent_parts};
 /// Para implementar `Hooks::validate` e `Hooks::run_action` (async) sem adicionar a dependência: `#[c3_engine::async_trait]`.

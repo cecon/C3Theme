@@ -28,4 +28,25 @@ export function listActionTests({ test, as, tag }) {
     assert.equal((await apply(null, 1, { ids: ['1'], input: { channel: 'LOJA', work_days: 2 } })).status, 400);
     assert.equal((await as(null, 1).post('/seller/1/_actions/apply_schedule', {})).status, 404);
   });
+
+  test('ações', 'ação da lista em etapas: progress a cada chamada, cursor de volta até done == total', async () => {
+    const review = (body) => as(null, 1).post('/seller/_actions/review', body);
+    const seen = [];
+    let cursor;
+    for (let i = 0; i < 10; i++) {
+      const res = await review(cursor === undefined ? { input: {} } : { input: {}, cursor });
+      assert.equal(res.status, 200, JSON.stringify(res.body));
+      const { total, done, cursor: next } = res.body.progress;
+      seen.push(`${done}/${total}`);
+      assert.equal(typeof res.body.message, 'string');
+      if (done === total) {
+        assert.equal(next, null, 'a última etapa não manda cursor');
+        break;
+      }
+      cursor = next;
+    }
+    assert.deepEqual(seen, ['2/5', '4/5', '5/5']);
+    // cursor só vale na ação em etapas: nas outras é campo desconhecido
+    assert.equal((await apply(null, 1, { input: { channel: 'LOJA', work_days: 2 }, cursor: 1 })).status, 400);
+  });
 }

@@ -22,6 +22,8 @@ pub struct ListActionCall<'a> {
     /// Requisição e filial ativa: a ação vale para a filial ativa (onde um registro novo seria gravado).
     pub ctx: &'a RequestContext<'a>,
     pub store: &'a dyn Store,
+    /// Ação `steps: true`: o `cursor` da etapa anterior (`Progress::cursor`); `None` na primeira chamada.
+    pub cursor: Option<&'a Value>,
 }
 
 pub(crate) async fn run(engine: &Engine, entity: &Entity, action: &Action, req: &Parts, body: Body) -> Result<ActionReply, ApiError> {
@@ -31,7 +33,14 @@ pub(crate) async fn run(engine: &Engine, entity: &Entity, action: &Action, req: 
     if !engine.0.hooks.action_allowed(&entity.name, &action.name, active.as_deref(), req) {
         return Err(ApiError::forbidden());
     }
-    let input = list_input(body?)?;
+    let mut body = body?;
+    // só a ação em etapas recebe o cursor da etapa anterior; nas outras, é campo desconhecido
+    let cursor = if action.steps {
+        body.remove("cursor").filter(|c| !c.is_null())
+    } else {
+        None
+    };
+    let input = list_input(body)?;
     // reference no input confere contra a filial ativa, dona do que a ação criar
     let owner = ctx.active().map_or_else(Owner::default, |b| Owner::of_new(entity, b));
     let input = crate::action_grid::parse(action, &input)?;
@@ -46,12 +55,13 @@ pub(crate) async fn run(engine: &Engine, entity: &Entity, action: &Action, req: 
         input: &input,
         ctx: &rc,
         store: &*engine.0.store,
+        cursor: cursor.as_ref(),
     };
     let outcome = engine.0.hooks.run_list_action(call).await?;
     reply(engine, entity, action, outcome, None)
 }
 
-/// Corpo da ação da lista: `{ input }`, nada mais.
+/// Corpo da ação da lista: `{ input }`, nada mais (o `cursor` da ação em etapas já saiu).
 pub(crate) fn list_input(mut body: Map<String, Value>) -> Result<Map<String, Value>, ApiError> {
     if let Some(key) = body.keys().find(|k| *k != "input") {
         return Err(ApiError::bad_request(format!(

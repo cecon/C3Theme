@@ -177,6 +177,11 @@ for (const { entity, file } of entities.values()) {
         errors.push(`${where}: valor fora do formato trafegado de ${f.type}`);
     }
   }
+  for (const [k, v] of [
+    ['list', list],
+    ['report', entity.views?.report ?? {}]
+  ])
+    for (const [i, s] of (v.rowStyles ?? []).entries()) checkCondition(s.when, fields, `${file} views.${k}.rowStyles[${i}]`);
   if (new Set((list.presets ?? []).map((p) => p.id)).size !== (list.presets ?? []).length) errors.push(`${file}: ids de preset repetidos`);
 
   const inForm = new Set();

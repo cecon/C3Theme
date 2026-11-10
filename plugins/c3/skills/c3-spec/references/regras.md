@@ -19,11 +19,11 @@ Cadastro grava pelo CRUD. **Fato de negócio muda por ação**: cancelar venda, 
 ]
 ```
 
-| Tipo               | Rota                                  | Corpo                       | Hook no c3-engine       |
-| ------------------ | ------------------------------------- | --------------------------- | ----------------------- |
-| de registro        | `POST /{e}/{id}/_actions/{a}`         | o input                     | `run_action`            |
-| em lote (`bulk`)   | `POST /{e}/_actions/{a}`              | `{ ids: [1..100], input }`  | `run_action`, uma vez por registro |
-| de lista (`target: list`) | `POST /{e}/_actions/{a}`       | `{ input }`                 | `run_list_action`       |
+| Tipo                      | Rota                          | Corpo                      | Hook no c3-engine                  |
+| ------------------------- | ----------------------------- | -------------------------- | ---------------------------------- |
+| de registro               | `POST /{e}/{id}/_actions/{a}` | o input                    | `run_action`                       |
+| em lote (`bulk`)          | `POST /{e}/_actions/{a}`      | `{ ids: [1..100], input }` | `run_action`, uma vez por registro |
+| de lista (`target: list`) | `POST /{e}/_actions/{a}`      | `{ input }`                | `run_list_action`                  |
 
 - O `input` tem os mesmos tipos e regras dos campos, mas as condições citam campos do próprio input. Ele não é gravado pelo motor: vai inteiro para o hook. `file` no input chega como veio (base64).
 - `visibleWhen` é conferido antes da execução (409 se não vale). Mesmo assim, o sistema confere o estado de novo dentro da transação dele (`UPDATE ... WHERE status = 'open'`), porque o motor não segura transação durante a ação.
@@ -32,6 +32,7 @@ Cadastro grava pelo CRUD. **Fato de negócio muda por ação**: cancelar venda, 
 - **Lote**: cada registro passa ou falha sozinho, e o que deu certo não é desfeito.
 - **Fila de pendências**: um preset (ex.: `status = rejected`) + item de menu com `"badge": true` + ação `bulk`. A shell marca as linhas, roda a ação e deixa marcadas as que falharam, com o motivo.
 - Ação de lista não tem `bulk` nem `visibleWhen`.
+- **Ação longa** (minutos): `"steps": true` na ação de lista. Cada chamada faz um lote e responde `progress { total, done, cursor }`; a shell chama de novo com `{ input, cursor }` até `done == total`, com barra e Parar (o que já rodou fica). O hook recebe o cursor em `ListActionCall::cursor` e escolhe o tamanho do lote para caber no tempo do proxy.
 - Para fatos que só mudam por ação, deixe a situação `readOnly` e devolva `update`/`delete` falsos em `capabilities`.
 
 ## Consultar e preencher
@@ -62,11 +63,11 @@ Ainda não existe: `access` nos campos de uma filha `with_parent`, `rowAccess` n
 "organization": { "company": "org_company", "branch": "branch" }
 ```
 
-| `scope` da entidade | Colunas reservadas                  | Quem vê                              |
-| ------------------- | ----------------------------------- | ------------------------------------ |
-| `group` (padrão)    | nenhuma                             | todo usuário                         |
-| `company`           | `org_company_id`                    | quem acessa alguma filial da empresa |
-| `branch`            | `org_company_id` + `org_branch_id`  | quem acessa aquela filial            |
+| `scope` da entidade | Colunas reservadas                 | Quem vê                              |
+| ------------------- | ---------------------------------- | ------------------------------------ |
+| `group` (padrão)    | nenhuma                            | todo usuário                         |
+| `company`           | `org_company_id`                   | quem acessa alguma filial da empresa |
+| `branch`            | `org_company_id` + `org_branch_id` | quem acessa aquela filial            |
 
 - O escopo é fixo por entidade. Se dois clientes precisam de escopos diferentes, são duas entidades. Não existe "filial vazia = compartilhado".
 - O cabeçalho `C3-Branch` é a filial ativa, onde se grava. `?branches=1,2` são as filiais em exibição, só leitura. O backend cruza tudo com as filiais permitidas (`Hooks::org_access`): o sistema não escreve filtro de filial.
@@ -84,19 +85,24 @@ Ainda não existe: `access` nos campos de uma filha `with_parent`, `rowAccess` n
 Formato único, com `message` pronta para o usuário:
 
 ```json
-{ "error": { "code": "validation_failed", "message": "Alguns campos precisam de atenção.",
-  "fields": { "email": [{ "code": "unique", "message": "Já existe um cliente com este e-mail." }] } } }
+{
+  "error": {
+    "code": "validation_failed",
+    "message": "Alguns campos precisam de atenção.",
+    "fields": { "email": [{ "code": "unique", "message": "Já existe um cliente com este e-mail." }] }
+  }
+}
 ```
 
-| HTTP | `code`              | Quando                                              |
-| ---- | ------------------- | --------------------------------------------------- |
-| 400  | `bad_request`       | query, corpo ou condição malformada                 |
-| 401  | `unauthorized`      | sem token (a shell volta ao login)                  |
-| 403  | `forbidden`         | sem permissão                                       |
-| 404  | `not_found`         | não existe ou está fora do escopo                   |
+| HTTP | `code`              | Quando                                               |
+| ---- | ------------------- | ---------------------------------------------------- |
+| 400  | `bad_request`       | query, corpo ou condição malformada                  |
+| 401  | `unauthorized`      | sem token (a shell volta ao login)                   |
+| 403  | `forbidden`         | sem permissão                                        |
+| 404  | `not_found`         | não existe ou está fora do escopo                    |
 | 409  | `conflict`          | unique, FK impedindo exclusão, `visibleWhen` da ação |
-| 412  | `stale`             | `If-Match` com versão velha                         |
-| 422  | `validation_failed` | regra do schema ou de negócio, com `fields`         |
-| 500  | `internal`          | o resto, sem stack trace                            |
+| 412  | `stale`             | `If-Match` com versão velha                          |
+| 422  | `validation_failed` | regra do schema ou de negócio, com `fields`          |
+| 500  | `internal`          | o resto, sem stack trace                             |
 
 Erro de regra de negócio do sistema volta neste formato (`ApiError::validation`, `ApiError::conflict`), com a chave do campo. Assim a shell mostra o erro no lugar certo.
