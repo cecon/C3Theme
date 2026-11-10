@@ -34,7 +34,9 @@ export function toCsv(
   locale: string,
   label: (f: FieldDef) => string,
   optionLabel: (f: FieldDef, v: string) => string,
-  totals?: Record<string, number | string>
+  totals?: Record<string, number | string>,
+  /** Linha "Saldo anterior" logo depois do cabeçalho (`views.list.opening`). */
+  opening?: { field: string; value: number | string; label: string }
 ) {
   const decimal = (1.1).toLocaleString(locale).charAt(1);
   const sep = decimal === ',' ? ';' : ',';
@@ -50,6 +52,13 @@ export function toCsv(
     return displayValue(f, v, locale, (x) => optionLabel(f, x));
   };
   const lines = [fields.map((f) => cell(label(f))).join(sep), ...rows.map((r) => fields.map((f) => cell(value(f, r[f.name]))).join(sep))];
+  if (opening) {
+    const labelAt = fields.find((f) => f.name !== opening.field)?.name;
+    const line = fields.map((f) =>
+      f.name === opening.field ? cell(value(f, opening.value)) : f.name === labelAt ? cell(opening.label) : ''
+    );
+    lines.splice(1, 0, line.join(sep));
+  }
   if (totals && Object.keys(totals).length > 0) {
     const labelAt = fields.find((f) => totals[f.name] === undefined)?.name;
     lines.push(fields.map((f) => (f.name in totals ? cell(value(f, totals[f.name])) : f.name === labelAt ? 'Total' : '')).join(sep));

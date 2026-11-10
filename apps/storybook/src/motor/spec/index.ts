@@ -9,10 +9,11 @@ import fatura from './fatura.json';
 import fornecedor from './fornecedor.json';
 import loja from './loja.json';
 import mesa from './mesa.json';
+import movimento from './movimento.json';
 import produto from './produto.json';
 import tarefa from './tarefa.json';
 import vendedor from './vendedor.json';
 
 export const APP = app as unknown as AppDef;
 
-export const ENTITIES = [produto, fatura, loja, cliente, vendedor, fornecedor, tarefa, evento, mesa] as unknown as EntityDef[];
+export const ENTITIES = [produto, fatura, loja, cliente, vendedor, fornecedor, tarefa, evento, mesa, movimento] as unknown as EntityDef[];

@@ -744,6 +744,27 @@
                   }
                 }
               }
+            },
+            "opening": {
+              "type": "object",
+              "required": ["field", "dateField"],
+              "additionalProperties": false,
+              "description": "Linha 'Saldo anterior' no topo da lista (kardex): com o filtro de período ativo (gte/gt em dateField, o 'de' do dateRange) e cada groupBy fixado por eq no filtro, a shell pede o saldo antes da data inicial com o mesmo where (sem os limites do período e com 'antes do início'). Sai também na segunda linha do CSV. Sem data inicial, ou com um groupBy solto, a linha não aparece.",
+              "properties": {
+                "field": { "$ref": "#/$defs/identifier", "description": "Campo integer ou decimal do saldo, que aparece numa coluna." },
+                "dateField": { "$ref": "#/$defs/identifier", "description": "Campo date ou datetime do período." },
+                "groupBy": {
+                  "type": "array",
+                  "items": { "$ref": "#/$defs/identifier" },
+                  "description": "Campos que o filtro precisa fixar (produto, almoxarifado) para o saldo ser de um grupo só."
+                },
+                "measure": {
+                  "enum": ["sum", "last"],
+                  "default": "sum",
+                  "description": "'sum': soma do campo nas linhas antes da data (movimento com sinal). 'last': o valor da última linha antes da data, por data e id (o campo já é o saldo acumulado)."
+                },
+                "label": { "$ref": "#/$defs/text", "description": "Padrão: 'Saldo anterior'." }
+              }
             }
           }
         },

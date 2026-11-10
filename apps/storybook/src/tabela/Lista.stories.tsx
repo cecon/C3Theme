@@ -33,5 +33,15 @@ export const Faturas: Story = { name: 'Faturas, com seleção e lote', args: { e
  */
 export const EditarNaLinha: Story = { name: 'Produtos, editando na linha', args: { entity: 'produto' } };
 
+/**
+ * `views.list.opening`: com o período a partir de março e um produto no filtro, a primeira linha é o saldo anterior
+ * (o saldo da última linha antes de 01/03). Tire o produto ou a data inicial e a linha some.
+ */
+export const SaldoAnterior: Story = {
+  name: 'Kardex, com saldo anterior',
+  args: { entity: 'movimento' },
+  parameters: { route: '/?f.produto=1&f.data.de=2026-03-01' }
+};
+
 /** O mesmo registro aberto: o formulário vem dos campos, sem `views.form`. */
 export const Registro: Story = { name: 'Registro aberto', args: { screen: 'form', id: '3' } };

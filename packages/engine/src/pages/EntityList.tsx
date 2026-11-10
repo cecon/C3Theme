@@ -32,6 +32,7 @@ import ParamsBar from './list/ParamsBar';
 import { useExportCsv } from './list/useExportCsv';
 import { useListQuery } from './list/useListQuery';
 import { refreshMs, totalFields, useListTotals } from './list/useListTotals';
+import { useListOpening } from './list/useListOpening';
 import { summaryFields } from './list/selectionSum';
 import { ViewSwitcher } from './views/ViewBar';
 import { useLive } from '../live/useLive';
@@ -126,7 +127,13 @@ export default function EntityList({ entity, view = 'list' }: { entity: string; 
     ),
     query
   );
-  const { exporting, exportCsv } = useExportCsv(entity, query, exportFields, optionLabel, totals);
+  const openingValue = useListOpening(entity, list.opening, query);
+  const opening = openingValue && {
+    field: list.opening!.field,
+    value: openingValue.value,
+    label: text(list.opening!.label ?? 'Saldo anterior')
+  };
+  const { exporting, exportCsv } = useExportCsv(entity, query, exportFields, optionLabel, totals, opening);
 
   return (
     <Panel flush>
@@ -228,6 +235,7 @@ export default function EntityList({ entity, view = 'list' }: { entity: string; 
           openable={!def.source}
           onOpen={inDialog ? (row) => setDialog({ id: row.id! }) : undefined}
           inlineEdit={inlineEdit}
+          opening={opening}
         />
       )}
 

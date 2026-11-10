@@ -84,6 +84,19 @@ export type Denied = 'hidden' | 'readOnly';
 export type { ColumnDef, ExpandItem, GalleryView, ListExpand, ListLook, RecordImageDef, RowAction } from './viewTypes';
 export type { ComputedValue, FormFieldDef, FormSection, FormView, PairingDef, PairingState, RelatedDef, SummaryLine } from './formTypes';
 
+/** `views.list.opening`: o saldo antes da data inicial do filtro, num grupo só (um produto num almoxarifado). */
+export interface ListOpening {
+  /** Campo do saldo (integer ou decimal). */
+  field: string;
+  /** Campo date ou datetime do período. */
+  dateField: string;
+  /** Campos que o filtro precisa fixar (eq) para a linha valer. */
+  groupBy?: string[];
+  /** `sum` (padrão): soma do campo antes da data; `last`: o valor da última linha antes dela (saldo acumulado). */
+  measure?: 'sum' | 'last';
+  label?: Text;
+}
+
 export interface Preset {
   id: string;
   label: Text;
@@ -125,6 +138,8 @@ export interface EntityDef {
       /** Relê a página a cada N segundos (mínimo 3), só com a aba visível. */
       refreshSeconds?: number;
       totals?: { field: string; measure?: 'sum' }[];
+      /** Linha "Saldo anterior" no topo, com o período filtrado (ver `useListOpening`). */
+      opening?: ListOpening;
     };
     form?: FormView;
     gallery?: GalleryView;

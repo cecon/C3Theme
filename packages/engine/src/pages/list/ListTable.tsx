@@ -26,6 +26,7 @@ import type { FieldDef, ListExpand, RowAction, Text, WireRecord } from '../../ty
 import { ColumnCell, ColumnExtras } from './ColumnCell';
 import { EditCell } from './EditCell';
 import { hugsLastColumn } from './hugLast';
+import { OpeningRow } from './OpeningRow';
 import { RowActionsCell } from './RowActionsCell';
 import { RowPreview } from './RowPreview';
 import type { InlineEdit } from './useInlineEdit';
@@ -78,7 +79,8 @@ export default function ListTable({
   expand,
   openable = true,
   onOpen,
-  inlineEdit
+  inlineEdit,
+  opening
 }: {
   entity: string;
   columns: ListColumn[];
@@ -101,6 +103,8 @@ export default function ListTable({
   openable?: boolean;
   /** Estado das colunas editáveis (`columns[].edit`). */
   inlineEdit?: InlineEdit;
+  /** Linha "Saldo anterior" no topo (`views.list.opening`). */
+  opening?: { field: string; value: number | string; label: string };
 }) {
   const { components, entities } = useEngine();
   const [open, setOpen] = useState<Set<string>>(new Set());
@@ -166,6 +170,14 @@ export default function ListTable({
                 ...columns.map((c) => columnCell(c.def)),
                 ...(rowActions ? (['text'] as const) : [])
               ]}
+            />
+          )}
+          {opening && rows && (
+            <OpeningRow
+              opening={opening}
+              columns={columns}
+              lead={span - columns.length - (rowActions ? 1 : 0)}
+              trail={Boolean(rowActions)}
             />
           )}
           {rows?.map((row) => (

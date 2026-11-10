@@ -72,6 +72,7 @@ export function checkBoardCalendar(entity, fields, file, errors) {
 /** Totais, singleton e consulta do sistema: regras da lista que o JSON Schema não expressa. */
 export function checkListRules(entity, fields, entities, file, errors, wire) {
   checkTotals(entity, fields, file, errors);
+  checkOpening(entity, fields, file, errors);
   checkSingleton(entity, entities, file, errors);
   checkSource(entity, entities, file, errors, wire);
   checkCards(entity, fields, file, errors);
@@ -140,4 +141,17 @@ function checkTotals(entity, fields, file, errors) {
     if (seen.has(t.field)) errors.push(`${where}: '${t.field}' repetido`);
     seen.add(t.field);
   }
+}
+
+/** Saldo anterior: campo integer ou decimal nas colunas, data date ou datetime, groupBy de campos que existem. */
+function checkOpening(entity, fields, file, errors) {
+  const o = entity.views?.list?.opening;
+  if (!o) return;
+  const where = `${file} views.list.opening`;
+  const f = fields.get(o.field);
+  if (!f || !['integer', 'decimal'].includes(f.type)) errors.push(`${where}: '${o.field}' precisa ser campo integer ou decimal`);
+  if (!['date', 'datetime'].includes(fields.get(o.dateField)?.type))
+    errors.push(`${where}: '${o.dateField}' precisa ser campo date ou datetime`);
+  for (const g of o.groupBy ?? []) if (!fields.has(g)) errors.push(`${where}: groupBy cita campo inexistente '${g}'`);
+  if (entity.singleton) errors.push(`${where}: singleton não tem lista`);
 }
