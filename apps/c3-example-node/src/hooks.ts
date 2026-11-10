@@ -5,7 +5,7 @@ import { ApiError, type Hooks } from '@c3theme/engine-node';
 
 import { runAction } from './actions';
 import { type Db, exec } from './db';
-import { invoice, invoicePreview, lookup, postpone, readAttachment, source } from './extras';
+import { invoice, invoicePreview, lookup, postpone, readAttachment, source, sourceColumns } from './extras';
 import { validateMenu, validateMenuChildren } from './menu';
 import { writeOperator } from './operators';
 import { writeOrder } from './orders';
@@ -59,6 +59,7 @@ export function exampleHooks(db: Db): Hooks {
     },
     lookup: async (call) => lookup(call),
     source: async (call) => source(call),
+    sourceColumns,
     readFile: async (call) => readAttachment(db, call)
   };
 }

@@ -180,6 +180,12 @@ export interface SourceSql {
   values: SqlValue[];
 }
 
+/** Coluna que a consulta mostra (#60): o campo da entidade e, se quiser, o rótulo dela nesta consulta (`out/26`). */
+export interface SourceColumn {
+  field: string;
+  label?: string;
+}
+
 /** Os pontos de extensão (todos opcionais). Os síncronos rodam dentro da montagem do SQL. */
 export interface Hooks {
   orgAccess?(req: EngineRequest): Maybe<OrgAccess>;
@@ -194,6 +200,8 @@ export interface Hooks {
   userValue?(key: string, req: EngineRequest): unknown;
   clock?(req: EngineRequest): Clock;
   source?(call: SourceCall): Promise<SourceSql>;
+  /** Colunas da lista da consulta para estes parâmetros, nesta ordem (#60); sem resposta, as da `views.list`. */
+  sourceColumns?(call: SourceCall): Maybe<SourceColumn[] | undefined>;
   runAction?(call: ActionCall): Promise<ActionOutcome>;
   runBulkAction?(call: BulkActionCall): Promise<ActionOutcome>;
   runListAction?(call: ListActionCall): Promise<ActionOutcome>;

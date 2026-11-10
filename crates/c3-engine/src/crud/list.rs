@@ -22,6 +22,8 @@ pub(crate) struct Page {
     pub page: i64,
     pub page_size: i64,
     pub total: i64,
+    /// Consulta do sistema: colunas que o sistema pediu para estes parâmetros (#60); `None` usa as da view.
+    pub columns: Option<Vec<super::source::SourceColumn>>,
 }
 
 /// `q`: os parâmetros da lista (`page`, `pageSize`, `where`, `q`, `sort`, `branches`), já decodificados.
@@ -34,6 +36,7 @@ pub(crate) async fn list(engine: &Engine, req: &Parts, name: &str, q: &HashMap<S
         from,
         where_sql,
         mut params,
+        source_params,
     } = filtered(&ctx, entity, q).await?;
 
     let page = match q.get("page") {
@@ -97,10 +100,15 @@ pub(crate) async fn list(engine: &Engine, req: &Parts, name: &str, q: &HashMap<S
         ctx.attach_can(entity, r);
     }
 
+    let columns = match &source_params {
+        Some(p) => super::source::columns(&ctx, entity, p).await?,
+        None => None,
+    };
     Ok(Page {
         data,
         page,
         page_size,
         total,
+        columns,
     })
 }

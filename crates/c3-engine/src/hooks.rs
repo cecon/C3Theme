@@ -5,7 +5,7 @@ use serde_json::{Map, Value};
 
 use crate::{
     ActionCall, ActionOutcome, ApiError, BulkActionCall, Capabilities, ChildWrite, Clock, Conn, FieldErrors, FileCall, FileContent,
-    ListActionCall, LookupCall, OrgAccess, PrefillCall, Preview, PreviewCall, SourceCall, SourceSql, WriteCall,
+    ListActionCall, LookupCall, OrgAccess, PrefillCall, Preview, PreviewCall, SourceCall, SourceColumn, SourceSql, WriteCall,
 };
 
 /// Requisição em andamento, entregue ao hook `validate`.
@@ -150,6 +150,13 @@ pub trait Hooks: Send + Sync + 'static {
     async fn source(&self, call: SourceCall<'_>) -> Result<SourceSql, ApiError> {
         eprintln!("c3-engine: {} é source system mas o sistema não implementa source", call.entity);
         Err(ApiError::internal())
+    }
+
+    /// Colunas da lista de uma consulta do sistema para estes parâmetros (#60): só as que vierem, nesta ordem, com o
+    /// rótulo dado (o mês e o ano do período: `out/26`). Cada `field` é um campo da entidade. `None` (padrão): as
+    /// colunas da `views.list`. Vai em `meta.columns` da lista.
+    async fn source_columns(&self, _call: SourceCall<'_>) -> Result<Option<Vec<SourceColumn>>, ApiError> {
+        Ok(None)
     }
 
     /// Executa a ação, já com permissão, `visibleWhen` e input conferidos pelo motor. É aqui que o sistema

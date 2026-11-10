@@ -19,7 +19,9 @@
     "nota_item",
     "conta_contabil",
     "orcado_realizado",
-    "orcamento"
+    "orcamento",
+    "demonstrativo",
+    "boleto"
   ],
   "layout": {
     "orientation": "vertical",
@@ -223,6 +225,43 @@
             },
             "caption": "{count} {label} atrasadas",
             "width": 12
+          }
+        ]
+      }
+    },
+    {
+      "path": "/vencimentos",
+      "title": "Vencimentos",
+      "dashboard": {
+        "filters": [
+          {
+            "name": "venc",
+            "type": "period",
+            "label": "Vence em",
+            "default": "next30",
+            "options": ["today", "next7", "next30", "nextMonth"]
+          }
+        ],
+        "widgets": [
+          {
+            "type": "kpi",
+            "title": "A receber",
+            "entity": "boleto",
+            "measure": "sum:valor",
+            "icon": "Calendar",
+            "tone": "warning",
+            "count": true,
+            "bind": { "venc": "vencimento" }
+          },
+          {
+            "type": "ranking",
+            "title": "Quem vai pagar",
+            "entity": "boleto",
+            "groupBy": "cliente",
+            "measure": "sum:valor",
+            "caption": "{count} {label}",
+            "bind": { "venc": "vencimento" },
+            "width": 8
           }
         ]
       }

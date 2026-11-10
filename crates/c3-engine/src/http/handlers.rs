@@ -56,10 +56,11 @@ pub(super) async fn list(
 ) -> Result<Json<Value>> {
     let q: HashMap<String, String> = form_urlencoded::parse(query.unwrap_or_default().as_bytes()).into_owned().collect();
     let page = crud::list(&engine, &req, &name, &q).await?;
-    Ok(Json(json!({
-        "data": page.data,
-        "meta": { "page": page.page, "pageSize": page.page_size, "total": page.total },
-    })))
+    let mut meta = json!({ "page": page.page, "pageSize": page.page_size, "total": page.total });
+    if let Some(columns) = page.columns {
+        meta["columns"] = json!(columns);
+    }
+    Ok(Json(json!({ "data": page.data, "meta": meta })))
 }
 
 pub(super) async fn create(

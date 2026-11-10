@@ -34,6 +34,8 @@ export interface MemorySeed {
   listActions?: Record<string, Record<string, (input: WireRecord, cursor: unknown) => ActionResult | Promise<ActionResult>>>;
   /** Consultas (`lookups`), no lugar do backend: `lookups.orcamento.media = (valor, with) => ({ mes_01: '150.00' })`. */
   lookups?: Record<string, Record<string, (value: string, withValues: WireRecord) => WireRecord>>;
+  /** Consulta do sistema: as colunas pelos parâmetros (`meta.columns`, #60), `sourceColumns.dre = (params) => [...]`. */
+  sourceColumns?: Record<string, (params: Record<string, string>) => { field: string; label?: string }[] | undefined>;
   /** Avisos do sino (`header.notifications`). Sem eles, o sino aparece vazio. */
   notifications?: C3Notification[];
   /**
@@ -52,6 +54,12 @@ const ALL: Capabilities = { list: true, read: true, create: true, update: true, 
 const unsupported = (what: string) => {
   throw new ApiError(501, 'not_implemented', `${what} precisa do backend do sistema; o adaptador em memória não roda.`);
 };
+
+/** `default` fixo de cada parâmetro da consulta do sistema (o relativo, `{$date}`, fica com o backend). */
+const paramDefaults = (d: EntityDef): WireRecord | undefined =>
+  d.source === 'system'
+    ? Object.fromEntries((d.params?.fields ?? []).flatMap((f) => (typeof f.default === 'string' ? [[f.name, f.default]] : [])))
+    : undefined;
 
 export function createMemoryClient(seed: MemorySeed): C3Client {
   let seq = 0;
@@ -78,7 +86,9 @@ export function createMemoryClient(seed: MemorySeed): C3Client {
 
   const capabilities = (entity: string): Capabilities => {
     const actions = Object.fromEntries((def(store, entity).actions ?? []).map((a) => [a.name, true]));
-    return { ...ALL, actions, ...seed.capabilities?.[entity] };
+    // consulta do sistema é só leitura, como no backend
+    const readOnly = def(store, entity).source === 'system' ? { create: false, update: false, delete: false } : {};
+    return { ...ALL, actions, ...readOnly, ...seed.capabilities?.[entity] };
   };
   const find = (entity: string, id: string) => {
     const row = (store.tables[entity] ?? []).find((r) => r.id === id);
@@ -111,8 +121,14 @@ export function createMemoryClient(seed: MemorySeed): C3Client {
     meta: () => wait(() => ({ app: seed.app, pageAccess: {} })),
     pageAccess: () => wait(() => ({})),
     context: () => wait(() => ({ organization: null, companies: [], branches: [], activeBranch: null, defaultBranch: null })),
-    entity: (name) => wait(() => ({ data: def(store, name), capabilities: capabilities(name) })),
-    list: (entity, params = {}) => wait(() => list(store, entity, params, now())),
+    entity: (name) =>
+      wait(() => ({ data: def(store, name), capabilities: capabilities(name), paramDefaults: paramDefaults(def(store, name)) })),
+    list: (entity, params = {}) =>
+      wait(() => {
+        const res = list(store, entity, params, now());
+        const columns = seed.sourceColumns?.[entity]?.(params.params ?? {});
+        return columns ? { ...res, meta: { ...res.meta, columns } } : res;
+      }),
     aggregate: (entity, params = {}) => wait(() => aggregate(store, entity, params, now())),
     get: (entity, id) => wait(() => toWire(store, entity, find(entity, id))),
     create: (entity, record) =>

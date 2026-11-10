@@ -15,6 +15,8 @@ export function checkDashboards(app, entities, checkCondition, errors) {
       const where = `app.json página '${page.path}' filtro '${f.name}'`;
       if (filters.has(f.name)) errors.push(`${where}: nome repetido`);
       filters.set(f.name, f);
+      if (f.type === 'period' && f.options && f.default && !f.options.includes(f.default))
+        errors.push(`${where}: default '${f.default}' fora de options`);
       if (f.type === 'reference' && (!app.entities?.includes(f.entity) || !entities.get(f.entity)))
         errors.push(`${where}: entidade '${f.entity}' fora de app.entities`);
     }

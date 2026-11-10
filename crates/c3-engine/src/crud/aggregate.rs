@@ -119,7 +119,9 @@ pub(crate) async fn aggregate(engine: &Engine, req: &Parts, name: &str, q: &Hash
         return Err(ApiError::bad_request("'interval' só vale com 'groupBy' de data."));
     }
     let len = interval_len(q.get("interval"))?;
-    let Filtered { from, where_sql, params } = filtered(&ctx, entity, q).await?;
+    let Filtered {
+        from, where_sql, params, ..
+    } = filtered(&ctx, entity, q).await?;
 
     let values_sql = ms.iter().map(measure_sql).collect::<Vec<_>>().join(", ");
     let mut conn = engine.0.store_of(entity).conn().await?;

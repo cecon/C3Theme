@@ -19,7 +19,7 @@ import AddButton from '../widgets/AddButton';
 import ListActions from '../widgets/ListActions';
 import type { FieldDef, WireRecord } from '../types';
 import EntityDialog from './EntityDialog';
-import { listColumns, recordTitle } from './list/listColumns';
+import { listColumns, recordTitle, withSourceColumns } from './list/listColumns';
 import ListTable, { OwnerColumn } from './list/ListTable';
 import { actionButtons, allowedRowActions } from './list/RowActionsCell';
 import GalleryGrid from './gallery/GalleryGrid';
@@ -99,7 +99,8 @@ export default function EntityList({ entity, view = 'list' }: { entity: string; 
   const [dialog, setDialog] = useState<{ id?: string; edit?: boolean } | null>(null);
   const inDialog = list.open === 'dialog';
 
-  const columns = listColumns(def);
+  // consulta do sistema pode escolher as colunas pelos parâmetros (o mês do período no cabeçalho)
+  const columns = withSourceColumns(def, listColumns(def), data?.meta.columns);
   const inlineEdit = useInlineEdit(entity, def, () => void mutate());
   // com mais de uma filial (ou empresa) na tela, a dona de cada linha vira coluna
   const showOwner =

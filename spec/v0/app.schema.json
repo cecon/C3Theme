@@ -130,6 +130,10 @@
     }
   },
   "$defs": {
+    "period": {
+      "enum": ["today", "week", "month", "lastMonth", "last7", "last30", "next7", "next30", "nextMonth", "year", "all"],
+      "description": "Período do filtro do painel. last7/last30: os últimos N dias até hoje. next7/next30: de hoje até hoje+N−1 (o que vai vencer). nextMonth: o mês que vem inteiro."
+    },
     "icon": {
       "type": "string",
       "pattern": "^[A-Z][A-Za-z0-9]*$",
@@ -1137,9 +1141,15 @@
               "$ref": "#/$defs/text"
             },
             "default": {
-              "enum": ["today", "week", "month", "lastMonth", "last7", "last30", "year", "all"],
-              "default": "all",
-              "description": "Período ao abrir o painel."
+              "$ref": "#/$defs/period",
+              "description": "Período ao abrir o painel. Padrão: all, ou o primeiro de options quando options não tem all."
+            },
+            "options": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": { "$ref": "#/$defs/period" },
+              "description": "Quais períodos o seletor oferece, nesta ordem (vencimentos: [\"today\", \"next7\", \"next30\", \"month\"]). Padrão: todos. O default precisa estar aqui."
             }
           }
         },

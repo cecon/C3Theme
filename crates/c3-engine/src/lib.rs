@@ -65,7 +65,7 @@ pub use agent_ui_state::{check_agent_reply, supersede_agent_parts};
 /// Para implementar `Hooks::validate` e `Hooks::run_action` (async) sem adicionar a dependência: `#[c3_engine::async_trait]`.
 pub use async_trait::async_trait;
 pub use capabilities::{Capabilities, OrgAccess};
-pub use crud::source::{SourceCall, SourceSql};
+pub use crud::source::{SourceCall, SourceColumn, SourceSql};
 pub use download::{FileCall, FileContent};
 pub use error::{ApiError, FieldErrors};
 pub use hooks::{Hooks, RequestContext};

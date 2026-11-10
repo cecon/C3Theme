@@ -242,6 +242,10 @@ impl c3_engine::Hooks for TestUsers {
         sources::source(call)
     }
 
+    async fn source_columns(&self, call: SourceCall<'_>) -> Result<Option<Vec<c3_engine::SourceColumn>>, ApiError> {
+        Ok(sources::columns(&call))
+    }
+
     async fn read_file(&self, call: FileCall<'_>) -> Result<FileContent, ApiError> {
         attachments::read(&self.pool, call).await
     }

@@ -5,7 +5,7 @@ import { conditionSql, containsPattern } from '../domain/condition-sql';
 import type { Entity } from '../domain/entity';
 import { ApiError } from '../domain/errors';
 import { resolveRelative } from '../domain/relative-date';
-import type { SqlValue } from '../domain/types';
+import type { Rec, SqlValue } from '../domain/types';
 import { type Branch, type Ctx, scopeSql } from './ctx';
 import { rowFilter } from './row-access';
 import { fromSql } from './source';
@@ -39,11 +39,13 @@ export interface Filtered {
   from: string;
   where: string;
   params: SqlValue[];
+  /** Consulta do sistema: os parâmetros validados, para as colunas da lista (`Hooks.sourceColumns`). */
+  sourceParams?: Rec;
 }
 
 /** `entity` já passou por `viewOf`: campo oculto não filtra nem é buscado. */
 export async function filtered(ctx: Ctx, entity: Entity, q: Record<string, string>): Promise<Filtered> {
-  const [from, params] = await fromSql(ctx, entity, q);
+  const [from, params, sourceParams] = await fromSql(ctx, entity, q);
   const filters: string[] = [];
   if (entity.scope === 'group') ctx.allowActive(entity.name, (c) => c.list);
   // por fora de qualquer condição do usuário: entra também no COUNT
@@ -74,5 +76,5 @@ export async function filtered(ctx: Ctx, entity: Entity, q: Record<string, strin
     });
     filters.push(`(${parts.join(' OR ')})`);
   }
-  return { from, where: filters.length ? ` WHERE ${filters.join(' AND ')}` : '', params };
+  return { from, where: filters.length ? ` WHERE ${filters.join(' AND ')}` : '', params, sourceParams };
 }

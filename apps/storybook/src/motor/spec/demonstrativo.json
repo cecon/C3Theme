@@ -1,0 +1,166 @@
+{
+  "$schema": "../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "demonstrativo",
+  "label": {
+    "singular": "DRE gerencial",
+    "plural": "DRE gerencial",
+    "gender": "m"
+  },
+  "description": "Consulta do sistema com um mês por coluna: o sistema diz, pelo período pedido, quais meses aparecem, em que ordem e com o ano no cabeçalho (meta.columns).",
+  "icon": "Chart2",
+  "titleField": "conta",
+  "source": "system",
+  "params": {
+    "fields": [
+      {
+        "name": "de",
+        "type": "date",
+        "label": "De",
+        "required": true,
+        "default": "2026-10-01"
+      },
+      {
+        "name": "ate",
+        "type": "date",
+        "label": "Até",
+        "required": true,
+        "default": "2027-03-31"
+      }
+    ]
+  },
+  "fields": [
+    {
+      "name": "conta",
+      "type": "string",
+      "label": "Conta",
+      "required": true,
+      "maxLength": 80
+    },
+    {
+      "name": "mes_01",
+      "type": "decimal",
+      "scale": 2,
+      "currency": "BRL",
+      "label": "Jan",
+      "negativeTone": "error"
+    },
+    {
+      "name": "mes_02",
+      "type": "decimal",
+      "scale": 2,
+      "currency": "BRL",
+      "label": "Fev",
+      "negativeTone": "error"
+    },
+    {
+      "name": "mes_03",
+      "type": "decimal",
+      "scale": 2,
+      "currency": "BRL",
+      "label": "Mar",
+      "negativeTone": "error"
+    },
+    {
+      "name": "mes_04",
+      "type": "decimal",
+      "scale": 2,
+      "currency": "BRL",
+      "label": "Abr",
+      "negativeTone": "error"
+    },
+    {
+      "name": "mes_05",
+      "type": "decimal",
+      "scale": 2,
+      "currency": "BRL",
+      "label": "Mai",
+      "negativeTone": "error"
+    },
+    {
+      "name": "mes_06",
+      "type": "decimal",
+      "scale": 2,
+      "currency": "BRL",
+      "label": "Jun",
+      "negativeTone": "error"
+    },
+    {
+      "name": "mes_07",
+      "type": "decimal",
+      "scale": 2,
+      "currency": "BRL",
+      "label": "Jul",
+      "negativeTone": "error"
+    },
+    {
+      "name": "mes_08",
+      "type": "decimal",
+      "scale": 2,
+      "currency": "BRL",
+      "label": "Ago",
+      "negativeTone": "error"
+    },
+    {
+      "name": "mes_09",
+      "type": "decimal",
+      "scale": 2,
+      "currency": "BRL",
+      "label": "Set",
+      "negativeTone": "error"
+    },
+    {
+      "name": "mes_10",
+      "type": "decimal",
+      "scale": 2,
+      "currency": "BRL",
+      "label": "Out",
+      "negativeTone": "error"
+    },
+    {
+      "name": "mes_11",
+      "type": "decimal",
+      "scale": 2,
+      "currency": "BRL",
+      "label": "Nov",
+      "negativeTone": "error"
+    },
+    {
+      "name": "mes_12",
+      "type": "decimal",
+      "scale": 2,
+      "currency": "BRL",
+      "label": "Dez",
+      "negativeTone": "error"
+    }
+  ],
+  "views": {
+    "list": {
+      "columns": [
+        "conta",
+        "mes_01",
+        "mes_02",
+        "mes_03",
+        "mes_04",
+        "mes_05",
+        "mes_06",
+        "mes_07",
+        "mes_08",
+        "mes_09",
+        "mes_10",
+        "mes_11",
+        "mes_12"
+      ],
+      "rowStyles": [
+        {
+          "when": {
+            "field": "conta",
+            "op": "eq",
+            "value": "Resultado"
+          },
+          "bold": true
+        }
+      ]
+    }
+  }
+}

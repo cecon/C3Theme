@@ -12,6 +12,7 @@ import {
   type PreviewCall,
   type Rec,
   type SourceCall,
+  type SourceColumn,
   type SourceSql,
   type SqlValue
 } from '@c3theme/engine-node';
@@ -84,6 +85,18 @@ export function source(call: SourceCall): SourceSql {
     values.push(call.params.stage);
   }
   return { sql: `${sql} GROUP BY a.customer_id`, values };
+}
+
+/** Colunas da lista (#60): as atrasadas primeiro, com a data no cabeçalho; filtrando a etapa, o prazo mais antigo some. */
+export function sourceColumns(call: SourceCall): SourceColumn[] | undefined {
+  if (call.entity !== 'customer_pending') return undefined;
+  const cols: SourceColumn[] = [
+    { field: 'customer_id' },
+    { field: 'late_count', label: `Atrasadas em ${String(call.params.until ?? '')}` },
+    { field: 'open_count' }
+  ];
+  if (typeof call.params.stage !== 'string') cols.push({ field: 'oldest_due' });
+  return cols;
 }
 
 /**

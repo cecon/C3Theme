@@ -263,7 +263,8 @@ export interface OrgContext {
 
 export interface ListResult {
   data: WireRecord[];
-  meta: { page: number; pageSize: number; total: number };
+  /** `columns`: consulta do sistema que escolhe as colunas pelos parâmetros (#60). */
+  meta: { page: number; pageSize: number; total: number; columns?: { field: string; label?: string }[] };
 }
 
 export type FieldErrors = Record<string, { code: string; message: string }[]>;

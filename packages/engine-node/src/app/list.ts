@@ -9,7 +9,9 @@ import { scalarInt } from '../ports/store';
 import { viewOf } from './access';
 import { Ctx } from './ctx';
 import type { Engine } from './engine';
+import type { SourceColumn } from '../ports/hooks';
 import { filtered } from './filter';
+import { sourceColumns } from './source';
 import { attachCan, rowToJson, selectSql, titleSql } from './read';
 
 const PAGE_SIZES = [10, 25, 50, 100];
@@ -19,6 +21,8 @@ export interface Page {
   page: number;
   pageSize: number;
   total: number;
+  /** Consulta do sistema: colunas que o sistema pediu para estes parâmetros (#60). */
+  columns?: SourceColumn[];
 }
 
 function intParam(raw: string | undefined, fallback: number, ok: (n: number) => boolean, message: string): number {
@@ -32,7 +36,7 @@ export async function list(engine: Engine, req: EngineRequest, name: string, q: 
   const ctx = await Ctx.of(engine, req);
   // campo que o usuário não vê não é lido, filtrado, buscado nem ordenado
   const entity = viewOf(ctx, engine.entity(name));
-  const { from, where, params } = await filtered(ctx, entity, q);
+  const { from, where, params, sourceParams } = await filtered(ctx, entity, q);
   const page = intParam(q.page, 1, (p) => p >= 1, "'page' precisa ser inteiro >= 1.");
   const pageSize = intParam(q.pageSize, 25, (p) => PAGE_SIZES.includes(p), "'pageSize' precisa ser 10, 25, 50 ou 100.");
 
@@ -60,5 +64,6 @@ export async function list(engine: Engine, req: EngineRequest, name: string, q: 
   const rows = await conn.query(sql, [...params, pageSize, (page - 1) * pageSize]);
   const data = rows.map((r) => rowToJson(entity, r));
   for (const r of data) attachCan(ctx, entity, r);
-  return { data, page, pageSize, total };
+  const columns = sourceParams ? await sourceColumns(ctx, entity, sourceParams) : undefined;
+  return { data, page, pageSize, total, ...(columns && { columns }) };
 }

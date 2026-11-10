@@ -41,6 +41,9 @@ export const Cartoes: Story = { name: 'Cartões', args: { entity: 'cliente', vie
 /** Indicadores, gráficos e ranking por agregação da entidade (`kpi`, `chart`, `ranking`). */
 export const Painel: Story = { args: { page: '/painel' } };
 
+/** Filtro de período para a frente (`next7`, `next30`, `nextMonth`) com `options`: o seletor só oferece os de vencimento. */
+export const Vencimentos: Story = { args: { page: '/vencimentos' } };
+
 /**
  * `pages[].apiDocs`: o openapi.json do app por tag, com busca e "Experimentar" em cada rota. Aqui o documento e as
  * respostas vêm do adaptador em memória (GET roda; POST responde 501, como servidor sem a rota).
