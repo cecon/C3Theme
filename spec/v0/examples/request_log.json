@@ -1,0 +1,28 @@
+{
+  "$schema": "../entity.schema.json",
+  "specVersion": "0",
+  "name": "request_log",
+  "label": { "singular": "Requisição", "plural": "Requisições", "gender": "f" },
+  "description": "Exemplo de entidade lida de outro banco (store): o registro das requisições num SQLite próprio, só leitura.",
+  "icon": "Activity",
+  "scope": "group",
+  "store": "logs",
+  "titleField": "path",
+  "fields": [
+    { "name": "at", "type": "datetime", "label": "Quando" },
+    { "name": "method", "type": "string", "label": "Método", "maxLength": 10 },
+    { "name": "path", "type": "string", "label": "Rota", "maxLength": 200 },
+    { "name": "status", "type": "integer", "label": "Status" },
+    { "name": "duration_ms", "type": "integer", "label": "Tempo", "unit": "ms" },
+    { "name": "user_name", "type": "string", "label": "Usuário", "maxLength": 60 }
+  ],
+  "views": {
+    "list": {
+      "columns": ["at", "method", "path", "status", "duration_ms", "user_name"],
+      "search": ["path", "user_name"],
+      "defaultSort": [{ "field": "at", "direction": "desc" }],
+      "presets": [{ "id": "errors", "label": "Com erro", "where": { "field": "status", "op": "gte", "value": 400 } }],
+      "totals": [{ "field": "duration_ms" }]
+    }
+  }
+}

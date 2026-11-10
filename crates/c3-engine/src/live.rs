@@ -122,7 +122,7 @@ pub(crate) async fn for_subscriber(engine: &Engine, req: &Parts, name: &str, ev:
         let Some(row_id) = crate::value::parse_id(id) else {
             return Ok(None);
         };
-        let mut conn = engine.0.store.conn().await?;
+        let mut conn = engine.0.store_of(entity).conn().await?;
         if fetch_one(&mut *conn, &ctx, entity, row_id).await?.is_none() {
             return Ok(None);
         }

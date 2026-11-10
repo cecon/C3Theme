@@ -16,6 +16,7 @@ use crate::{children, children_write, Engine};
 pub(crate) async fn delete(engine: &Engine, req: &Parts, name: &str, id: &str) -> Result<()> {
     let entity = engine.entity(name)?;
     super::source::guard_rows(entity)?;
+    crate::spec_store::guard_writes(entity)?;
     if entity.singleton {
         return Err(ApiError::method_not_allowed(
             "Configuração de registro único não se exclui: altere os valores.",

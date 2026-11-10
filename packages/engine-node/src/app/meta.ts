@@ -37,7 +37,7 @@ export async function metaEntity(engine: Engine, req: EngineRequest, name: strin
   const entity = engine.entity(name);
   const ctx = await Ctx.of(engine, req);
   const caps = { ...ctx.activeCaps(name) };
-  const noWrite = engine.children.parentOf(name) !== undefined || entity.source !== undefined;
+  const noWrite = engine.children.parentOf(name) !== undefined || entity.source !== undefined || entity.store !== undefined;
   if (noWrite) [caps.create, caps.update, caps.delete] = [false, false, false];
   if (entity.singleton) caps.delete = false;
   // ação exige read: quem não vê o registro não age sobre ele

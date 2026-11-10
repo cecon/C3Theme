@@ -97,4 +97,6 @@ export interface FormView {
   autosave?: boolean;
   /** Cabeçalho do registro: imagem (ou avatar) à esquerda do título e uma ou duas linhas embaixo. */
   header?: { image?: string | { component: string }; subtitle?: string; caption?: string[] };
+  /** Folha para imprimir: as seções escolhidas (posições), a related inteira e as colunas em branco. */
+  print?: { title?: Text; sections?: number[]; blank?: string[] };
 }

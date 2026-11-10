@@ -1,7 +1,7 @@
 // Regras do menu e das views de quadro e calendário que o JSON Schema não expressa sozinho.
 
 import { checkEditColumn } from './spec-fields.mjs';
-import { checkSource } from './spec-source.mjs';
+import { checkSource, checkStore } from './spec-source.mjs';
 
 const DATES = new Set(['date', 'datetime']);
 
@@ -75,8 +75,10 @@ export function checkListRules(entity, fields, entities, file, errors, wire) {
   checkTotals(entity, fields, file, errors);
   checkOpening(entity, fields, file, errors);
   checkRelatedEdit(entity, entities, file, errors);
+  checkPrint(entity, entities, file, errors);
   checkSingleton(entity, entities, file, errors);
   checkSource(entity, entities, file, errors, wire);
+  checkStore(entity, entities, file, errors);
   checkCards(entity, fields, file, errors);
 }
 
@@ -173,4 +175,18 @@ function checkRelatedEdit(entity, entities, file, errors) {
     if (r.search && !child.views?.list?.search?.length) errors.push(`${where}.search: a filha não tem views.list.search`);
     if (r.presets && !child.views?.list?.presets?.length) errors.push(`${where}.presets: a filha não tem views.list.presets`);
   }
+}
+
+/** Folha impressa: posições de seção que existem e imprimem; colunas em branco de alguma related da folha. */
+function checkPrint(entity, entities, file, errors) {
+  const form = entity.views?.form;
+  if (!form?.print) return;
+  const sections = form.sections ?? [];
+  const where = `${file} views.form.print`;
+  for (const i of form.print.sections ?? [])
+    if (!sections[i] || !(sections[i].rows || sections[i].related))
+      errors.push(`${where}.sections: ${i} não é seção com campos ou related`);
+  const picked = (form.print.sections ?? sections.map((_, i) => i)).map((i) => sections[i]?.related).filter(Boolean);
+  const columns = new Set(picked.flatMap((r) => r.columns ?? entities.get(r.entity)?.entity.fields.map((f) => f.name) ?? []));
+  for (const b of form.print.blank ?? []) if (!columns.has(b)) errors.push(`${where}.blank: '${b}' não é coluna de uma related da folha`);
 }

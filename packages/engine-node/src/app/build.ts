@@ -5,6 +5,7 @@ import { parseChildren } from '../domain/children-spec';
 import { type App, type Entity, fieldOf, parseApp, parseEntity, resolveEntity, titleFieldOf } from '../domain/entity';
 import { checkLookups } from '../domain/lookup-spec';
 import { checkRefFilter } from '../domain/ref-filter';
+import { checkStores } from '../domain/store-spec';
 import { parseRowRules } from '../domain/row-access';
 import { applySections } from '../domain/section';
 import { type Rec, isTextual } from '../domain/types';
@@ -33,6 +34,8 @@ export interface EngineOptions {
   bell?: Bell;
   /** Busca do Ctrl K (`header.search: { records: true }`): o que o sistema acha para o texto (sem ela, /_search é 404). */
   search?: Search;
+  /** Bancos a mais, por nome, das entidades com `store` (só leitura). */
+  stores?: Record<string, Store>;
   /** O motor só lê: toda gravação é do sistema (conexão com `PRAGMA query_only`). */
   readOnly?: boolean;
 }
@@ -54,7 +57,10 @@ export async function buildEngine(o: EngineOptions): Promise<Engine> {
     const rowAccess = new Map([...entities.values()].map((e) => [e.name, parseRowRules(e)]));
     const hooks = new System(o.hooks ?? {});
     checkHooks(entities, children, hooks, o.readOnly === true);
+    const stores = new Map(Object.entries(o.stores ?? {}));
+    checkStores(entities, new Set(stores.keys()));
     await checkDatabase(o.store, entities, o.readOnly === true);
+    for (const [name, store] of stores) await checkDatabase(store, entities, true, name);
     return new Engine(
       app,
       entities,
@@ -65,7 +71,8 @@ export async function buildEngine(o: EngineOptions): Promise<Engine> {
       o.live ?? new Live(),
       o.bell ?? new Bell(),
       o.notifications,
-      o.search
+      o.search,
+      stores
     );
   } catch (e) {
     if (e instanceof BuildError) throw e;

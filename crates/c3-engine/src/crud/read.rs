@@ -124,6 +124,6 @@ pub(crate) async fn read(engine: &Engine, req: &Parts, name: &str, id: &str) -> 
     let ctx = Ctx::new(engine, req).await?;
     super::allow_read(&ctx, entity, |c| c.read)?;
     let id = super::parse_path_id(id)?;
-    let mut conn = engine.0.store.conn().await?;
+    let mut conn = engine.0.store_of(entity).conn().await?;
     full_record(&mut *conn, &ctx, entity, id).await
 }

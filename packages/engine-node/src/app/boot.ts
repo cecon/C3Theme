@@ -10,7 +10,9 @@ import type { System } from './system';
 export function checkHooks(entities: Map<string, Entity>, children: Children, hooks: System, readOnly: boolean): void {
   const names = [...entities.keys()].sort();
   if (readOnly) {
-    const own = names.filter((e) => !children.parentOf(e) && !entities.get(e)!.source && !hooks.delegatesWrites(e));
+    const own = names.filter(
+      (e) => !children.parentOf(e) && !entities.get(e)!.source && !entities.get(e)!.store && !hooks.delegatesWrites(e)
+    );
     if (own.length) throw new Error(`modo só leitura: o sistema precisa gravar estas entidades (Hooks.delegatesWrites): ${own.join(', ')}`);
   }
   for (const name of names) {
@@ -41,17 +43,21 @@ export function checkHooks(entities: Map<string, Entity>, children: Children, ho
   }
 }
 
-export async function checkDatabase(store: Store, entities: Map<string, Entity>, readOnly: boolean): Promise<void> {
+/**
+ * `named`: um banco a mais, só com as tabelas das entidades `store` dele; o motor só lê dali, então não exige
+ * `foreign_keys` nem `query_only`.
+ */
+export async function checkDatabase(store: Store, entities: Map<string, Entity>, readOnly: boolean, named?: string): Promise<void> {
   const conn = await store.conn();
   const regexp = await scalarInt(conn, "SELECT 'Á' REGEXP '(?i)á'").catch(() => null);
   if (regexp !== 1) throw new Error('a conexão não tem REGEXP; use o adaptador do Store (ou registre a função)');
-  if ((await scalarInt(conn, 'PRAGMA foreign_keys')) !== 1) throw new Error('PRAGMA foreign_keys está desligado');
-  if (readOnly && (await scalarInt(conn, 'PRAGMA query_only')) !== 1)
+  if (named === undefined && (await scalarInt(conn, 'PRAGMA foreign_keys')) !== 1) throw new Error('PRAGMA foreign_keys está desligado');
+  if (named === undefined && readOnly && (await scalarInt(conn, 'PRAGMA query_only')) !== 1)
     throw new Error('modo só leitura com conexão que grava: ligue PRAGMA query_only no adaptador do Store');
   const problems: string[] = [];
   for (const name of [...entities.keys()].sort()) {
     const e = entities.get(name)!;
-    if (e.source) continue;
+    if (e.source || e.store !== named) continue;
     const columns = await columnTexts(conn, 'SELECT name FROM pragma_table_info(?)', [name]);
     if (!columns.length) {
       problems.push(`tabela '${name}' não existe`);

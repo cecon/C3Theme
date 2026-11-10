@@ -58,7 +58,9 @@ fn check_sources(entities: &HashMap<String, spec::Entity>, children: &Children) 
 fn check_read_only(entities: &HashMap<String, spec::Entity>, children: &Children, hooks: &dyn Hooks) -> Result<(), String> {
     let mut own: Vec<_> = entities
         .keys()
-        .filter(|e| children.parent_of(e).is_none() && entities[*e].source.is_none() && !hooks.delegates_writes(e))
+        .filter(|e| {
+            children.parent_of(e).is_none() && entities[*e].source.is_none() && entities[*e].store.is_none() && !hooks.delegates_writes(e)
+        })
         .map(String::as_str)
         .collect();
     if own.is_empty() {
@@ -102,19 +104,27 @@ fn check_write_only(entities: &HashMap<String, spec::Entity>, children: &Childre
     Ok(())
 }
 
-pub(crate) async fn check_database(store: &dyn Store, entities: &HashMap<String, spec::Entity>, read_only: bool) -> Result<(), String> {
+/// `named`: um banco a mais (`Engine::builder().store_named`), só com as tabelas das entidades `store` dele; o motor
+/// só lê dali, então não exige `foreign_keys` nem `query_only`.
+pub(crate) async fn check_database(
+    store: &dyn Store,
+    entities: &HashMap<String, spec::Entity>,
+    read_only: bool,
+    named: Option<&str>,
+) -> Result<(), String> {
     let mut conn = store.conn().await.map_err(|e| e.to_string())?;
     let regexp = store::scalar_int(&mut *conn, "SELECT 'Á' REGEXP '(?i)á'", &[]).await;
     if regexp.ok().flatten() != Some(1) {
         return Err("a conexão não tem REGEXP; veja como ligar no adaptador do Store (README do c3-engine)".into());
     }
+    let main = named.is_none();
     let fk = store::scalar_int(&mut *conn, "PRAGMA foreign_keys", &[])
         .await
         .map_err(|e| e.to_string())?;
-    if fk != Some(1) {
+    if main && fk != Some(1) {
         return Err("PRAGMA foreign_keys está desligado; veja como ligar no adaptador do Store (README do c3-engine)".into());
     }
-    if read_only {
+    if main && read_only {
         let q = store::scalar_int(&mut *conn, "PRAGMA query_only", &[])
             .await
             .map_err(|e| e.to_string())?;
@@ -127,7 +137,10 @@ pub(crate) async fn check_database(store: &dyn Store, entities: &HashMap<String,
     let mut problems = Vec::new();
     let mut names: Vec<_> = entities.keys().collect();
     names.sort();
-    for name in names.into_iter().filter(|n| entities[*n].source.is_none()) {
+    for name in names
+        .into_iter()
+        .filter(|n| entities[*n].source.is_none() && entities[*n].store.as_deref() == named)
+    {
         let entity = &entities[name];
         let columns = store::column_texts(&mut *conn, "SELECT name FROM pragma_table_info(?)", &[SqlValue::Text(name.clone())])
             .await

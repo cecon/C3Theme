@@ -30,6 +30,7 @@ import { sourceTests } from './suite-source.mjs';
 import { liveTests } from './suite-live.mjs';
 import { notificationsTests } from './suite-notifications.mjs';
 import { searchTests } from './suite-search.mjs';
+import { storeTests } from './suite-store.mjs';
 
 export function featureTests(ctx) {
   formTests(ctx);
@@ -58,6 +59,7 @@ export function featureTests(ctx) {
   selectionTests(ctx);
   togetherTests(ctx);
   pagesTests(ctx);
+  storeTests(ctx);
   liveTests(ctx);
   notificationsTests(ctx);
   searchTests(ctx);

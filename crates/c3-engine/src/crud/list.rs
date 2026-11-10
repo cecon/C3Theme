@@ -80,7 +80,7 @@ pub(crate) async fn list(engine: &Engine, req: &Parts, name: &str, q: &HashMap<S
     order.push("t.\"id\" ASC".into());
 
     let count_sql = format!("SELECT COUNT(*) FROM {from} t{where_sql}");
-    let mut conn = engine.0.store.conn().await?;
+    let mut conn = engine.0.store_of(entity).conn().await?;
     let total = store::scalar_int(&mut *conn, &count_sql, &params).await?.unwrap_or_default();
 
     let sql = format!(

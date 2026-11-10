@@ -6,6 +6,7 @@ import { parseCondition } from './condition';
 import { type Field, type FieldConditions, ID_FIELD, parseFields } from './field';
 import { MAX_FILE_SIZE, UPLOAD_CEILING } from './file';
 import { type Source, parseSource } from './source-spec';
+import { checkStoreEntity } from './store-spec';
 import { type Rec, type Scope, isIdent, isObject, isTextual } from './types';
 
 export interface Entity {
@@ -23,6 +24,8 @@ export interface Entity {
   live: boolean;
   /** Consulta do sistema (`source: system`): sem tabela, só leitura, com parâmetros. */
   source?: Source;
+  /** Banco a mais de onde a entidade é lida (`store`, registrado em `stores`): só leitura. */
+  store?: string;
   /** JSON exatamente como veio, servido em `/_meta/entities/{name}`. */
   raw: Rec;
 }
@@ -130,8 +133,10 @@ export function parseEntity(json: string | Rec): [Entity, Pending] {
     singleton: raw.singleton === true,
     live,
     source: parseSource(name, raw.source, raw.params, isIdent),
+    store: typeof raw.store === 'string' ? raw.store : undefined,
     raw
   };
+  checkStoreEntity(entity);
   return [entity, { fields: conditions, actions: actionConditions }];
 }
 

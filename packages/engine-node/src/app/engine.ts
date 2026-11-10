@@ -24,8 +24,15 @@ export class Engine {
     /** Porta do sino; sem ela, /_notifications responde 404. */
     readonly notifications?: Notifications,
     /** Porta da busca do Ctrl K; sem ela, /_search responde 404. */
-    readonly search?: Search
+    readonly search?: Search,
+    /** Bancos a mais, das entidades com `store` (só leitura). */
+    readonly stores: Map<string, Store> = new Map()
   ) {}
+
+  /** O banco de onde a entidade é lida: o dela (`store`) ou o do app. */
+  storeOf(e: Entity): Store {
+    return (e.store !== undefined && this.stores.get(e.store)) || this.store;
+  }
 
   entity(name: string): Entity {
     const e = this.entities.get(name);

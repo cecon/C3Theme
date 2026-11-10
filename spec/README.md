@@ -295,6 +295,8 @@ Fora do painel, telas que não são CRUD vão em `pages` com `component` (`{ "pa
 
 **Digitar na seção e filtrar os filhos** (só em `separately`): `"editable": ["counted"]` faz a coluna virar campo na própria linha (a contagem do inventário inteiro numa tabela). Cada mudança grava pelo `PATCH` da filha, com as regras dela (permissão, `readOnlyWhen`, validação, `If-Match` com a `_version`), ao sair do campo ou no Enter, e o Enter desce para a mesma coluna da linha de baixo, sem enviar o formulário do pai; o erro aparece na célula. `"editMode": "batch"` junta as linhas e grava no "Salvar alterações" da seção, um `PATCH` por linha. `"search": true` põe no topo da seção a busca da filha (`views.list.search`), e `"presets": true` os filtros nomeados dela como abas ("Todos", "Só não contados", "Só com diferença"), começando pelo `default`. O `spec:check` confere que a filha tem a busca e os presets, e que a coluna é um campo que ela grava (não `readOnly`, `createOnly`, `writeOnly`, `text` nem `file`).
 
+**Imprimir o registro** (`views.form.print`): o registro gravado ganha o botão Imprimir, que monta uma folha só com as seções escolhidas (`"sections": [0, 2]`, posições em `views.form.sections`; padrão, as com campos ou `related`) e abre a impressão do navegador. No topo vão o nome do app, a empresa e a filial ativas, o título (`title`, ou o nome da entidade e o título do registro) e a data. Os campos saem como rótulo e valor (sem `writeOnly` nem campo escondido por `access`), e cada `related` sai inteira, com todas as linhas (até o limite da exportação). `"blank": ["counted"]` imprime essas colunas em branco, para preencher no papel (a folha de contagem do inventário).
+
 **Filhos gravados junto com o pai.** Quando o filho só existe dentro do pai (itens do pedido, endereços da pessoa, códigos de barras do produto, faixas da tabela de preço), a seção ganha `"save": "with_parent"`:
 
 ```json
@@ -560,6 +562,23 @@ Consulta que só existe com um valor pedido antes (posição do estoque numa dat
 - **Só leitura:** criar, alterar, excluir e abrir uma linha são `405`; as capabilities vêm sem create, update e delete. Ação só da lista (`target: list`) ou em conjunto (`bulk: "together"`). Nenhuma entidade aponta para ela (`reference` ou `related`): o boot e o `spec:check` recusam.
 - **Ação em conjunto nas linhas marcadas:** `POST /{entity}/_actions/{name}?p.<nome>=...` com `{ ids, input }`, com os parâmetros que valem na lista (a shell manda os da URL). O motor roda a consulta uma vez com eles e procura cada id nela, no escopo de leitura: id fora da consulta recusa o pedido (404). O sistema recebe as linhas em `records` e os parâmetros validados em `params` (`BulkActionCall::params`); a lista se relê com os mesmos parâmetros. A prévia (`_preview`) lê igual. Rodar no detalhe de uma linha é `405`.
 - **Shell:** uma faixa acima dos filtros com os parâmetros e "Consultar", que põe os valores na URL (voltar e compartilhar funcionam). A linha não abre registro.
+
+## Entidade de outro banco (store)
+
+Dado que mora fora do banco do app, por volume ou retenção (o registro de cada requisição do servidor num SQLite próprio), vira uma entidade com `"store": "logs"`. O sistema registra o banco pelo nome e o motor lê dali a lista, a busca, os filtros, os presets, os totais, o painel e o registro aberto, iguais aos de qualquer entidade.
+
+```rust
+Engine::builder(SqlxStore::new(pool)).store_named("logs", SqlxStore::new(logs_pool))
+```
+
+```ts
+buildEngine({ store, stores: { logs: new BetterSqliteStore('requisicoes.sqlite') }, ... })
+```
+
+- **Só leitura**: criar, alterar e excluir são 405, e as `capabilities` não oferecem escrita. Quem grava nesse banco é o sistema.
+- **Sem cruzar bancos**: `scope: "group"`, sem ações, `source`, `singleton`, `reference` nem `file`, e nenhuma entidade aponta para ela. O título de um `reference` é um JOIN, e um JOIN não cruza bancos.
+- **Boot**: banco citado e não registrado é erro, e a tabela e as colunas da entidade são conferidas no banco dela (com `REGEXP`, para a busca). Não se exige `foreign_keys` nem `query_only`, porque o motor só lê dali.
+- Exemplo: `request_log.json` (banco `logs`, carregado de `crates/c3-example/logs.sql` nos dois exemplos).
 
 ## Configuração de registro único (singleton)
 

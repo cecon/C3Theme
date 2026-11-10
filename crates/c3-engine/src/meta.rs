@@ -56,7 +56,7 @@ pub(crate) async fn entity(engine: &Engine, req: &Parts, name: &str) -> Result<V
     if entity.singleton {
         caps.delete = false;
     }
-    if entity.source.is_some() {
+    if entity.source.is_some() || entity.store.is_some() {
         (caps.create, caps.update, caps.delete) = (false, false, false);
     }
     let mut capabilities = serde_json::to_value(caps).map_err(|_| ApiError::internal())?;

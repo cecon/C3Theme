@@ -10,6 +10,7 @@ import { runWrite } from './delegated';
 import type { Engine } from './engine';
 import { parsePathId } from './read';
 import { guardRows } from './source';
+import { guardWrites } from '../domain/store-spec';
 import { mapWriteError } from './validation';
 import { Expect } from './version';
 import { loadForWrite } from './write';
@@ -17,6 +18,7 @@ import { loadForWrite } from './write';
 export async function remove(engine: Engine, req: EngineRequest, name: string, rawId: string): Promise<void> {
   const entity = engine.entity(name);
   guardRows(entity);
+  guardWrites(entity);
   if (entity.singleton) throw ApiError.methodNotAllowed('Configuração de registro único não se exclui: altere os valores.');
   const ctx = await Ctx.of(engine, req);
   const id = parsePathId(rawId);
