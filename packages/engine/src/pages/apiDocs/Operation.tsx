@@ -48,7 +48,13 @@ function Shape({ schema, example }: { schema?: unknown; example?: unknown }) {
 export default function Operation({ op }: { op: ApiOperation }) {
   const [open, setOpen] = useState(false);
   return (
-    <Accordion expanded={open} onChange={(_, v) => setOpen(v)} disableGutters variant="outlined">
+    <Accordion
+      expanded={open}
+      onChange={(_, v) => setOpen(v)}
+      disableGutters
+      variant="outlined"
+      slotProps={{ heading: { component: 'h4' } }}
+    >
       <AccordionSummary>
         <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', minWidth: 0 }}>
           <Chip size="small" color={TONE[op.method]} label={op.method.toUpperCase()} sx={{ minWidth: 64, fontWeight: 700 }} />

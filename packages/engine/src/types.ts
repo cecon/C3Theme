@@ -7,6 +7,7 @@ import type { DashboardDef } from './dashboard';
 import type { BoardView, CalendarView, ColumnDef, GalleryView, ListLook, MapView, ReportView } from './viewTypes';
 import type { ActionDef, GridFieldDef } from './actionTypes';
 import type { FormView } from './formTypes';
+import type { WizardDef } from './wizard';
 
 export type { Condition, FieldType };
 export type { BoardView, CalendarView, ReportView };
@@ -210,6 +211,8 @@ export interface PageDef {
   dashboard?: DashboardDef;
   /** Documentação da API (openapi.json servido pelo app), com busca e "experimentar". */
   apiDocs?: { spec: string };
+  /** Assistente em passos sobre um registro único, com resumo e a guarda que prende o app até terminar. */
+  wizard?: WizardDef;
   layout?: 'dashboard' | 'blank';
 }
 

@@ -1,0 +1,90 @@
+{
+  "$schema": "../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "configuracao_loja",
+  "label": {
+    "singular": "Configuração da loja",
+    "plural": "Configurações da loja",
+    "gender": "f"
+  },
+  "singleton": true,
+  "fields": [
+    {
+      "name": "cnpj",
+      "type": "string",
+      "label": "CNPJ",
+      "required": true,
+      "maxLength": 18
+    },
+    {
+      "name": "razao_social",
+      "type": "string",
+      "label": "Razão social",
+      "required": true,
+      "maxLength": 120
+    },
+    {
+      "name": "fantasia",
+      "type": "string",
+      "label": "Nome fantasia",
+      "maxLength": 80
+    },
+    {
+      "name": "regime",
+      "type": "enum",
+      "label": "Regime tributário",
+      "required": true,
+      "options": [
+        {
+          "value": "simples",
+          "label": "Simples Nacional"
+        },
+        {
+          "value": "presumido",
+          "label": "Lucro presumido"
+        },
+        {
+          "value": "real",
+          "label": "Lucro real"
+        }
+      ]
+    },
+    {
+      "name": "maquina",
+      "type": "string",
+      "label": "Nome deste computador",
+      "required": true,
+      "maxLength": 40
+    },
+    {
+      "name": "caixa",
+      "type": "integer",
+      "label": "Número do caixa",
+      "required": true
+    },
+    {
+      "name": "impressora",
+      "type": "string",
+      "label": "Impressora",
+      "maxLength": 60
+    },
+    {
+      "name": "pendente",
+      "type": "boolean",
+      "label": "Pendente",
+      "readOnly": true
+    },
+    {
+      "name": "tem_certificado",
+      "type": "boolean",
+      "label": "Certificado digital",
+      "readOnly": true
+    },
+    {
+      "name": "tem_impressora",
+      "type": "boolean",
+      "label": "Impressora configurada",
+      "readOnly": true
+    }
+  ]
+}

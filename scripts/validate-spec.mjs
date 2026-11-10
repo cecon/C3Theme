@@ -25,7 +25,7 @@ import { checkAgentParts } from './spec-agent-ui.mjs';
 import { checkDashboards } from './spec-dashboard.mjs';
 import { checkActionInput, checkInverse, checkSummary } from './spec-actions.mjs';
 import { checkLookups } from './spec-lookups.mjs';
-import { checkPages } from './spec-pages.mjs';
+import { checkPages, checkWizards } from './spec-pages.mjs';
 import { checkBoardCalendar, checkListRules, checkMenu } from './spec-views.mjs';
 import { checkReport } from './spec-report.mjs';
 import { checkMap } from './spec-map.mjs';
@@ -84,6 +84,7 @@ for (const p of pagePaths)
 
 checkMenu(app, entities, pagePaths, errors);
 const pageSchemas = checkPages(ajv, dir, app, errors);
+checkWizards(app, entities, pagePaths, errors);
 checkDashboards(app, entities, checkCondition, errors);
 
 // ---- empresa e filial (app.organization + entity.scope) ----

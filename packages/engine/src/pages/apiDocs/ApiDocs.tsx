@@ -54,7 +54,7 @@ export default function ApiDocs({ def }: { def: ApiDocsDef }) {
   return (
     <Stack spacing={2}>
       {state.title && (
-        <Typography variant="h5">
+        <Typography variant="h5" component="h2">
           {state.title}
           {state.version && (
             <Typography component="span" color="text.secondary" sx={{ ml: 1 }}>
@@ -67,7 +67,9 @@ export default function ApiDocs({ def }: { def: ApiDocsDef }) {
       {groups.length === 0 && <Typography color="text.secondary">Nenhuma rota com “{q}”.</Typography>}
       {groups.map((g) => (
         <Stack key={g.tag} spacing={1} component="section" aria-label={g.tag}>
-          <Typography variant="h6">{g.tag}</Typography>
+          <Typography variant="h6" component="h3">
+            {g.tag}
+          </Typography>
           {g.description && <Typography color="text.secondary">{g.description}</Typography>}
           {g.operations.map((op) => (
             <Operation key={`${g.tag}-${op.id}`} op={op} />
