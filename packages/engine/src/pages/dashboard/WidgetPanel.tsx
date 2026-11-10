@@ -16,6 +16,7 @@ import AreaWidget from './AreaWidget';
 import ChartWidget from './ChartWidget';
 import ChartsText from './ChartsText';
 import FeedWidget from './FeedWidget';
+import HeatmapWidget from './HeatmapWidget';
 import KpiWidget from './KpiWidget';
 import ListWidget from './ListWidget';
 import RankingWidget from './RankingWidget';
@@ -37,6 +38,7 @@ export default function WidgetPanel({ widget }: { widget: Exclude<WidgetDef, { t
       {widget.type === 'list' && <ListWidget widget={widget} />}
       {widget.type === 'ranking' && <RankingWidget widget={widget} />}
       {widget.type === 'feed' && <FeedWidget widget={widget} />}
+      {widget.type === 'heatmap' && <HeatmapWidget widget={widget} />}
     </Panel>
   );
 }

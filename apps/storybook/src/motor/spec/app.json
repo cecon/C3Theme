@@ -184,6 +184,13 @@
             "width": 4
           },
           {
+            "type": "heatmap",
+            "title": "Faturas emitidas por dia",
+            "entity": "fatura",
+            "groupBy": "emissao",
+            "tone": "primary"
+          },
+          {
             "type": "ranking",
             "title": "Maiores devedores",
             "entity": "fatura",

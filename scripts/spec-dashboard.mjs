@@ -65,6 +65,10 @@ export function checkDashboards(app, entities, checkCondition, errors) {
         if (w.interval && !isDate) errors.push(`${where}: interval só vale com groupBy de data`);
         if ((w.chart === 'line' || w.chart === 'area') && g && !isDate) errors.push(`${where}: chart '${w.chart}' exige groupBy de data`);
       }
+      if (w.type === 'heatmap') {
+        const g = field(w.groupBy, 'groupBy');
+        if (g && !DATES.has(g.type)) errors.push(`${where} groupBy: heatmap precisa de campo date ou datetime`);
+      }
       if (w.type === 'ranking') {
         const g = field(w.groupBy, 'groupBy');
         if (g && !GROUPABLE.has(g.type)) errors.push(`${where} groupBy: '${g.name}' precisa ser enum, boolean, reference ou data`);
