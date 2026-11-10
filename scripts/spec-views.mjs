@@ -74,6 +74,33 @@ export function checkListRules(entity, fields, entities, file, errors, wire) {
   checkTotals(entity, fields, file, errors);
   checkSingleton(entity, entities, file, errors);
   checkSource(entity, entities, file, errors, wire);
+  checkCards(entity, fields, file, errors);
+}
+
+/** Galeria, cabeçalho com imagem e ação na linha: os campos existem e a ação roda no clique (#13). */
+function checkCards(entity, fields, file, errors) {
+  const { gallery, form, list } = entity.views ?? {};
+  for (const [where, v] of [
+    ['views.gallery', gallery],
+    ['views.form.header', form?.header]
+  ]) {
+    if (!v) continue;
+    const names = [typeof v.image === 'string' ? v.image : undefined, v.title, v.subtitle, v.chip, ...(v.caption ?? [])];
+    for (const n of names.filter(Boolean)) {
+      const f = fields.get(n);
+      if (!f || f.writeOnly || f.type === 'file') errors.push(`${file} ${where}: '${n}' não existe ou não dá para mostrar`);
+    }
+    if (typeof v.image === 'string' && fields.get(v.image) && fields.get(v.image).type !== 'string')
+      errors.push(`${file} ${where}.image: '${v.image}' precisa ser campo string com a URL`);
+    if (v.viewer && typeof v.image !== 'string') errors.push(`${file} ${where}: viewer pede image num campo de URL`);
+  }
+  if (entity.singleton && gallery) errors.push(`${file}: singleton não combina com views.gallery`);
+  for (const a of list?.rowActions ?? []) {
+    if (typeof a !== 'object') continue;
+    const def = (entity.actions ?? []).find((x) => x.name === a.action);
+    if (!def || def.target === 'list' || def.input || def.confirm || def.returns)
+      errors.push(`${file} views.list.rowActions: '${a.action}' não é ação de registro sem input, confirm nem arquivo`);
+  }
 }
 
 /** Singleton abre direto no formulário: nada que dependa de lista de vários registros, e não é filha de ninguém. */

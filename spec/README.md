@@ -89,10 +89,11 @@ Rotas de entidade são derivadas, ninguém as declara:
 | `/{entity}/calendar` | calendário (`views.calendar`), com `?preset=` e `?month=2026-10`          |
 | `/{entity}/report`   | relatório (`views.report`), com os mesmos filtros da lista                |
 | `/{entity}/map`      | planta (`views.map`), com `?preset=`                                      |
+| `/{entity}/gallery`  | cartões (`views.gallery`), com os mesmos filtros e paginação da lista     |
 | `/{entity}/new`      | formulário de criação (`views.form`); `?f.<campo>=valor` preenche o campo |
 | `/{entity}/:id`      | detalhe (formulário em modo leitura, com botão editar)                    |
 
-As rotas fixas ganham do `:id`: um registro com id `new`, `board`, `calendar`, `report` ou `map` não abre pela URL. Ids são gerados pelo backend, então isso não acontece na prática.
+As rotas fixas ganham do `:id`: um registro com id `new`, `board`, `calendar`, `report`, `map` ou `gallery` não abre pela URL. Ids são gerados pelo backend, então isso não acontece na prática.
 
 ## Login pela shell
 
@@ -123,6 +124,20 @@ Uma entidade pode ter, além da lista, um quadro (kanban) e um calendário. São
 - `pnpm spec:check` confere que `groupBy` e `color` são enum, que `start` e `end` são datas do mesmo tipo, que `allDay` é boolean com `start` datetime, que `columns` está em `options` e que o `view` do menu existe na entidade.
 
 Exemplo: [`activity.json`](v0/examples/activity.json).
+
+## Cartões e cabeçalho com imagem
+
+```json
+"gallery": { "image": "foto_url", "subtitle": "resumo", "caption": ["autor", "versao"], "chip": "tipo", "size": "small", "viewer": true },
+"form": { "header": { "image": { "component": "rosto" }, "subtitle": "resumo", "caption": ["autor"] } },
+"list": { "rowActions": ["view", { "action": "instalar" }] }
+```
+
+- **gallery** (`/{entity}/gallery`): a mesma página da lista (busca, filtros, presets, paginação e seleção para o lote), cada registro num cartão. `image` é um campo `string` com a URL ou `{ "component": "nome" }` registrado em `components` (recebe `entity`, `record` e `size`); sem imagem, o cartão mostra as iniciais do título. `title` (padrão `titleField`), `subtitle` (até duas linhas), `caption` (campos numa linha, separados por ·) e `chip` (enum pinta com a cor da opção). `size`: `small` (5 por linha no desktop) ou `large` (3). Clicar no cartão abre o registro.
+- `viewer: true` (só com `image` campo): clicar na imagem abre o visualizador em tela cheia, com anterior e próxima (setas do teclado), zoom pela roda e "Abrir registro".
+- **form.header**: a imagem (mesmas formas) e as linhas ficam no cabeçalho do registro, ao lado do título. Registro novo não mostra.
+- **rowActions** com `{ "action": "nome" }` põe a ação de registro em botão na linha (e no cartão). Só ação sem `input`, sem `confirm` e sem `returns`; respeita a permissão e o `visibleWhen`. Ação com formulário continua no menu do registro.
+- `pnpm spec:check` confere que os campos existem, que `image` é `string`, que `viewer` tem imagem por campo, que singleton não tem `gallery` e que a ação da linha existe e roda sem input.
 
 ## Relatório
 
@@ -243,9 +258,25 @@ Fora do painel, telas que não são CRUD vão em `pages` com `component` (`{ "pa
 **Ligar um aparelho.** Número de WhatsApp, maquininha ou outro aparelho que se liga por QR Code ou código de pareamento ganha a seção `pairing`, desenhada pelos campos do registro, sem componente custom:
 
 ```json
-{ "title": "Conexão", "pairing": { "status": "situacao", "qr": "qr", "code": "codigo", "account": "numero", "error": "mensagem",
-  "states": { "conectando": "connecting", "qr": "qr", "codigo": "pairing-code", "conectado": "connected", "saiu": "logged-out", "erro": "error" },
-  "actions": { "qr": "ligar", "code": "ligar_codigo", "cancel": "desligar", "retry": "ligar" } } }
+{
+  "title": "Conexão",
+  "pairing": {
+    "status": "situacao",
+    "qr": "qr",
+    "code": "codigo",
+    "account": "numero",
+    "error": "mensagem",
+    "states": {
+      "conectando": "connecting",
+      "qr": "qr",
+      "codigo": "pairing-code",
+      "conectado": "connected",
+      "saiu": "logged-out",
+      "erro": "error"
+    },
+    "actions": { "qr": "ligar", "code": "ligar_codigo", "cancel": "desligar", "retry": "ligar" }
+  }
+}
 ```
 
 - `states` leva o valor do campo `status` ao estado da tela (`connecting`, `qr`, `pairing-code`, `connected`, `logged-out`, `error`). Valor fora dele (desligado) esconde a seção, e as ações do registro cuidam dele.

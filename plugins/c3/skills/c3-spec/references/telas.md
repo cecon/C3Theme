@@ -25,7 +25,7 @@ Resumo. Quem decide são o `spec/v0/app.schema.json` e o `entity.schema.json` do
 - `entities` lista todas as entidades, inclusive as filhas.
 - `layout.user`: `header` (avatar à direita, o padrão) ou `drawer` (cartão no pé do menu lateral). Use isso em vez de montar um cartão de usuário no `drawerFooter`, porque dois cartões já saíram duplicados num sistema.
 - `auth` liga as telas de entrada da shell (login, esqueci a senha, cadastro, perfil). Quem autentica é o sistema, pela `AuthPort` do front. Sem `auth`, o sistema faz o login e passa o token em `headers`.
-- Rotas são derivadas e ninguém as declara: `/{entity}`, `/{entity}/board`, `/{entity}/calendar`, `/{entity}/new?f.campo=valor`, `/{entity}/:id`.
+- Rotas são derivadas e ninguém as declara: `/{entity}`, `/{entity}/board`, `/{entity}/calendar`, `/{entity}/gallery`, `/{entity}/new?f.campo=valor`, `/{entity}/:id`.
 - `pages[]`: `component` (React registrado) ou `dashboard`. `layout: "blank"` ocupa a tela toda (impressão, quiosque).
 
 ## Lista e menu
@@ -111,6 +111,9 @@ Resumo. Quem decide são o `spec/v0/app.schema.json` e o `entity.schema.json` do
 - Cartão do quadro: `code` (acima do título), `due` (prazo em chip), `assignee` (avatar), `counters` (contadores com ícone) e `done` (valor da coluna de concluídos). Não escreva componente de cartão para isso. "Adicionar cartão" no pé da coluna vem por padrão (`quickAdd: false` tira).
 - O calendário tem Mês, Semana, Dia e Agenda; arrastar ou esticar o evento remarca e selecionar dias cria no diálogo. Ponha `label.new` ("Novo evento") para o botão.
 - Os presets da lista valem nas três telas. No menu, `"view": "board"`.
+- Cartões: `"gallery": { "image": "foto_url", "subtitle": "resumo", "caption": ["autor"], "chip": "tipo", "size": "small", "viewer": true }` em `/{entity}/gallery`. `image` é campo string (URL) ou `{ "component": "nome" }`; sem imagem saem as iniciais. Não escreva página de cartões.
+- Cabeçalho do registro com imagem: `"form": { "header": { "image": "foto_url", "subtitle": "resumo", "caption": ["autor"] } }`.
+- Botão de ação na linha e no cartão: `"rowActions": ["view", { "action": "instalar" }]`, só para ação sem input, confirm ou returns.
 - Relatório: `"report": { "groupBy": ["seller_id"], "columns": ["number", "customer_id", "total"], "subtotals": ["total"] }` em `/{entity}/report`, com subtotal, total geral e Imprimir. Até 10 mil linhas do filtro; árvore com `"tree": { "parent": "mae_id" }` só exibe (totais por nível vêm da consulta do sistema).
 - Planta: `"map": { "color": "status", "position": { "x": "x", "y": "y" } }` (mesas; campos integer) ou `"groupBy": ["ilha_id", "bomba_id"]` (pista, setor do KDS) em `/{entity}/map`. Bloco colorido pelo enum, ações do registro no clique. Junte com `live` para acompanhar na hora.
 

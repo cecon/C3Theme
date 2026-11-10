@@ -80,8 +80,27 @@ export type ColumnDef =
       weight?: 'normal' | 'bold';
     };
 
-/** Ícones da coluna "Ações" da lista. */
-export type RowAction = 'view' | 'edit' | 'delete';
+/** Ícones da coluna "Ações" da lista, ou uma ação de registro sem input nem confirm ("Instalar"), num botão. */
+export type RowAction = 'view' | 'edit' | 'delete' | { action: string };
+
+/** Imagem do registro: campo com a URL, ou um componente registrado na shell que desenha o rosto do registro. */
+export type RecordImageDef = string | { component: string };
+
+/** Lista em cartões (`views.gallery`): imagem ou avatar, título, uma ou duas linhas e um chip. O cartão abre o registro. */
+export interface GalleryView {
+  image?: RecordImageDef;
+  /** Padrão: o titleField. */
+  title?: string;
+  subtitle?: string;
+  /** Linha pequena embaixo: os valores dos campos, separados por " · ". */
+  caption?: string[];
+  /** Campo enum (com a cor da opção) ou de texto, num chip. */
+  chip?: string;
+  /** 'large': cartões maiores, para destaques. */
+  size?: 'small' | 'large';
+  /** Clicar na imagem abre o visualizador em tela cheia (anterior, próxima, zoom); o cartão continua abrindo o registro. */
+  viewer?: boolean;
+}
 
 /** Item da prévia da linha: o campo, ou o campo com rótulo e ícone próprios. */
 export type ExpandItem = string | { field: string; label?: Text; icon?: string };

@@ -9,11 +9,20 @@ import Tooltip from '@mui/material/Tooltip';
 import { Edit, Edit2, Eye, Trash } from 'iconsax-reactjs';
 
 import type { RowAction, WireRecord } from '../../types';
+import RowActionButton from '../../widgets/RowActionButton';
 
-/** Ações da linha que o usuário pode usar (`update`/`delete` da tela e do registro). */
-export function allowedRowActions(actions: RowAction[], can: { update?: boolean; delete?: boolean }, row?: WireRecord) {
+/** Ações de registro em botão na linha ou no cartão (`{ action }`). */
+export const actionButtons = (actions: RowAction[]) => actions.flatMap((a) => (typeof a === 'object' ? [a.action] : []));
+
+/** Ações da linha que o usuário pode usar (`update`/`delete` da tela e do registro; a de registro, com a permissão). */
+export function allowedRowActions(
+  actions: RowAction[],
+  can: { update?: boolean; delete?: boolean; actions?: Record<string, boolean> },
+  row?: WireRecord
+) {
   return actions.filter(
     (a) =>
+      (typeof a === 'object' && Boolean(can.actions?.[a.action])) ||
       a === 'view' ||
       (a === 'edit' && can.update && (row?._can?.update ?? true)) ||
       (a === 'delete' && can.delete && (row?._can?.delete ?? true))
@@ -46,7 +55,10 @@ export function RowActionsCell({
   const navigate = useNavigate();
   const size = quiet ? 'medium' : 'small';
   return (
-    <Stack direction="row" sx={{ justifyContent: 'center' }} onClick={(e) => e.stopPropagation()}>
+    <Stack direction="row" sx={{ justifyContent: 'center', alignItems: 'center', gap: 0.5 }} onClick={(e) => e.stopPropagation()}>
+      {actionButtons(actions).map((a) => (
+        <RowActionButton key={a} entity={entity} row={row} action={a} />
+      ))}
       {actions.includes('view') && (
         <Tooltip title={quiet ? 'Ver' : 'Ver detalhes'}>
           <IconButton

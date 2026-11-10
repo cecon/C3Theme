@@ -6,7 +6,7 @@ import { withMotor } from '../motor/withMotor';
 
 /**
  * Telas inteiras que o motor monta da spec, além da lista e do formulário: quadro (`views.board`), agenda
- * (`views.calendar`), relatório (`views.report`), planta (`views.map`) e painel (`pages[].dashboard`). Os registros
+ * (`views.calendar`), relatório (`views.report`), planta (`views.map`), cartões (`views.gallery`) e painel (`pages[].dashboard`). Os registros
  * vêm do adaptador em memória; arrastar o cartão ou o evento grava nele.
  */
 const meta = {
@@ -31,6 +31,9 @@ export const Relatorio: Story = { name: 'Relatório', args: { entity: 'fatura', 
 
 /** Blocos coloridos pela situação, agrupados pela área. */
 export const Planta: Story = { args: { entity: 'mesa', view: 'map' } };
+
+/** A lista de clientes em cartões (`views.gallery`): iniciais sem imagem, e-mail, cidade e chip da situação. */
+export const Cartoes: Story = { name: 'Cartões', args: { entity: 'cliente', view: 'gallery' } };
 
 /** Indicadores, gráficos e ranking por agregação da entidade (`kpi`, `chart`, `ranking`). */
 export const Painel: Story = { args: { page: '/painel' } };

@@ -8,7 +8,7 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Tooltip from '@mui/material/Tooltip';
 
 // third-party
-import { Calendar, DocumentText, Kanban, Map1, RowVertical } from 'iconsax-reactjs';
+import { Calendar, DocumentText, Element3, Kanban, Map1, RowVertical } from 'iconsax-reactjs';
 
 import { useText } from '../../context';
 import type { EntityDef, EntityViewKind } from '../../types';
@@ -16,6 +16,7 @@ import { availableViews, viewPath } from '../../views';
 
 const VIEWS: Record<EntityViewKind, { label: string; Icon: typeof Kanban }> = {
   list: { label: 'Lista', Icon: RowVertical },
+  gallery: { label: 'Cartões', Icon: Element3 },
   board: { label: 'Quadro', Icon: Kanban },
   calendar: { label: 'Calendário', Icon: Calendar },
   report: { label: 'Relatório', Icon: DocumentText },

@@ -92,6 +92,11 @@
         }
       ],
       "pageSize": 10
+    },
+    "gallery": {
+      "subtitle": "email",
+      "caption": ["cidade", "uf"],
+      "chip": "status"
     }
   }
 }
