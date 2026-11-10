@@ -2,6 +2,7 @@
 // o relatório e a impressão usam as mesmas regras. Sem React.
 
 import { lighten, type Theme } from '@mui/material/styles';
+import type { SystemStyleObject } from '@mui/system';
 
 import { evaluate, type FieldType } from './conditions.mjs';
 import type { FieldDef, RowStyle } from './types';
@@ -55,7 +56,7 @@ export function negativeTone(field: FieldDef, value: unknown): FieldDef['negativ
  * Cor do valor negativo, para um item de `sx` em lista (`sx={[base, negativeSx(f, v)]}`), ou `false`. O tom escuro
  * no claro e o claro clareado no escuro: o `main` não chega a 4,5:1 sobre o fundo de destaque da linha.
  */
-export const negativeSx = (field: FieldDef, value: unknown) => {
+export const negativeSx = (field: FieldDef, value: unknown): false | ((t: Theme) => SystemStyleObject<Theme>) => {
   const tone = negativeTone(field, value);
   if (!tone) return false as const;
   return (t: Theme) => {
