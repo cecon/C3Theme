@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatAmount, keepsTogether } from './format';
+import { displayValue, formatAmount, keepsTogether } from './format';
 import type { FieldDef } from './types';
 
 describe('valor numa linha só', () => {
@@ -18,5 +18,15 @@ describe('valor numa linha só', () => {
     expect(shown).toBe('R$ 9.568,20');
     expect(keepsTogether(shown)).toBe(true);
     expect(keepsTogether('R$ 9.568,20')).toBe(false);
+  });
+});
+
+describe('displayValue de integer', () => {
+  const show = (field: Partial<FieldDef>, v: unknown) =>
+    displayValue({ name: 'n', type: 'integer', ...field } as FieldDef, v, 'pt-BR', String);
+  it('agrupa o milhar por padrão e grouping: false mostra seco (#168)', () => {
+    expect(show({}, 8788)).toBe('8.788');
+    expect(show({ grouping: false }, 8788)).toBe('8788');
+    expect(show({ grouping: false, unit: 'un' }, 12345)).toBe('12345 un');
   });
 });

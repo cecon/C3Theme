@@ -363,6 +363,11 @@
                 "minLength": 1,
                 "maxLength": 8,
                 "description": "Texto depois do número, no campo e na leitura (\"%\", \"kg\"). Não muda o que trafega: o percentual de 10% trafega 10."
+              },
+              "grouping": {
+                "type": "boolean",
+                "default": true,
+                "description": "Só integer: false mostra o número sem separador de milhar na lista e no detalhe (porta 8788, ano 2026, código). O campo continua numérico, com min e max."
               }
             }
           }
