@@ -808,6 +808,10 @@ POST /api/product/7/_actions/discount/_preview   { "percent": "10" }
 - **Quando a shell pede**: ao abrir o diálogo e ao sair de cada campo, só se o input mudou. Não é a cada tecla: a prévia costuma ir ao banco (ou ao motor fiscal) e não vale um pedido por caractere. Resposta de um pedido velho é descartada. Em lote não há prévia.
 - **No c3-engine**: `Hooks::preview_action(PreviewCall)` devolve `Preview { message, fill, table }` (padrão: vazio).
 
+### Bipar em sequência
+
+Ação de registro que lê um item por vez (código de barras, etiqueta de balança) declara `"repeat": true`. Depois do sucesso o diálogo continua aberto: o input volta aos padrões, o foco volta ao primeiro campo e a mensagem do sistema ("CAFÉ: contado 3.") aparece no próprio diálogo, com as últimas leituras embaixo. Erro fica no diálogo, como sempre. Esc fecha. O registro se relê a cada leitura. Só a shell muda: o backend roda cada leitura como uma ação comum. Em lote e na ação da lista o `repeat` não vale.
+
 ### Arquivo e registro aberto pela ação
 
 A ação pode devolver mais que o aviso: um arquivo para baixar (SPED, TXT da balança, CSV) ou o registro que a shell abre em seguida (a nota de entrada em rascunho criada a partir do XML, que vem num campo `file` do input).

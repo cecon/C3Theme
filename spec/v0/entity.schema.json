@@ -1540,6 +1540,11 @@
           "default": false,
           "description": "Antes de abrir o diálogo, a shell pede os valores iniciais do input ao sistema: GET /{entity}/{id}/_actions/{name}/_prefill (ou /{entity}/_actions/{name}/_prefill na ação da lista). Ex.: a conferência do caixa abre com uma linha por forma de pagamento e o valor do sistema."
         },
+        "repeat": {
+          "type": "boolean",
+          "default": false,
+          "description": "Ação de registro que fica aberta para a próxima leitura (bipar em sequência). Depois do sucesso o diálogo continua aberto, o input volta aos padrões com o foco no primeiro campo, e a mensagem do sistema aparece no próprio diálogo, com as últimas leituras abaixo. Esc fecha. Em lote e na ação da lista não vale."
+        },
         "preview": {
           "type": "boolean",
           "default": false,

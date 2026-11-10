@@ -46,6 +46,8 @@ export interface ActionDef {
   prefill?: boolean;
   /** Antes de confirmar, o diálogo mostra a prévia do sistema (`.../_preview`): texto, sugestões e tabela. */
   preview?: boolean;
+  /** Fica aberta para a próxima leitura (bipar em sequência): limpa o input e mostra o resultado no diálogo. */
+  repeat?: boolean;
   /** 'file': a resposta pode ser um arquivo, que a shell baixa (SPED, CSV). Em lote, só com `bulk: 'together'`. */
   returns?: 'file';
   successMessage?: Text;

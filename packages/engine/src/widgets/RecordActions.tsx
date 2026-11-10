@@ -20,6 +20,7 @@ import useActionReply from '../hooks/useActionReply';
 import useTaskTelemetry from '../hooks/useTaskTelemetry';
 import ActionBody from './ActionBody';
 import BulkReport, { type Report } from './BulkReport';
+import { useRepeatLog } from './RepeatLog';
 import { loadPrefill } from './prefill';
 import { summaryText } from '../pages/list/selectionSum';
 import { plain, rowTitle, scopeText } from './bulkText';
@@ -59,6 +60,8 @@ export default function RecordActions({ entity, id, record, rows, onBulkDone }: 
   // a tarefa vai do clique até rodar com sucesso; fechar o diálogo antes disso é abandono
   const task = useTaskTelemetry();
   const [menu, setMenu] = useState<HTMLElement | null>(null);
+  // ação `repeat` (bipar em sequência): o resultado de cada leitura fica no diálogo
+  const repeat = useRepeatLog();
   const [report, setReport] = useState<Report<ActionDef> | null>(null);
   const closeReport = () => {
     onBulkDone?.(report?.keep ?? report?.failed.map((f) => f.id) ?? []);
@@ -125,7 +128,8 @@ export default function RecordActions({ entity, id, record, rows, onBulkDone }: 
               onClick: () => void undoer.undo(id!, action, version).then((o) => notify(o.message, o.ok ? 'success' : 'warning'))
             }
           : undefined;
-      notify(result.message ?? success(action), 'success', undo);
+      if (action.repeat) repeat.push(result.message ?? success(action));
+      else notify(result.message ?? success(action), 'success', undo);
       deliver(result);
       return true;
     }
@@ -163,6 +167,7 @@ export default function RecordActions({ entity, id, record, rows, onBulkDone }: 
       return;
     }
     reset();
+    repeat.clear();
     const initial = await loadPrefill(client, entity, action, bulk ? undefined : id);
     if (!initial) return task.abandon();
     form.reset(action, initial);
@@ -175,7 +180,12 @@ export default function RecordActions({ entity, id, record, rows, onBulkDone }: 
     // recusada em conjunto: o diálogo fecha e o relatório diz quem barrou
     if (done === 'refused') task.abandon();
     else if (done) task.done();
-    if (done) setOpen(null);
+    // bipar em sequência: o diálogo fica, o input volta aos padrões e o foco ao primeiro campo
+    if (done === true && open?.repeat && !bulk) {
+      reset();
+      form.reset(open);
+      task.start({ entity, op: 'action', action: open.name });
+    } else if (done) setOpen(null);
   }
 
   // sem ação para mostrar, segue montado enquanto o diálogo ou o relatório estão abertos
@@ -259,6 +269,7 @@ export default function RecordActions({ entity, id, record, rows, onBulkDone }: 
           error={fieldErrorText}
           bulk={bulk}
           ids={bulk && open?.bulk === 'together' ? eligible(open).map((t) => t.row.id!) : undefined}
+          log={open?.repeat && !bulk ? repeat.items : undefined}
         />
       </ActionDialog>
 
