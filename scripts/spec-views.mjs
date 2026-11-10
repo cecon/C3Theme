@@ -1,7 +1,7 @@
 // Regras do menu e das views de quadro e calendário que o JSON Schema não expressa sozinho.
 
 import { checkEditColumn } from './spec-fields.mjs';
-import { checkSource } from './spec-source.mjs';
+import { checkSource, checkStore } from './spec-source.mjs';
 
 const DATES = new Set(['date', 'datetime']);
 
@@ -78,6 +78,7 @@ export function checkListRules(entity, fields, entities, file, errors, wire) {
   checkPrint(entity, entities, file, errors);
   checkSingleton(entity, entities, file, errors);
   checkSource(entity, entities, file, errors, wire);
+  checkStore(entity, entities, file, errors);
   checkCards(entity, fields, file, errors);
 }
 

@@ -54,7 +54,7 @@ export async function list(engine: Engine, req: EngineRequest, name: string, q: 
   }
   order.push('t."id" ASC');
 
-  const conn = await engine.store.conn();
+  const conn = await engine.storeOf(entity).conn();
   const total = (await scalarInt(conn, `SELECT COUNT(*) FROM ${from} t${where}`, params)) ?? 0;
   const sql = `${selectSql(ctx, entity, from)}${where} ORDER BY ${order.join(', ')} LIMIT ? OFFSET ?`;
   const rows = await conn.query(sql, [...params, pageSize, (page - 1) * pageSize]);

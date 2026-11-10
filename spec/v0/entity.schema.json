@@ -81,6 +81,11 @@
     "views": {
       "$ref": "#/$defs/views"
     },
+    "store": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{0,62}$",
+      "description": "Entidade lida de outro banco que não o do app (o registro das requisições num SQLite próprio): o sistema registra o banco com o nome (Engine::builder(...).store_named(nome, store) no c3-engine, stores no engine-node). Lista, busca, filtros, presets, totais, painel e o registro aberto leem dali, iguais. Só leitura: criar, alterar e excluir são 405. scope group, sem ações, source, singleton, reference nem file, e nenhuma entidade aponta para ela (o título de um reference é um JOIN, que não cruza bancos)."
+    },
     "source": {
       "enum": ["system"],
       "description": "Consulta do sistema: a entidade não tem tabela; as linhas vêm de um SELECT que o sistema monta com os parâmetros (Hooks::source no c3-engine), com coluna id estável e uma por campo. Só leitura: lista, busca, filtros, totais, exportação, ações de lista e ações em conjunto (bulk \"together\") nas linhas marcadas, que recebem os parâmetros da lista. Criar, alterar, excluir e abrir uma linha são 405; nenhuma entidade aponta para ela."

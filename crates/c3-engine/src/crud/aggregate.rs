@@ -122,7 +122,7 @@ pub(crate) async fn aggregate(engine: &Engine, req: &Parts, name: &str, q: &Hash
     let Filtered { from, where_sql, params } = filtered(&ctx, entity, q).await?;
 
     let values_sql = ms.iter().map(measure_sql).collect::<Vec<_>>().join(", ");
-    let mut conn = engine.0.store.conn().await?;
+    let mut conn = engine.0.store_of(entity).conn().await?;
     let Some(g) = group else {
         let sql = format!("SELECT {values_sql} FROM {from} t{where_sql}");
         let rows = conn.query(&sql, &params).await?;

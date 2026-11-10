@@ -20,6 +20,7 @@ mod referrals;
 mod search;
 mod shutdown;
 mod sources;
+mod specs;
 mod tables;
 
 use axum::http::request::Parts;
@@ -258,30 +259,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let engine = Engine::builder(SqlxStore::new(pool.clone()))
         .app(include_str!("../../../spec/v0/examples/app.json"))
-        .entity(include_str!("../../../spec/v0/examples/company.json"))
-        .entity(include_str!("../../../spec/v0/examples/customer.json"))
-        .entity(include_str!("../../../spec/v0/examples/org_company.json"))
-        .entity(include_str!("../../../spec/v0/examples/branch.json"))
-        .entity(include_str!("../../../spec/v0/examples/seller.json"))
-        .entity(include_str!("../../../spec/v0/examples/sales_order.json"))
-        .entity(include_str!("../../../spec/v0/examples/company_contact.json"))
-        .entity(include_str!("../../../spec/v0/examples/sales_order_item.json"))
-        .entity(include_str!("../../../spec/v0/examples/company_fiscal.json"))
-        .entity(include_str!("../../../spec/v0/examples/operator.json"))
-        .entity(include_str!("../../../spec/v0/examples/permission.json"))
-        .entity(include_str!("../../../spec/v0/examples/role.json"))
-        .entity(include_str!("../../../spec/v0/examples/role_permission.json"))
-        .entity(include_str!("../../../spec/v0/examples/activity.json"))
-        .entity(include_str!("../../../spec/v0/examples/dining_table.json"))
-        .entity(include_str!("../../../spec/v0/examples/product.json"))
-        .entity(include_str!("../../../spec/v0/examples/question.json"))
-        .entity(include_str!("../../../spec/v0/examples/question_option.json"))
-        .entity(include_str!("../../../spec/v0/examples/product_question.json"))
-        .entity(include_str!("../../../spec/v0/examples/promotion.json"))
-        .entity(include_str!("../../../spec/v0/examples/promotion_product.json"))
-        .entity(include_str!("../../../spec/v0/examples/store_settings.json"))
-        .entity(include_str!("../../../spec/v0/examples/system_param.json"))
-        .entity(include_str!("../../../spec/v0/examples/customer_pending.json"))
+        .store_named("logs", specs::logs_store().await?);
+    let engine = specs::ENTITIES
+        .iter()
+        .fold(engine, |b, json| b.entity(json))
         .hooks(TestUsers {
             pool: pool.clone(),
             writer,

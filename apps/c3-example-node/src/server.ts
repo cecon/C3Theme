@@ -1,7 +1,7 @@
 // CRM de exemplo da spec (spec/v0/examples) montado sobre o @c3theme/engine-node: o mesmo de crates/c3-example, para a
 // suíte de conformidade rodar contra o backend Node (pelo main.ts ou em processo, no conformance.test.ts).
 
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, rmSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
 import { join } from 'node:path';
 
@@ -41,7 +41,8 @@ const ENTITIES = [
   'promotion_product',
   'store_settings',
   'system_param',
-  'customer_pending'
+  'customer_pending',
+  'request_log'
 ];
 
 /** As migrations do exemplo em Rust, em ordem, uma vez cada (o sqlx guarda em `_sqlx_migrations`; aqui, `_migrations`). */
@@ -79,8 +80,13 @@ export async function exampleServer(file: string, root = REPO_ROOT): Promise<{ s
         .raw()
         .get(...params) as unknown[] | undefined
   };
+  // o banco das requisições (`store: "logs"` em request_log.json), num arquivo ao lado, refeito a cada subida
+  for (const ext of ['', '-wal', '-shm']) rmSync(`${file}-logs${ext}`, { force: true });
+  const logs = new BetterSqliteStore(`${file}-logs`);
+  logs.database.exec(readFileSync(join(root, 'crates/c3-example/logs.sql'), 'utf8'));
   const engine = await buildEngine({
     store,
+    stores: { logs },
     app: spec(root, 'app'),
     entities: ENTITIES.map((e) => spec(root, e)),
     hooks: exampleHooks(db),
@@ -94,6 +100,7 @@ export async function exampleServer(file: string, root = REPO_ROOT): Promise<{ s
       server.close();
       raw.close();
       store.close();
+      logs.close();
     }
   };
 }

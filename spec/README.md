@@ -563,6 +563,23 @@ Consulta que só existe com um valor pedido antes (posição do estoque numa dat
 - **Ação em conjunto nas linhas marcadas:** `POST /{entity}/_actions/{name}?p.<nome>=...` com `{ ids, input }`, com os parâmetros que valem na lista (a shell manda os da URL). O motor roda a consulta uma vez com eles e procura cada id nela, no escopo de leitura: id fora da consulta recusa o pedido (404). O sistema recebe as linhas em `records` e os parâmetros validados em `params` (`BulkActionCall::params`); a lista se relê com os mesmos parâmetros. A prévia (`_preview`) lê igual. Rodar no detalhe de uma linha é `405`.
 - **Shell:** uma faixa acima dos filtros com os parâmetros e "Consultar", que põe os valores na URL (voltar e compartilhar funcionam). A linha não abre registro.
 
+## Entidade de outro banco (store)
+
+Dado que mora fora do banco do app, por volume ou retenção (o registro de cada requisição do servidor num SQLite próprio), vira uma entidade com `"store": "logs"`. O sistema registra o banco pelo nome e o motor lê dali a lista, a busca, os filtros, os presets, os totais, o painel e o registro aberto, iguais aos de qualquer entidade.
+
+```rust
+Engine::builder(SqlxStore::new(pool)).store_named("logs", SqlxStore::new(logs_pool))
+```
+
+```ts
+buildEngine({ store, stores: { logs: new BetterSqliteStore('requisicoes.sqlite') }, ... })
+```
+
+- **Só leitura**: criar, alterar e excluir são 405, e as `capabilities` não oferecem escrita. Quem grava nesse banco é o sistema.
+- **Sem cruzar bancos**: `scope: "group"`, sem ações, `source`, `singleton`, `reference` nem `file`, e nenhuma entidade aponta para ela. O título de um `reference` é um JOIN, e um JOIN não cruza bancos.
+- **Boot**: banco citado e não registrado é erro, e a tabela e as colunas da entidade são conferidas no banco dela (com `REGEXP`, para a busca). Não se exige `foreign_keys` nem `query_only`, porque o motor só lê dali.
+- Exemplo: `request_log.json` (banco `logs`, carregado de `crates/c3-example/logs.sql` nos dois exemplos).
+
 ## Configuração de registro único (singleton)
 
 `"singleton": true` na entidade: um registro por escopo (o grupo, cada empresa ou cada filial, conforme `scope`). É a tela de configuração (Loja, E-mail, Juros e multa) que não tem lista.

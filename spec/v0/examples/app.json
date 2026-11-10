@@ -26,7 +26,8 @@
     "promotion_product",
     "store_settings",
     "system_param",
-    "customer_pending"
+    "customer_pending",
+    "request_log"
   ],
   "auth": {
     "subtitle": "Demonstração: entre como admin, ana ou caio, com a senha c3.",
@@ -244,6 +245,9 @@
           },
           {
             "entity": "system_param"
+          },
+          {
+            "entity": "request_log"
           }
         ]
       }

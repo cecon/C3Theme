@@ -27,7 +27,7 @@ export async function forSubscriber(engine: Engine, req: EngineRequest, name: st
   if ((ev.change === 'created' || ev.change === 'updated') && !entity.source && ev.id !== undefined) {
     const rowId = parseId(ev.id);
     if (rowId === undefined) return undefined;
-    if (!(await fetchOne(await engine.store.conn(), ctx, entity, rowId))) return undefined;
+    if (!(await fetchOne(await engine.storeOf(entity).conn(), ctx, entity, rowId))) return undefined;
   }
   return { change: ev.change, id: ev.id ?? null };
 }

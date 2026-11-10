@@ -17,6 +17,7 @@ import { fetchOne, fullRecord, parsePathId, writable } from './read';
 import { checkRecord } from './record-check';
 import { guardSingleton } from './singleton';
 import { guardRows } from './source';
+import { guardWrites } from '../domain/store-spec';
 import { mapWriteError, normalizeRefs } from './validation';
 import { Expect, VERSION_KEY } from './version';
 import { writeValues } from './write-values';
@@ -45,6 +46,7 @@ function withoutReadOnly(entity: Entity, patch: Rec): Rec {
 export async function create(engine: Engine, req: EngineRequest, name: string, body: unknown): Promise<Rec> {
   const entity = engine.entity(name);
   guardRows(entity);
+  guardWrites(entity);
   const ctx = await Ctx.of(engine, req);
   // grava sempre na filial ativa; entidade com escopo sem ela não tem dono
   const active = ctx.active();
@@ -112,6 +114,7 @@ export async function loadForWrite(
 export async function update(engine: Engine, req: EngineRequest, name: string, rawId: string, body: unknown): Promise<Rec> {
   const entity = engine.entity(name);
   guardRows(entity);
+  guardWrites(entity);
   const ctx = await Ctx.of(engine, req);
   const id = parsePathId(rawId);
   const expect = Expect.from(req);

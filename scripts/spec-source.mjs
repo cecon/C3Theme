@@ -28,3 +28,16 @@ export function checkSource(entity, entities, file, errors, wire) {
     if (a.target !== 'list' && a.bulk !== 'together')
       errors.push(`${file} ação '${a.name}': consulta do sistema só tem ação de lista ou em conjunto (bulk "together")`);
 }
+
+/** Entidade de outro banco (`store`): só leitura e sem cruzar bancos. Mesmas regras do boot do c3-engine. */
+export function checkStore(entity, entities, file, errors) {
+  for (const f of entity.fields)
+    if (f.type === 'reference' && entities.get(f.entity)?.entity.store && f.entity !== entity.name)
+      errors.push(`${file}: '${f.name}' aponta para '${f.entity}', que é lida de outro banco`);
+  if (!entity.store) return;
+  const where = `${file} store '${entity.store}'`;
+  if (entity.source || entity.singleton || entity.actions?.length) errors.push(`${where}: só leitura, sem source, singleton nem ações`);
+  if ((entity.scope ?? 'group') !== 'group') errors.push(`${where}: scope 'group' (empresa e filial moram no banco do app)`);
+  const bad = entity.fields.find((f) => f.type === 'reference' || f.type === 'file');
+  if (bad) errors.push(`${where}: campo '${bad.name}': reference e file não cruzam bancos`);
+}

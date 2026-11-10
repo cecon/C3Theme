@@ -69,6 +69,8 @@ pub struct Entity {
     pub live: bool,
     /// Consulta do sistema (`source: system`): sem tabela, só leitura, com parâmetros.
     pub source: Option<Box<Source>>,
+    /// Banco a mais de onde a entidade é lida (`store`, registrado com `store_named`): só leitura.
+    pub store: Option<String>,
     /// JSON exatamente como veio, servido em `/_meta/entities/{name}`.
     pub raw: Value,
 }
@@ -87,6 +89,7 @@ impl Entity {
             singleton: false,
             live: false,
             source: None,
+            store: None,
             raw: Value::Null,
         }
     }
@@ -141,6 +144,7 @@ struct RawEntity {
     live: Option<Value>,
     source: Option<String>,
     params: Option<RawParams>,
+    store: Option<String>,
 }
 
 fn yes() -> bool {
@@ -252,8 +256,10 @@ pub fn parse_entity(json: &str) -> Result<(Entity, Pending), String> {
         singleton: parsed.singleton,
         live: parsed.live.is_some_and(|v| !v.is_null() && v != Value::Bool(false)),
         source,
+        store: parsed.store,
         raw,
     };
+    crate::spec_store::check_entity(&entity)?;
     Ok((
         entity,
         Pending {

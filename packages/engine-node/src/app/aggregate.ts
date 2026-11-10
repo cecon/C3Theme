@@ -72,7 +72,7 @@ export async function aggregate(engine: Engine, req: EngineRequest, name: string
   const len = intervalLen(q.interval);
   const { from, where, params } = await filtered(ctx, entity, q);
   const valuesSql = ms.map(measureSql).join(', ');
-  const conn = await engine.store.conn();
+  const conn = await engine.storeOf(entity).conn();
   if (!g) {
     const rows = await conn.query(`SELECT ${valuesSql} FROM ${from} t${where}`, params);
     if (!rows.length) throw ApiError.internal();

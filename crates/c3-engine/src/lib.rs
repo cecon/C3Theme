@@ -41,6 +41,7 @@ mod section;
 mod spec;
 mod spec_action;
 mod spec_source;
+mod spec_store;
 #[cfg(feature = "sqlx")]
 pub mod sqlx;
 mod store;
@@ -87,6 +88,8 @@ pub(crate) struct Inner {
     /// `rowAccess` de cada entidade (ver `access.rs`).
     pub row_access: HashMap<String, Vec<row_access::RowRule>>,
     pub store: Box<dyn Store>,
+    /// Bancos a mais, de entidades só de leitura (`store` na spec; ver `spec_store.rs`).
+    pub stores: HashMap<String, Box<dyn Store>>,
     pub hooks: Box<dyn Hooks>,
     pub live: Live,
     /// Sino do header: a porta do sistema (sem ela, as rotas respondem 404) e o canal do tempo real.
@@ -104,6 +107,7 @@ impl Engine {
     pub fn builder(store: impl Store) -> EngineBuilder {
         EngineBuilder {
             store: Box::new(store),
+            stores: HashMap::new(),
             app: None,
             entities: Vec::new(),
             hooks: Box::new(NoHooks),
@@ -123,6 +127,7 @@ impl Engine {
 
 pub struct EngineBuilder {
     store: Box<dyn Store>,
+    stores: HashMap<String, Box<dyn Store>>,
     app: Option<String>,
     entities: Vec<String>,
     hooks: Box<dyn Hooks>,
@@ -182,6 +187,12 @@ impl EngineBuilder {
     /// Canal do sino criado antes do motor, para o sistema avisar quando cria um aviso (`Bell::notify`).
     pub fn bell(mut self, bell: Bell) -> Self {
         self.bell = bell;
+        self
+    }
+
+    /// Banco a mais, de onde as entidades com `"store": name` são lidas (só leitura).
+    pub fn store_named(mut self, name: &str, store: impl Store) -> Self {
+        self.stores.insert(name.to_owned(), Box::new(store));
         self
     }
 
@@ -267,13 +278,17 @@ impl EngineBuilder {
             .collect::<Result<HashMap<_, _>, String>>()
             .map_err(err)?;
         boot::check_hooks(&entities, &children, &*self.hooks, self.read_only).map_err(err)?;
-        boot::check_database(&*self.store, &entities, self.read_only).await.map_err(err)?;
+        boot::check_database(&*self.store, &entities, self.read_only, None)
+            .await
+            .map_err(err)?;
+        spec_store::check_stores(&entities, &self.stores).await.map_err(err)?;
         Ok(Engine(Arc::new(Inner {
             app,
             entities,
             children,
             row_access,
             store: self.store,
+            stores: self.stores,
             hooks: self.hooks,
             live: self.live,
             notifications: self.notifications,

@@ -50,6 +50,7 @@ fn without_read_only(entity: &Entity, patch: Map<String, Value>) -> Map<String, 
 pub(crate) async fn create(engine: &Engine, req: &Parts, name: &str, body: Option<Value>) -> Result<Map<String, Value>> {
     let entity = engine.entity(name)?;
     super::source::guard_rows(entity)?;
+    crate::spec_store::guard_writes(entity)?;
     let ctx = Ctx::new(engine, req).await?;
     // grava sempre na filial ativa; entidade com escopo sem ela não tem dono
     let owner = match (entity.scope, ctx.active()) {
@@ -143,6 +144,7 @@ pub(super) async fn load_for_write(
 pub(crate) async fn update(engine: &Engine, req: &Parts, name: &str, id: &str, body: Option<Value>) -> Result<Map<String, Value>> {
     let entity = engine.entity(name)?;
     super::source::guard_rows(entity)?;
+    crate::spec_store::guard_writes(entity)?;
     let ctx = Ctx::new(engine, req).await?;
     let id = parse_path_id(id)?;
     let expect = Expect::from(req)?;

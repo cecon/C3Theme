@@ -114,7 +114,7 @@ export async function read(engine: Engine, req: EngineRequest, name: string, id:
   const ctx = await Ctx.of(engine, req);
   allowRead(ctx, entity, (c) => c.read);
   const rowId = parsePathId(id);
-  return fullRecord(await engine.store.conn(), ctx, entity, rowId);
+  return fullRecord(await engine.storeOf(entity).conn(), ctx, entity, rowId);
 }
 
 export const writable = (entity: Entity): Field[] => entity.fields.filter((f) => !f.readOnly);
