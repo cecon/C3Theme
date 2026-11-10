@@ -32,6 +32,7 @@ let app = Router::new().nest("/api", engine.router()).layer(auth);
 ```
 
 - A conexão precisa de `foreign_keys` e da função `REGEXP`: use `c3_engine::sqlx::sqlite_options(url)` ou `c3_engine_rusqlite::prepare(conn)` no init do pool. O `build()` confere.
+- Portas opcionais no builder: `.notifications(..)` (sino, trait `Notifications`) e `.search(..)` (Ctrl K com `header.search: { "records": true }`, trait `Search`: devolva só o que o usuário pode abrir). Sem elas, as rotas respondem 404 e a shell segue sem o recurso.
 - `GET /_meta/login` precisa ficar **fora** da camada de autenticação (a shell desenha o login antes de haver usuário). O resto do `/_meta` exige token.
 
 ## Convenções de banco (o build() confere)

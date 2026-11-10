@@ -208,7 +208,8 @@ export interface AppDef {
     /** Onde fica o usuário logado: avatar no cabeçalho (padrão) ou cartão no pé do menu lateral. */
     user?: 'header' | 'drawer';
     header?: {
-      search?: boolean;
+      /** `false` tira o Ctrl K; `{ records: true }` também busca registros e mensagens no backend (GET /_search). */
+      search?: boolean | { records?: boolean };
       fullscreen?: boolean;
       settings?: boolean;
       notifications?: boolean;

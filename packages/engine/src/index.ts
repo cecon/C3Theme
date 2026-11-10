@@ -11,7 +11,7 @@ export { httpAuth } from './auth/httpAuth';
 export type { AuthPort, AuthUser, AuthConfig } from './auth/port';
 export { useAuthSession } from './auth/session';
 export type { AuthSession } from './auth/session';
-export type { C3Client, C3Notification, ListParams, NotificationList, WriteOptions } from './api';
+export type { C3Client, C3Notification, ListParams, NotificationList, SearchResult, WriteOptions } from './api';
 // transporte e roteador trocáveis (Electron: `transport={ipcFetch(...)}` de @c3theme/electron e `router="hash"`)
 export type { C3Fetch } from './transport';
 export type { RouterMode } from './router';

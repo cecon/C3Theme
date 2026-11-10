@@ -28,6 +28,7 @@ import { pagesTests } from './suite-pages.mjs';
 import { sourceTests } from './suite-source.mjs';
 import { liveTests } from './suite-live.mjs';
 import { notificationsTests } from './suite-notifications.mjs';
+import { searchTests } from './suite-search.mjs';
 
 export function featureTests(ctx) {
   formTests(ctx);
@@ -57,4 +58,5 @@ export function featureTests(ctx) {
   pagesTests(ctx);
   liveTests(ctx);
   notificationsTests(ctx);
+  searchTests(ctx);
 }

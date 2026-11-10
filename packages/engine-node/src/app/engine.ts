@@ -5,6 +5,7 @@ import type { Children } from '../domain/children-spec';
 import type { App, Entity } from '../domain/entity';
 import type { RowRule } from '../domain/row-access';
 import type { Notifications } from '../ports/notifications';
+import type { Search } from '../ports/search';
 import type { Store } from '../ports/store';
 import type { Bell } from './bell';
 import type { Change, Live } from './live';
@@ -21,7 +22,9 @@ export class Engine {
     readonly live: Live,
     readonly bell: Bell,
     /** Porta do sino; sem ela, /_notifications responde 404. */
-    readonly notifications?: Notifications
+    readonly notifications?: Notifications,
+    /** Porta da busca do Ctrl K; sem ela, /_search responde 404. */
+    readonly search?: Search
   ) {}
 
   entity(name: string): Entity {

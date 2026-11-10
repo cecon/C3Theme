@@ -15,6 +15,7 @@ import { sseEvents, subscribe } from '../app/live-feed';
 import { runLookup } from '../app/lookup';
 import { metaApp, metaContext, metaEntity, metaLogin } from '../app/meta';
 import { read } from '../app/read';
+import { search } from '../app/search';
 import { create, update } from '../app/write';
 import { ApiError, toApiError } from '../domain/errors';
 import { type Rec, isObject } from '../domain/types';
@@ -71,6 +72,7 @@ function route(method: string, p: string[]): Route | 'method' | undefined {
     if (p.length === 3 && fixed(1, 'entities')) return pick({ GET: async (e, r, x) => json(await metaEntity(e, r, x[2])) });
     return undefined;
   }
+  if (p.length === 1 && fixed(0, '_search')) return pick({ GET: async (e, r) => json(await search(e, r)) });
   if (p[0] === '_notifications') {
     if (p.length === 1) return pick({ GET: async (e, r) => json(await listNotifications(e, r)) });
     if (p.length === 2 && fixed(1, '_read'))

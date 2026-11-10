@@ -211,9 +211,17 @@
       "additionalProperties": false,
       "properties": {
         "search": {
-          "type": "boolean",
           "default": true,
-          "description": "Busca global (navega por menu e entidades)."
+          "description": "Busca do Ctrl K. true: telas do menu; false: some; { \"records\": true }: também registros e mensagens que o backend acha em GET /_search (spec/v0/search.yaml).",
+          "oneOf": [
+            { "type": "boolean" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["records"],
+              "properties": { "records": { "type": "boolean" } }
+            }
+          ]
         },
         "fullscreen": {
           "type": "boolean",

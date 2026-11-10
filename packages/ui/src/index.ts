@@ -33,6 +33,7 @@ export type { FillHeightProps } from './layout/FillHeight';
 export { default as AppFooter } from './layout/AppFooter';
 export type { FooterLink } from './layout/AppFooter';
 export { default as CommandSearch } from './layout/CommandSearch';
+export type { RecordSearch, SearchHit } from './layout/search/types';
 export { FullscreenButton, ColorModeButton } from './layout/HeaderButtons';
 export { default as AuthLayout } from './layout/AuthLayout';
 export type { AuthLayoutProps } from './layout/AuthLayout';

@@ -1,0 +1,47 @@
+# Path item da busca do Ctrl K (layout.header.search: { records: true }), referenciado por openapi.yaml.
+# O que entra na busca é do sistema (registros, mensagens, índice de texto); o motor só expõe a rota. Backend que não
+# liga o recurso responde 404, e a paleta segue só com as telas, sem mostrar erro.
+search:
+  get:
+    summary: Busca global do Ctrl K
+    description: >-
+      Achados do texto `q` (2 caracteres ou mais, depois de tirar espaços das pontas), até `limit` (padrão 20, de 1 a
+      50). A shell agrupa por `group` na ordem em que os grupos aparecem em `data`, mostra `snippet` como segunda linha,
+      `at` relativo à direita ("há 2 dias") e navega para `path` com Enter. `icon` é um nome do catálogo de ícones do
+      app (ou null). Só entra o que o usuário pode abrir. `q` curto ou `limit` fora da faixa: 400. Sem sessão: 401.
+      Recurso desligado: 404.
+    operationId: search
+    parameters:
+      - name: q
+        in: query
+        required: true
+        schema: { type: string, minLength: 2, maxLength: 200 }
+      - name: limit
+        in: query
+        schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+    responses:
+      '200':
+        description: Achados, na ordem em que a paleta mostra.
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data:
+                  type: array
+                  maxItems: 50
+                  items:
+                    type: object
+                    required: [kind, group, title, path]
+                    properties:
+                      kind: { type: string, description: 'O que é (ex.: "produto", "mensagem"); a shell não interpreta.' }
+                      group: { type: string }
+                      title: { type: string }
+                      snippet: { type: [string, 'null'] }
+                      path: { type: string, pattern: '^/' }
+                      icon: { type: [string, 'null'] }
+                      at: { type: [string, 'null'], format: date-time }
+      '400': { $ref: 'openapi.yaml#/components/responses/Error' }
+      '401': { $ref: 'openapi.yaml#/components/responses/Error' }
+      '404': { $ref: 'openapi.yaml#/components/responses/Error' }

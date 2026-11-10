@@ -6,6 +6,7 @@
 mod handlers;
 mod live;
 mod notifications;
+mod search;
 
 use axum::body::Bytes;
 use axum::extract::DefaultBodyLimit;
@@ -28,6 +29,7 @@ pub(crate) fn router(engine: Engine) -> Router {
         .route("/_notifications", get(notifications::list))
         .route("/_notifications/_read", post(notifications::read))
         .route("/_notifications/_events", get(notifications::events))
+        .route("/_search", get(search::search))
         .route("/{entity}", get(handlers::list).post(handlers::create))
         .route(
             "/{entity}/{id}",
