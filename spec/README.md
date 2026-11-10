@@ -242,6 +242,47 @@ Uma página de `pages` pode ser um painel descrito no próprio app.json, sem com
 - Os números vêm de `GET /api/{entity}/_aggregate?measure=sum:total&groupBy=seller_id&where=...` ([`aggregate.yaml`](v0/aggregate.yaml)): `{ data: [{ key, title?, value }] }`, com o filtro da lista. Soma de decimal vem em string, como o campo. Campo oculto ao usuário não agrupa nem soma (400). No máximo 100 grupos; o grupo vazio (`key: null`) vem por último.
 - `pnpm spec:check` confere entidade, preset, campos de `measure`, `groupBy`, `columns` e `sort`, e que `interval` e `chart: "line"` só aparecem com data. Nos filtros: nome único, entidade do reference em `app.entities`, e cada `bind` ligando filtro que existe a campo do tipo certo (período em date/datetime, registro em reference para a mesma entidade).
 
+## Documentação da API
+
+Uma página com `apiDocs` mostra o `openapi.json` (OpenAPI 3) que o próprio sistema serve, inclusive as rotas do motor, sem tela à mão:
+
+```json
+{ "path": "/apis", "title": "APIs", "permission": "api.ver", "apiDocs": { "spec": "/openapi.json" } }
+```
+
+- A shell lê o documento pelo cliente do motor (`C3Client.raw`), com o token da sessão; `spec` e os caminhos do documento são relativos à base da API.
+- As rotas saem agrupadas por tag, na ordem de `tags`; rota sem tag cai em "Outras". A busca acha pelo caminho, pelo resumo ou pelo `operationId`, sem acento.
+- Cada rota mostra o resumo, os parâmetros, o corpo e as respostas, com o exemplo e o esquema (`$ref` resolvido), e o "Experimentar": preenche os parâmetros de rota e de query e o corpo, e mostra o status e a resposta.
+- Cores do tema, claro e escuro. Não vale junto com `dashboard`, `component` ou `config`.
+- No adaptador em memória, `files: { '/openapi.json': doc }` serve o documento; GET de lista e de registro rodam, o resto é 501.
+
+## Assistente em passos (wizard)
+
+Primeira configuração, ativação, o que precisa estar pronto antes de usar o app: uma página com `wizard` monta os passos sobre o registro único de uma entidade `singleton`.
+
+```json
+{
+  "path": "/primeira-configuracao",
+  "permission": "loja.configurar",
+  "wizard": {
+    "entity": "configuracao_loja",
+    "pending": "pendente",
+    "steps": [
+      { "title": "A loja", "rows": [["cnpj"], ["razao_social", "fantasia"]] },
+      { "title": "Este computador", "rows": [["maquina", "caixa"]], "action": "criar_maquina" },
+      { "title": "Impressora", "rows": [["impressora"]], "optional": true }
+    ],
+    "summary": { "title": "Loja configurada", "items": [{ "label": "Certificado digital", "done": "tem_certificado", "path": "/certificado" }] }
+  }
+}
+```
+
+- **Passos**: título, descrição e linhas de campos, como uma seção do formulário. As consultas (`lookups`) da entidade funcionam no passo (o CNPJ preenche a razão social). Avançar valida os obrigatórios do passo e grava só os campos dele (POST no primeiro passo, se o registro ainda não existe, e PATCH depois); `action` roda a ação de registro depois de gravar. Passo `optional` mostra Pular, que avança sem gravar. Voltar não grava.
+- **Resumo**: cada item com Feito ou Falta, pelo campo boolean `done`, e o link da tela que resolve.
+- **Guarda**: `pending` é um campo boolean que o sistema calcula (readOnly). Enquanto ele é verdadeiro, toda rota da shell leva ao assistente, menos o próprio assistente; Sair fica no menu do usuário. Concluir fica travado até o sistema dizer que não está mais pendente. Só um assistente pode ter `pending`.
+- **Permissão**: com `permission`, quem não tem vê a mensagem de sem permissão no lugar dos passos.
+- Quem grava em outras tabelas (a loja, os dados fiscais, a máquina) é o sistema, nos `Hooks` da entidade.
+
 ## Página custom e mestre-detalhe
 
 Fora do painel, telas que não são CRUD vão em `pages` com `component` (`{ "path": "/relatorio", "component": "crm/relatorio" }`) e apontam para um componente registrado na shell. Esse registro por nome (`component`) também existe em coluna, campo do formulário, seção de formulário, detalhe e header: é a saída para o que o motor não cobre, sem fork da shell.

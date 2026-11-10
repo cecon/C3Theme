@@ -149,6 +149,93 @@
         "dashboard": {
           "$ref": "#/$defs/dashboard"
         },
+        "wizard": {
+          "type": "object",
+          "required": ["entity", "steps"],
+          "additionalProperties": false,
+          "description": "Assistente em passos (primeira configuração): cada passo edita campos de uma entidade singleton, com Voltar, Avançar e Pular, e o resumo no fim. Com 'pending', toda rota da shell leva ao assistente enquanto o registro diz que está pendente. Use isto, dashboard, apiDocs ou component.",
+          "properties": {
+            "entity": {
+              "$ref": "entity.schema.json#/$defs/identifier",
+              "description": "Entidade singleton (o registro da filial ativa) que os passos gravam. Quem grava em outras tabelas é o sistema (Hooks)."
+            },
+            "pending": {
+              "$ref": "entity.schema.json#/$defs/identifier",
+              "description": "Campo boolean (readOnly, calculado pelo sistema): verdadeiro prende o app no assistente. Sem ele, não há guarda."
+            },
+            "steps": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["title", "rows"],
+                "additionalProperties": false,
+                "properties": {
+                  "title": { "$ref": "#/$defs/text" },
+                  "description": { "$ref": "#/$defs/text" },
+                  "rows": {
+                    "type": "array",
+                    "minItems": 1,
+                    "description": "Linhas de campos da entidade, como numa seção do formulário. As consultas (lookups) da entidade funcionam aqui.",
+                    "items": {
+                      "type": "array",
+                      "minItems": 1,
+                      "maxItems": 4,
+                      "items": { "$ref": "entity.schema.json#/$defs/formField" }
+                    }
+                  },
+                  "optional": { "type": "boolean", "default": false, "description": "Mostra 'Pular': avança sem validar nem gravar." },
+                  "action": {
+                    "$ref": "entity.schema.json#/$defs/identifier",
+                    "description": "Ação de registro da entidade, sem input, que roda depois de gravar o passo."
+                  }
+                }
+              }
+            },
+            "summary": {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "Resumo no fim: o que está feito e o que falta, com o link da tela de cada item.",
+              "properties": {
+                "title": { "$ref": "#/$defs/text" },
+                "description": { "$ref": "#/$defs/text" },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["label", "path"],
+                    "additionalProperties": false,
+                    "properties": {
+                      "label": { "$ref": "#/$defs/text" },
+                      "done": {
+                        "$ref": "entity.schema.json#/$defs/identifier",
+                        "description": "Campo boolean do registro: verdadeiro é feito."
+                      },
+                      "path": {
+                        "type": "string",
+                        "pattern": "^/",
+                        "description": "Rota da shell (página ou entidade, ex.: /configuracao_loja)."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "apiDocs": {
+          "type": "object",
+          "required": ["spec"],
+          "additionalProperties": false,
+          "description": "Documentação da API: a shell lê o openapi.json (OpenAPI 3) pelo cliente do motor, com o token da sessão, e mostra as rotas por tag, com busca por caminho ou resumo e o 'experimentar' em cada rota. Use isto, dashboard ou component.",
+          "properties": {
+            "spec": {
+              "type": "string",
+              "pattern": "^/",
+              "description": "Caminho do openapi.json relativo à base da API (ex.: '/openapi.json' vira /api/openapi.json). Os caminhos do documento também são relativos a essa base."
+            }
+          }
+        },
         "layout": {
           "enum": ["dashboard", "blank"],
           "default": "dashboard",
@@ -161,6 +248,18 @@
         },
         {
           "required": ["dashboard"],
+          "not": {
+            "required": ["config"]
+          }
+        },
+        {
+          "required": ["wizard"],
+          "not": {
+            "required": ["config"]
+          }
+        },
+        {
+          "required": ["apiDocs"],
           "not": {
             "required": ["config"]
           }

@@ -115,6 +115,14 @@ export interface C3Client {
   notificationEvents?(onMessage: (m: LiveMessage) => void, signal: AbortSignal): Promise<void>;
   /** Ctrl K com `header.search: { records: true }`: GET /_search, registros e mensagens que o sistema acha. */
   search?(q: string, limit: number, signal?: AbortSignal): Promise<SearchResult[]>;
+  /** Pedido livre à API, com o token da sessão (página `apiDocs`): devolve o status e o corpo como texto. */
+  raw?(method: string, path: string, body?: string): Promise<RawReply>;
+}
+
+export interface RawReply {
+  status: number;
+  contentType: string;
+  body: string;
 }
 
 /** Um achado de GET /_search (spec/v0/search.yaml). `group` agrupa na paleta; `path` é a rota da shell. */
@@ -261,6 +269,13 @@ export function createClient(
       call<{ data: SearchResult[] }>('GET', `/_search?${new URLSearchParams({ q, limit: String(limit) })}`, undefined, {}, signal).then(
         (r) => r.data
       ),
+    raw: async (method, path, body) => {
+      const init = { method, body, headers: { ...(body ? { 'content-type': 'application/json' } : {}), ...headers?.() } };
+      const res = await fetch(base + path, init).catch(() => {
+        throw new ApiError(0, 'network', 'Sem conexão com o servidor.');
+      });
+      return { status: res.status, contentType: res.headers.get('content-type') ?? '', body: await res.text() };
+    },
     lookup: (entity, name, value) => call<{ data: WireRecord }>('POST', `/${e(entity)}/_lookups/${e(name)}`, { value }).then((r) => r.data)
   };
 }

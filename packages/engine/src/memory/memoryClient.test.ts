@@ -129,3 +129,36 @@ describe('createMemoryClient', () => {
     await expect(c.action('pedido', 'p2', 'outra')).rejects.toMatchObject({ status: 501 });
   });
 });
+
+describe('pedido livre (raw) na memória', () => {
+  const client = createMemoryClient({
+    app: { name: 'x', entities: ['c'] } as never,
+    entities: [{ name: 'c', label: { singular: 'C', plural: 'Cs' }, fields: [{ name: 'nome', type: 'string' }] } as never],
+    records: {
+      c: [
+        { id: '1', nome: 'Ana' },
+        { id: '2', nome: 'Bia' }
+      ]
+    },
+    files: { '/doc.json': { ok: true } }
+  });
+  const json = async (m: string, p: string) => {
+    const r = await client.raw!(m, p);
+    return [r.status, JSON.parse(r.body)];
+  };
+
+  it('arquivo, lista com query, registro e 404', async () => {
+    expect(await json('GET', '/doc.json')).toEqual([200, { ok: true }]);
+    const [, list] = await json('GET', '/c?pageSize=5&sort=nome&where=' + encodeURIComponent('{"field":"nome","op":"eq","value":"Bia"}'));
+    expect(list.data.map((r: { id: string }) => r.id)).toEqual(['2']);
+    expect((await json('GET', '/c/1'))[1].data.nome).toBe('Ana');
+    expect((await json('GET', '/c/9'))[0]).toBe(404);
+  });
+
+  it('escrita, rota desconhecida e where inválido', async () => {
+    expect((await json('POST', '/c'))[0]).toBe(501);
+    expect((await json('GET', '/x'))[0]).toBe(501);
+    expect((await json('GET', '/c/1/_files/a'))[0]).toBe(501);
+    expect((await json('GET', '/c?where=%7B'))[0]).toBe(400);
+  });
+});

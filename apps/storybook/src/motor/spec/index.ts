@@ -4,6 +4,7 @@ import type { AppDef, EntityDef } from '@c3theme/engine';
 
 import app from './app.json';
 import cliente from './cliente.json';
+import configuracaoLoja from './configuracao_loja.json';
 import evento from './evento.json';
 import fatura from './fatura.json';
 import fornecedor from './fornecedor.json';
@@ -30,5 +31,6 @@ export const ENTITIES = [
   mesa,
   movimento,
   inventario,
-  inventarioItem
+  inventarioItem,
+  configuracaoLoja
 ] as unknown as EntityDef[];

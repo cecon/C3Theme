@@ -37,3 +37,15 @@ export const Cartoes: Story = { name: 'Cartões', args: { entity: 'cliente', vie
 
 /** Indicadores, gráficos e ranking por agregação da entidade (`kpi`, `chart`, `ranking`). */
 export const Painel: Story = { args: { page: '/painel' } };
+
+/**
+ * `pages[].apiDocs`: o openapi.json do app por tag, com busca e "Experimentar" em cada rota. Aqui o documento e as
+ * respostas vêm do adaptador em memória (GET roda; POST responde 501, como servidor sem a rota).
+ */
+export const DocumentacaoDaApi: Story = { name: 'Documentação da API', args: { page: '/apis' } };
+
+/**
+ * `pages[].wizard`: a primeira configuração da loja em passos sobre o registro único, com Pular no passo opcional e
+ * o resumo no fim. No app, a guarda (`pending`) leva toda rota para cá até a loja e o caixa estarem gravados.
+ */
+export const PrimeiraConfiguracao: Story = { name: 'Primeira configuração (assistente)', args: { page: '/primeira-configuracao' } };

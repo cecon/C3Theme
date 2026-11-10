@@ -2,11 +2,27 @@
   "$schema": "../../../../../spec/v0/app.schema.json",
   "specVersion": "0",
   "name": "Storybook pelo motor",
-  "entities": ["produto", "fatura", "loja", "cliente", "vendedor", "fornecedor", "tarefa", "evento", "mesa", "movimento", "inventario", "inventario_item"],
+  "entities": [
+    "produto",
+    "fatura",
+    "loja",
+    "cliente",
+    "vendedor",
+    "fornecedor",
+    "tarefa",
+    "evento",
+    "mesa",
+    "movimento",
+    "inventario",
+    "inventario_item",
+    "configuracao_loja"
+  ],
   "layout": {
     "orientation": "vertical",
     "header": {
-      "search": { "records": true },
+      "search": {
+        "records": true
+      },
       "notifications": true,
       "fullscreen": true,
       "settings": true
@@ -205,6 +221,55 @@
             "width": 12
           }
         ]
+      }
+    },
+    {
+      "path": "/apis",
+      "title": "Documentação da API",
+      "apiDocs": {
+        "spec": "/openapi.json"
+      }
+    },
+    {
+      "path": "/primeira-configuracao",
+      "title": "Primeira configuração",
+      "wizard": {
+        "entity": "configuracao_loja",
+        "pending": "pendente",
+        "steps": [
+          {
+            "title": "A loja",
+            "description": "Os dados que vão na nota fiscal.",
+            "rows": [["cnpj"], ["razao_social", "fantasia"], ["regime"]]
+          },
+          {
+            "title": "Este computador",
+            "description": "O caixa que vai vender aqui.",
+            "rows": [["maquina", "caixa"]]
+          },
+          {
+            "title": "Impressora",
+            "description": "Dá para configurar depois.",
+            "rows": [["impressora"]],
+            "optional": true
+          }
+        ],
+        "summary": {
+          "title": "Loja configurada",
+          "description": "Já dá para vender. O que falta pode ser feito depois.",
+          "items": [
+            {
+              "label": "Certificado digital",
+              "done": "tem_certificado",
+              "path": "/configuracao_loja"
+            },
+            {
+              "label": "Impressora",
+              "done": "tem_impressora",
+              "path": "/configuracao_loja"
+            }
+          ]
+        }
       }
     }
   ]

@@ -20,9 +20,12 @@ import EntityHome from './pages/EntityHome';
 import EntityList from './pages/EntityList';
 import type { AppDef, MenuItemDef, PageDef } from './types';
 import { viewPath } from './views';
+import WizardGuard from './pages/wizard/WizardGuard';
+import WizardPage from './pages/wizard/WizardPage';
 
 // o painel traz a biblioteca de gráficos: só baixa quem abre um
 const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'));
+const ApiDocs = lazy(() => import('./pages/apiDocs/ApiDocs'));
 
 export function homePath(app?: AppDef) {
   const first = app?.layout.menu[0]?.items[0];
@@ -44,13 +47,13 @@ export function buildRoutes(app: AppDef, layout: ReactNode, extra: RouteObject[]
   const pages = app.pages ?? [];
   const pageRoute = (p: (typeof pages)[number]): RouteObject => ({
     path: p.path,
-    element: <PageGate path={p.path}>{p.dashboard ? <DashboardPage dashboard={p.dashboard} /> : <CustomPage page={p} />}</PageGate>
+    element: <PageGate path={p.path}>{p.layout === 'blank' ? <WizardGuard>{pageBody(p)}</WizardGuard> : pageBody(p)}</PageGate>
   });
 
   return [
     {
       path: '/',
-      element: layout,
+      element: <WizardGuard>{layout}</WizardGuard>,
       children: [
         { index: true, element: <Navigate to={app.homePath ?? homePath(app)} replace /> },
         ...app.entities.flatMap((e) => [
@@ -76,6 +79,17 @@ export function buildRoutes(app: AppDef, layout: ReactNode, extra: RouteObject[]
 function RecordRoute({ entity }: { entity: string }) {
   const { id } = useParams();
   return <EntityForm key={`${entity}-${id}`} entity={entity} id={id} />;
+}
+
+function pageBody(p: PageDef) {
+  if (p.dashboard) return <DashboardPage dashboard={p.dashboard} />;
+  if (p.wizard) return <WizardPage wizard={p.wizard} />;
+  if (!p.apiDocs) return <CustomPage page={p} />;
+  return (
+    <Suspense fallback={<PanelSkeleton />}>
+      <ApiDocs def={p.apiDocs} />
+    </Suspense>
+  );
 }
 
 function DashboardPage({ dashboard }: { dashboard: DashboardDef }) {
