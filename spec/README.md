@@ -685,6 +685,27 @@ Quando a entidade inteira não basta (aba Fornecedor só para quem cuida de forn
 - `rowAccess`: o usuário vê a união dos `where` dos códigos que tem (nenhum código, nada). Vale em toda leitura, como o escopo de filial: lista e `total`, leitura (fora é `404`), escolha de `reference` e o título dele, ações. Gravar um registro que fica fora (criar fornecedor sem o código, ou virar um cliente em fornecedor) é `403`. Regra que depende do usuário logado ("só os pedidos do vendedor") usa `{"$user": "seller"}` como valor: o sistema responde em `Hooks::user_value("seller", requisição)` com o valor no formato trafegado do campo (`"7"`, ou uma lista para `in`). Só com `eq`, `ne` e `in`; sem o valor (`None` ou `null`), a regra não mostra nada, nunca alarga.
 - Ainda não: `access` nos campos de uma filha `with_parent` e `rowAccess` nela (o boot recusa); `access` em input de ação. A filial que decide é sempre a ativa, mesmo numa lista com várias filiais.
 
+## Autorização de outro usuário
+
+Lançamento que passa do orçado, desconto acima do limite, excluir item já produzido: o servidor recusa e alguém com a permissão libera ali mesmo. O app declara os códigos e os campos:
+
+```json
+"authorization": {
+  "codes": ["orcamento_excedido"],
+  "title": "Liberação do orçamento",
+  "fields": [
+    { "name": "usuario", "label": "Usuário" },
+    { "name": "senha", "label": "Senha", "type": "password" },
+    { "name": "motivo", "label": "Motivo", "type": "text", "minLength": 5 }
+  ]
+}
+```
+
+- O servidor (o hook do sistema) recusa com um dos códigos: `409 { "error": { "code": "orcamento_excedido", "message": "Passa do orçado em R$ 1.250,00." } }`. Vale em criar, alterar, excluir e em toda ação.
+- A shell mostra a mensagem e os campos (senha mascarada). "Autorizar" reenvia **o mesmo pedido** (mesma rota, mesmo corpo) com o cabeçalho `C3-Authorization`: o JSON dos campos em base64 (UTF-8). Nova recusa com um dos códigos, `401` ou `403` aparece no diálogo; outro erro vai para a tela; Cancelar devolve a recusa original.
+- No hook, o sistema lê o cabeçalho (`ctx.authorization()` no c3-engine, `authorizationOf(ctx)` no engine-node), confere a senha e a permissão de quem libera e grava a auditoria. O motor não guarda nada disso.
+- A senha não passa pelo formulário nem pelo rascunho, e não fica no corpo do registro.
+
 ## Grupo econômico, empresa e filial
 
 Três níveis: **grupo econômico** (o cliente; é o banco inteiro), **empresa** (CNPJ raiz) e **filial** (estabelecimento, CNPJ completo). A matriz é a filial `/0001`: tem estoque, caixa e pedidos próprios, não é um nível acima das filiais.

@@ -8,6 +8,7 @@ import type { BoardView, CalendarView, ColumnDef, GalleryView, ListLook, MapView
 import type { ActionDef, GridFieldDef } from './actionTypes';
 import type { FormView } from './formTypes';
 import type { WizardDef } from './wizard';
+import type { AuthorizationConfig } from './authorization/AuthorizationDialog';
 
 export type { Condition, FieldType };
 export type { BoardView, CalendarView, ReportView };
@@ -225,6 +226,8 @@ export interface AppDef {
   organization?: { company: string; branch: string };
   /** Página com `component` (página registrada, com `config` e `permission`) ou `dashboard` (montado pela shell). */
   pages?: PageDef[];
+  /** Autorização de outro usuário: códigos de erro que abrem o diálogo e os campos dele. */
+  authorization?: AuthorizationConfig;
   layout: {
     orientation?: 'vertical' | 'horizontal' | 'rail';
     /** Onde fica o usuário logado: avatar no cabeçalho (padrão) ou cartão no pé do menu lateral. */

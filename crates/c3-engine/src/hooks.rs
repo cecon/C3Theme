@@ -17,6 +17,43 @@ pub struct RequestContext<'a> {
     pub active_company: Option<String>,
 }
 
+impl RequestContext<'_> {
+    /// Autorização de outro usuário (`app.authorization`): os campos que a shell manda no cabeçalho `C3-Authorization`
+    /// (JSON em base64) ao reenviar um pedido recusado com um dos códigos. Quem confere a senha e a permissão de quem
+    /// libera, e grava a auditoria, é o sistema. Cabeçalho ausente ou malformado: `None`.
+    pub fn authorization(&self) -> Option<Map<String, Value>> {
+        let raw = self.req.headers.get("c3-authorization")?.to_str().ok()?;
+        match serde_json::from_slice(&decode_base64(raw.trim())?).ok()? {
+            Value::Object(m) => Some(m),
+            _ => None,
+        }
+    }
+}
+
+/// Base64 padrão (com ou sem `=`), sem dependência a mais; caractere inválido devolve `None`.
+fn decode_base64(s: &str) -> Option<Vec<u8>> {
+    let mut out = Vec::with_capacity(s.len() * 3 / 4);
+    let (mut acc, mut bits) = (0u32, 0u32);
+    for c in s.bytes().filter(|c| *c != b'=') {
+        let v = match c {
+            b'A'..=b'Z' => c - b'A',
+            b'a'..=b'z' => c - b'a' + 26,
+            b'0'..=b'9' => c - b'0' + 52,
+            b'+' => 62,
+            b'/' => 63,
+            _ => return None,
+        };
+        acc = (acc << 6) | u32::from(v);
+        bits += 6;
+        if bits >= 8 {
+            bits -= 8;
+            out.push((acc >> bits) as u8);
+            acc &= (1 << bits) - 1;
+        }
+    }
+    Some(out)
+}
+
 /// Pontos de extensão do sistema. Tudo tem padrão: sem hooks, todo mundo pode tudo
 /// (menos rodar ações, que só o sistema sabe executar).
 #[async_trait::async_trait]
@@ -183,5 +220,37 @@ pub trait Hooks: Send + Sync + 'static {
             call.entity, call.field
         );
         Err(ApiError::internal())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use axum::http::Request;
+
+    use super::RequestContext;
+
+    fn ctx_with(value: Option<&str>) -> Option<serde_json::Map<String, serde_json::Value>> {
+        let mut req = Request::builder();
+        if let Some(v) = value {
+            req = req.header("c3-authorization", v);
+        }
+        let (parts, ()) = req.body(()).unwrap().into_parts();
+        RequestContext {
+            req: &parts,
+            active_branch: None,
+            active_company: None,
+        }
+        .authorization()
+    }
+
+    #[test]
+    fn le_a_autorizacao_do_cabecalho() {
+        // {"usuario":"ana","motivo":"liberação"} em UTF-8 e base64
+        let m = ctx_with(Some("eyJ1c3VhcmlvIjoiYW5hIiwibW90aXZvIjoibGliZXJhw6fDo28ifQ==")).unwrap();
+        assert_eq!(m["usuario"], "ana");
+        assert_eq!(m["motivo"], "liberação");
+        assert!(ctx_with(None).is_none());
+        assert!(ctx_with(Some("não é base64")).is_none());
+        assert!(ctx_with(Some("WzFd")).is_none()); // [1]: não é objeto
     }
 }

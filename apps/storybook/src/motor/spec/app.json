@@ -273,5 +273,26 @@
         }
       }
     }
-  ]
+  ],
+  "authorization": {
+    "codes": ["orcamento_excedido"],
+    "title": "Liberação do orçamento",
+    "fields": [
+      {
+        "name": "usuario",
+        "label": "Usuário que libera"
+      },
+      {
+        "name": "senha",
+        "label": "Senha",
+        "type": "password"
+      },
+      {
+        "name": "motivo",
+        "label": "Motivo",
+        "type": "text",
+        "minLength": 5
+      }
+    ]
+  }
 }
