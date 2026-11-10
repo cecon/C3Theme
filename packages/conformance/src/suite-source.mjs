@@ -53,6 +53,25 @@ export function sourceTests({ test, call, tag }) {
     assert.deepEqual([meta.body.capabilities.create, meta.body.capabilities.update, meta.body.capabilities.delete], [false, false, false]);
   });
 
+  test('consulta do sistema', 'meta.columns: o sistema escolhe as colunas, a ordem e o rótulo pelos parâmetros', async () => {
+    const all = await get({ 'p.until': '2020-02-15' });
+    assert.equal(all.status, 200, JSON.stringify(all.body));
+    assert.deepEqual(all.body.meta.columns, [
+      { field: 'customer_id' },
+      { field: 'late_count', label: 'Atrasadas em 2020-02-15' },
+      { field: 'open_count' },
+      { field: 'oldest_due' }
+    ]);
+    const todo = await get({ 'p.until': '2020-03-01', 'p.stage': 'todo' });
+    assert.deepEqual(
+      todo.body.meta.columns.map((c) => c.field),
+      ['customer_id', 'late_count', 'open_count'],
+      'sem oldest_due quando filtra a etapa'
+    );
+    const table = await call('GET', '/customer?pageSize=10');
+    assert.equal(table.body.meta.columns, undefined, 'entidade com tabela não traz columns');
+  });
+
   test('consulta do sistema', 'ação em conjunto nas linhas marcadas, com os parâmetros da lista', async () => {
     const created = await call('POST', '/customer', { status: 'lead', name: `Adiar ${tag}` });
     const customer = created.body.data.id;

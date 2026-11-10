@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { EntityDef } from '../../types';
-import { listColumns, recordTitle } from './listColumns';
+import { listColumns, recordTitle, withSourceColumns } from './listColumns';
 import { allowedRowActions } from './RowActionsCell';
 
 const def = {
@@ -46,5 +46,18 @@ describe('ações na linha', () => {
       'view',
       'edit'
     ]);
+  });
+});
+
+describe('colunas da consulta do sistema (meta.columns, #60)', () => {
+  const cols = listColumns(def);
+  it('sem meta.columns, as da view', () => {
+    expect(withSourceColumns(def, cols, undefined)).toBe(cols);
+  });
+  it('só as que vieram, na ordem, com o rótulo também no campo (exportação); fora da view entra simples', () => {
+    const got = withSourceColumns(def, cols, [{ field: 'uf', label: 'Estado' }, { field: 'nome' }, { field: 'sumiu' }]);
+    expect(got.map((c) => c.field)).toEqual(['uf', 'nome']);
+    expect([got[0].label, got[0].def.label]).toEqual(['Estado', 'Estado']);
+    expect(got[1]).toBe(cols[0]);
   });
 });

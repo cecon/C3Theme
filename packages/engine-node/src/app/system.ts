@@ -22,6 +22,7 @@ import {
   type PreviewCall,
   type RequestContext,
   type SourceCall,
+  type SourceColumn,
   type SourceSql,
   type WriteCall
 } from '../ports/hooks';
@@ -77,6 +78,9 @@ export class System {
   source(call: SourceCall): Promise<SourceSql> {
     if (!this.h.source) throw missing(`${call.entity} é source system mas o sistema não implementa source`);
     return this.h.source(call);
+  }
+  async sourceColumns(call: SourceCall): Promise<SourceColumn[] | undefined> {
+    return (await this.h.sourceColumns?.(call)) ?? undefined;
   }
   runAction(call: ActionCall): Promise<ActionOutcome> {
     if (!this.h.runAction) throw missing(`ação ${call.entity}.${call.action} declarada mas sem runAction no sistema`);

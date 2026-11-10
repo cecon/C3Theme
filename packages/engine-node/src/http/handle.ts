@@ -91,7 +91,10 @@ function route(method: string, p: string[]): Route | 'method' | undefined {
     return pick({
       GET: async (e, r, x) => {
         const page = await list(e, r, x[0], r.query);
-        return json({ data: page.data, meta: { page: page.page, pageSize: page.pageSize, total: page.total } });
+        return json({
+          data: page.data,
+          meta: { page: page.page, pageSize: page.pageSize, total: page.total, ...(page.columns && { columns: page.columns }) }
+        });
       },
       POST: async (e, r, x) => {
         const created = await create(e, r, x[0], jsonBody(r.body));

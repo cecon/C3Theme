@@ -666,6 +666,18 @@ components:
         page: { type: integer, minimum: 1 }
         pageSize: { type: integer }
         total: { type: integer, minimum: 0 }
+        columns:
+          type: array
+          description: >-
+            Só em consulta do sistema (source system), quando o sistema escolhe as colunas pelos parâmetros (Hooks::source_columns):
+            a lista mostra só estas, nesta ordem, com este rótulo (o mês do período: 'out/26'); sem label, o do campo. Ausente, valem
+            as de views.list.columns. Campo que o usuário não vê não vem.
+          items:
+            type: object
+            required: [field]
+            properties:
+              field: { type: string }
+              label: { type: string }
 
     Capabilities:
       type: object

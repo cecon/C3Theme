@@ -162,3 +162,32 @@ describe('pedido livre (raw) na memória', () => {
     expect((await json('GET', '/c?where=%7B'))[0]).toBe(400);
   });
 });
+
+describe('consulta do sistema no adaptador em memória', () => {
+  const dre: EntityDef = {
+    name: 'dre',
+    label: { singular: 'DRE', plural: 'DRE' },
+    source: 'system',
+    params: {
+      fields: [
+        { name: 'de', type: 'date', default: '2026-10-01' },
+        { name: 'ate', type: 'date', default: { $date: 'today' } as never }
+      ]
+    },
+    fields: [{ name: 'mes_10', type: 'decimal' }]
+  };
+  const client = createMemoryClient({
+    app: { name: 't', entities: ['dre', 'cliente'], layout: { menu: [] } },
+    entities: [dre, cliente],
+    records: { dre: [{ id: '1', mes_10: '1.00' }] },
+    sourceColumns: { dre: (p) => [{ field: 'mes_10', label: `out de ${p.de}` }] }
+  });
+  it('manda o default fixo dos parâmetros e as colunas pelos parâmetros', async () => {
+    expect((await client.entity('dre')).paramDefaults).toEqual({ de: '2026-10-01' });
+    expect((await client.entity('dre')).capabilities.create).toBe(false);
+    expect((await client.entity('cliente')).paramDefaults).toBeUndefined();
+    const res = await client.list('dre', { params: { de: '2026-09-01' } });
+    expect(res.meta.columns).toEqual([{ field: 'mes_10', label: 'out de 2026-09-01' }]);
+    expect((await client.list('cliente')).meta.columns).toBeUndefined();
+  });
+});

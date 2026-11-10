@@ -7,6 +7,8 @@ import cliente from './cliente.json';
 import contaContabil from './conta_contabil.json';
 import orcadoRealizado from './orcado_realizado.json';
 import orcamento from './orcamento.json';
+import demonstrativo from './demonstrativo.json';
+import boleto from './boleto.json';
 import configuracaoLoja from './configuracao_loja.json';
 import evento from './evento.json';
 import fatura from './fatura.json';
@@ -40,5 +42,7 @@ export const ENTITIES = [
   notaItem,
   contaContabil,
   orcadoRealizado,
-  orcamento
+  orcamento,
+  demonstrativo,
+  boleto
 ] as unknown as EntityDef[];

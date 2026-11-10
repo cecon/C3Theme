@@ -4,6 +4,7 @@
 
 use std::collections::HashMap;
 
+use serde::Serialize;
 use serde_json::{Map, Value};
 
 use super::{Owner, Result};
@@ -34,6 +35,28 @@ pub struct SourceSql {
     pub values: Vec<SqlValue>,
 }
 
+/// Coluna que a consulta mostra (`Hooks::source_columns`, #60): o campo da entidade e, se quiser, o rótulo do
+/// cabeçalho naquela consulta (o mês do período: `out/26`). Sem rótulo, fica o do campo.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct SourceColumn {
+    pub field: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub label: Option<String>,
+}
+
+impl SourceColumn {
+    pub fn new(field: impl Into<String>) -> Self {
+        Self {
+            field: field.into(),
+            label: None,
+        }
+    }
+    pub fn label(mut self, label: impl Into<String>) -> Self {
+        self.label = Some(label.into());
+        self
+    }
+}
+
 /// Consulta do sistema é só leitura pela lista: criar, alterar, excluir e abrir uma linha são 405.
 pub(crate) fn guard_rows(entity: &Entity) -> Result<()> {
     match entity.source {
@@ -44,12 +67,43 @@ pub(crate) fn guard_rows(entity: &Entity) -> Result<()> {
     }
 }
 
-/// `FROM` de uma leitura: a tabela, ou `(SELECT do sistema)` com os valores dele.
-pub(super) async fn from_sql(ctx: &Ctx<'_>, entity: &Entity, q: &HashMap<String, String>) -> Result<(String, Vec<SqlValue>)> {
+/// `FROM` de uma leitura: a tabela, ou `(SELECT do sistema)` com os valores dele e os parâmetros validados.
+pub(super) async fn from_sql(ctx: &Ctx<'_>, entity: &Entity, q: &HashMap<String, String>) -> Result<From> {
     match &entity.source {
-        None => Ok((format!("\"{}\"", entity.name), Vec::new())),
-        Some(src) => Ok(source_sql(ctx, entity, src, q).await?.0),
+        None => Ok((format!("\"{}\"", entity.name), Vec::new(), None)),
+        Some(src) => {
+            let ((from, values), params) = source_sql(ctx, entity, src, q).await?;
+            Ok((from, values, Some(params)))
+        }
     }
+}
+
+type From = (String, Vec<SqlValue>, Option<Map<String, Value>>);
+
+/// Colunas da lista pedidas pelo sistema para estes parâmetros, na ordem dele. Campo que o usuário não vê (fora de
+/// `view`) sai calado; campo que a entidade não tem, ou repetido, é erro do sistema (500).
+pub(super) async fn columns(ctx: &Ctx<'_>, view: &Entity, params: &Map<String, Value>) -> Result<Option<Vec<SourceColumn>>> {
+    let rc = ctx.request_context();
+    let call = SourceCall {
+        entity: &view.name,
+        params,
+        ctx: &rc,
+    };
+    let Some(cols) = ctx.engine.0.hooks.source_columns(call).await? else {
+        return Ok(None);
+    };
+    let full = ctx.engine.entity(&view.name)?;
+    let mut seen = std::collections::HashSet::new();
+    for c in &cols {
+        if full.field(&c.field).is_none() || !seen.insert(c.field.as_str()) {
+            eprintln!(
+                "c3-engine: {}: source_columns com '{}' fora da entidade ou repetido",
+                view.name, c.field
+            );
+            return Err(ApiError::internal());
+        }
+    }
+    Ok(Some(cols.into_iter().filter(|c| view.readable_field(&c.field).is_some()).collect()))
 }
 
 /// Linhas marcadas de uma consulta do sistema, para a ação em conjunto: a consulta roda com os parâmetros da URL

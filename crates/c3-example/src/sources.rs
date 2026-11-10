@@ -1,6 +1,6 @@
 //! Consultas do sistema (`source: system`): o SELECT de cada uma, com os parâmetros já validados pelo motor.
 
-use c3_engine::{ApiError, SourceCall, SourceSql, SqlValue};
+use c3_engine::{ApiError, SourceCall, SourceColumn, SourceSql, SqlValue};
 use serde_json::Value;
 
 pub fn source(call: SourceCall<'_>) -> Result<SourceSql, ApiError> {
@@ -22,6 +22,24 @@ pub fn source(call: SourceCall<'_>) -> Result<SourceSql, ApiError> {
         }
         _ => Err(ApiError::internal()),
     }
+}
+
+/// Colunas da lista (#60): a contagem de atrasadas vem primeiro e diz a data no cabeçalho; filtrando a etapa, o prazo
+/// mais antigo some (a tela fica só com as contagens).
+pub fn columns(call: &SourceCall<'_>) -> Option<Vec<SourceColumn>> {
+    if call.entity != "customer_pending" {
+        return None;
+    }
+    let until = call.params["until"].as_str().unwrap_or_default();
+    let mut cols = vec![
+        SourceColumn::new("customer_id"),
+        SourceColumn::new("late_count").label(format!("Atrasadas em {until}")),
+        SourceColumn::new("open_count"),
+    ];
+    if !call.params["stage"].is_string() {
+        cols.push(SourceColumn::new("oldest_due"));
+    }
+    Some(cols)
 }
 
 /// Adiar as pendências dos clientes marcados (`customer_pending.postpone`, em conjunto sobre a consulta): só as

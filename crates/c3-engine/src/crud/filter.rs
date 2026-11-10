@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 
-use serde_json::Value;
+use serde_json::{Map, Value};
 
 use super::Result;
 use crate::condition::{contains_pattern, Condition};
@@ -53,11 +53,13 @@ pub(super) struct Filtered {
     pub from: String,
     pub where_sql: String,
     pub params: Vec<SqlValue>,
+    /// Consulta do sistema: os parâmetros validados, para as colunas da lista (`Hooks::source_columns`).
+    pub source_params: Option<Map<String, Value>>,
 }
 
 /// `entity` já passou por `access::view`: campo oculto não filtra nem é buscado.
 pub(super) async fn filtered(ctx: &Ctx<'_>, entity: &Entity, q: &HashMap<String, String>) -> Result<Filtered> {
-    let (from, mut params) = super::source::from_sql(ctx, entity, q).await?;
+    let (from, mut params, source_params) = super::source::from_sql(ctx, entity, q).await?;
     let name = &entity.name;
     let mut filters = Vec::new();
     if entity.scope == Scope::Group {
@@ -95,5 +97,10 @@ pub(super) async fn filtered(ctx: &Ctx<'_>, entity: &Entity, q: &HashMap<String,
         format!(" WHERE {}", filters.join(" AND "))
     };
 
-    Ok(Filtered { from, where_sql, params })
+    Ok(Filtered {
+        from,
+        where_sql,
+        params,
+        source_params,
+    })
 }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { widgetLink, type KpiWidget } from './dashboard';
-import { applyFilters, periodWhere, readValues, type DashboardFilter } from './dashboardFilters';
+import { applyFilters, initialValues, periodOptions, periodWhere, readValues, type DashboardFilter } from './dashboardFilters';
 
 const filters: DashboardFilter[] = [
   { name: 'periodo', type: 'period', default: 'month' },
@@ -54,5 +54,36 @@ describe('filtros do painel', () => {
     const link = widgetLink(applyFilters(kpi, filters, { periodo: 'today' }));
     const w = JSON.parse(new URLSearchParams(link.split('?')[1]).get('w')!);
     expect(w.and[0]).toEqual({ field: 'data', op: 'gte', value: { $date: 'today' } });
+  });
+});
+
+describe('períodos para a frente e options (#62)', () => {
+  const venc: DashboardFilter[] = [{ name: 'venc', type: 'period', options: ['today', 'next7', 'next30', 'nextMonth'] }];
+  it('sem default e sem all em options, abre no primeiro', () => {
+    expect(initialValues(venc)).toEqual({ venc: 'today' });
+    expect(initialValues([{ name: 'p', type: 'period' }])).toEqual({ p: 'all' });
+    expect(initialValues([{ name: 'p', type: 'period', options: ['year', 'all'] }])).toEqual({ p: 'all' });
+  });
+  it('a URL só aceita o que options oferece', () => {
+    expect(readValues(new URLSearchParams('f.venc=next30'), venc).venc).toBe('next30');
+    expect(readValues(new URLSearchParams('f.venc=last30'), venc).venc).toBe('today');
+  });
+  it('options vazio ou ausente oferece todos', () => {
+    expect(periodOptions({})).toContain('next7');
+    expect(periodOptions({ options: [] })).toContain('all');
+  });
+  it('next7 vai de hoje até hoje+7 (exclusivo); nextMonth é o mês que vem', () => {
+    expect(periodWhere('due', 'next7')).toEqual({
+      and: [
+        { field: 'due', op: 'gte', value: { $date: 'today' } },
+        { field: 'due', op: 'lt', value: { $date: 'today', offset: 7 } }
+      ]
+    });
+    expect(periodWhere('due', 'nextMonth')).toEqual({
+      and: [
+        { field: 'due', op: 'gte', value: { $date: 'monthStart', offset: 1, unit: 'month' } },
+        { field: 'due', op: 'lt', value: { $date: 'monthStart', offset: 2, unit: 'month' } }
+      ]
+    });
   });
 });

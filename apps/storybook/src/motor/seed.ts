@@ -3,6 +3,7 @@
 import type { MemorySeed, WireRecord } from '@c3theme/engine';
 
 import { BALANCETE, mediaDaConta, ORCADO_REALIZADO, revisar } from './balancete';
+import { BOLETOS, colunasDoPeriodo, DEMONSTRATIVO } from './demonstrativo';
 import { OPENAPI } from './openapi';
 import { avisos, eventos, mesas, tarefas } from './operacao';
 import { APP, ENTITIES } from './spec';
@@ -95,6 +96,8 @@ export const SEED: MemorySeed = {
     nota_item: [{ id: '1', descricao: 'CAFE TORRADO MOIDO 250G', ncm: '09012100', valor: '12.90', produto: null }],
     conta_contabil: BALANCETE,
     orcado_realizado: ORCADO_REALIZADO,
+    demonstrativo: DEMONSTRATIVO,
+    boleto: BOLETOS,
     orcamento: [{ id: '1', conta: '3', ano: 2026, mes_01: '0.00', mes_02: null, mes_03: null }],
     fatura: faturas,
     tarefa: tarefas,
@@ -115,6 +118,8 @@ export const SEED: MemorySeed = {
   listActions: { conta_contabil: { revisar } },
   // a consulta que o backend faria: a média do realizado da conta no ano do formulário
   lookups: { orcamento: { media: mediaDaConta } },
+  // a consulta do sistema que escolhe as colunas pelo período (os meses, na ordem dele, com o ano)
+  sourceColumns: { demonstrativo: colunasDoPeriodo },
   // a regra que o backend do sistema teria
   actions: {
     fatura: {

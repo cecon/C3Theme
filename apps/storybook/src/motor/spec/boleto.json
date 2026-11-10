@@ -1,0 +1,54 @@
+{
+  "$schema": "../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "boleto",
+  "label": {
+    "singular": "Boleto a receber",
+    "plural": "Boletos a receber",
+    "gender": "m"
+  },
+  "description": "Boletos com vencimento contado a partir de hoje, para o painel de vencimentos (períodos para a frente).",
+  "icon": "ReceiptText",
+  "titleField": "numero",
+  "fields": [
+    {
+      "name": "numero",
+      "type": "string",
+      "label": "Número",
+      "required": true,
+      "maxLength": 20
+    },
+    {
+      "name": "cliente",
+      "type": "reference",
+      "entity": "cliente",
+      "label": "Cliente",
+      "required": true
+    },
+    {
+      "name": "vencimento",
+      "type": "date",
+      "label": "Vencimento",
+      "required": true
+    },
+    {
+      "name": "valor",
+      "type": "decimal",
+      "scale": 2,
+      "currency": "BRL",
+      "label": "Valor",
+      "required": true
+    }
+  ],
+  "views": {
+    "list": {
+      "columns": ["numero", "cliente", "vencimento", "valor"],
+      "defaultSort": [
+        {
+          "field": "vencimento",
+          "direction": "asc"
+        }
+      ]
+    }
+  }
+}

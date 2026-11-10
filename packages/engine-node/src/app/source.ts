@@ -2,12 +2,13 @@
 // uma ação e o `Hooks.source` devolve o SELECT que entra no lugar da tabela: `FROM (sql) t`.
 
 import type { Entity } from '../domain/entity';
-import { fieldOf } from '../domain/entity';
+import { fieldOf, readableField } from '../domain/entity';
 import { ApiError, FieldErrors } from '../domain/errors';
 import { type Clock, relativeValue } from '../domain/relative-date';
 import type { Source } from '../domain/source-spec';
 import type { Rec, SqlValue } from '../domain/types';
 import { isIntColumn } from '../domain/value';
+import type { SourceColumn } from '../ports/hooks';
 import { parseInput } from './action-input';
 import type { Ctx } from './ctx';
 import { rowToJson, selectSql } from './read';
@@ -20,11 +21,31 @@ export function guardRows(entity: Entity): void {
   if (entity.source) throw ApiError.methodNotAllowed('Consulta do sistema: só a lista (com os parâmetros) e as ações de lista.');
 }
 
-/** `FROM` de uma leitura: a tabela, ou `(SELECT do sistema)` com os valores dele. */
-export async function fromSql(ctx: Ctx, entity: Entity, q: Record<string, string>): Promise<[string, SqlValue[]]> {
+/** `FROM` de uma leitura: a tabela, ou `(SELECT do sistema)` com os valores dele e os parâmetros validados. */
+export async function fromSql(ctx: Ctx, entity: Entity, q: Record<string, string>): Promise<[string, SqlValue[], Rec | undefined]> {
   const src = entity.source;
-  if (!src) return [`"${entity.name}"`, []];
-  return (await sourceSql(ctx, entity, src, q))[0];
+  if (!src) return [`"${entity.name}"`, [], undefined];
+  const [[from, values], params] = await sourceSql(ctx, entity, src, q);
+  return [from, values, params];
+}
+
+/**
+ * Colunas da lista pedidas pelo sistema para estes parâmetros (#60), na ordem dele. Campo que o usuário não vê (fora
+ * de `view`) sai calado; campo que a entidade não tem, ou repetido, é erro do sistema (500).
+ */
+export async function sourceColumns(ctx: Ctx, view: Entity, params: Rec): Promise<SourceColumn[] | undefined> {
+  const cols = await ctx.engine.hooks.sourceColumns({ entity: view.name, params, ctx: ctx.requestContext() });
+  if (!cols) return undefined;
+  const full = ctx.engine.entity(view.name);
+  const seen = new Set<string>();
+  for (const c of cols) {
+    if (!fieldOf(full, c.field) || seen.has(c.field)) {
+      console.error(`c3-engine: ${view.name}: sourceColumns com '${c.field}' fora da entidade ou repetido`);
+      throw ApiError.internal();
+    }
+    seen.add(c.field);
+  }
+  return cols.filter((c) => readableField(view, c.field)).map((c) => (c.label === undefined ? { field: c.field } : c));
 }
 
 /**

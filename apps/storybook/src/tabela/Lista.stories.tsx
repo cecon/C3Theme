@@ -83,3 +83,9 @@ export const Orcamento: Story = {
   name: 'Orçamento, sugerir pela média antes de salvar',
   args: { entity: 'orcamento', screen: 'form', id: '1' }
 };
+
+/**
+ * Consulta do sistema com um mês por coluna (`meta.columns`): pelo período (out/26 a mar/27), a resposta diz quais
+ * meses aparecem, na ordem do período e com o ano no cabeçalho; os de fora somem. Mude "De" e "Até" e aplique.
+ */
+export const DreGerencial: Story = { name: 'DRE gerencial, colunas pelo período', args: { entity: 'demonstrativo' } };

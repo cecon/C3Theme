@@ -6,7 +6,7 @@ import TextField from '@mui/material/TextField';
 import useSWR from 'swr';
 
 import { useEngine, useText } from '../../context';
-import { PERIOD_LABELS, PERIODS, type DashboardFilter, type FilterValues, type Period } from '../../dashboardFilters';
+import { PERIOD_LABELS, periodOptions, type DashboardFilter, type FilterValues, type Period } from '../../dashboardFilters';
 import ReferenceInput from '../../widgets/ReferenceInput';
 import type { RefValue } from '../../types';
 
@@ -36,7 +36,7 @@ export default function DashboardFilters({
               onChange={(e) => onChange(f.name, e.target.value as Period)}
               sx={{ minWidth: 200 }}
             >
-              {PERIODS.map((p) => (
+              {periodOptions(f).map((p) => (
                 <MenuItem key={p} value={p}>
                   {PERIOD_LABELS[p]}
                 </MenuItem>
