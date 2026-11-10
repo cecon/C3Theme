@@ -81,6 +81,9 @@ pub(crate) async fn check_all(
     if !refused.is_empty() {
         return Err(ApiError::refused(ids.len(), refused));
     }
+    if !partial {
+        crate::action_grid::check_selection(&action.grids, &input, ids)?;
+    }
     Ok(Checked { records, input })
 }
 

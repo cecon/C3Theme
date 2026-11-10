@@ -1427,6 +1427,10 @@
           "maximum": 500,
           "default": 200
         },
+        "fromSelection": {
+          "$ref": "#/$defs/identifier",
+          "description": "Ação em conjunto (bulk \"together\"): a grade abre com uma linha por registro marcado, e esta é a coluna reference para a própria entidade que identifica a linha. As outras colunas readOnly com o nome de um campo da entidade vêm do registro; as editáveis abrem com o default. O motor confere que as linhas são exatamente a seleção (422 'selection' na grade)."
+        },
         "fields": {
           "type": "array",
           "minItems": 1,

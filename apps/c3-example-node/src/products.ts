@@ -5,6 +5,7 @@ import {
   type ActionCall,
   type ActionOutcome,
   ApiError,
+  type BulkActionCall,
   type ListActionCall,
   type PrefillCall,
   type Preview,
@@ -56,6 +57,16 @@ export function applyPrices(db: Db, call: ListActionCall): Promise<ActionOutcome
     }
     return { message: `${lines.length} preço(s) aplicado(s).` };
   });
+}
+
+/**
+ * Etiquetas de preço (`product.labels`, grade `fromSelection`): uma linha por produto marcado, cada um com a sua
+ * quantidade. O motor já conferiu que as linhas são a seleção; aqui só a soma.
+ */
+export function labels(call: BulkActionCall): ActionOutcome {
+  const lines = Array.isArray(call.input.items) ? (call.input.items as Rec[]) : [];
+  const total = lines.reduce((n, l) => n + Number(l.copies ?? 0), 0);
+  return { message: `${total} etiqueta(s) de ${lines.length} produto(s) na fila da impressora.` };
 }
 
 /** TXT de carga da balança: `código;nome;preço` com o preço em centavos. */

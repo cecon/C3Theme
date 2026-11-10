@@ -15,6 +15,11 @@ export interface GridInput {
   row: Entity;
   minItems: number;
   maxItems: number;
+  /**
+   * `fromSelection`: a coluna `reference` da própria entidade que a shell preenche com as linhas marcadas (uma por
+   * registro); só em ação `bulk: "together"`, e o motor confere que as linhas são exatamente a seleção.
+   */
+  fromSelection?: string;
 }
 
 /** Separa as grades (`grid`) do input cru da spec; os outros seguem para `parseFields`. */
@@ -47,7 +52,10 @@ export function splitGrids(label: string, raw: unknown[], ident: (n: string) => 
       throw new Error(`${at}: campo da linha não tem visibleWhen, requiredWhen nem readOnlyWhen`);
     const bad = cols.find((c) => onlyForRecords(c) || c.type === 'file');
     if (bad) throw new Error(`${at}.${bad.name}: campo da linha não pode ser file, createOnly nem ter filter ou access`);
-    grids.push({ name, row: fieldsOnly(at, cols), minItems, maxItems });
+    const fromSelection = typeof f.fromSelection === 'string' ? f.fromSelection : undefined;
+    if (fromSelection !== undefined && !cols.some((c) => c.name === fromSelection && c.type === 'reference'))
+      throw new Error(`${at}.fromSelection: '${fromSelection}' precisa ser uma coluna reference da grade`);
+    grids.push({ name, row: fieldsOnly(at, cols), minItems, maxItems, fromSelection });
   }
   return [fields, grids];
 }

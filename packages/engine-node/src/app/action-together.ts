@@ -7,7 +7,7 @@ import { ApiError, toApiError } from '../domain/errors';
 import type { Rec } from '../domain/types';
 import type { ActionOutcome } from '../ports/hooks';
 import { checkActionRecord, rereadReply } from './action';
-import { checkInput } from './action-input';
+import { checkInput, checkSelection } from './action-input';
 import { type ActionReply, buildReply } from './action-reply';
 import type { Ctx } from './ctx';
 import { parsePathId } from './read';
@@ -36,6 +36,7 @@ export async function checkAll(ctx: Ctx, entity: Entity, action: Action, ids: st
   }
   if (refused.length === 1 && ids.length === 1) throw refused[0][1];
   if (refused.length) throw ApiError.refused(ids.length, refused);
+  if (!partial) checkSelection(action.grids, input, ids);
   return { records, input };
 }
 

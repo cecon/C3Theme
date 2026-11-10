@@ -23,6 +23,7 @@ import { singletonTests } from './suite-singleton.mjs';
 import { gridTests } from './suite-grid.mjs';
 import { actionReplyTests } from './suite-action-reply.mjs';
 import { previewTests } from './suite-preview.mjs';
+import { selectionTests } from './suite-selection.mjs';
 import { togetherTests } from './suite-together.mjs';
 import { pagesTests } from './suite-pages.mjs';
 import { sourceTests } from './suite-source.mjs';
@@ -54,6 +55,7 @@ export function featureTests(ctx) {
   gridTests(ctx);
   actionReplyTests(ctx);
   previewTests(ctx);
+  selectionTests(ctx);
   togetherTests(ctx);
   pagesTests(ctx);
   liveTests(ctx);

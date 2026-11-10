@@ -69,6 +69,7 @@ pub(crate) async fn run(
     drop(conn);
 
     let reply = if action.together {
+        crate::action_grid::check_selection(&action.grids, &input, std::slice::from_ref(&id.to_owned()))?;
         crate::action_together::run_one(&ctx, entity, action, id, row_id, record, &input).await?
     } else {
         execute(&ctx, entity, action, id, row_id, &record, &input).await?

@@ -25,6 +25,9 @@ pub struct GridInput {
     pub row: Entity,
     pub min_items: usize,
     pub max_items: usize,
+    /// `fromSelection`: a coluna `reference` da própria entidade que a shell preenche com as linhas marcadas (uma por
+    /// registro); só em ação `bulk: "together"`, e o motor confere que as linhas são exatamente a seleção.
+    pub from_selection: Option<String>,
 }
 
 /// Separa as grades (`grid`) do input cru da spec; os outros seguem para `parse_fields`.
@@ -74,11 +77,18 @@ pub(crate) fn split_spec(label: &str, raw: Vec<Value>, ident: &dyn Fn(&str) -> b
                 c.name
             ));
         }
+        let from_selection = f.get("fromSelection").and_then(Value::as_str).map(str::to_owned);
+        if let Some(col) = &from_selection {
+            if !sub.iter().any(|c| c.name == *col && c.ty == crate::FieldType::Reference) {
+                return Err(format!("{at}.fromSelection: '{col}' precisa ser uma coluna reference da grade"));
+            }
+        }
         rows.push(GridInput {
             name,
             row: Entity::fields_only(at, sub),
             min_items,
             max_items,
+            from_selection,
         });
     }
     Ok((fields, rows))
@@ -145,4 +155,36 @@ pub(crate) async fn check(
         out.insert(r.name.clone(), Value::Array(lines));
     }
     Ok(out)
+}
+
+/// Grade `fromSelection`: as linhas são exatamente os registros marcados, um por linha. Fora disso, 422 na grade.
+pub(crate) fn check_selection(rows: &[GridInput], input: &Map<String, Value>, ids: &[String]) -> Result<(), ApiError> {
+    let mut errors = FieldErrors::default();
+    for r in rows {
+        let Some(col) = &r.from_selection else { continue };
+        let mut got: Vec<String> = input
+            .get(&r.name)
+            .and_then(Value::as_array)
+            .map(|lines| {
+                lines
+                    .iter()
+                    .map(|l| match &l[col.as_str()] {
+                        Value::String(s) => s.clone(),
+                        v => v.to_string(),
+                    })
+                    .collect()
+            })
+            .unwrap_or_default();
+        let mut want = ids.to_vec();
+        got.sort();
+        want.sort();
+        if got != want {
+            errors.add(&r.name, "selection", "As linhas precisam ser os registros marcados, um por linha.");
+        }
+    }
+    if errors.is_empty() {
+        Ok(())
+    } else {
+        Err(ApiError::validation(errors))
+    }
 }

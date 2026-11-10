@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { gridBody, mergeGridFill, newRow, setCell } from './gridRows';
-import type { GridFieldDef } from '../actionTypes';
+import { gridBody, mergeGridFill, newRow, selectionInput, setCell } from './gridRows';
+import type { ActionDef, GridFieldDef } from '../actionTypes';
 
 const grid: GridFieldDef = {
   name: 'prices',
@@ -74,5 +74,35 @@ describe('mergeGridFill', () => {
   it('sem coluna readOnly, as linhas do sistema entram inteiras', () => {
     const free: GridFieldDef = { ...grid, fields: [{ name: 'price', type: 'decimal' }] };
     expect(mergeGridFill(free, [{ price: '1' }], [], [{ price: '2' }])).toEqual([{ price: '2' }]);
+  });
+});
+
+describe('selectionInput', () => {
+  it('abre a grade fromSelection com uma linha por registro marcado', () => {
+    const labels = {
+      name: 'labels',
+      label: 'Etiquetas',
+      bulk: 'together',
+      input: {
+        fields: [
+          {
+            name: 'items',
+            type: 'grid',
+            label: 'Itens',
+            fromSelection: 'product',
+            fields: [
+              { name: 'product', type: 'reference', entity: 'product', readOnly: true },
+              { name: 'price', type: 'decimal', readOnly: true },
+              { name: 'copies', type: 'integer', default: 1 }
+            ]
+          },
+          { ...grid, name: 'outra' }
+        ]
+      }
+    } as ActionDef;
+    const rows = [{ id: '3', name: 'Água', price: '4.00' }];
+    expect(selectionInput(labels, rows, (r) => String(r.name))).toEqual({
+      items: [{ product: { id: '3', title: 'Água' }, price: '4.00', copies: 1 }]
+    });
   });
 });

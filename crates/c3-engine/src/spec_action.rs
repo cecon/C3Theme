@@ -100,6 +100,15 @@ pub(crate) fn parse_action(
             input_fields[*i].name
         ));
     }
+    if let Some(r) = rows.iter().find(|r| r.from_selection.is_some()) {
+        let col = r.row.field(r.from_selection.as_deref().unwrap_or_default());
+        if !together || col.and_then(|c| c.reference.as_deref()) != Some(name) {
+            return Err(format!(
+                "{label}.{}: fromSelection só em ação bulk \"together\", numa coluna reference para '{name}'",
+                r.name
+            ));
+        }
+    }
     let mut input = Entity::fields_only(label, input_fields);
     resolve_conditions(&mut input, input_conditions)?;
     let list = a.target.as_deref() == Some("list");

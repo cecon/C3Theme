@@ -129,6 +129,29 @@
       }
     },
     {
+      "name": "labels",
+      "label": "Imprimir etiquetas",
+      "description": "Uma linha por produto marcado: informe quantas etiquetas de cada um.",
+      "icon": "Printer",
+      "bulk": "together",
+      "input": {
+        "fields": [
+          {
+            "name": "items",
+            "type": "grid",
+            "label": "Etiquetas",
+            "required": true,
+            "fromSelection": "product",
+            "fields": [
+              { "name": "product", "type": "reference", "entity": "product", "label": "Produto", "required": true, "readOnly": true },
+              { "name": "price", "type": "decimal", "label": "Preço", "scale": 2, "readOnly": true },
+              { "name": "copies", "type": "integer", "label": "Etiquetas", "min": 1, "max": 99, "default": 1, "required": true }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "name": "duplicate",
       "label": "Duplicar",
       "description": "Cria uma cópia inativa e abre para editar.",

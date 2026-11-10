@@ -15,6 +15,8 @@ export interface GridFieldDef {
   maxItems?: number;
   /** Colunas. `readOnly` só trava a célula: o valor vai ao sistema. */
   fields: FieldDef[];
+  /** Ação em conjunto: abre com uma linha por registro marcado; esta é a coluna reference para a própria entidade. */
+  fromSelection?: string;
 }
 
 export type InputFieldDef = FieldDef | GridFieldDef;

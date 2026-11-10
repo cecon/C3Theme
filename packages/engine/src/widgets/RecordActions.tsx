@@ -22,6 +22,7 @@ import ActionBody from './ActionBody';
 import BulkReport, { type Report } from './BulkReport';
 import { useRepeatLog } from './RepeatLog';
 import { loadPrefill } from './prefill';
+import { selectionInput } from '../hooks/gridRows';
 import { summaryText } from '../pages/list/selectionSum';
 import { plain, rowTitle, scopeText } from './bulkText';
 import type { RefusedRecord } from '../api';
@@ -170,7 +171,14 @@ export default function RecordActions({ entity, id, record, rows, onBulkDone }: 
     repeat.clear();
     const initial = await loadPrefill(client, entity, action, bulk ? undefined : id);
     if (!initial) return task.abandon();
-    form.reset(action, initial);
+    form.reset(action, {
+      ...initial,
+      ...selectionInput(
+        action,
+        eligible(action).map((t) => t.row),
+        (r) => rowTitle(def, r)
+      )
+    });
     setOpen(action);
   }
 
@@ -279,15 +287,7 @@ export default function RecordActions({ entity, id, record, rows, onBulkDone }: 
 
   function bulkScope(a: ActionDef) {
     const chosen = eligible(a).map((t) => t.row);
-    const sums = a.summary?.length
-      ? summaryText(
-          def,
-          chosen,
-          a.summary.map((s) => s.field),
-          intl.locale,
-          text
-        )
-      : '';
-    return scopeText(a, chosen.length, rows!.length, sums);
+    const fields = a.summary?.map((s) => s.field) ?? [];
+    return scopeText(a, chosen.length, rows!.length, fields.length ? summaryText(def, chosen, fields, intl.locale, text) : '');
   }
 }

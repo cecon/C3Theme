@@ -91,3 +91,18 @@ export async function checkInput(conn: Conn, ctx: Ctx, action: Action, owner: Ow
   }
   return { ...out, ...lines };
 }
+
+/** Grade `fromSelection`: as linhas são exatamente os registros marcados, um por linha. Fora disso, 422 na grade. */
+export function checkSelection(grids: GridInput[], input: Rec, ids: string[]): void {
+  const errors = new FieldErrors();
+  for (const g of grids) {
+    const col = g.fromSelection;
+    if (col === undefined) continue;
+    const lines = Array.isArray(input[g.name]) ? (input[g.name] as Rec[]) : [];
+    const got = lines.map((l) => String(l[col])).sort();
+    const want = [...ids].sort();
+    if (got.join('\u0000') !== want.join('\u0000'))
+      errors.add(g.name, 'selection', 'As linhas precisam ser os registros marcados, um por linha.');
+  }
+  if (!errors.isEmpty()) throw ApiError.validation(errors);
+}

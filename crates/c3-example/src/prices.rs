@@ -88,3 +88,14 @@ pub async fn preview(pool: &SqlitePool, call: c3_engine::PreviewCall<'_>) -> Res
         table: None,
     })
 }
+
+/// Etiquetas de preço (`product.labels`, grade `fromSelection`): uma linha por produto marcado, cada um com a sua
+/// quantidade. O motor já conferiu que as linhas são a seleção; aqui só a soma.
+pub fn labels(call: c3_engine::BulkActionCall<'_>) -> Result<ActionOutcome, ApiError> {
+    let lines = call.input["items"].as_array().cloned().unwrap_or_default();
+    let total: i64 = lines.iter().map(|l| l["copies"].as_i64().unwrap_or(0)).sum();
+    Ok(ActionOutcome::message(format!(
+        "{total} etiqueta(s) de {} produto(s) na fila da impressora.",
+        lines.len()
+    )))
+}

@@ -1,7 +1,7 @@
 // Linhas de uma grade no input da ação (`type: grid`): o corpo trafegado e a conferência local, a mesma do backend
 // para o erro aparecer antes de ir ao servidor. Chave do erro: `<grade>.<linha>.<coluna>`, como o 422 do backend.
 
-import type { GridFieldDef } from '../actionTypes';
+import { gridInputs, type ActionDef, type GridFieldDef } from '../actionTypes';
 import type { WireRecord } from '../types';
 
 export type GridRow = WireRecord;
@@ -61,4 +61,22 @@ export function mergeGridFill(grid: GridFieldDef, current: GridRow[], before: Gr
     const kept = grid.fields.filter((f) => !f.readOnly && !Object.is(wire(typed[f.name]), wire(was[f.name])));
     return { ...row, ...Object.fromEntries(kept.map((f) => [f.name, typed[f.name]])) };
   });
+}
+
+/**
+ * Grades `fromSelection` da ação abertas com uma linha por registro marcado: a coluna da seleção com `{ id, title }`,
+ * as outras `readOnly` com o valor do campo de mesmo nome no registro e as editáveis com o default.
+ */
+export function selectionInput(action: ActionDef, records: WireRecord[], title: (r: WireRecord) => string): WireRecord {
+  const out: WireRecord = {};
+  for (const g of gridInputs(action)) {
+    const col = g.fromSelection;
+    if (!col) continue;
+    out[g.name] = records.map((r) => ({
+      ...newRow(g),
+      ...Object.fromEntries(g.fields.filter((f) => f.readOnly && f.name in r).map((f) => [f.name, r[f.name]])),
+      [col]: { id: r.id, title: title(r) }
+    }));
+  }
+  return out;
 }

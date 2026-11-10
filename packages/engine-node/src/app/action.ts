@@ -9,7 +9,7 @@ import { type Rec, isObject } from '../domain/types';
 import type { ActionOutcome } from '../ports/hooks';
 import type { EngineRequest } from '../ports/request';
 import type { Conn } from '../ports/store';
-import { checkInput, parseActionInput } from './action-input';
+import { checkInput, checkSelection, parseActionInput } from './action-input';
 import { runListAction } from './action-list';
 import { type ActionReply, buildReply } from './action-reply';
 import { runTogether, runTogetherOne } from './action-together';
@@ -49,6 +49,7 @@ export async function runAction(
   const conn = await engine.store.conn();
   const [record, owner] = await checkActionRecord(conn, ctx, entity, action, rowId, expect);
   const input = await checkInput(conn, ctx, action, owner, parseActionInput(action, body()));
+  if (action.together) checkSelection(action.grids, input, [id]);
   const reply = action.together
     ? await runTogetherOne(ctx, entity, action, id, rowId, record, input)
     : await execute(ctx, entity, action, id, rowId, record, input);

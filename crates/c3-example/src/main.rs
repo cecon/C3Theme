@@ -214,6 +214,7 @@ impl c3_engine::Hooks for TestUsers {
     async fn run_bulk_action(&self, call: BulkActionCall<'_>) -> Result<ActionOutcome, ApiError> {
         match (call.entity, call.action) {
             ("sales_order", "invoice") => invoices::run(&self.pool, call).await,
+            ("product", "labels") => prices::labels(call),
             _ => Err(ApiError::internal()),
         }
     }

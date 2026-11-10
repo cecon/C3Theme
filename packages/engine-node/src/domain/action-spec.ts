@@ -49,6 +49,9 @@ export function parseAction(name: string, a: Rec, fields: Field[], ident: (n: st
   if (bad) throw new Error(`${label}: campo '${bad.name}' do input não pode ser readOnly, createOnly nem ter filter ou access`);
   const locked = inputConditions.find((c) => c[3] !== undefined);
   if (locked) throw new Error(`${label}: campo '${inputFields[locked[0]].name}' do input não pode ter readOnlyWhen`);
+  const picked = grids.find((g) => g.fromSelection !== undefined);
+  if (picked && (!together || picked.row.fields.find((c) => c.name === picked.fromSelection)?.reference !== name))
+    throw new Error(`${label}.${picked.name}: fromSelection só em ação bulk "together", numa coluna reference para '${name}'`);
   const input = fieldsOnly(label, inputFields);
   resolveConditions(input, inputConditions);
   const list = a.target === 'list';

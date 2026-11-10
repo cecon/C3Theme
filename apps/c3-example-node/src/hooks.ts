@@ -9,7 +9,7 @@ import { invoice, invoicePreview, lookup, readAttachment, source } from './extra
 import { validateMenu, validateMenuChildren } from './menu';
 import { writeOperator } from './operators';
 import { writeOrder } from './orders';
-import { applyPrices, discountPreview, pricesPrefill, pricesPreview, scaleFile } from './products';
+import { applyPrices, discountPreview, labels, pricesPrefill, pricesPreview, scaleFile } from './products';
 import { actionAllowed, capabilities, orgAccess, permitted, user, userValue } from './users';
 
 export function exampleHooks(db: Db): Hooks {
@@ -42,6 +42,7 @@ export function exampleHooks(db: Db): Hooks {
     actionPrefill: (call) => pricesPrefill(db, call),
     async runBulkAction(call) {
       if (call.entity === 'sales_order' && call.action === 'invoice') return invoice(db, call);
+      if (call.entity === 'product' && call.action === 'labels') return labels(call);
       throw ApiError.internal();
     },
     async previewAction(call) {
