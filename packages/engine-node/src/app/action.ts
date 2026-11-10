@@ -16,6 +16,7 @@ import { runTogether, runTogetherOne } from './action-together';
 import { Ctx, type Owner, allowRead, ownerOf } from './ctx';
 import type { Engine } from './engine';
 import { attachCan, fetchOne, parsePathId } from './read';
+import { guardRows } from './source';
 import { normalizeRefs } from './validation';
 import { Expect } from './version';
 
@@ -125,8 +126,15 @@ export async function checkActionRecord(
   rowId: number,
   expect: Expect
 ): Promise<[Rec, Owner]> {
+  // linha de consulta do sistema não abre sozinha (a ação em conjunto lê da consulta)
+  guardRows(entity);
   const record = await fetchOne(conn, ctx, entity, rowId);
   if (!record) throw ApiError.notFound('Registro não encontrado.');
+  return checkLoaded(ctx, entity, action, record, expect);
+}
+
+/** O que `checkActionRecord` confere depois de ler: permissão na filial dona, versão e `visibleWhen`. */
+export function checkLoaded(ctx: Ctx, entity: Entity, action: Action, record: Rec, expect: Expect): [Rec, Owner] {
   const owner = ownerOf(record);
   const branch = entity.scope === 'branch' ? owner.branch : ctx.active()?.id;
   const allowed =

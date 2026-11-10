@@ -187,10 +187,24 @@ pub(crate) async fn check_record(
     row_id: i64,
     expect: &Expect,
 ) -> Result<(Map<String, Value>, Owner), ApiError> {
+    // linha de consulta do sistema não abre sozinha (a ação em conjunto lê da consulta)
+    crate::crud::source::guard_rows(entity)?;
     let record = fetch_one(conn, ctx, entity, row_id)
         .await?
         .ok_or_else(|| ApiError::not_found("Registro não encontrado."))?;
+    check_loaded(ctx, req, entity, action, record, expect)
+}
 
+/// O que `check_record` confere depois de ler: permissão na filial dona, versão e `visibleWhen`. A linha de uma
+/// consulta do sistema chega por aqui já lida da consulta.
+pub(crate) fn check_loaded(
+    ctx: &Ctx<'_>,
+    req: &Parts,
+    entity: &Entity,
+    action: &Action,
+    record: Map<String, Value>,
+    expect: &Expect,
+) -> Result<(Map<String, Value>, Owner), ApiError> {
     // permissão na filial dona do registro (ou na ativa, em entidade sem filial), como no CRUD
     let owner = Owner::of(&record);
     let branch = match entity.scope {

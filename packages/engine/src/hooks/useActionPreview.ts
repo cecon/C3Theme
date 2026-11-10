@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useEngine } from '../context';
+import type { SourceParams } from '../api';
 import type { ActionDef, ActionPreview } from '../actionTypes';
 import type useActionInput from './useActionInput';
 
@@ -22,7 +23,9 @@ export default function useActionPreview(
   id: string | undefined,
   form: ReturnType<typeof useActionInput>,
   /** Ação em conjunto: as linhas marcadas (a prévia é sobre todas). */
-  ids?: string[]
+  ids?: string[],
+  /** Consulta do sistema: os parâmetros da lista, com que as linhas marcadas foram lidas. */
+  params?: SourceParams
 ) {
   const { client } = useEngine();
   const [state, setState] = useState<PreviewState>({ loading: false });
@@ -30,6 +33,7 @@ export default function useActionPreview(
   const seq = useRef(0);
   const name = action?.preview ? action.name : undefined;
   const idsKey = ids?.join(',');
+  const paramsKey = params ? JSON.stringify(params) : undefined;
 
   const refresh = useCallback(() => {
     if (!name) return;
@@ -39,7 +43,7 @@ export default function useActionPreview(
     last.current = key;
     const mine = ++seq.current;
     setState((s) => ({ ...s, loading: true }));
-    client.preview(entity, name, id, input, idsKey?.split(',')).then(
+    client.preview(entity, name, id, input, idsKey?.split(','), paramsKey ? (JSON.parse(paramsKey) as SourceParams) : undefined).then(
       (data) => {
         if (mine !== seq.current) return;
         setState({ loading: false, data });
@@ -53,7 +57,7 @@ export default function useActionPreview(
     );
     // form muda a cada render; o que importa é o input, lido na hora do pedido
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [client, entity, id, idsKey, name, form.snapshot]);
+  }, [client, entity, id, idsKey, paramsKey, name, form.snapshot]);
 
   // ao abrir (ou trocar de ação): começa do zero e pede a primeira prévia
   useEffect(() => {

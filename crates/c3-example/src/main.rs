@@ -217,6 +217,7 @@ impl c3_engine::Hooks for TestUsers {
         match (call.entity, call.action) {
             ("sales_order", "invoice") => invoices::run(&self.pool, call).await,
             ("product", "labels") => prices::labels(call),
+            ("customer_pending", "postpone") => sources::postpone(&self.pool, call).await,
             _ => Err(ApiError::internal()),
         }
     }

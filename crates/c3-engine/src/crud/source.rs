@@ -46,9 +46,48 @@ pub(crate) fn guard_rows(entity: &Entity) -> Result<()> {
 
 /// `FROM` de uma leitura: a tabela, ou `(SELECT do sistema)` com os valores dele.
 pub(super) async fn from_sql(ctx: &Ctx<'_>, entity: &Entity, q: &HashMap<String, String>) -> Result<(String, Vec<SqlValue>)> {
-    let Some(src) = &entity.source else {
-        return Ok((format!("\"{}\"", entity.name), Vec::new()));
-    };
+    match &entity.source {
+        None => Ok((format!("\"{}\"", entity.name), Vec::new())),
+        Some(src) => Ok(source_sql(ctx, entity, src, q).await?.0),
+    }
+}
+
+/// Linhas marcadas de uma consulta do sistema, para a ação em conjunto: a consulta roda com os parâmetros da URL
+/// (`p.<nome>`, os mesmos da lista na tela), uma vez, e cada id é procurado nela, no escopo de leitura. Devolve as
+/// linhas achadas (por id) e os parâmetros validados, que o sistema recebe junto.
+pub(crate) async fn picked_rows(
+    ctx: &Ctx<'_>,
+    entity: &Entity,
+    src: &Source,
+    q: &HashMap<String, String>,
+    ids: &[i64],
+) -> Result<(HashMap<i64, Map<String, Value>>, Map<String, Value>)> {
+    let ((from, mut values), params) = source_sql(ctx, entity, src, q).await?;
+    if ids.is_empty() {
+        return Ok((HashMap::new(), params));
+    }
+    let marks = vec!["?"; ids.len()].join(", ");
+    let scope = ctx.read_scope(entity, "t").map(|s| format!(" AND {s}")).unwrap_or_default();
+    let sql = format!("{} WHERE t.\"id\" IN ({marks}){scope}", super::read::select_sql(ctx, entity, &from));
+    values.extend(ids.iter().map(|id| SqlValue::Int(*id)));
+    let mut conn = ctx.engine.0.store.conn().await?;
+    let mut found = HashMap::new();
+    for row in conn.query(&sql, &values).await?.iter() {
+        let rec = super::read::row_to_json(entity, row)?;
+        if let Some(id) = rec.get("id").and_then(|v| v.as_str()).and_then(|s| s.parse().ok()) {
+            found.insert(id, rec);
+        }
+    }
+    Ok((found, params))
+}
+
+/// O SELECT do sistema com os parâmetros validados (400/422), e os parâmetros.
+async fn source_sql(
+    ctx: &Ctx<'_>,
+    entity: &Entity,
+    src: &Source,
+    q: &HashMap<String, String>,
+) -> Result<((String, Vec<SqlValue>), Map<String, Value>)> {
     let engine = ctx.engine;
     let clock = engine.0.hooks.clock(ctx.req);
     let mut raw = defaults(src, &clock)?;
@@ -71,7 +110,7 @@ pub(super) async fn from_sql(ctx: &Ctx<'_>, entity: &Entity, q: &HashMap<String,
             ctx: &rc,
         })
         .await?;
-    Ok((format!("({})", out.sql), out.values))
+    Ok(((format!("({})", out.sql), out.values), params))
 }
 
 /// `default` de cada parâmetro no formato trafegado, com as datas relativas já resolvidas: o `/_meta` manda para a

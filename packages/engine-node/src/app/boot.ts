@@ -19,8 +19,12 @@ export function checkHooks(entities: Map<string, Entity>, children: Children, ho
     if (ref) throw new Error(`${name}.${ref.name}: reference para consulta do sistema (source system) não vale`);
     if (!e.source) continue;
     if (children.parentOf(name)) throw new Error(`${name}: consulta do sistema não pode ser filha with_parent`);
-    const a = e.actions.find((x) => !x.list);
-    if (a) throw new Error(`${name}.actions.${a.name}: consulta do sistema só tem ação de lista (target 'list')`);
+    // a linha não abre registro: só a ação da lista e a em conjunto sobre as linhas marcadas
+    const a = e.actions.find((x) => !x.list && !x.together);
+    if (a)
+      throw new Error(
+        `${name}.actions.${a.name}: consulta do sistema só tem ação de lista (target 'list') ou em conjunto (bulk "together")`
+      );
   }
   for (const name of names) {
     const e = entities.get(name)!;

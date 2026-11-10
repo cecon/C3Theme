@@ -1,6 +1,7 @@
 // material-ui
 import Box from '@mui/material/Box';
 
+import type { SourceParams } from '../api';
 import useActionPreview from '../hooks/useActionPreview';
 import type useActionInput from '../hooks/useActionInput';
 import type { ActionDef } from '../types';
@@ -21,6 +22,7 @@ export default function ActionBody({
   error,
   bulk = false,
   ids,
+  params,
   log
 }: {
   entity: string;
@@ -30,10 +32,12 @@ export default function ActionBody({
   error: (name: string) => string | undefined;
   bulk?: boolean;
   ids?: string[];
+  /** Consulta do sistema: os parâmetros da lista, para a prévia ler as mesmas linhas. */
+  params?: SourceParams;
   /** Ação `repeat`: as últimas leituras, mostradas embaixo dos campos. */
   log?: ReturnType<typeof useRepeatLog>['items'];
 }) {
-  const preview = useActionPreview(entity, bulk && !ids ? null : action, id, form, ids);
+  const preview = useActionPreview(entity, bulk && !ids ? null : action, id, form, ids, params);
   return (
     <>
       <Box onBlur={preview.enabled ? preview.refresh : undefined}>

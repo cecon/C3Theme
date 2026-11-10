@@ -83,7 +83,7 @@
     },
     "source": {
       "enum": ["system"],
-      "description": "Consulta do sistema: a entidade não tem tabela; as linhas vêm de um SELECT que o sistema monta com os parâmetros (Hooks::source no c3-engine), com coluna id estável e uma por campo. Só leitura: lista, busca, filtros, totais, exportação e ações de lista. Criar, alterar, excluir e abrir uma linha são 405; nenhuma entidade aponta para ela."
+      "description": "Consulta do sistema: a entidade não tem tabela; as linhas vêm de um SELECT que o sistema monta com os parâmetros (Hooks::source no c3-engine), com coluna id estável e uma por campo. Só leitura: lista, busca, filtros, totais, exportação, ações de lista e ações em conjunto (bulk \"together\") nas linhas marcadas, que recebem os parâmetros da lista. Criar, alterar, excluir e abrir uma linha são 405; nenhuma entidade aponta para ela."
     },
     "params": {
       "type": "object",

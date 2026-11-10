@@ -25,5 +25,6 @@ export function checkSource(entity, entities, file, errors, wire) {
   }
   if (entity.singleton) errors.push(`${file}: consulta do sistema não pode ser singleton`);
   for (const a of entity.actions ?? [])
-    if (a.target !== 'list') errors.push(`${file} ação '${a.name}': consulta do sistema só tem ação de lista`);
+    if (a.target !== 'list' && a.bulk !== 'together')
+      errors.push(`${file} ação '${a.name}': consulta do sistema só tem ação de lista ou em conjunto (bulk "together")`);
 }

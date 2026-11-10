@@ -24,6 +24,7 @@ import { useRepeatLog } from './RepeatLog';
 import { loadPrefill } from './prefill';
 import { selectionInput } from '../hooks/gridRows';
 import { summaryText } from '../pages/list/selectionSum';
+import { useUrlSourceParams } from '../pages/list/sourceParams';
 import { plain, rowTitle, scopeText } from './bulkText';
 import type { RefusedRecord } from '../api';
 import type { ActionDef, BulkItem, FieldType, WireRecord } from '../types';
@@ -70,6 +71,8 @@ export default function RecordActions({ entity, id, record, rows, onBulkDone }: 
   };
 
   const bulk = rows !== undefined;
+  // consulta do sistema: a ação em conjunto lê as linhas com os parâmetros da lista (os da URL)
+  const sourceParams = useUrlSourceParams(def, bulk);
   const types = useMemo(() => Object.fromEntries(def.fields.map((f) => [f.name, f.type])) as Record<string, FieldType>, [def]);
   const targets = useMemo(() => (bulk ? rows : record ? [record] : []).map((r) => ({ row: r, values: plain(r) })), [bulk, rows, record]);
   // linhas em que a ação vale agora; em lote, as outras nem vão ao servidor
@@ -93,7 +96,8 @@ export default function RecordActions({ entity, id, record, rows, onBulkDone }: 
     const out = await runTogether(
       chosen.map((r) => r.id!),
       action.name,
-      body
+      body,
+      sourceParams
     );
     if (out.ok) {
       notify(out.result.message ?? success(action));
@@ -277,6 +281,7 @@ export default function RecordActions({ entity, id, record, rows, onBulkDone }: 
           error={fieldErrorText}
           bulk={bulk}
           ids={bulk && open?.bulk === 'together' ? eligible(open).map((t) => t.row.id!) : undefined}
+          params={sourceParams}
           log={open?.repeat && !bulk ? repeat.items : undefined}
         />
       </ActionDialog>

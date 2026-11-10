@@ -5,7 +5,7 @@ import { ApiError, type Hooks } from '@c3theme/engine-node';
 
 import { runAction } from './actions';
 import { type Db, exec } from './db';
-import { invoice, invoicePreview, lookup, readAttachment, source } from './extras';
+import { invoice, invoicePreview, lookup, postpone, readAttachment, source } from './extras';
 import { validateMenu, validateMenuChildren } from './menu';
 import { writeOperator } from './operators';
 import { writeOrder } from './orders';
@@ -45,6 +45,7 @@ export function exampleHooks(db: Db): Hooks {
     async runBulkAction(call) {
       if (call.entity === 'sales_order' && call.action === 'invoice') return invoice(db, call);
       if (call.entity === 'product' && call.action === 'labels') return labels(call);
+      if (call.entity === 'customer_pending' && call.action === 'postpone') return postpone(db, call);
       throw ApiError.internal();
     },
     async previewAction(call) {
