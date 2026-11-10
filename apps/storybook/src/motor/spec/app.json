@@ -2,11 +2,26 @@
   "$schema": "../../../../../spec/v0/app.schema.json",
   "specVersion": "0",
   "name": "Storybook pelo motor",
-  "entities": ["produto", "fatura", "loja", "cliente", "vendedor", "fornecedor", "tarefa", "evento", "mesa", "movimento", "inventario", "inventario_item"],
+  "entities": [
+    "produto",
+    "fatura",
+    "loja",
+    "cliente",
+    "vendedor",
+    "fornecedor",
+    "tarefa",
+    "evento",
+    "mesa",
+    "movimento",
+    "inventario",
+    "inventario_item"
+  ],
   "layout": {
     "orientation": "vertical",
     "header": {
-      "search": { "records": true },
+      "search": {
+        "records": true
+      },
       "notifications": true,
       "fullscreen": true,
       "settings": true
@@ -205,6 +220,13 @@
             "width": 12
           }
         ]
+      }
+    },
+    {
+      "path": "/apis",
+      "title": "Documentação da API",
+      "apiDocs": {
+        "spec": "/openapi.json"
       }
     }
   ]

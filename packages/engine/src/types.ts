@@ -208,6 +208,8 @@ export interface PageDef {
   config?: Record<string, unknown>;
   permission?: string;
   dashboard?: DashboardDef;
+  /** Documentação da API (openapi.json servido pelo app), com busca e "experimentar". */
+  apiDocs?: { spec: string };
   layout?: 'dashboard' | 'blank';
 }
 

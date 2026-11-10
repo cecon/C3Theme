@@ -37,3 +37,9 @@ export const Cartoes: Story = { name: 'Cartões', args: { entity: 'cliente', vie
 
 /** Indicadores, gráficos e ranking por agregação da entidade (`kpi`, `chart`, `ranking`). */
 export const Painel: Story = { args: { page: '/painel' } };
+
+/**
+ * `pages[].apiDocs`: o openapi.json do app por tag, com busca e "Experimentar" em cada rota. Aqui o documento e as
+ * respostas vêm do adaptador em memória (GET roda; POST responde 501, como servidor sem a rota).
+ */
+export const DocumentacaoDaApi: Story = { name: 'Documentação da API', args: { page: '/apis' } };

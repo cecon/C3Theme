@@ -6,6 +6,7 @@ import { ApiError, C3Client, type C3Notification } from '../api';
 import type { AppDef, BulkItem, Capabilities, EntityDef, WireRecord } from '../types';
 import { memoryNotifications } from './notifications';
 import { aggregate, list } from './query';
+import { memoryRaw } from './raw';
 import { memorySearch } from './search';
 import { def, fail, fromInput, fromSeed, saveChildren, Store, toWire, validate, validateChildren, withParentChildren } from './records';
 
@@ -33,6 +34,8 @@ export interface MemorySeed {
    * (registro com as filhas) => ({ total: '1250.00' })`. Vale também para campo readOnly.
    */
   onSave?: Record<string, (record: WireRecord) => WireRecord>;
+  /** Respostas de GET por caminho, para o pedido livre (`raw`): `{ '/openapi.json': doc }` na página apiDocs. */
+  files?: Record<string, unknown>;
 }
 
 export type MemoryAction = (record: WireRecord, input: WireRecord) => WireRecord;
@@ -96,7 +99,7 @@ export function createMemoryClient(seed: MemorySeed): C3Client {
     if (Object.keys(errors).length) fail(errors);
   };
 
-  return {
+  const client: C3Client = {
     app: () => wait(() => seed.app),
     meta: () => wait(() => ({ app: seed.app, pageAccess: {} })),
     pageAccess: () => wait(() => ({})),
@@ -157,4 +160,10 @@ export function createMemoryClient(seed: MemorySeed): C3Client {
     readNotifications: (ids) => wait(() => bell.read(ids)),
     search: (q, limit) => wait(() => memorySearch(store, q, limit))
   };
+  client.raw = memoryRaw(
+    client,
+    seed.entities.map((e) => e.name),
+    seed.files
+  );
+  return client;
 }

@@ -2,6 +2,7 @@
 
 import type { MemorySeed, WireRecord } from '@c3theme/engine';
 
+import { OPENAPI } from './openapi';
 import { avisos, eventos, mesas, tarefas } from './operacao';
 import { APP, ENTITIES } from './spec';
 
@@ -98,6 +99,8 @@ export const SEED: MemorySeed = {
   // quem usa as histórias não cadastra vendedor: o campo que aponta para ele fica sem o "Cadastrar"
   capabilities: { vendedor: { create: false } },
   notifications: avisos,
+  // o openapi.json da página `apiDocs` (/apis)
+  files: { '/openapi.json': OPENAPI },
   // a regra que o backend do sistema teria
   actions: {
     fatura: {

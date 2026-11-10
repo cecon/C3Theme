@@ -149,6 +149,19 @@
         "dashboard": {
           "$ref": "#/$defs/dashboard"
         },
+        "apiDocs": {
+          "type": "object",
+          "required": ["spec"],
+          "additionalProperties": false,
+          "description": "Documentação da API: a shell lê o openapi.json (OpenAPI 3) pelo cliente do motor, com o token da sessão, e mostra as rotas por tag, com busca por caminho ou resumo e o 'experimentar' em cada rota. Use isto, dashboard ou component.",
+          "properties": {
+            "spec": {
+              "type": "string",
+              "pattern": "^/",
+              "description": "Caminho do openapi.json relativo à base da API (ex.: '/openapi.json' vira /api/openapi.json). Os caminhos do documento também são relativos a essa base."
+            }
+          }
+        },
         "layout": {
           "enum": ["dashboard", "blank"],
           "default": "dashboard",
@@ -161,6 +174,12 @@
         },
         {
           "required": ["dashboard"],
+          "not": {
+            "required": ["config"]
+          }
+        },
+        {
+          "required": ["apiDocs"],
           "not": {
             "required": ["config"]
           }

@@ -23,6 +23,7 @@ import { viewPath } from './views';
 
 // o painel traz a biblioteca de gráficos: só baixa quem abre um
 const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'));
+const ApiDocs = lazy(() => import('./pages/apiDocs/ApiDocs'));
 
 export function homePath(app?: AppDef) {
   const first = app?.layout.menu[0]?.items[0];
@@ -44,7 +45,7 @@ export function buildRoutes(app: AppDef, layout: ReactNode, extra: RouteObject[]
   const pages = app.pages ?? [];
   const pageRoute = (p: (typeof pages)[number]): RouteObject => ({
     path: p.path,
-    element: <PageGate path={p.path}>{p.dashboard ? <DashboardPage dashboard={p.dashboard} /> : <CustomPage page={p} />}</PageGate>
+    element: <PageGate path={p.path}>{pageBody(p)}</PageGate>
   });
 
   return [
@@ -76,6 +77,16 @@ export function buildRoutes(app: AppDef, layout: ReactNode, extra: RouteObject[]
 function RecordRoute({ entity }: { entity: string }) {
   const { id } = useParams();
   return <EntityForm key={`${entity}-${id}`} entity={entity} id={id} />;
+}
+
+function pageBody(p: PageDef) {
+  if (p.dashboard) return <DashboardPage dashboard={p.dashboard} />;
+  if (!p.apiDocs) return <CustomPage page={p} />;
+  return (
+    <Suspense fallback={<PanelSkeleton />}>
+      <ApiDocs def={p.apiDocs} />
+    </Suspense>
+  );
 }
 
 function DashboardPage({ dashboard }: { dashboard: DashboardDef }) {
