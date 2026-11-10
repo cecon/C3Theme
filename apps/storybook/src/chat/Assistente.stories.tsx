@@ -4,7 +4,9 @@ import { fn } from 'storybook/test';
 
 import Box from '@mui/material/Box';
 
-import { AgentComposer, AssistantMessage, QuestionCard, type AgentQuestion } from '@c3theme/chat';
+import { MessageAdd, Microphone2, Sound } from 'iconsax-reactjs';
+
+import { AgentComposer, AssistantMessage, ComposerIconButton, QuestionCard, type AgentQuestion } from '@c3theme/chat';
 import { RESPOSTA } from './mensagens';
 
 const PERGUNTA: AgentQuestion = {
@@ -56,6 +58,40 @@ export const CaixaDoAssistente: Story = {
     return (
       <Box sx={{ maxWidth: 720 }}>
         <AgentComposer value={text} onChange={setText} onSend={() => setText('')} files placeholder="Pergunte sobre suas faturas" />
+      </Box>
+    );
+  }
+};
+
+/**
+ * `variant="inline"`: uma linha só (46 px), + à esquerda, ações redondas de 28 px à direita (`ComposerIconButton`) e o
+ * botão principal em círculo. Vazio, ele mostra a ação de espera (`idleAction`, aqui a conversa por voz); com texto,
+ * vira enviar. Foco só clareia a borda, sem linha de ajuda.
+ */
+export const CaixaNumaLinha: Story = {
+  name: 'Caixa numa linha',
+  render: function Render() {
+    const [text, setText] = useState('');
+    return (
+      <Box sx={{ maxWidth: 720 }}>
+        <AgentComposer
+          variant="inline"
+          value={text}
+          onChange={setText}
+          onSend={() => setText('')}
+          placeholder="Mensagem para Ada"
+          idleAction={{ label: 'Conversar por voz', icon: <Sound size={16} />, onClick: fn() }}
+          endActions={
+            <>
+              <ComposerIconButton label="Nova conversa" onClick={fn()}>
+                <MessageAdd size={16} />
+              </ComposerIconButton>
+              <ComposerIconButton label="Ditar" onClick={fn()}>
+                <Microphone2 size={16} />
+              </ComposerIconButton>
+            </>
+          }
+        />
       </Box>
     );
   }

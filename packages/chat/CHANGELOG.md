@@ -2,6 +2,10 @@
 
 Instale fixando o commit (`github:cecon/C3Theme#<sha>&path:packages/chat`). Cada entrada diz o que muda para quem usa; **Quebra** marca o que exige mudar o app.
 
+## 0.10.0 (2026-11-10)
+
+- `AgentComposer` ganha `variant="inline"` (#25): uma linha só (46 px vazia), com o + à esquerda, o texto no meio e as ações e o botão principal à direita; com várias linhas a caixa cresce para cima e os botões ficam embaixo. Cantos de 14 px, botões redondos de 28 px, botão principal em círculo cheio em contraste, foco que só clareia a borda (sem anel) e sem linha de ajuda. `idleAction` (`{ label, icon, onClick }`) ocupa o botão principal com a caixa vazia e o assistente parado (conversa por voz); com texto vira enviar, respondendo vira parar. `ComposerIconButton` é o botão redondo de 28 px para as ações da direita. Sem `variant`, nada muda.
+
 ## 0.9.0 (2026-11-10)
 
 - Mensagem que falhou ganha **Editar** (`onEditFailed(message)`: o app devolve o texto e os anexos ao composer e tira a mensagem) e **Descartar** (`onDiscard(message)`: o app apaga), ao lado do Tentar de novo (#173). Passam por `MessageList` → `MessageRow` → `MessageBubble`, como o `onRetry`, e só aparecem com o callback. Nada quebra.
