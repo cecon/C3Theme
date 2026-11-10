@@ -6,7 +6,7 @@ import { notForInput, parseFields } from './field';
 import { isObject } from './types';
 
 /** Teto de linhas de uma grade (o corpo da requisição tem 2 MB). */
-export const MAX_GRID_ROWS = 500;
+export const MAX_GRID_ROWS = 990;
 const DEFAULT_MAX = 200;
 
 export interface GridInput {

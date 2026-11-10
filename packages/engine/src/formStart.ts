@@ -2,6 +2,7 @@
 
 import { browserClock, relativeValue } from './relativeDate';
 import type { EntityDef, WireRecord } from './types';
+import { defaultsOf } from './fieldDefault';
 
 /** Até quantas colunas simples a linha de uma lista with_parent é editada no lugar; acima disso, em diálogo. */
 export const INLINE_MAX = 4;
@@ -33,7 +34,7 @@ export function formStart(def: EntityDef, childDef: (entity: string) => EntityDe
     // na checklist cada linha é uma opção marcada: minItems é só validação, linha vazia ficaria invisível
     if (rel.display === 'checklist') continue;
     if (!editsInline(child, rel.field)) continue;
-    const blank = Object.fromEntries(child.fields.filter((f) => !f.readOnly && f.default !== undefined).map((f) => [f.name, f.default]));
+    const blank = defaultsOf(child.fields, true);
     out[rel.entity] = Array.from({ length: rel.minItems }, () => ({ ...blank }));
   }
   return out;

@@ -4,10 +4,11 @@ import { readFilters } from './pages/list/readFilters';
 import { formStart } from './formStart';
 import { fieldTypes, sectionVisible } from './sectionVisibility';
 import type { EntityDef, FieldDef, RelatedDef, Text, WireRecord } from './types';
+import { defaultsOf } from './fieldDefault';
 
 /** Valores iniciais do registro novo: o `default` de cada campo e, criando a partir de um preset, os `defaults` dele. */
 export function defaults(def: EntityDef, preset?: string | null): WireRecord {
-  const own = Object.fromEntries(def.fields.filter((f) => !f.readOnly && f.default !== undefined).map((f) => [f.name, f.default]));
+  const own = defaultsOf(def.fields, true);
   return { ...own, ...def.views?.list?.presets?.find((p) => p.id === preset)?.defaults };
 }
 

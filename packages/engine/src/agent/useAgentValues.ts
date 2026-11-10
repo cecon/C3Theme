@@ -4,6 +4,7 @@ import { evaluate } from '../conditions.mjs';
 import type { FieldDef, FieldErrors, FieldType, WireRecord } from '../types';
 import { pendingReview } from './AgentFields';
 import type { Suggested } from './payload';
+import { defaultsOf } from '../fieldDefault';
 
 /**
  * Valores de uma parte do assistente: começam com o que ele preencheu (sobre os defaults), seguem as condições dos
@@ -11,7 +12,7 @@ import type { Suggested } from './payload';
  */
 export default function useAgentValues(fields: FieldDef[], initial: WireRecord | undefined, suggested?: Suggested) {
   const [values, setValues] = useState<WireRecord>(() => ({
-    ...Object.fromEntries(fields.filter((f) => f.default !== undefined).map((f) => [f.name, f.default])),
+    ...defaultsOf(fields),
     ...initial
   }));
   const [localErrors, setLocalErrors] = useState<Record<string, string>>({});

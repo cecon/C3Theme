@@ -1506,8 +1506,9 @@
         "maxItems": {
           "type": "integer",
           "minimum": 1,
-          "maximum": 500,
-          "default": 200
+          "maximum": 990,
+          "default": 200,
+          "description": "Até 990 linhas (uma nota fiscal tem até 990 itens). Grade grande: a tela cheia com busca acha a linha."
         },
         "fromSelection": {
           "$ref": "#/$defs/identifier",

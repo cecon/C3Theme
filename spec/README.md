@@ -850,7 +850,7 @@ POST /api/product/_actions/reprice   { "input": { "prices": [ { "product": "3", 
 → 422 { "error": { "code": "validation_failed", "fields": { "prices.1.price": [ ... ] } } }
 ```
 
-- **Grade** trafega como lista de objetos. Cada linha é validada como os campos (obrigatório, mínimo, casas, `reference` no escopo); o erro vem em `<grade>.<linha>.<campo>`, com a linha contada a partir de 0. `required` exige uma linha (o mesmo que `minItems: 1`); `maxItems` vai até 500 (padrão 200). Coluna desconhecida é 400.
+- **Grade** trafega como lista de objetos. Cada linha é validada como os campos (obrigatório, mínimo, casas, `reference` no escopo); o erro vem em `<grade>.<linha>.<campo>`, com a linha contada a partir de 0. `required` exige uma linha (o mesmo que `minItems: 1`); `maxItems` vai até 990, o máximo de itens de uma NF-e (padrão 200). Coluna desconhecida é 400. Campo `decimal` trafega como texto: um `default` numérico (`1`) vira texto na escala do campo (`"1.0000"`) na tela.
 - **`readOnly` na coluna** só trava a célula: o valor vai ao sistema, porque é ele que identifica a linha (a forma contada, o produto). A regra do sistema confere de novo o que importa.
 - Coluna não pode ser `file`, `createOnly`, ter `filter`, `access` nem condições; grade dentro de grade não existe; condições do input não citam a grade. O assistente (`c3.form`) não usa grade.
 - **`prefill`**: `GET /{entity}/{id}/_actions/{name}/_prefill` (ou `/{entity}/_actions/{name}/_prefill` na ação da lista), com as mesmas conferências de rodar a ação. No c3-engine, `Hooks::action_prefill` devolve os valores; o motor descarta o que o input não declara.

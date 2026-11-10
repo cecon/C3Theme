@@ -4,6 +4,7 @@
 import { evaluate } from '../conditions.mjs';
 import { ApiError } from '../api';
 import type { Condition, EntityDef, FieldDef, FieldErrors, FieldType, WireRecord } from '../types';
+import { fieldDefault } from '../fieldDefault';
 
 /** Registros gravados de cada entidade, como o "banco" do adaptador: reference guardado só pelo id. */
 export type Tables = Record<string, WireRecord[]>;
@@ -88,7 +89,7 @@ export function fromInput(d: EntityDef, input: WireRecord, base: WireRecord = {}
   const out: WireRecord = { ...base };
   for (const f of d.fields) {
     if (f.name in input && !f.readOnly) out[f.name] = refId(input[f.name]);
-    else if (creating && !(f.name in out)) out[f.name] = f.default ?? null;
+    else if (creating && !(f.name in out)) out[f.name] = fieldDefault(f) ?? null;
   }
   return out;
 }
@@ -96,7 +97,7 @@ export function fromInput(d: EntityDef, input: WireRecord, base: WireRecord = {}
 /** Registro inicial (seed): todos os campos, inclusive os readOnly que só o sistema grava; reference só o id. */
 export function fromSeed(d: EntityDef, row: WireRecord): WireRecord {
   const out: WireRecord = { ...row };
-  for (const f of d.fields) out[f.name] = f.name in row ? refId(row[f.name]) : (f.default ?? null);
+  for (const f of d.fields) out[f.name] = f.name in row ? refId(row[f.name]) : (fieldDefault(f) ?? null);
   return out;
 }
 
