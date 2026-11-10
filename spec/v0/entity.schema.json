@@ -772,6 +772,25 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
+            "print": {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "Botão Imprimir no registro gravado: monta uma folha só com as seções escolhidas (campos como rótulo e valor, related inteira com todas as linhas), com o nome do app, a filial ativa, o título e a data no topo, e abre a impressão do navegador. A folha de contagem do inventário, para preencher no papel.",
+              "properties": {
+                "title": { "$ref": "#/$defs/text", "description": "Título da folha. Padrão: o nome da entidade e o título do registro." },
+                "sections": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": { "type": "integer", "minimum": 0 },
+                  "description": "Posições (a partir de 0) das seções de views.form.sections que entram na folha. Padrão: as com campos ou related. Seção de component ou pairing não imprime."
+                },
+                "blank": {
+                  "type": "array",
+                  "items": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$" },
+                  "description": "Colunas das related que saem em branco, para escrever à mão (o contado)."
+                }
+              }
+            },
             "header": {
               "type": "object",
               "additionalProperties": false,

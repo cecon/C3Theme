@@ -12,6 +12,7 @@ import { ApiError } from '../api';
 import { ownerLabel, useEngine, useText } from '../context';
 import FieldInput from '../widgets/FieldInput';
 import RecordActions from '../widgets/RecordActions';
+import PrintButton from './print/PrintButton';
 import { initialRecord, newLabel, toInput, urlValues, withParent } from '../formValues';
 import { allDayPatch } from '../calendarForm';
 import { EditButtons, FormFrame } from './FormHeader';
@@ -227,6 +228,7 @@ export default function EntityForm({ entity, id, embedded }: { entity: string; i
     <>
       {embedded && <Button onClick={() => embedded.onClose(false)}>Fechar</Button>}
       {!isNew && loaded && <RecordActions entity={entity} id={id!} record={loaded} />}
+      {!isNew && loaded && def.views?.form?.print && <PrintButton def={def} record={loaded} />}
       {canDelete && (
         <Button color="error" onClick={() => setConfirmDelete(true)}>
           Excluir

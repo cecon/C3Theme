@@ -10,6 +10,7 @@
   ],
   "views": {
     "form": {
+      "print": { "title": "Folha de contagem", "blank": ["contado"] },
       "sections": [
         { "title": "Inventário", "rows": [["descricao", "data"]] },
         {
