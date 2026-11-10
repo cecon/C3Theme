@@ -52,6 +52,14 @@ export function checkFieldRules(f, where, errors, maxUpload = 1 << 20) {
     errors.push(`${where}: maxSize ${f.maxSize} acima do maxUploadSize do app (${maxUpload})`);
 }
 
+/** `optionsFrom`: campo string com as opções num outro campo text do mesmo registro (`fields`: os campos dele). */
+export function checkOptionsFrom(f, fields, where, errors) {
+  if (f.optionsFrom === undefined) return;
+  const source = fields.find((x) => x.name === f.optionsFrom && x !== f);
+  if (f.type !== 'string' || source?.type !== 'text' || source.writeOnly)
+    errors.push(`${where}: optionsFrom só em campo string, apontando para outro campo text do registro`);
+}
+
 /** Roda spec/v0/conformance/documents.json contra o validador da shell; devolve quantos casos rodaram. */
 export function checkDocumentCases(specDir, errors) {
   const { cases } = JSON.parse(readFileSync(join(specDir, 'conformance', 'documents.json'), 'utf8'));

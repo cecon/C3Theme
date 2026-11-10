@@ -53,6 +53,8 @@ export interface FieldDef {
   grouping?: boolean;
   /** O valor como o banco grava (texto ou inteiro), sem tradução; o `label` é o que a tela mostra. */
   options?: { value: EnumValue; label: Text; color?: Tone }[];
+  /** Só em string: campo text do mesmo registro com as opções em JSON; com a lista, a tela mostra um select. */
+  optionsFrom?: string;
   entity?: string;
   /** `file`: extensões aceitas, com ponto (".pfx"). */
   accept?: string[];

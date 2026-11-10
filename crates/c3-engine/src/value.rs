@@ -171,6 +171,21 @@ pub fn is_int_column(field: &Field) -> bool {
     }
 }
 
+/// `optionsFrom`: com a lista de opções no próprio registro (JSON `[{ "value": ... }]` no campo text apontado), o
+/// valor precisa ser um dos `value`. Sem lista (vazio, `[]` ou texto que não é a lista), vale o texto livre.
+pub fn in_record_options(field: &Field, v: &SqlValue, record: &serde_json::Map<String, Value>) -> bool {
+    let (Some(from), SqlValue::Text(s)) = (&field.options_from, v) else {
+        return true;
+    };
+    let Some(Value::String(raw)) = record.get(from) else {
+        return true;
+    };
+    match serde_json::from_str::<Vec<Value>>(raw) {
+        Ok(list) if !list.is_empty() => list.iter().any(|o| o.get("value").and_then(Value::as_str) == Some(s)),
+        _ => true,
+    }
+}
+
 /// `options[].value` de um enum é o valor gravado no banco, sem tradução: string não vazia ou inteiro
 /// (faixa i53), todos do mesmo tipo e sem repetir.
 pub fn parse_options(values: impl IntoIterator<Item = Value>) -> Result<Vec<SqlValue>, String> {

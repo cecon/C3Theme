@@ -306,6 +306,10 @@
                 "enum": ["cpf", "cnpj", "cpf_cnpj", "phone"],
                 "description": "Só em string. 'phone': telefone brasileiro com DDD, trafega só os 10 ou 11 dígitos (erro 'pattern' fora disso), a shell mostra e digita como (11) 98123-4567. Os outros: documento brasileiro com dígito verificador. Trafega sem máscara: CPF com 11 dígitos; CNPJ com 12 caracteres [0-9A-Z] e 2 dígitos (alfanumérico desde jul/2026). 'cpf_cnpj' aceita os dois pelo tamanho. Erro: 'pattern' (forma) ou 'check_digit'. A shell mostra e digita com máscara."
               },
+              "optionsFrom": {
+                "type": "string",
+                "description": "Só em type string: nome de outro campo text do mesmo registro que guarda as opções em JSON ([{\"value\": \"A\", \"label\": \"Opção A\"}], value string). Cada registro tem a sua lista (parâmetro do sistema). Com a lista, a shell mostra um select e o motor só aceita um dos value (422 invalid_option); sem lista (vazio, [] ou texto que não é a lista), o campo é texto livre."
+              },
               "writeOnly": {
                 "type": "boolean",
                 "default": false,

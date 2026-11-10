@@ -40,6 +40,7 @@ const ENTITIES = [
   'promotion',
   'promotion_product',
   'store_settings',
+  'system_param',
   'customer_pending'
 ];
 

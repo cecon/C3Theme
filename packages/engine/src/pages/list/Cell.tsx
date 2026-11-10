@@ -5,7 +5,7 @@ import Typography from '@mui/material/Typography';
 import { TickCircle } from 'iconsax-reactjs';
 
 import { StatusChip } from '@c3theme/ui';
-import { displayValue, findOption, isNumeric, keepsTogether } from '../../format';
+import { displayValue, findOption, isNumeric, keepsTogether, recordOptions } from '../../format';
 import type { FieldDef, WireRecord } from '../../types';
 
 /** Valor de um campo numa linha de lista: componente próprio, chip de enum, ícone de booleano ou texto formatado. */
@@ -29,7 +29,7 @@ export function Cell({
     return <StatusChip tone={option?.color} label={optionLabel(String(value))} />;
   }
   if (field.type === 'boolean') return value ? <TickCircle size={18} variant="Bold" /> : null;
-  const shown = displayValue(field, value, locale, optionLabel);
+  const shown = recordOptions(field, row)?.find((o) => o.value === value)?.label ?? displayValue(field, value, locale, optionLabel);
   return (
     <Typography
       variant="body2"
