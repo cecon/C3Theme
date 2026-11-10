@@ -33,7 +33,7 @@ const uso: EntityDef = {
 const NOMES = ['Ana', 'Bia', 'Caio', 'Davi', 'Eva', 'Gil', 'Ivo', 'Lia', 'Max', 'Noa', 'Rui', 'Téo', 'Ugo', 'Zoe'];
 const options = NOMES.map((nome, i) => ({ id: String(i + 1), nome }));
 
-function setup(maxItems?: number) {
+function setup(maxItems?: number, initial: WireRecord[] = [], errors: Record<string, string> = {}) {
   const related = {
     entity: 'uso',
     field: 'habilidade_id',
@@ -51,9 +51,9 @@ function setup(maxItems?: number) {
   };
   let current: WireRecord[] = [];
   function Host() {
-    const [rows, setRows] = useState<WireRecord[]>([]);
+    const [rows, setRows] = useState<WireRecord[]>(initial);
     current = rows;
-    return <ChildChecklist related={related} rows={rows} onChange={setRows} errors={{}} editing />;
+    return <ChildChecklist related={related} rows={rows} onChange={setRows} errors={errors} editing />;
   }
   render(
     <ThemeProvider theme={createTheme({ cssVariables: true })}>
@@ -106,5 +106,12 @@ describe('checklist: marcar vários', () => {
   it('rangeBetween sem a âncora à vista não monta intervalo', () => {
     expect(rangeBetween(options, '1', '3')?.map((o) => o.id)).toEqual(['1', '2', '3']);
     expect(rangeBetween(options, undefined, '3')).toBeUndefined();
+  });
+});
+
+describe('checklist: erros', () => {
+  it('erro de linha que a matriz não desenha aparece no alerta da seção', async () => {
+    setup(undefined, [{ agente_id: null }], { 'uso.0.agente_id': 'Obrigatório' });
+    expect((await screen.findByRole('alert')).textContent).toContain('Obrigatório');
   });
 });

@@ -19,7 +19,7 @@ import { elapsed, toMillis } from '../../components/device/format';
 import { useUiText } from '../../i18n';
 import { flattenNav, useNav } from '../nav';
 import Highlight from './Highlight';
-import { normalize } from './highlight';
+import { normalize } from './matchText';
 import type { RecordSearch } from './types';
 import useRecordHits from './useRecordHits';
 

@@ -1,6 +1,6 @@
 import Box from '@mui/material/Box';
 
-import { matchRange } from './highlight';
+import { matchRange } from './matchText';
 
 /** O texto com o trecho que bate com a busca em negrito (sem ligar para acentos). */
 export default function Highlight({ text, query }: { text: string; query: string }) {

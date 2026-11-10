@@ -54,4 +54,14 @@ describe('começo do registro novo', () => {
     expect(editsInline(longo, 'fatura')).toBe(false);
     expect(formStart(fatura, (e) => (e === 'item' ? longo : undefined)).item).toBeUndefined();
   });
+
+  it('checklist com minItems não abre linha vazia (minItems ali é só validação)', () => {
+    const lista: EntityDef = {
+      ...fatura,
+      views: {
+        form: { sections: [{ related: { entity: 'item', field: 'fatura', save: 'with_parent', display: 'checklist', minItems: 1 } }] }
+      }
+    };
+    expect(formStart(lista, childDef).item).toBeUndefined();
+  });
 });
