@@ -22,7 +22,7 @@
     { "name": "value", "type": "string", "label": "Valor", "maxLength": 200, "optionsFrom": "options" }
   ],
   "views": {
-    "list": { "columns": ["label", "value"], "search": ["label", "code"] },
+    "list": { "columns": ["label", { "field": "value", "edit": "instant" }], "search": ["label", "code"] },
     "form": {
       "sections": [
         { "title": "Parâmetro", "rows": [["code", "label"], ["value"]] },

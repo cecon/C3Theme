@@ -78,6 +78,8 @@ export type ColumnDef =
       avatar?: boolean | string | ColumnAvatar;
       /** Peso do valor; padrão negrito com `secondary`. */
       weight?: 'normal' | 'bold';
+      /** Edita na própria linha: `instant` grava ao mudar; `batch` junta as linhas e grava no "Salvar alterações". */
+      edit?: 'instant' | 'batch';
     };
 
 /** Ícones da coluna "Ações" da lista, ou uma ação de registro sem input nem confirm ("Instalar"), num botão. */

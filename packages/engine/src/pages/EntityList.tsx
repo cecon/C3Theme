@@ -24,6 +24,8 @@ import { actionButtons, allowedRowActions } from './list/RowActionsCell';
 import GalleryGrid from './gallery/GalleryGrid';
 import { useRowDelete } from './list/useRowDelete';
 import BulkBar from './list/BulkBar';
+import EditBar from './list/EditBar';
+import useInlineEdit from './list/useInlineEdit';
 import ListToolbar from './list/ListToolbar';
 import PresetTabs from './list/PresetTabs';
 import ParamsBar from './list/ParamsBar';
@@ -96,6 +98,7 @@ export default function EntityList({ entity, view = 'list' }: { entity: string; 
   const inDialog = list.open === 'dialog';
 
   const columns = listColumns(def);
+  const inlineEdit = useInlineEdit(entity, def, () => void mutate());
   // com mais de uma filial (ou empresa) na tela, a dona de cada linha vira coluna
   const showOwner =
     scoped &&
@@ -178,6 +181,8 @@ export default function EntityList({ entity, view = 'list' }: { entity: string; 
         />
       )}
 
+      <EditBar edit={inlineEdit} />
+
       {error && (
         <Alert severity="error" sx={{ mx: 2, mb: 2 }}>
           {error.message}
@@ -222,6 +227,7 @@ export default function EntityList({ entity, view = 'list' }: { entity: string; 
           }
           openable={!def.source}
           onOpen={inDialog ? (row) => setDialog({ id: row.id! }) : undefined}
+          inlineEdit={inlineEdit}
         />
       )}
 

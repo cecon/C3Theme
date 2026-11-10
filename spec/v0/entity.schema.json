@@ -550,6 +550,10 @@
                       "weight": {
                         "enum": ["normal", "bold"],
                         "description": "Peso do valor. Padrão: negrito quando a coluna tem secondary, normal sem."
+                      },
+                      "edit": {
+                        "enum": ["instant", "batch"],
+                        "description": "Edita o campo na própria linha. 'instant': o switch, o select ou o número grava ao mudar (um PATCH da linha). 'batch': as mudanças se juntam e gravam no 'Salvar alterações' da lista, um PATCH por linha alterada. Mesmas regras do formulário (permissão, readOnlyWhen, validação, _version); o erro aparece na célula. Não vale em campo readOnly, createOnly, writeOnly, text ou file, nem em entidade com source."
                       }
                     }
                   }

@@ -60,6 +60,14 @@ export function checkOptionsFrom(f, fields, where, errors) {
     errors.push(`${where}: optionsFrom só em campo string, apontando para outro campo text do registro`);
 }
 
+/** Coluna `edit` da lista: grava pelo PATCH do registro, então só campo que o formulário também alteraria. */
+export function checkEditColumn(f, entity, where, errors) {
+  if (!f) return;
+  if (entity.source) errors.push(`${where}: edit não vale em entidade com source (consulta do sistema não grava)`);
+  if (f.readOnly || f.createOnly || f.writeOnly || f.type === 'text' || f.type === 'file')
+    errors.push(`${where}: edit não vale em campo readOnly, createOnly, writeOnly, text ou file`);
+}
+
 /** Roda spec/v0/conformance/documents.json contra o validador da shell; devolve quantos casos rodaram. */
 export function checkDocumentCases(specDir, errors) {
   const { cases } = JSON.parse(readFileSync(join(specDir, 'conformance', 'documents.json'), 'utf8'));

@@ -24,9 +24,11 @@ import { displayValue, findOption, isNumeric } from '../../format';
 import { columnCell } from '../../skeletonShape';
 import type { FieldDef, ListExpand, RowAction, Text, WireRecord } from '../../types';
 import { ColumnCell, ColumnExtras } from './ColumnCell';
+import { EditCell } from './EditCell';
 import { hugsLastColumn } from './hugLast';
 import { RowActionsCell } from './RowActionsCell';
 import { RowPreview } from './RowPreview';
+import type { InlineEdit } from './useInlineEdit';
 import type { ListTotals } from './useListTotals';
 
 /** Coluna da lista já ligada à definição do campo. */
@@ -37,6 +39,8 @@ export interface ListColumn {
   label?: Text;
   def: FieldDef;
   extras: ColumnExtras;
+  /** Edita na própria linha (`columns[].edit`). */
+  edit?: 'instant' | 'batch';
 }
 
 /** Coluna "Ações": quais ícones e o que fazer em cada um (ver só navega). */
@@ -73,7 +77,8 @@ export default function ListTable({
   rowActions,
   expand,
   openable = true,
-  onOpen
+  onOpen,
+  inlineEdit
 }: {
   entity: string;
   columns: ListColumn[];
@@ -94,6 +99,8 @@ export default function ListTable({
   onOpen?: (row: WireRecord) => void;
   /** false: a linha não abre registro (consulta do sistema). */
   openable?: boolean;
+  /** Estado das colunas editáveis (`columns[].edit`). */
+  inlineEdit?: InlineEdit;
 }) {
   const { components, entities } = useEngine();
   const [open, setOpen] = useState<Set<string>>(new Set());
@@ -196,8 +203,8 @@ export default function ListTable({
                     <Typography variant="body2">{row[owner.key]?.title}</Typography>
                   </TableCell>
                 )}
-                {columns.map((c) => (
-                  <TableCell key={c.field} align={align(c)}>
+                {columns.map((c) => {
+                  const cell = (
                     <ColumnCell
                       field={c.def}
                       extras={c.extras}
@@ -207,8 +214,17 @@ export default function ListTable({
                       locale={intl.locale}
                       optionLabel={optionLabel}
                     />
-                  </TableCell>
-                ))}
+                  );
+                  return (
+                    <TableCell key={c.field} align={align(c)} sx={c.edit ? { py: 0.75, minWidth: 140 } : undefined}>
+                      {c.edit && inlineEdit ? (
+                        <EditCell entity={entity} field={c.def} row={row} mode={c.edit} edit={inlineEdit} readView={cell} />
+                      ) : (
+                        cell
+                      )}
+                    </TableCell>
+                  );
+                })}
                 {rowActions && (
                   <TableCell align="center">
                     <RowActionsCell

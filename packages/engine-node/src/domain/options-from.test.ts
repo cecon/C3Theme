@@ -5,7 +5,14 @@ import { parseFields } from './field';
 import { inRecordOptions } from './value';
 
 const parse = (value: string, from: string, options: string) =>
-  parseFields('t', [{ name: 'options', type: options }, { name: 'value', type: value, optionsFrom: from }], () => true);
+  parseFields(
+    't',
+    [
+      { name: 'options', type: options },
+      { name: 'value', type: value, optionsFrom: from }
+    ],
+    () => true
+  );
 
 describe('optionsFrom', () => {
   it('só em string, apontando para outro campo text', () => {

@@ -44,11 +44,21 @@ const faturas: WireRecord[] = Array.from({ length: 42 }, (_, i) => ({
   status: STATUS[(i * 5) % 3]
 }));
 
+/** Produtos da lista com edição na linha (preço e estoque em lote, ativo na hora). */
+const produtos: WireRecord[] = ['Café torrado 500 g', 'Açúcar cristal 1 kg', 'Arroz tipo 1 5 kg', 'Feijão carioca 1 kg'].map((nome, i) => ({
+  id: String(i + 1),
+  nome,
+  preco: (12.9 + i * 6.5).toFixed(2),
+  estoque: 40 - i * 9,
+  ativo: i !== 3
+}));
+
 export const SEED: MemorySeed = {
   app: APP,
   entities: ENTITIES,
   records: {
     cliente: clientes,
+    produto: produtos,
     fatura: faturas,
     tarefa: tarefas,
     evento: eventos,

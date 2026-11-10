@@ -47,7 +47,7 @@
   ],
   "views": {
     "list": {
-      "columns": ["name", "product_group", "price", "active"],
+      "columns": ["name", "product_group", { "field": "price", "edit": "batch" }, { "field": "active", "edit": "instant" }],
       "filters": ["product_group", "active"],
       "search": ["name"],
       "defaultSort": [{ "field": "name" }]
