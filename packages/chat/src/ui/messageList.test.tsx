@@ -128,4 +128,20 @@ describe('MessageList', () => {
     expect(screen.getByText('· Trabalhando')).toBeTruthy();
     expect(screen.queryByText('Início da conversa')).toBeNull();
   });
+
+  it('mensagem que falhou: Tentar de novo, Editar e Descartar só com o callback (#173)', () => {
+    const failed = msg(2, { clientId: 'c2', status: 'failed' });
+    const onRetry = vi.fn();
+    const onEditFailed = vi.fn();
+    const onDiscard = vi.fn();
+    const { update } = list({ messages: [failed], onRetry });
+    expect(screen.queryByRole('button', { name: 'Editar' })).toBeNull();
+    update({ messages: [failed], onRetry, onEditFailed, onDiscard });
+    fireEvent.click(screen.getByRole('button', { name: 'Tentar de novo' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Editar' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Descartar' }));
+    expect(onRetry).toHaveBeenCalledWith('c2');
+    expect(onEditFailed).toHaveBeenCalledWith(failed);
+    expect(onDiscard).toHaveBeenCalledWith(failed);
+  });
 });

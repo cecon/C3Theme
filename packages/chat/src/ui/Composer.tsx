@@ -1,4 +1,4 @@
-import { useRef, useState, type ChangeEvent, type KeyboardEvent, type ReactNode } from 'react';
+import { useRef, type KeyboardEvent, type ReactNode, type RefObject } from 'react';
 
 // material-ui
 import Box from '@mui/material/Box';
@@ -13,6 +13,8 @@ import { DocumentText, Microphone2, Paperclip2, Send2, Stop } from 'iconsax-reac
 
 import { SoftIconButton } from '@c3theme/ui';
 import { useBytesFormat } from './format';
+import useAttachments from '../hooks/useAttachments';
+import DropHint from './DropHint';
 import { useChatText } from './text';
 import VoiceBar from './VoiceBar';
 import useVoiceRecorder from '../hooks/useVoiceRecorder';
@@ -29,6 +31,8 @@ export interface ComposerProps {
   files?: boolean;
   /** Tipos aceitos no anexo, como no `accept` do input ("image/*,.pdf"). */
   accept?: string;
+  /** Onde soltar arquivos anexa (a área do chat, por exemplo). Padrão: a própria caixa. Colar imagem no texto também anexa. */
+  dropTarget?: RefObject<HTMLElement | null>;
   /** Gravar áudio (só aparece com microfone no navegador). Padrão: ligado. */
   voice?: boolean;
   /** Botões extras antes do anexo: emoji, respostas prontas, modelos. */
@@ -48,7 +52,12 @@ export default function Composer(props: ComposerProps) {
   const { busy, onStop, hint } = props;
   const t = useChatText();
   const bytes = useBytesFormat();
-  const [files, setFiles] = useState<File[]>([]);
+  const { files, setFiles, dragging, rootRef, pick, paste } = useAttachments({
+    enabled: allowFiles,
+    accept,
+    disabled,
+    dropTarget: props.dropTarget
+  });
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const sendAudio = (audio: Blob) =>
@@ -71,12 +80,6 @@ export default function Composer(props: ComposerProps) {
     }
   }
 
-  function pick(e: ChangeEvent<HTMLInputElement>) {
-    const picked = Array.from(e.target.files ?? []);
-    setFiles((list) => [...list, ...picked.filter((p) => !list.some((l) => l.name === p.name && l.size === p.size))]);
-    e.target.value = '';
-  }
-
   if (recorder.state === 'recording') {
     return (
       <VoiceBar
@@ -90,7 +93,15 @@ export default function Composer(props: ComposerProps) {
   const showMic = voice && !busy && recorder.state !== 'unsupported' && !value.trim() && files.length === 0;
   const showStop = busy && !!onStop;
   return (
-    <Box sx={{ px: { xs: 1.5, sm: 2.5 }, py: 1.5 }}>
+    <Box
+      ref={rootRef}
+      sx={{
+        px: { xs: 1.5, sm: 2.5 },
+        py: 1.5,
+        ...(dragging && { outline: '2px dashed', outlineColor: 'primary.main', outlineOffset: 2, borderRadius: 3 })
+      }}
+    >
+      {dragging && <DropHint />}
       {files.length > 0 && (
         <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 1, mb: 1 }}>
           {files.map((f) => (
@@ -114,6 +125,7 @@ export default function Composer(props: ComposerProps) {
             onTyping?.();
           }}
           onKeyDown={handleKey}
+          onPaste={paste}
           placeholder={placeholder ?? t('c3.chat.placeholder')}
           disabled={disabled}
           multiline
