@@ -5,6 +5,7 @@ import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 
 import { displayValue, isNumeric } from '../../format';
+import { negativeSx } from '../../rowStyle';
 import type { ListColumn } from './ListTable';
 
 export function OpeningRow({
@@ -27,7 +28,11 @@ export function OpeningRow({
     <TableRow data-testid="opening-row">
       {lead > 0 && <TableCell colSpan={lead} sx={sx} />}
       {columns.map((c) => (
-        <TableCell key={c.field} align={isNumeric(c.def) && !c.component ? 'right' : 'left'} sx={sx}>
+        <TableCell
+          key={c.field}
+          align={isNumeric(c.def) && !c.component ? 'right' : 'left'}
+          sx={[sx, c.field === opening.field && negativeSx(c.def, opening.value)]}
+        >
           {c.field === opening.field ? displayValue(c.def, opening.value, intl.locale, (v) => v) : c.field === labelAt ? opening.label : ''}
         </TableCell>
       ))}

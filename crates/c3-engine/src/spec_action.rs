@@ -33,6 +33,8 @@ pub struct Action {
     pub preview: bool,
     /// Ação que desfaz esta (`inverse`): o Desfazer da shell roda a inversa, com a versão conferida.
     pub inverse: Option<String>,
+    /// `steps: true` (só ação de lista): roda em etapas, com `cursor` no corpo e `progress` na resposta.
+    pub steps: bool,
 }
 
 #[derive(Deserialize)]
@@ -51,6 +53,8 @@ pub(crate) struct RawAction {
     prefill: bool,
     #[serde(default)]
     preview: bool,
+    #[serde(default)]
+    steps: bool,
     returns: Option<String>,
     #[serde(default)]
     input: RawInput,
@@ -128,6 +132,12 @@ pub(crate) fn parse_action(
             a.name
         ));
     }
+    if a.steps && (!list || returns_file) {
+        return Err(format!(
+            "{name}.actions.{}: steps só em ação de lista (target 'list') que não devolve arquivo",
+            a.name
+        ));
+    }
     let action = Action {
         name: a.name,
         visible_when: None,
@@ -140,6 +150,7 @@ pub(crate) fn parse_action(
         returns_file,
         preview: a.preview,
         inverse: a.inverse,
+        steps: a.steps,
     };
     Ok((action, a.visible_when))
 }

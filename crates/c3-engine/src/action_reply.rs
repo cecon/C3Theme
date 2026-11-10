@@ -8,6 +8,10 @@ use axum::response::{IntoResponse, Response};
 use axum::Json;
 use serde_json::{json, Value};
 
+mod steps;
+
+pub use steps::Progress;
+
 use crate::download::{disposition, encode};
 use crate::error::ApiError;
 use crate::spec::{Action, Entity};
@@ -25,6 +29,8 @@ pub struct ActionOutcome {
     /// Endereço que a shell abre na mesma aba (o download de um instalador de centenas de MB, sem passar pelo
     /// motor): `https://`, `http://` ou um caminho do próprio servidor (`/`). Outro formato é 500.
     pub link: Option<String>,
+    /// Andamento da ação em etapas (`steps: true`): a shell chama de novo com o cursor até terminar.
+    pub progress: Option<Progress>,
 }
 
 /// Registro que a shell abre: `/{entity}/{id}`. Sem `entity`, a da própria ação.
@@ -64,6 +70,12 @@ impl ActionOutcome {
             link: Some(url.into()),
             ..Default::default()
         }
+    }
+
+    /// Andamento da etapa (ação `steps: true`).
+    pub fn with_progress(mut self, progress: Progress) -> Self {
+        self.progress = Some(progress);
+        self
     }
 
     pub fn with_message(mut self, message: impl Into<String>) -> Self {
@@ -138,7 +150,13 @@ fn build(
     outcome: ActionOutcome,
     data: Option<Value>,
 ) -> Result<ActionReply, ApiError> {
-    let ActionOutcome { message, file, open, link } = outcome;
+    let ActionOutcome {
+        message,
+        file,
+        open,
+        link,
+        progress,
+    } = outcome;
     let broken = |what: &str| {
         eprintln!("c3-engine: ação {}.{} {what}", entity.name, action.name);
         ApiError::internal()
@@ -168,6 +186,9 @@ fn build(
         }
         body["link"] = json!(url);
     }
+    if let Some(p) = progress {
+        body["progress"] = steps::progress_json(action.steps, &p).map_err(broken)?;
+    }
     Ok(ActionReply::Json(body))
 }
 
@@ -189,6 +210,7 @@ mod tests {
             returns_file,
             preview: false,
             inverse: None,
+            steps: false,
         };
         (entity, action)
     }

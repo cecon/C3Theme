@@ -272,7 +272,10 @@ Primeira configuração, ativação, o que precisa estar pronto antes de usar o 
       { "title": "Este computador", "rows": [["maquina", "caixa"]], "action": "criar_maquina" },
       { "title": "Impressora", "rows": [["impressora"]], "optional": true }
     ],
-    "summary": { "title": "Loja configurada", "items": [{ "label": "Certificado digital", "done": "tem_certificado", "path": "/certificado" }] }
+    "summary": {
+      "title": "Loja configurada",
+      "items": [{ "label": "Certificado digital", "done": "tem_certificado", "path": "/certificado" }]
+    }
   }
 }
 ```
@@ -578,6 +581,8 @@ GET /api/customer?page=2&pageSize=25&sort=-created_at&q=maria&where={"field":"st
 - **Prévia na linha** (`views.list.expand`): seta no começo da linha que abre, embaixo dela, os dados que a linha já trouxe (sem outro GET). `fields` em grade, cada um com rótulo e `icon` opcional do catálogo da shell; `stats` (até 4) numa faixa em destaque; `notes` na largura toda, texto com o rótulo como título e `flags` como etiquetas. Cada item é o nome do campo ou `{ "field", "label", "icon" }`.
 - **Abas, período, busca e exportação**: `presetTabs: { "all": "Todas" }` mostra os presets como abas acima da barra, cada uma com a contagem (uma chamada `_aggregate?measure=count` por aba, com o where do preset somado à busca e aos filtros); a primeira aba é a lista sem preset. `dateRange: { "field": "emissao", "label": "Emitidas" }` põe "Emitidas de" e "até" na barra (`gte`/`lte`, só campo `date`). `searchHint` troca o placeholder da busca ("Em 42 clientes" por padrão). `export: false` tira o "Exportar CSV". Na coluna, `link: true` faz o valor abrir o registro.
 - **Botão de criar**: `label.new` (`"Nova fatura"`) troca o "Adicionar fatura" padrão na lista e no título do formulário novo.
+- **Destaque da linha** (`views.list.rowStyles`): negrito e fundo de destaque quando a condição vale para a linha, no formato do `where` dos presets. Todas as que valem somam (negrito de qualquer uma, o tom da última). Os tons são os do tema (`primary`, `secondary`, `info`, `success`, `warning`, `error`) e pintam o fundo da linha, claro, também no papel. Vale na lista e no relatório (`views.report.rowStyles` troca as regras só ali). Balancete e DRE: `[{ "when": { "field": "tipo", "op": "in", "value": ["TITULO", "TOTAL"] }, "bold": true, "tone": "secondary" }, { "when": { "field": "analitica", "op": "eq", "value": false }, "bold": true }]`. O `spec:check` confere os campos e operadores da condição.
+- **Negativo em vermelho** (`"negativeTone": "error"` no campo integer ou decimal): número menor que zero no tom (`error` ou `warning`) na célula da lista, no total do rodapé, no saldo anterior, no relatório (linha e subtotal) e na impressão do registro. Não muda o que trafega nem o CSV.
 - **Totais no rodapé** (`views.list.totals: [{ "field": "total" }, { "field": "desconto" }]`): soma de colunas integer ou decimal sobre tudo o que o filtro alcança, não só a página. A shell faz uma chamada só, `GET /api/{entity}/_aggregate?measure=sum:total,sum:desconto` com o mesmo `where`, `q` e `branches` da lista, e a resposta traz `values` na ordem pedida. Trocar de página não refaz a soma; gravar ou rodar uma ação refaz. Os totais saem também na última linha do CSV. A contagem não é total: já está em `meta.total`. Campo que o usuário não vê sai das colunas e não soma. O `spec:check` recusa total de campo que não é número ou não está nas colunas.
 
 **Armadilhas conhecidas do SQLite** (a suíte de conformidade vai cobrir):
@@ -836,6 +841,24 @@ Para fatos que só mudam por ação (venda, título, nota), o campo de situaçã
 
 `"target": "list"` faz da ação um comando da lista, sem registro: aplicar um modelo de grupos contábeis, aplicar uma jornada a um canal. O botão fica no topo da lista, ao lado do "Adicionar", e roda em `POST /{entity}/_actions/{name}` com `{ "input": {...} }` (sem `ids`). A permissão é a de `capabilities.actions` na filial ativa, junto com `list` na entidade; o input é validado como nas outras ações (reference conferido contra a filial ativa) e a resposta é `{ "message": ... }`. Ação de lista não tem `bulk` nem `visibleWhen` (não há registro para a condição). No c3-engine, o sistema executa em `Hooks::run_list_action`.
 
+### Ação longa em etapas
+
+Rodada que leva minutos (revisar 300 NCMs na API fiscal, 15 por vez) declara `"steps": true` numa ação de lista. Cada chamada faz um pedaço e responde o andamento; a shell repete com o `cursor` até acabar, com a barra, a mensagem parcial e o **Parar**.
+
+```
+POST /api/ncm/_actions/revisar   { "input": {} }
+→ 200 { "message": "Aplicados 10, fila 5, erros 0.", "progress": { "total": 300, "done": 15, "cursor": 15 } }
+POST /api/ncm/_actions/revisar   { "input": {}, "cursor": 15 }
+→ 200 { "message": "...", "progress": { "total": 300, "done": 30, "cursor": 30 } }
+...
+→ 200 { "message": "Revisão concluída.", "progress": { "total": 300, "done": 300, "cursor": null } }
+```
+
+- **O cursor é do sistema**: posição na lista de pendentes, último id, o que servir. O motor só o devolve na próxima chamada (`ListActionCall::cursor` no c3-engine, `call.cursor` no Node; ausente na primeira). O input vai inteiro em toda chamada e é validado de novo.
+- **O motor confere o formato**: `progress` em ação sem `steps`, `done` maior que `total` ou etapa no meio (`done < total`) sem cursor é erro do sistema (500). Na última etapa o cursor sai `null`. Resposta sem `progress` também encerra (nada a fazer).
+- **Na shell**: o diálogo do input (se houver) fecha e a barra assume, com "15 de 300" e a `message` da última etapa. **Parar** espera a etapa em curso e não chama de novo; o aviso diz até onde foi e o que já rodou fica gravado. Erro numa etapa aparece na barra, com Fechar. No fim, a `message` final (ou `successMessage`) e a lista recarregada.
+- Só ação de lista, sem `returns: "file"`, `repeat` nem `preview`. Cada etapa precisa caber no tempo do proxy: o sistema escolhe o tamanho do lote.
+
 ### Grade no input e valores iniciais
 
 Operação com várias linhas digitadas de uma vez (contar cada forma de pagamento, ajustar o preço de 50 produtos) usa um campo `type: "grid"` no input, com as colunas em `fields`. `prefill: true` faz a shell pedir os valores iniciais ao sistema antes de abrir o diálogo.
@@ -925,8 +948,12 @@ Fica para depois: ação que gera arquivo com andamento e ação longa em segund
 Item da nota que ainda não é produto se cadastra a partir do item, no formulário completo do produto (todas as abas e validações), e o produto criado fica vinculado ao item:
 
 ```json
-{ "name": "cadastrar_produto", "label": "Cadastrar produto", "visibleWhen": { "field": "produto", "op": "null", "value": true },
-  "opensForm": { "entity": "produto", "values": { "nome": "descricao", "ncm": "ncm" }, "assignTo": "produto" } }
+{
+  "name": "cadastrar_produto",
+  "label": "Cadastrar produto",
+  "visibleWhen": { "field": "produto", "op": "null", "value": true },
+  "opensForm": { "entity": "produto", "values": { "nome": "descricao", "ncm": "ncm" }, "assignTo": "produto" }
+}
 ```
 
 - A shell abre o formulário de criar da entidade num diálogo. `values` leva campo de destino ← campo deste registro (vazio fica de fora).

@@ -12,6 +12,7 @@ import { displayValue, findOption } from '../../format';
 import type { ReportLine, Sums } from '../../report';
 import type { FieldDef } from '../../types';
 import { Cell } from '../list/Cell';
+import { negativeSx } from '../../rowStyle';
 
 const numeric = (f: FieldDef) => f.type === 'integer' || f.type === 'decimal';
 
@@ -19,14 +20,27 @@ const numeric = (f: FieldDef) => f.type === 'integer' || f.type === 'decimal';
  * Tabela do relatório: cabeçalho de grupo, linhas, subtotal e total geral. O nome do grupo fica na primeira coluna
  * (o spec:check não deixa somar nela). Recuo pelo nível do grupo ou pela profundidade da árvore.
  */
-export default function ReportTable({ columns, lines }: { columns: FieldDef[]; lines: ReportLine[] }) {
+export default function ReportTable({
+  columns,
+  lines,
+  rowSx
+}: {
+  columns: FieldDef[];
+  lines: ReportLine[];
+  /** Destaque da linha de registro (`rowStyles`). */
+  rowSx?: (row: Record<string, unknown>) => object | undefined;
+}) {
   const text = useText();
   const { locale } = useIntl();
   const optionLabel = (f: FieldDef) => (v: string) => text(findOption(f, v)?.label, v);
   const groupLevels = lines.reduce((n, l) => (l.kind === 'group' ? Math.max(n, l.level + 1) : n), 0);
   const sumCells = (sums: Sums) =>
     columns.slice(1).map((f) => (
-      <TableCell key={f.name} align={numeric(f) ? 'right' : 'left'} sx={{ fontVariantNumeric: 'tabular-nums' }}>
+      <TableCell
+        key={f.name}
+        align={numeric(f) ? 'right' : 'left'}
+        sx={[{ fontVariantNumeric: 'tabular-nums' }, negativeSx(f, sums[f.name])]}
+      >
         {f.name in sums ? displayValue(f, sums[f.name], locale, () => '') : ''}
       </TableCell>
     ));
@@ -54,7 +68,7 @@ export default function ReportTable({ columns, lines }: { columns: FieldDef[]; l
             );
           if (l.kind === 'row')
             return (
-              <TableRow key={i} sx={{ breakInside: 'avoid' }}>
+              <TableRow key={i} sx={{ breakInside: 'avoid', ...rowSx?.(l.row) }}>
                 {columns.map((f, c) => (
                   <TableCell
                     key={f.name}

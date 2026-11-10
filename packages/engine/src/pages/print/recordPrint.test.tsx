@@ -18,7 +18,8 @@ const item = {
   fields: [
     { name: 'inv', type: 'reference', entity: 'inv', label: 'Inventário' },
     { name: 'produto', type: 'string', label: 'Produto' },
-    { name: 'contado', type: 'integer', label: 'Contado' }
+    { name: 'contado', type: 'integer', label: 'Contado' },
+    { name: 'diferenca', type: 'integer', label: 'Diferença', negativeTone: 'error' }
   ]
 } as unknown as EntityDef;
 const inv = {
@@ -54,7 +55,9 @@ describe('impressão do registro', () => {
     const client = createMemoryClient({
       app: { name: 'Loja', entities: ['inv', 'item'] } as never,
       entities: [inv, item],
-      records: { item: Array.from({ length: 30 }, (_, i) => ({ id: String(i + 1), inv: '1', produto: `P${i + 1}`, contado: 3 })) }
+      records: {
+        item: Array.from({ length: 30 }, (_, i) => ({ id: String(i + 1), inv: '1', produto: `P${i + 1}`, contado: 3, diferenca: i - 5 }))
+      }
     });
     const value = { client, app: { name: 'Loja' } as never, entities: { item: { def: item, capabilities: {} } } as never, components: {} };
     render(
@@ -75,7 +78,9 @@ describe('impressão do registro', () => {
     const client = createMemoryClient({
       app: { name: 'Loja', entities: ['inv', 'item'] } as never,
       entities: [inv, item],
-      records: { item: Array.from({ length: 30 }, (_, i) => ({ id: String(i + 1), inv: '1', produto: `P${i + 1}`, contado: 3 })) }
+      records: {
+        item: Array.from({ length: 30 }, (_, i) => ({ id: String(i + 1), inv: '1', produto: `P${i + 1}`, contado: 3, diferenca: i - 5 }))
+      }
     });
     const value = { client, app: { name: 'Loja' } as never, entities: { item: { def: item, capabilities: {} } } as never, components: {} };
     render(
@@ -93,5 +98,8 @@ describe('impressão do registro', () => {
     const rows = sheet.querySelectorAll('tbody tr');
     expect(rows).toHaveLength(30);
     expect(rows[0].querySelectorAll('td')[1].textContent).toBe('');
+    // negativeTone: o negativo sai num span com a cor do tom; o positivo, texto puro
+    expect(rows[0].querySelectorAll('td')[2].querySelector('span')?.textContent).toBe('-5');
+    expect(rows[10].querySelectorAll('td')[2].querySelector('span')).toBeNull();
   });
 });

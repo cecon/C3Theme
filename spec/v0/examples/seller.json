@@ -99,6 +99,15 @@
           }
         ]
       }
+    },
+    {
+      "name": "review",
+      "label": "Revisar cadastro",
+      "description": "Revisa os cadastros em lotes, com barra de progresso e Parar (exemplo da ação em etapas).",
+      "icon": "TaskSquare",
+      "target": "list",
+      "steps": true,
+      "successMessage": "Revisão concluída."
     }
   ]
 }

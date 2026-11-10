@@ -57,3 +57,10 @@ export const Registro: Story = { name: 'Registro aberto', args: { screen: 'form'
  * da nota; ao salvar, o produto criado fica no campo Produto do item (`assignTo`) e a ação some.
  */
 export const ItemDaNota: Story = { name: 'Item da nota, cadastrar o produto', args: { entity: 'nota_item', screen: 'form', id: '1' } };
+
+/**
+ * `views.list.rowStyles`: títulos e totais em negrito com fundo de destaque, conta sintética em negrito; `negativeTone`
+ * deixa o saldo negativo em vermelho. "Revisar classificação" é a ação da lista em etapas (`steps`): 300 NCMs em
+ * lotes de 15, com a barra, os contadores parciais e o Parar, que mantém o que já rodou.
+ */
+export const Balancete: Story = { name: 'Balancete, linhas em destaque e ação em etapas', args: { entity: 'conta_contabil' } };

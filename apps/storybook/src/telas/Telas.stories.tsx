@@ -29,6 +29,9 @@ export const Agenda: Story = { args: { entity: 'evento', view: 'calendar' } };
 /** Agrupado por situação e cliente, com subtotal por grupo e total geral. */
 export const Relatorio: Story = { name: 'Relatório', args: { entity: 'fatura', view: 'report' } };
 
+/** O balancete no relatório: as mesmas `rowStyles` da lista (sem `views.report.rowStyles`) e o saldo negativo em vermelho. */
+export const Balancete: Story = { name: 'Relatório, balancete com destaque', args: { entity: 'conta_contabil', view: 'report' } };
+
 /** Blocos coloridos pela situação, agrupados pela área. */
 export const Planta: Story = { args: { entity: 'mesa', view: 'map' } };
 

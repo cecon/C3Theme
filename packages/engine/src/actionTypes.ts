@@ -55,6 +55,8 @@ export interface ActionDef {
   successMessage?: Text;
   /** Ação que desfaz esta (sem input): depois de rodar, a shell oferece Desfazer. */
   inverse?: string;
+  /** Só ação de lista: roda em etapas, com barra de progresso e Parar (a shell repete com o `cursor` da resposta). */
+  steps?: boolean;
   /** Abre o formulário completo de outra entidade (criar), com valores do registro, e grava o id criado nele. */
   opensForm?: OpensForm;
 }

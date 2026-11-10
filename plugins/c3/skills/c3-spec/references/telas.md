@@ -52,6 +52,7 @@ Resumo. Quem decide são o `spec/v0/app.schema.json` e o `entity.schema.json` do
 - `expand: { "fields": [{ "field": "email", "icon": "Sms" }], "stats": ["pedidos"], "notes": ["sobre"] }` abre a prévia do registro embaixo da linha.
 - `presetTabs: { "all": "Todas" }` (presets como abas com contagem), `dateRange: { "field": "emissao", "label": "Emitidas" }` (período de/até), `searchHint`, `export: false` e `link: true` na coluna.
 - `rowActions: ["view", "edit", "delete"]` põe Ver/Editar/Excluir na linha; com `delete`, vem a marcação e "Excluir (n)". `label.new` ("Nova fatura") troca o texto do botão de criar e `label.gender: "f"` acerta "selecionadas"/"Excluída". `rowActionsStyle: "quiet"` deixa os ícones cinza; `open: "dialog"` abre ver e criar num diálogo sobre a lista. `filters: [{ "field": "status", "all": "Todas" }]` troca o "Todos" do filtro.
+- `rowStyles: [{ "when": <condição>, "bold": true, "tone": "secondary" }]` destaca a linha (título e total do balancete) na lista e no relatório; `"negativeTone": "error"` no campo integer/decimal deixa o negativo vermelho.
 - `refreshSeconds: 30` (3 a 3600) relê a página e os totais sozinha, só com a aba visível, sem perder seleção: fila que muda (requisições, comandas em uso). Não é tempo real.
 - `"live": true` na entidade (ou `{ "sound": { "on": ["created"] } }`) relê lista, quadro, calendário e relatório na hora, por SSE (KDS, bicos, comandas). Gravação feita fora do motor precisa de `Live::notify` no backend. O registro aberto relê em leitura, não em edição.
 - A lista já exporta CSV (até 10 mil linhas) e já tem o esqueleto de carregamento: não escreva isso de novo.
@@ -87,12 +88,12 @@ Resumo. Quem decide são o `spec/v0/app.schema.json` e o `entity.schema.json` do
 
 ## Mestre-detalhe
 
-| Caso                                              | Declaração                                                                       |
-| ------------------------------------------------- | -------------------------------------------------------------------------------- |
-| Filhos com vida própria (clientes da empresa)     | `{ "related": { "entity": "customer", "field": "company_id" } }`                 |
-| Itens que só existem no pai (itens do pedido)     | `{ "related": { "entity": "sales_order_item", "field": "order_id", "save": "with_parent", "maxItems": 200 } }` |
-| Um registro só (dados fiscais)                    | `with_parent` + `"maxItems": 1` (+ `"minItems": 1` se for obrigatório)          |
-| Lista de marcar N:N (permissões do perfil)        | `with_parent` + `"display": "checklist", "option": "permission_id", "groupBy": "module"` |
+| Caso                                          | Declaração                                                                                                     |
+| --------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Filhos com vida própria (clientes da empresa) | `{ "related": { "entity": "customer", "field": "company_id" } }`                                               |
+| Itens que só existem no pai (itens do pedido) | `{ "related": { "entity": "sales_order_item", "field": "order_id", "save": "with_parent", "maxItems": 200 } }` |
+| Um registro só (dados fiscais)                | `with_parent` + `"maxItems": 1` (+ `"minItems": 1` se for obrigatório)                                         |
+| Lista de marcar N:N (permissões do perfil)    | `with_parent` + `"display": "checklist", "option": "permission_id", "groupBy": "module"`                       |
 
 - `separately` (o padrão): a seção só aparece em registro salvo, cada filho grava sozinho pelo CRUD da filha e a lista é paginada.
 - `with_parent`: a lista inteira vem na leitura do pai (`"sales_order_item": [...]`), vai no corpo do POST/PATCH e **substitui a gravada**. Linha com `id` altera, sem `id` inclui, e a que não veio é excluída. Tudo grava numa transação. Erro de linha volta em `fields["sales_order_item.2.quantity"]`.
@@ -119,12 +120,26 @@ Resumo. Quem decide são o `spec/v0/app.schema.json` e o `entity.schema.json` do
 - Planta: `"map": { "color": "status", "position": { "x": "x", "y": "y" } }` (mesas; campos integer) ou `"groupBy": ["ilha_id", "bomba_id"]` (pista, setor do KDS) em `/{entity}/map`. Bloco colorido pelo enum, ações do registro no clique. Junte com `live` para acompanhar na hora.
 
 ```json
-{ "path": "/painel", "title": "Painel", "dashboard": { "widgets": [
-  { "type": "kpi", "title": "Em aberto", "entity": "sales_order", "preset": "em-aberto", "measure": "sum:total" },
-  { "type": "chart", "title": "Por status", "entity": "customer", "groupBy": "status", "width": 4 },
-  { "type": "chart", "title": "Por mês", "entity": "activity", "groupBy": "due_date", "interval": "month" },
-  { "type": "list", "title": "Pendentes", "entity": "activity", "preset": "pendentes", "columns": ["subject", "due_date"], "sort": "due_date", "limit": 5 }
-] } }
+{
+  "path": "/painel",
+  "title": "Painel",
+  "dashboard": {
+    "widgets": [
+      { "type": "kpi", "title": "Em aberto", "entity": "sales_order", "preset": "em-aberto", "measure": "sum:total" },
+      { "type": "chart", "title": "Por status", "entity": "customer", "groupBy": "status", "width": 4 },
+      { "type": "chart", "title": "Por mês", "entity": "activity", "groupBy": "due_date", "interval": "month" },
+      {
+        "type": "list",
+        "title": "Pendentes",
+        "entity": "activity",
+        "preset": "pendentes",
+        "columns": ["subject", "due_date"],
+        "sort": "due_date",
+        "limit": 5
+      }
+    ]
+  }
+}
 ```
 
 - `measure`: `count` (padrão) ou `sum:<campo integer ou decimal>`. O `groupBy` do chart aceita enum, boolean, reference ou data (com `interval`).

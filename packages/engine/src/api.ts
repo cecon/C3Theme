@@ -88,8 +88,8 @@ export interface C3Client {
   bulkAction(entity: string, action: string, ids: string[], input?: WireRecord): Promise<BulkResult>;
   /** Ação em conjunto (`bulk: 'together'`): uma execução sobre todos os ids, tudo ou nada. */
   togetherAction(entity: string, action: string, ids: string[], input?: WireRecord, params?: SourceParams): Promise<ActionResult>;
-  /** Ação da lista (`target: list`), sem registro. */
-  listAction(entity: string, action: string, input?: WireRecord): Promise<ActionResult>;
+  /** Ação da lista (`target: list`), sem registro. `cursor`: a etapa seguinte da ação `steps` (o da resposta anterior). */
+  listAction(entity: string, action: string, input?: WireRecord, cursor?: unknown): Promise<ActionResult>;
   /** Prévia de uma ação `preview` com o input como está (sem `id`: ação da lista, ou a seleção em `ids`). Nada é gravado. */
   preview(
     entity: string,
@@ -253,7 +253,8 @@ export function createClient(
     bulkAction: (entity, action, ids, input = {}) => call<BulkResult>('POST', `/${e(entity)}/_actions/${e(action)}`, { ids, input }),
     togetherAction: (entity, action, ids, input = {}, params) =>
       call<ActionResult>('POST', withParams(`/${e(entity)}/_actions/${e(action)}`, params), { ids, input }),
-    listAction: (entity, action, input = {}) => call<ActionResult>('POST', `/${e(entity)}/_actions/${e(action)}`, { input }),
+    listAction: (entity, action, input = {}, cursor?: unknown) =>
+      call<ActionResult>('POST', `/${e(entity)}/_actions/${e(action)}`, cursor === undefined ? { input } : { input, cursor }),
     preview: (entity, action, id, input, ids, params) =>
       id
         ? call<ActionPreview>('POST', `/${e(entity)}/${e(id)}/_actions/${e(action)}/_preview`, input)

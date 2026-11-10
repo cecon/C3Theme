@@ -1,0 +1,55 @@
+{
+  "$schema": "../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "conta_contabil",
+  "label": {
+    "singular": "Conta do balancete",
+    "plural": "Balancete",
+    "gender": "f"
+  },
+  "titleField": "descricao",
+  "fields": [
+    { "name": "codigo", "type": "string", "label": "Código", "required": true, "maxLength": 20 },
+    { "name": "descricao", "type": "string", "label": "Conta", "required": true, "maxLength": 80 },
+    {
+      "name": "tipo",
+      "type": "enum",
+      "label": "Tipo",
+      "required": true,
+      "options": [
+        { "value": "TITULO", "label": "Título" },
+        { "value": "CONTA", "label": "Conta" },
+        { "value": "TOTAL", "label": "Total" }
+      ]
+    },
+    { "name": "analitica", "type": "boolean", "label": "Analítica", "default": true },
+    { "name": "saldo", "type": "decimal", "scale": 2, "currency": "BRL", "label": "Saldo", "negativeTone": "error" }
+  ],
+  "views": {
+    "list": {
+      "columns": ["codigo", "descricao", "saldo"],
+      "defaultSort": [{ "field": "codigo" }],
+      "export": false,
+      "rowStyles": [
+        { "when": { "field": "tipo", "op": "in", "value": ["TITULO", "TOTAL"] }, "bold": true, "tone": "secondary" },
+        { "when": { "field": "analitica", "op": "eq", "value": false }, "bold": true }
+      ]
+    },
+    "report": {
+      "title": "Balancete de março",
+      "columns": ["codigo", "descricao", "saldo"],
+      "sort": "codigo"
+    }
+  },
+  "actions": [
+    {
+      "name": "revisar",
+      "label": "Revisar classificação",
+      "description": "Consulta a API fiscal por NCM, em lotes de 15, com a barra e o Parar.",
+      "icon": "TaskSquare",
+      "target": "list",
+      "steps": true,
+      "successMessage": "Revisão concluída."
+    }
+  ]
+}

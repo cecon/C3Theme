@@ -3,7 +3,7 @@
 // passa em `actions`; sem ele, e em prévias, consultas e arquivos, a resposta é 501, que a shell mostra como erro comum.
 
 import { ApiError, C3Client, type C3Notification } from '../api';
-import type { AppDef, BulkItem, Capabilities, EntityDef, WireRecord } from '../types';
+import type { ActionResult, AppDef, BulkItem, Capabilities, EntityDef, WireRecord } from '../types';
 import { memoryNotifications } from './notifications';
 import { aggregate, list } from './query';
 import { memoryRaw } from './raw';
@@ -27,6 +27,11 @@ export interface MemorySeed {
    * Devolve o que muda no registro; erro lançado vira a falha daquele id. Em lote, roda um por um.
    */
   actions?: Record<string, Record<string, MemoryAction>>;
+  /**
+   * Ações da lista (`target: list`), no lugar do backend: `listActions.vendedor.revisar = (input, cursor) => ({ message })`.
+   * Na ação `steps`, devolva `progress` e receba o `cursor` da etapa anterior.
+   */
+  listActions?: Record<string, Record<string, (input: WireRecord, cursor: unknown) => ActionResult | Promise<ActionResult>>>;
   /** Avisos do sino (`header.notifications`). Sem eles, o sino aparece vazio. */
   notifications?: C3Notification[];
   /**
@@ -151,7 +156,11 @@ export function createMemoryClient(seed: MemorySeed): C3Client {
         return { results, meta: { ok, failed: ids.length - ok } };
       }),
     togetherAction: () => wait(() => unsupported('A ação')),
-    listAction: () => wait(() => unsupported('A ação')),
+    listAction: (entity, name, input = {}, cursor) =>
+      wait(() => {
+        const handler = seed.listActions?.[entity]?.[name];
+        return handler ? handler(input, cursor) : unsupported('A ação');
+      }).then((r) => r),
     preview: () => wait(() => unsupported('A prévia')),
     prefill: () => wait(() => ({})),
     lookup: () => wait(() => unsupported('A consulta')),

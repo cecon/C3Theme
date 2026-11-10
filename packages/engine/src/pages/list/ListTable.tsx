@@ -21,6 +21,7 @@ import { ArrowDown2, ArrowRight2 } from 'iconsax-reactjs';
 import { tableEdgesSx, TableSkeletonRows } from '@c3theme/ui';
 import { useEngine, useText } from '../../context';
 import { displayValue, findOption, isNumeric } from '../../format';
+import { negativeSx } from '../../rowStyle';
 import { columnCell } from '../../skeletonShape';
 import type { FieldDef, ListExpand, RowAction, Text, WireRecord } from '../../types';
 import { ColumnCell, ColumnExtras } from './ColumnCell';
@@ -80,7 +81,8 @@ export default function ListTable({
   openable = true,
   onOpen,
   inlineEdit,
-  opening
+  opening,
+  rowSx
 }: {
   entity: string;
   columns: ListColumn[];
@@ -105,6 +107,8 @@ export default function ListTable({
   inlineEdit?: InlineEdit;
   /** Linha "Saldo anterior" no topo (`views.list.opening`). */
   opening?: { field: string; value: number | string; label: string };
+  /** Destaque da linha (`views.list.rowStyles`). */
+  rowSx?: (row: WireRecord) => object | undefined;
 }) {
   const { components, entities } = useEngine();
   const [open, setOpen] = useState<Set<string>>(new Set());
@@ -185,7 +189,7 @@ export default function ListTable({
               <TableRow
                 hover
                 selected={selection?.selected.has(row.id!)}
-                sx={{ cursor: openable ? 'pointer' : undefined }}
+                sx={{ cursor: openable ? 'pointer' : undefined, ...rowSx?.(row) }}
                 onClick={openable ? () => (onOpen ? onOpen(row) : navigate(`/${entity}/${row.id}`)) : undefined}
               >
                 {selection && (
@@ -269,7 +273,11 @@ export default function ListTable({
               {expand && <TableCell padding="checkbox" />}
               {owner && <TableCell />}
               {columns.map((c) => (
-                <TableCell key={c.field} align={align(c)} sx={{ color: 'text.primary', fontWeight: 600, fontSize: 'body2.fontSize' }}>
+                <TableCell
+                  key={c.field}
+                  align={align(c)}
+                  sx={[{ color: 'text.primary', fontWeight: 600, fontSize: 'body2.fontSize' }, negativeSx(c.def, totals[c.field])]}
+                >
                   {totals[c.field] !== undefined
                     ? displayValue(c.def, totals[c.field], intl.locale, optionLabel(c.def))
                     : c.field === columns.find((x) => totals[x.field] === undefined)?.field

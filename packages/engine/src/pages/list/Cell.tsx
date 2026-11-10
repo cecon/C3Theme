@@ -6,6 +6,7 @@ import { TickCircle } from 'iconsax-reactjs';
 
 import { StatusChip } from '@c3theme/ui';
 import { displayValue, findOption, isNumeric, keepsTogether, recordOptions } from '../../format';
+import { negativeSx } from '../../rowStyle';
 import type { FieldDef, WireRecord } from '../../types';
 
 /** Valor de um campo numa linha de lista: componente próprio, chip de enum, ícone de booleano ou texto formatado. */
@@ -34,10 +35,13 @@ export function Cell({
     <Typography
       variant="body2"
       title={keepsTogether(shown) ? shown : undefined}
-      sx={{
-        fontVariantNumeric: isNumeric(field) ? 'tabular-nums' : undefined,
-        ...(keepsTogether(shown) && { whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' })
-      }}
+      sx={[
+        {
+          fontVariantNumeric: isNumeric(field) ? 'tabular-nums' : undefined,
+          ...(keepsTogether(shown) && { whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' })
+        },
+        negativeSx(field, value)
+      ]}
     >
       {shown}
     </Typography>

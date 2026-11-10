@@ -155,6 +155,23 @@
     }
   },
   "$defs": {
+    "rowStyles": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 12,
+      "description": "Estilo da linha pela condição sobre o próprio registro (mesmo formato do where dos presets). Todas as que valem somam: negrito de qualquer uma, o tom da última. 'tone' pinta o fundo da linha, claro, com o tom do tema; vale na tela e no papel.",
+      "items": {
+        "type": "object",
+        "required": ["when"],
+        "additionalProperties": false,
+        "anyOf": [{ "required": ["bold"] }, { "required": ["tone"] }],
+        "properties": {
+          "when": { "$ref": "#/$defs/condition" },
+          "bold": { "type": "boolean" },
+          "tone": { "enum": ["primary", "secondary", "info", "success", "warning", "error"] }
+        }
+      }
+    },
     "cardFields": {
       "type": "array",
       "maxItems": 4,
@@ -366,6 +383,10 @@
               },
               "max": {
                 "type": "number"
+              },
+              "negativeTone": {
+                "enum": ["error", "warning"],
+                "description": "Número menor que zero nesse tom do tema na lista (célula, total e saldo anterior), no relatório e na impressão do registro. Não muda o que trafega."
               },
               "unit": {
                 "type": "string",
@@ -696,6 +717,7 @@
                 }
               }
             },
+            "rowStyles": { "$ref": "#/$defs/rowStyles" },
             "rowActionsStyle": {
               "enum": ["color", "quiet"],
               "default": "color",
@@ -1278,6 +1300,10 @@
               "type": "string",
               "description": "Ordem das linhas dentro do grupo, como no GET da lista (ex.: '-total'). Padrão: a da lista."
             },
+            "rowStyles": {
+              "$ref": "#/$defs/rowStyles",
+              "description": "Destaque das linhas de registro do relatório. Sem ele, vale o views.list.rowStyles."
+            },
             "tree": {
               "type": "object",
               "required": ["parent"],
@@ -1531,7 +1557,11 @@
       "then": { "properties": { "bulk": { "const": false }, "visibleWhen": false } },
       "dependentSchemas": {
         "returns": { "properties": { "bulk": { "not": { "const": true } } } },
-        "summary": { "required": ["bulk"], "properties": { "bulk": { "not": { "const": false } } } }
+        "summary": { "required": ["bulk"], "properties": { "bulk": { "not": { "const": false } } } },
+        "steps": {
+          "required": ["target"],
+          "properties": { "target": { "const": "list" }, "returns": false, "repeat": false, "preview": false }
+        }
       },
       "properties": {
         "name": {
@@ -1636,6 +1666,10 @@
           "type": "boolean",
           "default": false,
           "description": "Antes de confirmar, o diálogo mostra a prévia do sistema: POST /{entity}/{id}/_actions/{name}/_preview com o input (ou /{entity}/_actions/{name}/_preview com { input } na ação da lista). Responde { message, fill, table }: fill sugere valor para os campos vazios do input; table é só leitura. Nada é gravado; falta de campo obrigatório não barra a prévia. A shell pede ao abrir e ao sair de cada campo, não a cada tecla; em lote não há prévia."
+        },
+        "steps": {
+          "const": true,
+          "description": "Só ação de lista (target 'list'): roda em etapas. Cada chamada faz um pedaço e responde progress { total, done, cursor }; a shell mostra a barra com done de total e a message parcial, e chama de novo com { input, cursor } até done == total. Parar só deixa de chamar: o que as etapas já gravaram fica. No fim, a message final e a lista recarregada. Etapa no meio sem cursor, ou done maior que total, é erro do sistema (500)."
         },
         "returns": {
           "const": "file",

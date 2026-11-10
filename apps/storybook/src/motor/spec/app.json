@@ -16,7 +16,8 @@
     "inventario",
     "inventario_item",
     "configuracao_loja",
-    "nota_item"
+    "nota_item",
+    "conta_contabil"
   ],
   "layout": {
     "orientation": "vertical",
