@@ -1,13 +1,15 @@
-// `node:http` para o contrato: `createServer(engineListener(engine, { prefix: '/api' }))`. Lê o corpo (até 2 MB, como o
-// c3-engine), monta o `EngineRequest` e escreve a resposta, inclusive o SSE do tempo real.
+// `node:http` para o contrato: `createServer(engineListener(engine, { prefix: '/api' }))`. Lê o corpo (até 2 MB, ou o
+// que o `maxUploadSize` do app pede, como o c3-engine), monta o `EngineRequest` e escreve a resposta, inclusive o SSE do tempo real.
 
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
 import type { Engine } from '../app/engine';
 import { ApiError } from '../domain/errors';
+import { bodyLimit } from '../domain/file';
 import type { EngineRequest, EngineResponse } from '../ports/request';
 import { handle } from './handle';
 
+/** Limite do corpo de um app sem `maxUploadSize`. */
 export const MAX_BODY = 2 * 1024 * 1024;
 
 export interface ListenerOptions {
@@ -19,13 +21,13 @@ export interface ListenerOptions {
   routes?: (req: EngineRequest) => EngineResponse | undefined | Promise<EngineResponse | undefined>;
 }
 
-/** Lê o corpo até `MAX_BODY`; acima disso, undefined. */
-async function readBody(req: IncomingMessage): Promise<string | undefined> {
+/** Lê o corpo até `max` bytes; acima disso, undefined. */
+async function readBody(req: IncomingMessage, max: number): Promise<string | undefined> {
   const chunks: Buffer[] = [];
   let size = 0;
   for await (const c of req) {
     size += (c as Buffer).length;
-    if (size > MAX_BODY) return undefined;
+    if (size > max) return undefined;
     chunks.push(c as Buffer);
   }
   return Buffer.concat(chunks).toString('utf8');
@@ -75,10 +77,12 @@ const send = (res: ServerResponse, e: ApiError) =>
 
 export function engineListener(engine: Engine, o: ListenerOptions = {}) {
   const prefix = o.prefix ?? '';
+  const max = bodyLimit(engine.app.maxUpload);
+  const tooLarge = `Corpo grande demais (máx. ${Math.round(max / (1 << 20))} MB).`;
   return async (req: IncomingMessage, res: ServerResponse): Promise<void> => {
     try {
-      const body = await readBody(req);
-      if (body === undefined) return await send(res, new ApiError(413, 'payload_too_large', 'Corpo grande demais (máx. 2 MB).'));
+      const body = await readBody(req, max);
+      if (body === undefined) return await send(res, new ApiError(413, 'payload_too_large', tooLarge));
       const locals = (await o.locals?.(req)) ?? {};
       const r = await toEngineRequest(req, prefix, locals, body);
       if (!r) return await send(res, ApiError.notFound('Rota não existe.'));

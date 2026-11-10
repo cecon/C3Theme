@@ -4,7 +4,7 @@
 import { type Access, isFreeAccess, parseAccess } from './access';
 import type { Condition } from './condition';
 import { DOC_FORMATS, type DocFormat } from './document';
-import { MAX_FILE_SIZE } from './file';
+import { MAX_FILE_SIZE, UPLOAD_CEILING } from './file';
 import { BRANCH_COL, COMPANY_COL, FIELD_TYPES, type FieldType, type Rec, type SqlValue, isObject } from './types';
 import { parseOptions } from './value';
 
@@ -94,7 +94,7 @@ function checkRaw(owner: string, f: Rec, type: FieldType): void {
     if (accept.some((e) => typeof e !== 'string' || !e.startsWith('.') || e.length < 2))
       throw new Error(`${at}: accept lista extensões com ponto (".pfx")`);
     const max = num(f, 'maxSize');
-    if (max !== undefined && (max <= 0 || max > MAX_FILE_SIZE)) throw new Error(`${at}: maxSize entre 1 e ${MAX_FILE_SIZE} bytes`);
+    if (max !== undefined && (max <= 0 || max > UPLOAD_CEILING)) throw new Error(`${at}: maxSize entre 1 e ${UPLOAD_CEILING} bytes`);
     if (bool(f, 'unique') || opt(f, 'default') !== undefined || bool(f, 'writeOnly') || opt(f, 'format') !== undefined)
       throw new Error(`${at}: file não combina com unique, default, writeOnly nem format`);
   }

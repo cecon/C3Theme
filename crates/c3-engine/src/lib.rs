@@ -221,6 +221,12 @@ impl EngineBuilder {
                 .chain(entity.actions.iter().flat_map(|a| &a.input.fields))
                 .chain(rows)
             {
+                if f.ty == FieldType::File && f.max_size > app.max_upload {
+                    return Err(err(format!(
+                        "{}.{}: maxSize {} acima do maxUploadSize do app ({} bytes)",
+                        entity.name, f.name, f.max_size, app.max_upload
+                    )));
+                }
                 if let Some(target) = &f.reference {
                     let target = entities
                         .get(target)

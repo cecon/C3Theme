@@ -4,8 +4,13 @@
 
 import { isObject } from './types';
 
-/** Teto de `maxSize`, em bytes. Em base64 o corpo cresce 4/3 e precisa caber no limite de 2 MB do servidor. */
+/** `maxSize` de quem não declara e teto padrão do app (`maxUploadSize`), em bytes: 1 MB. */
 export const MAX_FILE_SIZE = 1 << 20;
+/** O maior `maxUploadSize` que o app pode escolher: 32 MB. */
+export const UPLOAD_CEILING = 32 << 20;
+
+/** Limite do corpo para o teto de upload: o arquivo em base64 (4/3) e folga para o resto, nunca abaixo de 2 MB. */
+export const bodyLimit = (maxUpload: number): number => Math.max(Math.ceil(maxUpload / 3) * 4 + (512 << 10), 2 << 20);
 
 interface FileRules {
   maxSize: number;

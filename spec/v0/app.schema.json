@@ -39,6 +39,13 @@
       },
       "description": "Páginas que não são CRUD de entidade. Cada uma é um painel descrito aqui (dashboard) ou aponta para um componente registrado na shell (relatório, tela especial)."
     },
+    "maxUploadSize": {
+      "type": "integer",
+      "minimum": 1048576,
+      "maximum": 33554432,
+      "default": 1048576,
+      "description": "Teto do maxSize dos campos file, em bytes (1 MB a 32 MB; sem ele, 1 MB). O backend do motor ajusta o limite do corpo do pedido (o arquivo vai em base64, 4/3 maior). Cada campo continua com o seu maxSize, que precisa caber aqui."
+    },
     "organization": {
       "type": "object",
       "required": ["company", "branch"],

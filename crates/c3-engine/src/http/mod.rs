@@ -8,6 +8,7 @@ mod live;
 mod notifications;
 
 use axum::body::Bytes;
+use axum::extract::DefaultBodyLimit;
 use axum::response::{IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::{Json, Router};
@@ -17,6 +18,8 @@ use crate::error::ApiError;
 use crate::Engine;
 
 pub(crate) fn router(engine: Engine) -> Router {
+    // o corpo acompanha o teto de upload do app (`maxUploadSize`), em base64
+    let limit = crate::field::file::body_limit(engine.0.app.max_upload);
     Router::new()
         .route("/_meta/app", get(handlers::meta_app))
         .route("/_meta/login", get(handlers::meta_login))
@@ -40,6 +43,7 @@ pub(crate) fn router(engine: Engine) -> Router {
         .route("/{entity}/{id}/_actions/{action}/_prefill", get(handlers::prefill))
         .route("/{entity}/{id}/_actions/{action}/_preview", post(handlers::preview))
         .route("/{entity}/{id}/_files/{field}", get(handlers::download))
+        .layer(DefaultBodyLimit::max(limit))
         .with_state(engine)
 }
 

@@ -115,7 +115,7 @@ for (const { entity, file } of entities.values()) {
   if (entity.titleField) readable(entity.titleField, 'titleField');
   checkAccess(entity, fields, entities, checkCondition, file, errors);
   for (const f of fields.values()) {
-    checkFieldRules(f, `${file}: '${f.name}'`, errors);
+    checkFieldRules(f, `${file}: '${f.name}'`, errors, app.maxUploadSize);
     if (f.type === 'reference' && !entities.has(f.entity))
       errors.push(`${file}: '${f.name}' referencia entidade desconhecida '${f.entity}'`);
     else if (f.filter) checkRefFilter(f, entity, entities.get(f.entity).entity, checkCondition, `${file} ${f.name}.filter`, errors);
