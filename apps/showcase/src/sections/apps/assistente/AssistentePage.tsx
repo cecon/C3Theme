@@ -17,6 +17,7 @@ import { FillHeight } from '@c3theme/ui';
 import { SUGGESTIONS } from './answers';
 import useComposerDemo from './useComposerDemo';
 import useDemoAssistant, { ME } from './useDemoAssistant';
+import useVoiceDemo from './useVoiceDemo';
 
 const PANEL_WIDTH = 420;
 
@@ -44,7 +45,8 @@ export default function AssistentePage() {
   const demo = useDemoAssistant();
   const chat = useMessageWindow(demo.transport, demo.activeId, { me: ME });
   const focus = useFocus(chat.messages, chosenId);
-  const composer = useComposerDemo(chat.messages);
+  const voice = useVoiceDemo();
+  const { composer, selectors } = useComposerDemo(chat.messages, demo.create, voice.start);
 
   // pergunta nova: a área de trabalho volta a seguir a resposta em andamento
   const send: typeof chat.send = (text, opts) => {
@@ -70,6 +72,8 @@ export default function AssistentePage() {
       }}
       suggestions={SUGGESTIONS}
       composer={composer}
+      actions={selectors}
+      voice={voice.voice}
     />
   );
 

@@ -44,6 +44,7 @@ export type { QueuedMessage, UseMessageQueueOptions } from './hooks/useMessageQu
 export { default as useTypingStatus, TYPING_IDLE_MS, TYPING_THROTTLE_MS } from './hooks/useTypingStatus';
 export { default as useVoiceRecorder, browserRecorder } from './hooks/useVoiceRecorder';
 export type { RecorderDevice, RecorderState, UseVoiceRecorderOptions } from './hooks/useVoiceRecorder';
+export { default as useAudioLevel, browserMeter, type LevelMeter } from './hooks/useAudioLevel';
 
 export { localStorageDrafts, memoryDrafts } from './adapters/localStorageDrafts';
 export { memoryTransport } from './adapters/memoryTransport';

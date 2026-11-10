@@ -74,3 +74,31 @@ describe('AgentComposer inline', () => {
     expect(cmd).toHaveBeenCalled();
   });
 });
+
+describe('AgentComposer split', () => {
+  function Split(props: Omit<AgentComposerProps, 'value' | 'onChange' | 'variant'>) {
+    const [value, setValue] = useState('');
+    return <AgentComposer {...props} variant="split" value={value} onChange={setValue} />;
+  }
+
+  it('voz fica fixa na barra; o enviar fica na caixa e vira parar respondendo', () => {
+    const voice = vi.fn();
+    const onSend = vi.fn();
+    const { unmount } = wrap(
+      <Split onSend={onSend} hint="Enter envia" idleAction={{ label: 'Conversar por voz', icon: <i />, onClick: voice }} />
+    );
+    expect(screen.queryByText('Enter envia')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Conversar por voz' }));
+    expect(voice).toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Enviar mensagem' }).hasAttribute('disabled')).toBe(true);
+    fireEvent.change(box(), { target: { value: 'oi' } });
+    expect(screen.getByRole('button', { name: 'Conversar por voz' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Enviar mensagem' }));
+    expect(onSend).toHaveBeenCalledWith('oi', []);
+    unmount();
+    const onStop = vi.fn();
+    wrap(<Split onSend={vi.fn()} busy onStop={onStop} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Parar resposta' }));
+    expect(onStop).toHaveBeenCalled();
+  });
+});

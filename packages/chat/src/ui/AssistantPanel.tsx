@@ -23,6 +23,7 @@ import useDraft from '../hooks/useDraft';
 import useMessageQueue from '../hooks/useMessageQueue';
 import type useMessageWindow from '../hooks/useMessageWindow';
 import AgentComposer, { type AgentComposerProps } from './AgentComposer';
+import VoiceConversation, { type VoiceConversationProps } from './voice/VoiceConversation';
 import ConversationPicker from './ConversationPicker';
 import MessageList from './MessageList';
 import type { UiRenderers } from './UiParts';
@@ -66,6 +67,11 @@ export interface AssistantPanelProps {
    * renderizadores do @c3theme/engine. Sem isso, a parte aparece como "não sei mostrar".
    */
   uiRenderers?: UiRenderers;
+  /**
+   * Conversa por voz ao vivo: com isso, o painel troca a lista e a caixa pela `VoiceConversation` (bola, estado,
+   * legenda, microfone e encerrar). O app liga ao tocar no botão de voz (`composer.idleAction`) e tira no `onEnd`.
+   */
+  voice?: VoiceConversationProps;
   /** Fila da próxima mensagem enquanto o assistente responde. Padrão: ligada. */
   queue?: boolean;
   /**
@@ -146,33 +152,39 @@ export default function AssistantPanel(props: AssistantPanelProps) {
           />
         </Stack>
       )}
-      <Stack sx={{ flex: 1, minHeight: 0 }}>
-        <MessageList
-          variant="assistant"
-          title={typeof title === 'string' ? title : t('c3.chat.assistant')}
-          messages={chat.messages}
-          hasMore={chat.hasMore}
-          loadingOlder={chat.loading === 'older'}
-          onLoadOlder={chat.loadOlder}
-          onRetry={chat.retry}
-          onRegenerate={props.onRegenerate}
-          onOpenWorkspace={props.onOpenWorkspace}
-          onAnswer={chat.answer && ((m, a) => void chat.answer!(m.id, a))}
-          uiRenderers={props.uiRenderers}
-          onAnswerUi={chat.answerUi && ((m, partId, a) => chat.answerUi!(m.id, partId, a))}
-          empty={empty}
-        />
-      </Stack>
-      <AgentComposer
-        hint={t('c3.chat.hint')}
-        {...composer}
-        value={draft.text}
-        onChange={draft.setText}
-        onSend={send}
-        busy={chat.generating}
-        onStop={chat.stop && stop}
-        queue={props.queue === false ? undefined : queue}
-      />
+      {props.voice ? (
+        <VoiceConversation {...props.voice} />
+      ) : (
+        <>
+          <Stack sx={{ flex: 1, minHeight: 0 }}>
+            <MessageList
+              variant="assistant"
+              title={typeof title === 'string' ? title : t('c3.chat.assistant')}
+              messages={chat.messages}
+              hasMore={chat.hasMore}
+              loadingOlder={chat.loading === 'older'}
+              onLoadOlder={chat.loadOlder}
+              onRetry={chat.retry}
+              onRegenerate={props.onRegenerate}
+              onOpenWorkspace={props.onOpenWorkspace}
+              onAnswer={chat.answer && ((m, a) => void chat.answer!(m.id, a))}
+              uiRenderers={props.uiRenderers}
+              onAnswerUi={chat.answerUi && ((m, partId, a) => chat.answerUi!(m.id, partId, a))}
+              empty={empty}
+            />
+          </Stack>
+          <AgentComposer
+            hint={t('c3.chat.hint')}
+            {...composer}
+            value={draft.text}
+            onChange={draft.setText}
+            onSend={send}
+            busy={chat.generating}
+            onStop={chat.stop && stop}
+            queue={props.queue === false ? undefined : queue}
+          />
+        </>
+      )}
       <Dialog open={!!confirm} onClose={() => setConfirm(null)} maxWidth="xs" fullWidth>
         <DialogContent>
           <DialogContentText>{t('c3.chat.deleteConfirm', { title: confirm?.title ?? '' })}</DialogContentText>

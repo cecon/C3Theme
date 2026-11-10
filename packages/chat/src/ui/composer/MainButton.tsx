@@ -21,13 +21,16 @@ interface Props {
   onClick?: () => void;
   disabled?: boolean;
   idle?: IdleAction;
-  /** `square`: o quadrado de 36 px na cor primária; `circle`: o círculo cheio de 28 px em contraste (variante inline). */
-  shape: 'square' | 'circle';
+  /**
+   * `square`: o quadrado de 36 px na cor primária; `circle`: o círculo cheio de 28 px em contraste (variante inline);
+   * `ghost`: só o ícone de 28 px, e o parar num quadradinho cheio em contraste (variante split).
+   */
+  shape: 'square' | 'circle' | 'ghost';
 }
 
 /** Enviar, parar ou a ação de espera, sempre no mesmo lugar e do mesmo tamanho. */
 export default function MainButton({ mode, label, onClick, disabled, idle, shape }: Props) {
-  const circle = shape === 'circle';
+  const circle = shape !== 'square';
   const size = circle ? 28 : 36;
   const icon =
     mode === 'stop' ? (
@@ -49,20 +52,24 @@ export default function MainButton({ mode, label, onClick, disabled, idle, shape
             width: size,
             height: size,
             flexShrink: 0,
-            ...(circle
-              ? {
-                  borderRadius: '50%',
-                  bgcolor: 'text.primary',
-                  color: 'background.paper',
-                  '&:hover': { bgcolor: 'text.secondary' },
-                  '&.Mui-disabled': { bgcolor: 'action.disabledBackground', color: 'action.disabled' }
-                }
-              : {
-                  bgcolor: 'primary.main',
-                  color: 'primary.contrastText',
-                  '&:hover': { bgcolor: 'primary.dark' },
-                  '&.Mui-disabled': { bgcolor: 'action.disabledBackground', color: 'action.disabled' }
-                })
+            ...(shape === 'ghost'
+              ? mode === 'stop'
+                ? { borderRadius: 1.5, bgcolor: 'text.primary', color: 'background.paper', '&:hover': { bgcolor: 'text.secondary' } }
+                : { borderRadius: '50%', color: 'text.secondary', '&:hover': { color: 'text.primary' } }
+              : circle
+                ? {
+                    borderRadius: '50%',
+                    bgcolor: 'text.primary',
+                    color: 'background.paper',
+                    '&:hover': { bgcolor: 'text.secondary' },
+                    '&.Mui-disabled': { bgcolor: 'action.disabledBackground', color: 'action.disabled' }
+                  }
+                : {
+                    bgcolor: 'primary.main',
+                    color: 'primary.contrastText',
+                    '&:hover': { bgcolor: 'primary.dark' },
+                    '&.Mui-disabled': { bgcolor: 'action.disabledBackground', color: 'action.disabled' }
+                  })
           }}
         >
           {icon}

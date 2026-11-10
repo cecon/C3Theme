@@ -27,10 +27,12 @@ interface Props {
   /** Lado do botão redondo, em px. */
   size: number;
   onPick: (e: ChangeEvent<HTMLInputElement>) => void;
+  /** Sem o fundo sutil (barra embaixo da caixa, na variante split). */
+  plain?: boolean;
 }
 
 /** O + da caixa: abre a escolha de arquivo direto ou, com `items`, um menu com "Anexar arquivo" e os itens do app. */
-export default function AddButton({ files, accept, items, disabled, size, onPick }: Props) {
+export default function AddButton({ files, accept, items, disabled, size, onPick, plain }: Props) {
   const t = useChatText();
   const [menu, setMenu] = useState<HTMLElement | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -47,7 +49,13 @@ export default function AddButton({ files, accept, items, disabled, size, onPick
           aria-haspopup={items.length ? 'menu' : undefined}
           disabled={disabled}
           onClick={(e) => (items.length ? setMenu(e.currentTarget) : fileRef.current?.click())}
-          sx={{ bgcolor: 'action.hover', width: size, height: size, flexShrink: 0, ...(size < 30 && { borderRadius: '50%' }) }}
+          sx={{
+            bgcolor: plain ? undefined : 'action.hover',
+            width: size,
+            height: size,
+            flexShrink: 0,
+            ...(size < 30 && { borderRadius: '50%' })
+          }}
         >
           <Add size={size > 30 ? 20 : 18} />
         </IconButton>

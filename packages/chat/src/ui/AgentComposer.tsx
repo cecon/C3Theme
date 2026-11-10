@@ -16,6 +16,7 @@ import { useBytesFormat } from './format';
 import QueuedMessages from './QueuedMessages';
 import useAttachments from '../hooks/useAttachments';
 import AddButton, { type AddMenuItem } from './composer/AddButton';
+import IdleButton from './composer/IdleButton';
 import MainButton, { type IdleAction } from './composer/MainButton';
 import DropHint from './DropHint';
 import { useChatText } from './text';
@@ -53,10 +54,15 @@ export interface AgentComposerProps {
   /**
    * `inline`: uma linha só (46 px vazia), com o + à esquerda, o texto no meio e as ações e o botão principal à direita;
    * com várias linhas a caixa cresce para cima e os botões ficam embaixo. Cantos de 14 px, botões de 28 px, foco que só
-   * clareia a borda e sem linha de ajuda. Padrão: `stacked` (texto em cima, barra embaixo).
+   * clareia a borda e sem linha de ajuda. `split`: a caixa só com o texto numa linha e o enviar (ou o parar) dentro, e
+   * embaixo, fora da caixa, a barra com o +, a voz (`idleAction`), os seletores e o resto (`endActions`), como nos
+   * apps de agente de mesa. Padrão: `stacked` (texto em cima, barra embaixo, dentro da caixa).
    */
-  variant?: 'stacked' | 'inline';
-  /** Botão principal com a caixa vazia e o assistente parado (conversa por voz, por exemplo). Com texto, vira enviar. */
+  variant?: 'stacked' | 'inline' | 'split';
+  /**
+   * Conversa por voz (por exemplo). Em `inline`, ocupa o botão principal com a caixa vazia e o assistente parado (com
+   * texto, vira enviar); em `split`, é um botão fixo na barra, ao lado do +.
+   */
   idleAction?: IdleAction;
 }
 
@@ -99,13 +105,22 @@ export default function AgentComposer(props: AgentComposerProps) {
     }
   }
 
-  const inline = props.variant === 'inline';
+  const split = props.variant === 'split';
+  const inline = props.variant === 'inline' || split; // as duas: uma linha, cantos de 14 px, sem linha de ajuda
   const showAdd = allowFiles || addItems.length > 0;
   const showStop = busy && !!onStop && !hasContent;
-  const idle = !busy && !hasContent && !props.disabled && props.idleAction ? props.idleAction : undefined;
+  const idle = !split && !busy && !hasContent && !props.disabled && props.idleAction ? props.idleAction : undefined;
   const sendLabel = busy ? t('c3.chat.queueSend') : t('c3.chat.send');
   const add = showAdd && (
-    <AddButton files={allowFiles} accept={accept} items={addItems} disabled={props.disabled} size={inline ? 28 : 34} onPick={pick} />
+    <AddButton
+      files={allowFiles}
+      accept={accept}
+      items={addItems}
+      disabled={props.disabled}
+      size={inline ? 28 : 34}
+      onPick={pick}
+      plain={split}
+    />
   );
   const main = (
     <MainButton
@@ -114,7 +129,7 @@ export default function AgentComposer(props: AgentComposerProps) {
       onClick={showStop ? onStop : send}
       disabled={showStop || idle ? false : !canSend}
       idle={idle}
-      shape={inline ? 'circle' : 'square'}
+      shape={split ? 'ghost' : inline ? 'circle' : 'square'}
     />
   );
   const input = (
@@ -178,7 +193,12 @@ export default function AgentComposer(props: AgentComposerProps) {
             ))}
           </Stack>
         )}
-        {inline ? (
+        {split ? (
+          <Stack direction="row" spacing={0.75} sx={{ alignItems: 'flex-end', minWidth: 0, pl: 0.5 }}>
+            {input}
+            {main}
+          </Stack>
+        ) : inline ? (
           <Stack direction="row" spacing={0.75} sx={{ alignItems: 'flex-end', minWidth: 0 }}>
             {add}
             {input}
@@ -199,6 +219,15 @@ export default function AgentComposer(props: AgentComposerProps) {
           </>
         )}
       </Paper>
+      {split && (
+        <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center', mt: 0.75, px: 0.5, minWidth: 0 }}>
+          {add}
+          {props.idleAction && <IdleButton action={props.idleAction} disabled={props.disabled} />}
+          {actions(props.startActions)}
+          <Box sx={{ flex: 1 }} />
+          {actions(props.endActions)}
+        </Stack>
+      )}
       {!inline && ((busy && queue) || props.hint) && (
         <Typography variant="caption" color="text.secondary" component="p" sx={{ px: 1.5, mt: 0.5 }}>
           {busy && queue ? t('c3.chat.queueHint') : props.hint}
