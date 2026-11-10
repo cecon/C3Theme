@@ -2,6 +2,12 @@
 
 Instale fixando o commit (`github:cecon/C3Theme#<sha>&path:packages/chat`). Cada entrada diz o que muda para quem usa; **Quebra** marca o que exige mudar o app.
 
+## 0.10.0 (2026-11-10)
+
+- `AgentComposer` ganha `variant="inline"` (#25): uma linha só (46 px vazia), com o + à esquerda, o texto no meio e as ações e o botão principal à direita; com várias linhas a caixa cresce para cima e os botões ficam embaixo. Cantos de 14 px, botões redondos de 28 px, botão principal em círculo cheio em contraste, foco que só clareia a borda (sem anel) e sem linha de ajuda. `idleAction` (`{ label, icon, onClick }`) ocupa o botão principal com a caixa vazia e o assistente parado (conversa por voz); com texto vira enviar, respondendo vira parar. `ComposerIconButton` é o botão redondo de 28 px para as ações da direita. Sem `variant`, nada muda.
+- `AgentComposer` ganha `variant="split"`, no jeito dos apps de agente de mesa: a caixa só com o texto numa linha e o enviar (ou o parar, quadrado cheio) dentro; embaixo, fora da caixa, a barra com o +, a voz (`idleAction`, botão fixo), `startActions` à esquerda e `endActions` à direita. `ContextRing` (`used` de 0 a 100, `size`) é o anel do contexto para a barra: aviso a partir de 80, erro a partir de 95, com o percentual para o leitor de tela. Nada quebra.
+- Conversa por voz ao vivo: `VoiceConversation` (`state` `connecting`/`listening`/`thinking`/`speaking`/`error`, `level` de 0 a 1, `captions`, `muted`/`onToggleMute`, `onEnd`, `error`) mostra a bola que pulsa com o volume (`VoiceOrb`), o estado por extenso (`role="status"`), a última legenda, o mudo e o encerrar. `AssistantPanel` ganha `voice`: com ele, o painel troca a conversa e a caixa pela voz; o app liga no `idleAction` e tira no `onEnd`. O áudio (microfone, provedor de voz) é do app; `useAudioLevel(stream)` no `core` mede o volume do microfone para o `level`. Textos novos `c3.chat.voice.*`, `voiceError`, `voiceMuted`, `voiceMute`, `voiceUnmute`, `voiceEnd`, `voiceStart`, `contextRing`. Nada quebra.
+
 ## 0.9.0 (2026-11-10)
 
 - Mensagem que falhou ganha **Editar** (`onEditFailed(message)`: o app devolve o texto e os anexos ao composer e tira a mensagem) e **Descartar** (`onDiscard(message)`: o app apaga), ao lado do Tentar de novo (#173). Passam por `MessageList` → `MessageRow` → `MessageBubble`, como o `onRetry`, e só aparecem com o callback. Nada quebra.

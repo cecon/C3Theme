@@ -9,6 +9,8 @@ Duas camadas:
 
 - `@c3theme/chat/core` é headless (só React, sem MUI e sem rede): contrato (`Message`, `Conversation`, `UiPart`), a porta `ChatTransport` e hooks (`useMessageWindow`, `useDraft`, `useMessageQueue`, `useTypingStatus`, `useVoiceRecorder`).
 - `@c3theme/chat` acrescenta os componentes sobre o `@c3theme/ui`: `MessageList` (virtualizada), `MessageBubble`, `Composer`, `ConversationList` para chat de pessoas; `AssistantPanel`, `AgentComposer`, `AgentWorkspace`, `QuestionCard`, `ActivityTrace` para assistente; `AgentNowCard`, `ContextMeter`, `AgentTimeline`, `RecentFiles` para o painel ao lado que acompanha o agente através de vários turnos; `ModelPicker` para escolher o modelo (grupos por provedor, etiquetas Grátis/Local/Precisa entrar, busca, reserva) e `ComposerSelect` para listas curtas (modo, esforço).
+- Caixa do agente numa linha só, como nos apps de agente: `AgentComposer variant="inline"` com `idleAction` (voz) e `ComposerIconButton` nas `endActions`. No `AssistantPanel`, passe em `composer`. Não monte composer próprio para isso.
+- Caixa com barra embaixo (texto numa linha com o enviar dentro; +, voz, modelo, esforço e `ContextRing` embaixo): `variant="split"`. Voz ao vivo: `AssistantPanel voice={...}` (`VoiceConversation`), ligada pelo `idleAction`; o áudio e o provedor são do app, `useAudioLevel` dá o volume.
 
 Instale preso a um commit (`github:cecon/C3Theme#<sha>&path:packages/chat`) e **leia o `packages/chat/CHANGELOG.md`** ao atualizar: as entradas marcadas **Quebra** exigem mudar o app (ex.: na 0.6.0, `switch` exaustivo em `ChatEvent` precisa tratar `ui.cancel`).
 

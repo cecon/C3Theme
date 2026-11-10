@@ -1,34 +1,27 @@
-import { useRef, useState, type KeyboardEvent, type ReactNode, type RefObject } from 'react';
+import { useRef, type KeyboardEvent, type ReactNode, type RefObject } from 'react';
 
 // material-ui
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
-import IconButton from '@mui/material/IconButton';
 import InputBase from '@mui/material/InputBase';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
-import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
 // third-party
-import { Add, ArrowUp, DocumentText, Paperclip2 } from 'iconsax-reactjs';
+import { DocumentText } from 'iconsax-reactjs';
 
 import type useMessageQueue from '../hooks/useMessageQueue';
 import { useBytesFormat } from './format';
 import QueuedMessages from './QueuedMessages';
 import useAttachments from '../hooks/useAttachments';
+import AddButton, { type AddMenuItem } from './composer/AddButton';
+import IdleButton from './composer/IdleButton';
+import MainButton, { type IdleAction } from './composer/MainButton';
 import DropHint from './DropHint';
 import { useChatText } from './text';
 
-export interface AddMenuItem {
-  id: string;
-  label: ReactNode;
-  icon?: ReactNode;
-  onClick: () => void;
-}
+export type { AddMenuItem, IdleAction };
 
 export interface AgentComposerProps {
   /** Texto controlado (ligue no `useDraft`). */
@@ -58,6 +51,19 @@ export interface AgentComposerProps {
   hint?: ReactNode;
   placeholder?: string;
   disabled?: boolean;
+  /**
+   * `inline`: uma linha só (46 px vazia), com o + à esquerda, o texto no meio e as ações e o botão principal à direita;
+   * com várias linhas a caixa cresce para cima e os botões ficam embaixo. Cantos de 14 px, botões de 28 px, foco que só
+   * clareia a borda e sem linha de ajuda. `split`: a caixa só com o texto numa linha e o enviar (ou o parar) dentro, e
+   * embaixo, fora da caixa, a barra com o +, a voz (`idleAction`), os seletores e o resto (`endActions`), como nos
+   * apps de agente de mesa. Padrão: `stacked` (texto em cima, barra embaixo, dentro da caixa).
+   */
+  variant?: 'stacked' | 'inline' | 'split';
+  /**
+   * Conversa por voz (por exemplo). Em `inline`, ocupa o botão principal com a caixa vazia e o assistente parado (com
+   * texto, vira enviar); em `split`, é um botão fixo na barra, ao lado do +.
+   */
+  idleAction?: IdleAction;
 }
 
 /**
@@ -75,9 +81,7 @@ export default function AgentComposer(props: AgentComposerProps) {
     disabled: props.disabled,
     dropTarget: props.dropTarget
   });
-  const [menu, setMenu] = useState<HTMLElement | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
   const hasContent = value.trim().length > 0 || files.length > 0;
   const canSend = !props.disabled && hasContent && (!busy || !!queue);
 
@@ -101,15 +105,60 @@ export default function AgentComposer(props: AgentComposerProps) {
     }
   }
 
+  const split = props.variant === 'split';
+  const inline = props.variant === 'inline' || split; // as duas: uma linha, cantos de 14 px, sem linha de ajuda
   const showAdd = allowFiles || addItems.length > 0;
   const showStop = busy && !!onStop && !hasContent;
+  const idle = !split && !busy && !hasContent && !props.disabled && props.idleAction ? props.idleAction : undefined;
   const sendLabel = busy ? t('c3.chat.queueSend') : t('c3.chat.send');
+  const add = showAdd && (
+    <AddButton
+      files={allowFiles}
+      accept={accept}
+      items={addItems}
+      disabled={props.disabled}
+      size={inline ? 28 : 34}
+      onPick={pick}
+      plain={split}
+    />
+  );
+  const main = (
+    <MainButton
+      mode={showStop ? 'stop' : idle ? 'idle' : 'send'}
+      label={showStop ? t('c3.chat.stop') : sendLabel}
+      onClick={showStop ? onStop : send}
+      disabled={showStop || idle ? false : !canSend}
+      idle={idle}
+      shape={split ? 'ghost' : inline ? 'circle' : 'square'}
+    />
+  );
+  const input = (
+    <InputBase
+      inputRef={inputRef}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      onKeyDown={onKey}
+      onPaste={paste}
+      placeholder={props.placeholder ?? t('c3.chat.assistantPlaceholder')}
+      disabled={props.disabled}
+      multiline
+      minRows={inline ? 1 : 2}
+      maxRows={8}
+      fullWidth
+      inputProps={{ 'aria-label': t('c3.chat.message') }}
+      sx={inline ? { px: 0.5, py: 0.5, typography: 'body2', flex: 1, minWidth: 0 } : { px: 1, typography: 'body2' }}
+    />
+  );
+  const actions = (node: ReactNode) => (
+    <Stack direction="row" spacing={inline ? 0.75 : 0} sx={{ alignItems: 'center', minWidth: 0, flexShrink: 1, overflow: 'hidden' }}>
+      {node}
+    </Stack>
+  );
   return (
     <Box
       ref={rootRef}
       sx={{
-        px: { xs: 1.5, sm: 2 },
-        py: 1.5,
+        ...(inline ? { p: 1 } : { px: { xs: 1.5, sm: 2 }, py: 1.5 }),
         ...(dragging && { outline: '2px dashed', outlineColor: 'primary.main', outlineOffset: 2, borderRadius: 4 })
       }}
     >
@@ -120,13 +169,13 @@ export default function AgentComposer(props: AgentComposerProps) {
       <Paper
         variant="outlined"
         sx={{
-          borderRadius: 4,
+          borderRadius: inline ? '14px' : 4,
           containerType: 'inline-size', // os seletores encolhem pela largura da caixa, não da tela
-          px: 1,
-          pt: 1,
-          pb: 0.75,
+          ...(inline ? { p: 1 } : { px: 1, pt: 1, pb: 0.75 }),
           bgcolor: 'background.paper',
-          '&:focus-within': { borderColor: 'primary.main', boxShadow: (th) => `0 0 0 1px ${th.vars.palette.primary.main}` }
+          '&:focus-within': inline
+            ? { borderColor: 'text.disabled' }
+            : { borderColor: 'primary.main', boxShadow: (th) => `0 0 0 1px ${th.vars.palette.primary.main}` }
         }}
       >
         {files.length > 0 && (
@@ -144,101 +193,47 @@ export default function AgentComposer(props: AgentComposerProps) {
             ))}
           </Stack>
         )}
-        <InputBase
-          inputRef={inputRef}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onKeyDown={onKey}
-          onPaste={paste}
-          placeholder={props.placeholder ?? t('c3.chat.assistantPlaceholder')}
-          disabled={props.disabled}
-          multiline
-          minRows={2}
-          maxRows={8}
-          fullWidth
-          inputProps={{ 'aria-label': t('c3.chat.message') }}
-          sx={{ px: 1, typography: 'body2' }}
-        />
-        <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center', mt: 0.5, minWidth: 0 }}>
-          {showAdd && (
-            <Tooltip title={addItems.length ? t('c3.chat.add') : t('c3.chat.attach')}>
-              <IconButton
-                aria-label={addItems.length ? t('c3.chat.add') : t('c3.chat.attach')}
-                aria-haspopup={addItems.length ? 'menu' : undefined}
-                disabled={props.disabled}
-                onClick={(e) => (addItems.length ? setMenu(e.currentTarget) : fileRef.current?.click())}
-                sx={{ bgcolor: 'action.hover', width: 34, height: 34 }}
-              >
-                <Add size={20} />
-              </IconButton>
-            </Tooltip>
-          )}
-          <Stack direction="row" sx={{ alignItems: 'center', minWidth: 0, flexShrink: 1, overflow: 'hidden' }}>
-            {props.startActions}
+        {split ? (
+          <Stack direction="row" spacing={0.75} sx={{ alignItems: 'flex-end', minWidth: 0, pl: 0.5 }}>
+            {input}
+            {main}
           </Stack>
-          <Box sx={{ flex: 1 }} />
-          <Stack direction="row" sx={{ alignItems: 'center', minWidth: 0, flexShrink: 1, overflow: 'hidden' }}>
-            {props.endActions}
+        ) : inline ? (
+          <Stack direction="row" spacing={0.75} sx={{ alignItems: 'flex-end', minWidth: 0 }}>
+            {add}
+            {input}
+            {actions(props.startActions)}
+            {actions(props.endActions)}
+            {main}
           </Stack>
-          <Tooltip title={showStop ? t('c3.chat.stop') : sendLabel}>
-            <span>
-              <IconButton
-                aria-label={showStop ? t('c3.chat.stop') : sendLabel}
-                onClick={showStop ? onStop : send}
-                disabled={showStop ? false : !canSend}
-                sx={{
-                  width: 36,
-                  height: 36,
-                  bgcolor: 'primary.main',
-                  color: 'primary.contrastText',
-                  '&:hover': { bgcolor: 'primary.dark' },
-                  '&.Mui-disabled': { bgcolor: 'action.disabledBackground', color: 'action.disabled' }
-                }}
-              >
-                {showStop ? (
-                  <Box aria-hidden sx={{ width: 12, height: 12, borderRadius: 0.5, bgcolor: 'currentColor' }} />
-                ) : (
-                  <ArrowUp size={18} />
-                )}
-              </IconButton>
-            </span>
-          </Tooltip>
-        </Stack>
+        ) : (
+          <>
+            {input}
+            <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center', mt: 0.5, minWidth: 0 }}>
+              {add}
+              {actions(props.startActions)}
+              <Box sx={{ flex: 1 }} />
+              {actions(props.endActions)}
+              {main}
+            </Stack>
+          </>
+        )}
       </Paper>
-      {((busy && queue) || props.hint) && (
+      {split && (
+        <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center', mt: 0.75, px: 0.5, minWidth: 0 }}>
+          {add}
+          {props.idleAction && <IdleButton action={props.idleAction} disabled={props.disabled} />}
+          {actions(props.startActions)}
+          <Box sx={{ flex: 1 }} />
+          {actions(props.endActions)}
+        </Stack>
+      )}
+      {!inline && ((busy && queue) || props.hint) && (
         <Typography variant="caption" color="text.secondary" component="p" sx={{ px: 1.5, mt: 0.5 }}>
           {busy && queue ? t('c3.chat.queueHint') : props.hint}
         </Typography>
       )}
       {props.status && <Box sx={{ mt: 1 }}>{props.status}</Box>}
-      <Menu anchorEl={menu} open={!!menu} onClose={() => setMenu(null)} slotProps={{ list: { dense: true } }}>
-        {allowFiles && (
-          <MenuItem
-            onClick={() => {
-              setMenu(null);
-              fileRef.current?.click();
-            }}
-          >
-            <ListItemIcon>
-              <Paperclip2 size={16} />
-            </ListItemIcon>
-            {t('c3.chat.attach')}
-          </MenuItem>
-        )}
-        {addItems.map((it) => (
-          <MenuItem
-            key={it.id}
-            onClick={() => {
-              setMenu(null);
-              it.onClick();
-            }}
-          >
-            {it.icon && <ListItemIcon>{it.icon}</ListItemIcon>}
-            {it.label}
-          </MenuItem>
-        ))}
-      </Menu>
-      {allowFiles && <input ref={fileRef} type="file" multiple hidden accept={accept} onChange={pick} aria-hidden tabIndex={-1} />}
     </Box>
   );
 }
