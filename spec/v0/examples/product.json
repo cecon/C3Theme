@@ -124,6 +124,13 @@
       }
     },
     {
+      "name": "scale_app",
+      "label": "Programa da balança",
+      "description": "Baixa o instalador do programa que carrega a balança.",
+      "icon": "Download",
+      "target": "list"
+    },
+    {
       "name": "discount",
       "label": "Dar desconto",
       "description": "Informe o percentual: o sistema mostra o preço novo antes de gravar. Dá para trocar o valor sugerido.",

@@ -83,6 +83,11 @@ export interface ActionOutcome {
   message?: string;
   file?: FileContent;
   open?: { entity?: string; id: string };
+  /**
+   * Endereço que a shell abre na mesma aba (o download de um instalador de centenas de MB, sem passar pelo motor):
+   * `https://`, `http://` ou um caminho do próprio servidor (`/`). Outro formato, ou junto com `open`, é 500.
+   */
+  link?: string;
 }
 
 export interface ActionCall {

@@ -260,6 +260,8 @@ export interface ActionResult {
   file?: { name: string; blob: Blob };
   /** Registro que a shell abre depois (o rascunho criado pela ação). */
   open?: { entity: string; id: string };
+  /** Endereço que a shell abre (ou baixa) na mesma aba: o arquivo não passa pelo motor. */
+  link?: string;
 }
 
 /** Resultado de um id na ação em lote: o mesmo da ação de um registro, ou o erro dele. */

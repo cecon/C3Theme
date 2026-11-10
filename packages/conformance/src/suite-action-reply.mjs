@@ -1,5 +1,6 @@
 // Arquivo e registro aberto pela ação (spec/README.md, "Arquivo e registro aberto pela ação"). product.scale_file
-// é ação da lista `returns: "file"` (TXT da balança, aviso em C3-Message); product.duplicate cria a cópia e responde `open`.
+// é ação da lista `returns: "file"` (TXT da balança, aviso em C3-Message); product.scale_app responde só o endereço
+// (`link`); product.duplicate cria a cópia e responde `open`.
 
 import assert from 'node:assert/strict';
 
@@ -34,5 +35,13 @@ export function actionReplyTests({ test, call, tag }) {
     const copy = await call('GET', `/product/${res.body.open.id}`);
     assert.equal(copy.body.data.name, `Cópia de ${original.name}`);
     assert.equal(copy.body.data.active, false);
+  });
+
+  test('ações', 'ação com link: a resposta traz só o endereço, sem o arquivo', async () => {
+    const res = await call('POST', '/product/_actions/scale_app', { input: {} });
+    assert.equal(res.status, 200, JSON.stringify(res.body));
+    assert.match(res.body.link, /^https:\/\//);
+    assert.equal(res.body.message, 'Baixando o programa da balança.');
+    assert.equal(res.body.open, undefined);
   });
 }

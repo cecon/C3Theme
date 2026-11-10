@@ -1,11 +1,23 @@
-//! Ações do produto que devolvem algo além do aviso: o arquivo da balança (`returns: "file"`) e a cópia que a shell abre (`open`).
+//! Ações do produto que devolvem algo além do aviso: o arquivo da balança (`returns: "file"`), o endereço do programa
+//! da balança (`link`) e a cópia que a shell abre (`open`).
 
 use c3_engine::{ActionCall, ActionOutcome, ApiError, FileContent, ListActionCall};
 use sqlx::{Row, SqlitePool};
 
+/// Programa da balança: centenas de MB, então a resposta é só o endereço (`link`) e o arquivo não passa pelo motor.
+pub const SCALE_APP: &str = "https://github.com/cecon/C3Theme/releases/latest";
+
+/// As duas ações da lista ligadas à balança.
+pub async fn scale(pool: &SqlitePool, call: ListActionCall<'_>) -> Result<ActionOutcome, ApiError> {
+    if call.action == "scale_app" {
+        return Ok(ActionOutcome::link(SCALE_APP).with_message("Baixando o programa da balança."));
+    }
+    scale_file(pool, call).await
+}
+
 /// TXT de carga da balança: uma linha por produto, `código;nome;preço` com o preço em centavos, como as balanças
 /// costumam ler.
-pub async fn scale_file(pool: &SqlitePool, call: ListActionCall<'_>) -> Result<ActionOutcome, ApiError> {
+async fn scale_file(pool: &SqlitePool, call: ListActionCall<'_>) -> Result<ActionOutcome, ApiError> {
     let only_active = call.input["only_active"].as_bool().unwrap_or(true);
     let rows = sqlx::query("SELECT id, name, price FROM product WHERE active = 1 OR ? = 0 ORDER BY id")
         .bind(only_active)

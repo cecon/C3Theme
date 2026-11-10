@@ -309,6 +309,9 @@ paths:
                     type: [string, 'null']
                     description: Aviso pronto para o usuário. Ausente ou null → a shell usa action.successMessage.
                   open: { $ref: '#/components/schemas/ActionOpen' }
+                  link:
+                    type: string
+                    description: Endereço que a shell abre na mesma aba (download grande, fora do motor). http(s):// ou caminho do servidor (/...). Não vem junto com open.
             '*/*':
               schema: { $ref: '#/components/schemas/ActionFile' }
         '400': { $ref: '#/components/responses/Error' }
