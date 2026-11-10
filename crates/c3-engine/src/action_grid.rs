@@ -15,7 +15,7 @@ use crate::store::Conn;
 use crate::validation::check_fields;
 
 /// Teto de linhas de uma grade (o corpo da requisição tem 2 MB).
-pub(crate) const MAX_ROWS: usize = 500;
+pub(crate) const MAX_ROWS: usize = 990;
 const DEFAULT_MAX: usize = 200;
 
 #[derive(Debug, Clone)]
@@ -186,5 +186,23 @@ pub(crate) fn check_selection(rows: &[GridInput], input: &Map<String, Value>, id
         Ok(())
     } else {
         Err(ApiError::validation(errors))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_json::json;
+
+    use super::split_spec;
+
+    // #49: uma NF-e tem até 990 itens
+    #[test]
+    fn grade_aceita_ate_990_linhas() {
+        let ident = |n: &str| !n.is_empty();
+        let grid =
+            |max: u64| vec![json!({ "name": "itens", "type": "grid", "maxItems": max, "fields": [{ "name": "ncm", "type": "string" }] })];
+        let (_, rows) = split_spec("a", grid(990), &ident).unwrap();
+        assert_eq!(rows[0].max_items, 990);
+        assert!(split_spec("a", grid(991), &ident).unwrap_err().contains("maxItems de 1 a 990"));
     }
 }

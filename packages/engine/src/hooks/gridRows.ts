@@ -3,6 +3,7 @@
 
 import { gridInputs, type ActionDef, type GridFieldDef } from '../actionTypes';
 import type { WireRecord } from '../types';
+import { defaultsOf } from '../fieldDefault';
 
 export type GridRow = WireRecord;
 
@@ -31,8 +32,7 @@ export function gridBody(grid: GridFieldDef, rows: GridRow[] | undefined): { row
 }
 
 /** Linha nova: os defaults das colunas. */
-export const newRow = (grid: GridFieldDef): GridRow =>
-  Object.fromEntries(grid.fields.filter((f) => f.default !== undefined).map((f) => [f.name, f.default]));
+export const newRow = (grid: GridFieldDef): GridRow => defaultsOf(grid.fields);
 
 /** Troca uma célula sem mexer nas outras linhas (`also`: outras células da mesma linha, como a escolha dependente). */
 export const setCell = (rows: GridRow[], i: number, name: string, v: unknown, also: GridRow = {}): GridRow[] =>

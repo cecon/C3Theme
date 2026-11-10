@@ -90,6 +90,8 @@ export const SEED: MemorySeed = {
       esperado: p.estoque,
       contado: i % 2 ? p.estoque : null
     })),
+    // item da nota sem produto: a ação abre o cadastro de produto com a descrição e o valor do XML
+    nota_item: [{ id: '1', descricao: 'CAFE TORRADO MOIDO 250G', ncm: '09012100', valor: '12.90', produto: null }],
     fatura: faturas,
     tarefa: tarefas,
     evento: eventos,

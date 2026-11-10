@@ -55,6 +55,17 @@ export interface ActionDef {
   successMessage?: Text;
   /** Ação que desfaz esta (sem input): depois de rodar, a shell oferece Desfazer. */
   inverse?: string;
+  /** Abre o formulário completo de outra entidade (criar), com valores do registro, e grava o id criado nele. */
+  opensForm?: OpensForm;
+}
+
+/** `opensForm` (#45): cadastrar o produto a partir do item da nota, com todas as abas e validações do cadastro. */
+export interface OpensForm {
+  entity: string;
+  /** Campo da entidade aberta ← campo do registro de origem: os valores iniciais do formulário. */
+  values?: Record<string, string>;
+  /** Campo reference do registro de origem que recebe o id criado (PATCH depois de salvar). */
+  assignTo?: string;
 }
 
 /** Campos simples do input (sem as grades). */

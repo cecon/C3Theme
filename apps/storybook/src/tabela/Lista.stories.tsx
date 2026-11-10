@@ -51,3 +51,9 @@ export const Inventario: Story = { name: 'Inventário, contando na seção', arg
 
 /** O mesmo registro aberto: o formulário vem dos campos, sem `views.form`. */
 export const Registro: Story = { name: 'Registro aberto', args: { screen: 'form', id: '3' } };
+
+/**
+ * Ação com `opensForm`: "Cadastrar produto" abre o formulário completo do produto com a descrição e o valor do item
+ * da nota; ao salvar, o produto criado fica no campo Produto do item (`assignTo`) e a ação some.
+ */
+export const ItemDaNota: Story = { name: 'Item da nota, cadastrar o produto', args: { entity: 'nota_item', screen: 'form', id: '1' } };

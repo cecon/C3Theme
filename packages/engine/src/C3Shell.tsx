@@ -9,8 +9,10 @@ import Button from '@mui/material/Button';
 
 import { AppSkeleton, C3ThemeProvider, C3ThemeProviderProps, DesktopOptions, LocaleMessages, Notifier } from '@c3theme/ui';
 import { C3Client, createClient } from './api';
+import { authorizingFetch } from './authorization/fetch';
+import { useAuthorization } from './authorization/useAuthorization';
 import { createShellRouter, type RouterMode } from './router';
-import type { C3Fetch } from './transport';
+import { browserFetch, type C3Fetch } from './transport';
 import { C3Components, C3Icons, EngineProvider, EngineState } from './context';
 import C3Layout from './C3Layout';
 import useIconCatalog from './hooks/useIconCatalog';
@@ -100,8 +102,13 @@ function Shell(props: C3ShellProps) {
     }),
     [headers, token]
   );
-  const client = useMemo(() => createClient(apiUrl, allHeaders, logout, transport), [apiUrl, allHeaders, logout, transport]);
   const [state, setState] = useState<EngineState>();
+  // recusa com código de `app.authorization`: pede quem libera e reenvia o mesmo pedido (#48)
+  const authz = useAuthorization(state?.app.authorization);
+  const client = useMemo(
+    () => createClient(apiUrl, allHeaders, logout, authorizingFetch(transport ?? browserFetch, authz.codes, authz.ask)),
+    [apiUrl, allHeaders, logout, transport, authz.codes, authz.ask]
+  );
   const [error, setError] = useState<string>();
   const [attempt, setAttempt] = useState(0);
   const catalog = useIconCatalog(icons);
@@ -212,6 +219,7 @@ function Shell(props: C3ShellProps) {
           <DesktopContext.Provider value={desktop}>
             <RouterProvider router={router} />
           </DesktopContext.Provider>
+          {authz.dialog}
         </EngineProvider>
       ) : (
         <AppSkeleton />

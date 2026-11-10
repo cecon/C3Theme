@@ -89,3 +89,25 @@ export function checkActionInput(input, where, ctx, errors) {
   }
   for (const f of inputFields.values()) if (!placed.has(f.name)) errors.push(`${where}: '${f.name}' está no input mas fora de input.rows`);
 }
+
+/** `opensForm` (#45): entidade do app, campos que existem e assignTo reference para ela; roda só na shell. */
+export function checkOpensForm(entity, action, entities, where, errors) {
+  const o = action.opensForm;
+  if (!o) return;
+  const at = `${where} opensForm`;
+  const target = entities.get(o.entity)?.entity;
+  if (!target) return errors.push(`${at}: entidade '${o.entity}' não existe`);
+  const shellOnly = ['input', 'confirm', 'bulk', 'prefill', 'preview', 'returns', 'repeat', 'inverse'].filter((k) => action[k]);
+  if (action.target === 'list') shellOnly.push('target list');
+  if (shellOnly.length) errors.push(`${at}: abre formulário na shell, sem ${shellOnly.join(', ')}`);
+  for (const [to, from] of Object.entries(o.values ?? {})) {
+    const f = target.fields.find((x) => x.name === to);
+    if (!f || f.readOnly || f.writeOnly) errors.push(`${at}.values: '${to}' não é campo editável de ${o.entity}`);
+    if (!entity.fields.some((x) => x.name === from && !x.writeOnly)) errors.push(`${at}.values: '${from}' não é campo de ${entity.name}`);
+  }
+  if (o.assignTo) {
+    const f = entity.fields.find((x) => x.name === o.assignTo);
+    if (!f || f.type !== 'reference' || f.entity !== o.entity || f.readOnly)
+      errors.push(`${at}.assignTo: '${o.assignTo}' precisa ser campo reference editável para '${o.entity}'`);
+  }
+}

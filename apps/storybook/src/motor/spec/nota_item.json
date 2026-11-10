@@ -1,0 +1,58 @@
+{
+  "$schema": "../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "nota_item",
+  "label": {
+    "singular": "Item da nota",
+    "plural": "Itens da nota",
+    "gender": "m"
+  },
+  "titleField": "descricao",
+  "fields": [
+    {
+      "name": "descricao",
+      "type": "string",
+      "label": "Descrição no XML",
+      "required": true,
+      "maxLength": 120
+    },
+    {
+      "name": "ncm",
+      "type": "string",
+      "label": "NCM",
+      "maxLength": 8
+    },
+    {
+      "name": "valor",
+      "type": "decimal",
+      "scale": 2,
+      "label": "Valor unitário"
+    },
+    {
+      "name": "produto",
+      "type": "reference",
+      "entity": "produto",
+      "label": "Produto"
+    }
+  ],
+  "actions": [
+    {
+      "name": "cadastrar_produto",
+      "label": "Cadastrar produto",
+      "icon": "Box",
+      "visibleWhen": {
+        "field": "produto",
+        "op": "null",
+        "value": true
+      },
+      "opensForm": {
+        "entity": "produto",
+        "values": {
+          "nome": "descricao",
+          "preco": "valor"
+        },
+        "assignTo": "produto"
+      }
+    }
+  ]
+}

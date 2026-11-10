@@ -25,7 +25,8 @@ import { loadPrefill } from './prefill';
 import { selectionInput } from '../hooks/gridRows';
 import { summaryText } from '../pages/list/selectionSum';
 import { useUrlSourceParams } from '../pages/list/sourceParams';
-import { plain, rowTitle, scopeText } from './bulkText';
+import { plain, refusedLine, rowTitle, scopeText } from './bulkText';
+import useOpensForm from './useOpensForm';
 import type { RefusedRecord } from '../api';
 import type { ActionDef, BulkItem, FieldType, WireRecord } from '../types';
 import { paletteOf } from '../tone';
@@ -64,6 +65,7 @@ export default function RecordActions({ entity, id, record, rows, onBulkDone }: 
   const [menu, setMenu] = useState<HTMLElement | null>(null);
   // ação `repeat` (bipar em sequência): o resultado de cada leitura fica no diálogo
   const repeat = useRepeatLog();
+  const opensForm = useOpensForm(entity, id, record); // `opensForm`: o formulário de outra entidade (#45)
   const [report, setReport] = useState<Report<ActionDef> | null>(null);
   const closeReport = () => {
     onBulkDone?.(report?.keep ?? report?.failed.map((f) => f.id) ?? []);
@@ -84,12 +86,7 @@ export default function RecordActions({ entity, id, record, rows, onBulkDone }: 
 
   const success = (action: ActionDef) => (action.successMessage ? text(action.successMessage) : 'Feito.');
 
-  /** Uma linha do relatório: título da linha e a mensagem do erro, com os erros de campo. */
-  const failure = (chosen: WireRecord[], f: RefusedRecord) => {
-    const row = chosen.find((r) => r.id === f.id);
-    const fields = Object.values(f.error.fields ?? {}).flatMap((list) => list.map((e) => e.message));
-    return { id: f.id, title: row ? rowTitle(def, row) : `#${f.id}`, message: [f.error.message, ...fields].join(' ') };
-  };
+  const failure = (chosen: WireRecord[], f: RefusedRecord) => refusedLine(def, chosen, f);
 
   /** Em conjunto: roda uma vez sobre todos; recusado, o relatório diz quem barrou e os outros ficam marcados. */
   async function together(action: ActionDef, chosen: WireRecord[], body: WireRecord): Promise<boolean | 'refused'> {
@@ -164,6 +161,7 @@ export default function RecordActions({ entity, id, record, rows, onBulkDone }: 
   async function start(action: ActionDef) {
     setMenu(null);
     task.start({ entity, op: 'action', action: action.name });
+    if (opensForm.start(action)) return task.done();
     // em lote sempre confirma: o diálogo diz em quantos registros vai rodar
     if (!bulk && !action.input && !action.confirm) {
       const ok = await execute(action, {});
@@ -286,6 +284,7 @@ export default function RecordActions({ entity, id, record, rows, onBulkDone }: 
         />
       </ActionDialog>
 
+      {opensForm.dialog}
       <BulkReport report={report} title={report ? text(report.action.label) : ''} onClose={closeReport} />
     </>
   );

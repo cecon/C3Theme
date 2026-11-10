@@ -23,7 +23,7 @@ import {
 } from './spec-fields.mjs';
 import { checkAgentParts } from './spec-agent-ui.mjs';
 import { checkDashboards } from './spec-dashboard.mjs';
-import { checkActionInput, checkInverse, checkSummary } from './spec-actions.mjs';
+import { checkActionInput, checkInverse, checkOpensForm, checkSummary } from './spec-actions.mjs';
 import { checkLookups } from './spec-lookups.mjs';
 import { checkPages, checkWizards } from './spec-pages.mjs';
 import { checkBoardCalendar, checkListRules, checkMenu } from './spec-views.mjs';
@@ -245,6 +245,7 @@ for (const { entity, file } of entities.values()) {
     if (a.visibleWhen) checkCondition(a.visibleWhen, fields, `${where} visibleWhen`);
     checkInverse(entity, a, where, errors);
     checkSummary(a, fields, where, errors);
+    checkOpensForm(entity, a, entities, where, errors);
     if (a.input) checkActionInput(a.input, where, { entities, checkCondition, WIRE }, errors);
   }
   for (const f of fields.values()) {

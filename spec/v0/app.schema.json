@@ -100,6 +100,31 @@
         }
       }
     },
+    "authorization": {
+      "type": "object",
+      "required": ["codes", "fields"],
+      "additionalProperties": false,
+      "description": "Autorização de outro usuário (supervisor, liberação de orçamento). Quando o servidor recusa criar, alterar, excluir ou uma ação com um destes códigos, a shell mostra a mensagem e pede os campos; 'Autorizar' reenvia o mesmo pedido com o cabeçalho C3-Authorization (JSON dos campos em base64, UTF-8). O sistema confere quem libera e grava a auditoria no hook; nova recusa (mesmo código, 401 ou 403) aparece no diálogo. A senha nunca vai ao formulário nem ao rascunho.",
+      "properties": {
+        "codes": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" } },
+        "title": { "$ref": "#/$defs/text", "description": "Título do diálogo. Padrão: 'Autorização'." },
+        "fields": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["name", "label"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "$ref": "entity.schema.json#/$defs/identifier" },
+              "label": { "$ref": "#/$defs/text" },
+              "type": { "enum": ["string", "password", "text"], "default": "string" },
+              "minLength": { "type": "integer", "minimum": 1 }
+            }
+          }
+        }
+      }
+    },
     "layout": {
       "$ref": "#/$defs/layout"
     }

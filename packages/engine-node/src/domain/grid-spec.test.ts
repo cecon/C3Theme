@@ -28,3 +28,12 @@ describe('fromSelection', () => {
     expect(() => parseAction('product', action('together', grid('product', 'group')), [], ident)).toThrow(/reference para 'product'/);
   });
 });
+
+describe('maxItems da grade (#49)', () => {
+  const sized = (maxItems: number) => ({ ...grid('product'), fromSelection: undefined, maxItems });
+  it('aceita até 990 linhas (os itens de uma NF-e) e recusa acima', () => {
+    const [a] = parseAction('product', action(undefined, sized(990)), [], ident);
+    expect(a.grids[0].maxItems).toBe(990);
+    expect(() => parseAction('product', action(undefined, sized(991)), [], ident)).toThrow(/maxItems de 1 a 990/);
+  });
+});

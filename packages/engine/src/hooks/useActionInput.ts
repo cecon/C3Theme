@@ -5,6 +5,7 @@ import { gridInputs, plainInputs } from '../actionTypes';
 import { gridBody, mergeGridFill, newRow, setCell, type GridRow } from './gridRows';
 import { suggestions } from './suggest';
 import type { ActionDef, FieldDef, FieldType, WireRecord } from '../types';
+import { defaultsOf, fieldDefault } from '../fieldDefault';
 
 /** Reference cujo `filter` lê `name` (`{"$field": name}`): a escolha dele deixa de valer quando `name` muda. */
 const cleared = (list: FieldDef[], name: string) => {
@@ -33,7 +34,7 @@ export default function useActionInput(action: ActionDef | null) {
     touched ||
     fields.some((f) => {
       const v = input[f.name];
-      return v !== undefined && v !== null && v !== '' && v !== f.default;
+      return v !== undefined && v !== null && v !== '' && v !== fieldDefault(f);
     });
 
   /** Abre o diálogo de `next`: input com os defaults e, por cima, os valores iniciais do sistema (`prefill`). */
@@ -42,8 +43,7 @@ export default function useActionInput(action: ActionDef | null) {
     sentRows.current = Object.fromEntries(gridInputs(next).map((g) => [g.name, (initial[g.name] as GridRow[] | undefined) ?? []]));
     setLocalErrors({});
     setTouched(false);
-    const defaults = plainInputs(next).filter((f) => f.default !== undefined);
-    setInput({ ...Object.fromEntries(defaults.map((f) => [f.name, f.default])), ...initial });
+    setInput({ ...defaultsOf(plainInputs(next)), ...initial });
   };
 
   const drop = (prefix: string) =>
