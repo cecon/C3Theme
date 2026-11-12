@@ -22,12 +22,12 @@ const wrap = (ui: ReactNode) =>
 
 function Controlled(props: Omit<AgentComposerProps, 'value' | 'onChange'>) {
   const [value, setValue] = useState('');
-  return <AgentComposer {...props} variant="inline" value={value} onChange={setValue} />;
+  return <AgentComposer {...props} value={value} onChange={setValue} />;
 }
 
 const box = () => screen.getByRole('textbox', { name: 'Mensagem' });
 
-describe('AgentComposer inline', () => {
+describe('AgentComposer inline por padrão', () => {
   it('vazio mostra a ação de espera; com texto vira enviar', () => {
     const voice = vi.fn();
     const onSend = vi.fn();
