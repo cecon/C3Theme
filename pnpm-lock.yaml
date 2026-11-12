@@ -622,6 +622,9 @@ importers:
       '@c3theme/chat':
         specifier: workspace:*
         version: link:../chat
+      '@c3theme/flow':
+        specifier: workspace:*
+        version: link:../flow
       '@c3theme/ui':
         specifier: workspace:*
         version: link:../ui

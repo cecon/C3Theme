@@ -2,6 +2,13 @@
 
 Instale fixando o commit (`github:cecon/C3Theme#<sha>&path:packages/chat`). Cada entrada diz o que muda para quem usa; **Quebra** marca o que exige mudar o app.
 
+## 0.12.0 (2026-11-12)
+
+- Conversas à parte (#10, [ADR 0005](../../docs/adr/0005-conversas-a-parte.md)): pergunta lateral (`aside`), que não interrompe a conversa principal, e ramo (`branch`), que tenta outro caminho a partir de uma resposta. `Lane` é uma `Conversation` com `kind`, `parentId`, `fromMessageId` e `working`. `LanePanel` mostra a lista (as que trabalham em cima, tipo e última frase, "Nova conversa à parte") e, ao abrir uma, o `AssistantPanel` dela com voltar; `panel` repassa caixa, catálogo e ações. `LaneList` solta.
+- Ações por mensagem: `messageActions` (`{ id, label, when?: { direction?, author? }, opens? }`, filtro como dado, não função) e `onMessageAction(message, id)` em `MessageList` e `AssistantPanel`. Botão "Mais ações" no rodapé da resposta do assistente e ao lado do balão (com mouse, aparece ao passar ou focar). Sistema, passagem, resposta chegando e mensagem enviando ou que falhou não têm ações. `MessageActionsMenu` solto.
+- `AssistantPanel.onAside(text)`: botão "À parte" (`AsideButton`) na barra da caixa, depois das `composer.startActions`; o texto escrito vai para a conversa à parte e sai da caixa.
+- Núcleo puro: `actionsFor`, `matchesMessage`, `messagesUntil`, `sortLanes`, `workingCount`, `BRANCH_ACTION`. Textos novos `c3.chat.messageActions`, `c3.chat.lanes*`. Nada quebra.
+
 ## 0.11.0 (2026-11-12)
 
 - Human-in-the-loop (#70): partes novas do catálogo, declaradas em `spec/v0/agent-ui.schema.json` e conferidas pelo `Engine::check_agent_part`. `c3.tool` (`ToolPart`): a ferramenta e os argumentos, editáveis antes de aprovar (`fields` com `string`, `text`, `number`, `boolean`, `enum`, `json`, `readOnly`), recusa com motivo, "sempre permitir" só se oferecido e nunca com `risk: high`, que pede segundo clique. `c3.plan` (`PlanPart`): desmarcar, reordenar e reescrever passos. `c3.browser` (`BrowserPart`): a página em que o agente parou, onde vai clicar, permitir, assumir o controle ou recusar.

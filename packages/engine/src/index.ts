@@ -40,6 +40,7 @@ export { default as EntityCalendar } from './pages/calendar/EntityCalendar';
 export { default as EntityDashboard } from './pages/dashboard/Dashboard';
 export { default as EntityReport } from './pages/report/EntityReport';
 export { default as EntityMap } from './pages/map/EntityMap';
+export { default as EntityFlow } from './pages/flow/EntityFlow';
 export { default as ApiDocs } from './pages/apiDocs/ApiDocs';
 export { default as WizardPage } from './pages/wizard/WizardPage';
 export { default as WizardGuard } from './pages/wizard/WizardGuard';
@@ -61,6 +62,7 @@ export type { FieldInputProps, CustomFieldProps } from './widgets/FieldInput';
 export type { CustomSectionProps } from './pages/FormSection';
 export type { CustomPageProps } from './routes';
 export type * from './types';
+export type { FlowKindDef, FlowKindField, FlowView } from './viewTypes';
 export type { AggregateItem, AggregateParams, DashboardDef, WidgetDef } from './dashboard';
 // partes de interface do assistente no chat (o agente propõe, o motor grava): `agentUiRenderers` no AssistantPanel
 export { agentUiRenderers, FormPart, RecordPart, ActionPart, checkAction, checkForm, checkRecord } from './agent';
@@ -71,4 +73,7 @@ export type { AgentTask } from './agent';
 export { default as ChatPanel } from './chat/ChatPanel';
 export { httpChatTransport } from './chat/httpChat';
 export type { AgentKind, ChatDef } from './chat/chatDef';
+// conversas à parte e ações por mensagem do chat declarado (issue #10)
+export { BRANCH_ACTION, hasAside, laneActions, lanesApi, runLaneAction } from './agent';
+export type { ChatLanesDef, ChatLanesSpec, ChatMessageActionDef, LaneAction, LanesApi, MessageActionReply, WireLane } from './agent';
 export type { ActionPayload, AgentAnswer, AgentPartProps, FormPayload, RecordPayload, Suggested } from './agent';

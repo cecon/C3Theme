@@ -1387,6 +1387,26 @@
             "size": { "enum": ["small", "medium", "large"], "default": "medium", "description": "Tamanho do bloco (e da célula da grade)." }
           }
         },
+        "flow": {
+          "type": "object",
+          "required": ["field", "kinds"],
+          "additionalProperties": false,
+          "description": "Editor de fluxo do registro (@c3theme/flow): passos e ligações num canvas, validados na hora. O grafo { nodes, edges } fica num campo text do próprio registro, como JSON, e grava pelo PATCH de sempre (com If-Match). Rota /{entity}/:id/flow; no formulário, o campo vira um resumo com o botão que abre o editor. O backend não executa nem confere o grafo: quem roda o fluxo é o sistema.",
+          "properties": {
+            "field": {
+              "$ref": "#/$defs/identifier",
+              "description": "Campo text que guarda o grafo (JSON). Vazio é fluxo sem passos."
+            },
+            "title": { "$ref": "#/$defs/text", "description": "Título do editor. Padrão: 'Fluxo'." },
+            "minimap": { "type": "boolean", "default": true, "description": "Mapa pequeno no canto do canvas." },
+            "kinds": {
+              "type": "array",
+              "minItems": 1,
+              "description": "Tipos de passo que o fluxo aceita (gatilho, agente, condição, esperar, fim...). Passo de tipo fora da lista aparece como problema.",
+              "items": { "$ref": "#/$defs/flowKind" }
+            }
+          }
+        },
         "calendar": {
           "type": "object",
           "required": ["start"],
@@ -1447,6 +1467,65 @@
             }
           }
         }
+      }
+    },
+    "flowKind": {
+      "type": "object",
+      "required": ["type", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "$ref": "#/$defs/identifier", "description": "Chave gravada em nodes[].type." },
+        "label": { "$ref": "#/$defs/text" },
+        "icon": { "type": "string", "pattern": "^[A-Z][A-Za-z0-9]*$", "description": "Ícone do catálogo da shell." },
+        "tone": { "enum": ["neutral", "primary", "secondary", "info", "success", "warning", "danger"], "description": "Cor do ícone do passo." },
+        "input": { "type": "boolean", "default": true, "description": "false: o passo começa o fluxo (gatilho) e não recebe ligação." },
+        "outputs": {
+          "type": "array",
+          "default": [{ "id": "out" }],
+          "description": "Saídas do passo. Uma só sem rótulo é o 'próximo passo'; condição tem 'sim' e 'não'. Lista vazia: o passo encerra o fluxo.",
+          "items": {
+            "type": "object",
+            "required": ["id"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "$ref": "#/$defs/identifier" },
+              "label": { "$ref": "#/$defs/text" },
+              "optional": { "type": "boolean", "default": false, "description": "Pode ficar sem ligação (o fluxo termina ali)." }
+            }
+          }
+        },
+        "fields": {
+          "type": "array",
+          "description": "Formulário do passo, gravado em nodes[].config.",
+          "items": {
+            "type": "object",
+            "required": ["key", "label"],
+            "additionalProperties": false,
+            "properties": {
+              "key": { "$ref": "#/$defs/identifier" },
+              "label": { "$ref": "#/$defs/text" },
+              "kind": { "enum": ["text", "textarea", "number", "select"], "default": "text" },
+              "options": {
+                "type": "array",
+                "minItems": 1,
+                "description": "Só em select.",
+                "items": {
+                  "type": "object",
+                  "required": ["value", "label"],
+                  "additionalProperties": false,
+                  "properties": { "value": { "type": "string" }, "label": { "$ref": "#/$defs/text" } }
+                }
+              },
+              "required": { "type": "boolean", "default": false },
+              "help": { "$ref": "#/$defs/text" }
+            }
+          }
+        },
+        "summary": { "$ref": "#/$defs/identifier", "description": "Chave de fields mostrada numa linha no cartão do passo (em select, o rótulo da opção)." },
+        "loopLimit": { "$ref": "#/$defs/identifier", "description": "Chave de fields (number) com o limite de voltas: ciclo que passa por este passo com o limite preenchido é aceito." },
+        "max": { "type": "integer", "minimum": 1, "description": "Quantos passos deste tipo o fluxo aceita (ex.: 1 gatilho)." },
+        "removable": { "type": "boolean", "default": true, "description": "false: o passo não sai do fluxo (ex.: o gatilho único)." },
+        "defaults": { "type": "object", "description": "config inicial do passo novo, para ele já entrar válido." }
       }
     },
     "condition": {

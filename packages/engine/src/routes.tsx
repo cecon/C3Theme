@@ -28,6 +28,8 @@ const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'));
 const ApiDocs = lazy(() => import('./pages/apiDocs/ApiDocs'));
 // o chat traz o @c3theme/chat: só baixa quem abre a página
 const ChatPage = lazy(() => import('./chat/ChatPage'));
+// o editor de fluxo traz o canvas (React Flow): também só baixa quem abre
+const EntityFlow = lazy(() => import('./pages/flow/EntityFlow'));
 
 export function homePath(app?: AppDef) {
   const first = app?.layout.menu[0]?.items[0];
@@ -67,7 +69,8 @@ export function buildRoutes(app: AppDef, layout: ReactNode, extra: RouteObject[]
           { path: `${e}/calendar`, element: <EntityCalendar key={`${e}-calendar`} entity={e} /> },
           { path: `${e}/report`, element: <EntityReport key={`${e}-report`} entity={e} /> },
           { path: `${e}/map`, element: <EntityMap key={`${e}-map`} entity={e} /> },
-          { path: `${e}/:id`, element: <RecordRoute entity={e} /> }
+          { path: `${e}/:id`, element: <RecordRoute entity={e} /> },
+          { path: `${e}/:id/flow`, element: <FlowRoute entity={e} /> }
         ]),
         ...pages.filter((p) => p.layout !== 'blank').map(pageRoute),
         ...extra,
@@ -81,6 +84,15 @@ export function buildRoutes(app: AppDef, layout: ReactNode, extra: RouteObject[]
 function RecordRoute({ entity }: { entity: string }) {
   const { id } = useParams();
   return <EntityForm key={`${entity}-${id}`} entity={entity} id={id} />;
+}
+
+function FlowRoute({ entity }: { entity: string }) {
+  const { id } = useParams();
+  return (
+    <Suspense fallback={<PanelSkeleton />}>
+      <EntityFlow key={`${entity}-${id}`} entity={entity} id={id!} />
+    </Suspense>
+  );
 }
 
 function pageBody(p: PageDef) {

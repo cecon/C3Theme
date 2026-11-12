@@ -15,8 +15,12 @@ import type { ChatRow } from './rows';
 import AuthorAvatar from './team/AuthorAvatar';
 import AuthorLine from './team/AuthorLine';
 import HandoffMarker from './team/HandoffMarker';
+import MessageActionsMenu from './lanes/MessageActionsMenu';
 
-type AssistantPass = Pick<AssistantMessageProps, 'onOpenWorkspace' | 'onAnswer' | 'uiRenderers' | 'onAnswerUi'>;
+type AssistantPass = Pick<
+  AssistantMessageProps,
+  'onOpenWorkspace' | 'onAnswer' | 'uiRenderers' | 'onAnswerUi' | 'messageActions' | 'onMessageAction'
+>;
 
 export interface MessageRowProps extends Pick<MessageBubbleProps, 'renderText' | 'onRetry' | 'onEditFailed' | 'onDiscard'>, AssistantPass {
   row: ChatRow;
@@ -34,6 +38,14 @@ export interface MessageRowProps extends Pick<MessageBubbleProps, 'renderText' |
   onRegenerate?: AssistantMessageProps['onRegenerate'];
   onOpenTask?: (handoff: Handoff, message: Message) => void;
 }
+
+// o botão de ações do balão só aparece ao passar o mouse ou focar (no toque, fica sempre)
+const HOVER_ACTIONS = {
+  '@media (hover: hover)': {
+    '& .c3-message-actions': { opacity: 0 },
+    '&:hover .c3-message-actions, & .c3-message-actions:focus-visible': { opacity: 1 }
+  }
+};
 
 /** Uma linha do histórico: separador de dia, passagem de tarefa, resposta de agente ou balão. */
 export default function MessageRow(props: MessageRowProps) {
@@ -80,10 +92,13 @@ export default function MessageRow(props: MessageRowProps) {
           questionActive={props.questionActive}
           uiRenderers={props.uiRenderers}
           onAnswerUi={props.onAnswerUi}
+          messageActions={props.messageActions}
+          onMessageAction={props.onMessageAction}
         />
       </Box>
     );
   }
+  const actions = <MessageActionsMenu message={m} actions={props.messageActions} onAction={props.onMessageAction} />;
   const withAvatar = (renderAvatar || (assistant && showAuthors)) && !mine && m.kind !== 'system';
   return (
     <Box
@@ -92,10 +107,12 @@ export default function MessageRow(props: MessageRowProps) {
         justifyContent: mine ? 'flex-end' : 'flex-start',
         alignItems: 'flex-end',
         gap: 1,
-        pt: row.grouped ? 0.25 : 1
+        pt: row.grouped ? 0.25 : 1,
+        ...HOVER_ACTIONS
       }}
     >
       {withAvatar && <Box sx={{ width: 32, flexShrink: 0, display: { xs: 'none', sm: 'block' } }}>{props.lastOfBlock && avatar(32)}</Box>}
+      {mine && actions}
       <MessageBubble
         message={m}
         grouped={row.grouped}
@@ -105,6 +122,7 @@ export default function MessageRow(props: MessageRowProps) {
         onEditFailed={props.onEditFailed}
         onDiscard={props.onDiscard}
       />
+      {!mine && actions}
     </Box>
   );
 }

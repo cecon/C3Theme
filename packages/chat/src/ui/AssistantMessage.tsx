@@ -13,6 +13,8 @@ import { Copy, CopySuccess, Refresh2 } from 'iconsax-reactjs';
 
 import type { QuestionAnswer } from '../core/question';
 import type { Message } from '../core/types';
+import type { MessageActionsMenuProps } from './lanes/MessageActionsMenu';
+import MessageActionsMenu from './lanes/MessageActionsMenu';
 import ActivityTrace from './ActivityTrace';
 import AttachmentView from './AttachmentView';
 import { useTimeFormat } from './format';
@@ -41,6 +43,9 @@ export interface AssistantMessageProps extends Pick<MessageBubbleProps, 'renderT
   onAnswerUi?: UiPartsProps['onAnswer'];
   /** Linha de cima com avatar e nome do agente (conversa com vários agentes). Sem isso, a resposta não diz quem é. */
   header?: ReactNode;
+  /** Ações do menu "Mais ações" no rodapé da resposta ("Ramificar daqui"). */
+  messageActions?: MessageActionsMenuProps['actions'];
+  onMessageAction?: MessageActionsMenuProps['onAction'];
 }
 
 /**
@@ -129,6 +134,7 @@ export default function AssistantMessage(props: AssistantMessageProps) {
               </IconButton>
             </Tooltip>
           )}
+          <MessageActionsMenu message={m} actions={props.messageActions} onAction={props.onMessageAction} />
           <Typography variant="caption" component="time" dateTime={m.createdAt} sx={{ pl: 0.5, color: 'inherit' }}>
             {time(m.createdAt)}
           </Typography>

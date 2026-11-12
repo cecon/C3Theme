@@ -1,0 +1,100 @@
+# Path items das conversas à parte do chat (app.schema.json $defs/chatLanes e $defs/chatMessageAction, issue #10),
+# referenciados por openapi.yaml. As rotas de mensagens de cada conversa (histórico, enviar, eventos, parar) são as do
+# chat (spec/v0/chat.yaml): uma conversa à parte é uma conversa comum com pai (`parentId`) e origem. O agente e o que
+# ele faz com cada conversa são do sistema; o motor só expõe as rotas. Backend sem o recurso responde 404, e a shell
+# esconde o botão do painel, o "À parte" e o "Ramificar daqui".
+lanes:
+  parameters:
+    - { name: conversation, in: path, required: true, schema: { type: string } }
+  get:
+    summary: Conversas à parte de uma conversa
+    description: >-
+      Todas as conversas à parte da conversa principal, em qualquer ordem (a tela põe as que trabalham em cima e depois
+      a mais recente). Só as que o usuário pode abrir. Sem sessão: 401. Conversa que não existe ou não é do usuário:
+      404.
+    operationId: chatLanes
+    responses:
+      '200':
+        description: As conversas à parte.
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data: { type: array, items: { $ref: '#/Lane' } }
+      '401': { $ref: 'openapi.yaml#/components/responses/Error' }
+      '404': { $ref: 'openapi.yaml#/components/responses/Error' }
+  post:
+    summary: Abrir uma conversa à parte
+    description: >-
+      `aside`: pergunta lateral; a conversa principal segue trabalhando. `branch`: ramo a partir de `fromMessageId`
+      (obrigatório), com o histórico da principal até essa mensagem, inclusive; o que vem depois dela na principal não
+      entra. `text`, quando vem, é a primeira mensagem do usuário na conversa à parte (o agente já começa a responder).
+      Ramo sem `fromMessageId`, ou com mensagem que não é da conversa: 400. Sem sessão: 401. Conversa que não existe:
+      404.
+    operationId: openChatLane
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [kind]
+            additionalProperties: false
+            properties:
+              kind: { enum: [aside, branch] }
+              fromMessageId: { type: string }
+              text: { type: string, maxLength: 20000 }
+    responses:
+      '201':
+        description: A conversa à parte aberta (a tela abre direto nela).
+        content:
+          application/json:
+            schema: { type: object, required: [data], properties: { data: { $ref: '#/Lane' } } }
+      '400': { $ref: 'openapi.yaml#/components/responses/Error' }
+      '401': { $ref: 'openapi.yaml#/components/responses/Error' }
+      '404': { $ref: 'openapi.yaml#/components/responses/Error' }
+messageAction:
+  parameters:
+    - { name: conversation, in: path, required: true, schema: { type: string } }
+    - { name: message, in: path, required: true, schema: { type: string } }
+    - { name: action, in: path, required: true, schema: { type: string } }
+  post:
+    summary: Ação declarada numa mensagem
+    description: >-
+      Ação de `messageActions` sem `opens` (as com `opens` usam POST /_chat/{conversation}/_lanes). O sistema decide o
+      que fazer (fixar, mandar para o time, abrir tarefa). Resposta com `lane`: a ação abriu uma conversa à parte, e a
+      tela vai até ela; com `message`: aviso curto para o usuário. Ação que não está declarada, ou que não vale para a
+      mensagem (`when`): 404. Sem sessão: 401.
+    operationId: chatMessageAction
+    responses:
+      '200':
+        description: Feito.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                lane: { $ref: '#/Lane' }
+                message: { type: string }
+      '401': { $ref: 'openapi.yaml#/components/responses/Error' }
+      '404': { $ref: 'openapi.yaml#/components/responses/Error' }
+Lane:
+  type: object
+  required: [id, title, kind, parentId, updatedAt]
+  properties:
+    id: { type: string }
+    title: { type: string, description: 'Ex.: a primeira pergunta, encurtada pelo sistema.' }
+    kind: { enum: [aside, branch] }
+    parentId: { type: string }
+    fromMessageId: { type: string, description: 'Ramo: a mensagem da principal de onde saiu.' }
+    working: { type: boolean, description: 'O agente ainda trabalha nela.' }
+    unread: { type: integer, minimum: 0, default: 0 }
+    updatedAt: { type: string, format: date-time }
+    lastMessage:
+      type: object
+      properties:
+        text: { type: string }
+        createdAt: { type: string, format: date-time }
+        direction: { enum: [in, out] }

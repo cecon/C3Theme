@@ -294,7 +294,7 @@ Entra na F1 (chat e motor). Feito: `onTelemetry` no `C3Shell` (tela) e no `Assis
 
 Desenho proposto: pranchas 26–30 do canvas; [índice navegável](./design/chat-storyboard.html). A prancha 23 preserva a referência anterior. Inspirado nas caixas dos agentes de código (uma caixa, uma barra embaixo), adaptado para ERP.
 
-- **Uma caixa, uma barra.** Texto em cima (cresce até 8 linhas e rola); embaixo: anexar, chip de contexto, modo do agente, áudio e enviar.
+- **Uma caixa compacta.** Por padrão, uma linha com anexar à esquerda, texto e ações/enviar à direita, alinhados; cresce até 8 linhas e depois rola. Contexto e seletores são opcionais. Sem dica de teclado fixa. `stacked` (texto em cima e barra embaixo) e `split` (barra fora da caixa) são alternativas explícitas.
 - **Contexto visível e removível.** O registro aberto vira o chip `@ Pedido 1234`. `@` busca outros registros; `/` abre as ações da entidade.
 - **Modo do agente** no lugar de "acesso total": `Só consulta` (não propõe gravação) ou `Propõe e pede confirmação`. Não existe "grava sem perguntar": o risco vem da spec (13.2).
 - **"Feito nesta conversa" colado em cima da caixa**, recolhível, com contagem por tipo e Desfazer enquanto vale (13.3).

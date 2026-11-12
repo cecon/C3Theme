@@ -56,7 +56,7 @@ export interface AgentComposerProps {
    * com várias linhas a caixa cresce para cima e os botões ficam embaixo. Cantos de 14 px, botões de 28 px, foco que só
    * clareia a borda e sem linha de ajuda. `split`: a caixa só com o texto numa linha e o enviar (ou o parar) dentro, e
    * embaixo, fora da caixa, a barra com o +, a voz (`idleAction`), os seletores e o resto (`endActions`), como nos
-   * apps de agente de mesa. Padrão: `stacked` (texto em cima, barra embaixo, dentro da caixa).
+   * apps de agente de mesa. Padrão: `inline`. `stacked` mantém texto em cima e barra embaixo, dentro da caixa.
    */
   variant?: 'stacked' | 'inline' | 'split';
   /**
@@ -67,8 +67,8 @@ export interface AgentComposerProps {
 }
 
 /**
- * Caixa de mensagem do modo assistente, no jeito dos agentes de IA: a fila acima, o texto em cima e uma barra
- * embaixo com +, os seletores que o app passar e o botão redondo de enviar/parar; a linha de status por último.
+ * Caixa de mensagem do modo assistente: a fila acima, texto e ações alinhados em uma linha;
+ * cresce com o texto e mantém o botão de enviar/parar no rodapé. A linha de status vem por último.
  * Enter envia (ou põe na fila enquanto responde), Shift+Enter quebra a linha, Esc para a resposta.
  */
 export default function AgentComposer(props: AgentComposerProps) {
@@ -106,7 +106,7 @@ export default function AgentComposer(props: AgentComposerProps) {
   }
 
   const split = props.variant === 'split';
-  const inline = props.variant === 'inline' || split; // as duas: uma linha, cantos de 14 px, sem linha de ajuda
+  const inline = props.variant !== 'stacked'; // as duas: uma linha, cantos de 14 px, sem linha de ajuda
   const showAdd = allowFiles || addItems.length > 0;
   const showStop = busy && !!onStop && !hasContent;
   const idle = !split && !busy && !hasContent && !props.disabled && props.idleAction ? props.idleAction : undefined;

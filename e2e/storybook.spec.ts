@@ -178,3 +178,43 @@ test('assistente no cabeçalho (layout.header.assistant): o botão abre a gaveta
   await drawer.getByRole('button', { name: 'Agora não' }).click();
   await expect(drawer.getByText('Tudo bem, fica para depois.')).toBeVisible();
 });
+
+test('conversas à parte: ramificar uma resposta, voltar e perguntar à parte com o texto da caixa (#10)', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto(story('chat-conversas-à-parte--padrao'));
+  await expect(page.getByText('Nenhuma conversa à parte')).toBeVisible();
+  await page.getByRole('button', { name: 'Mais ações' }).first().click();
+  await page.getByRole('menuitem', { name: 'Ramificar daqui' }).click();
+  // o ramo abre com o histórico até a resposta
+  await expect(page.getByRole('heading', { name: 'Ramo da resposta' })).toBeVisible();
+  await expect(page.getByRole('log', { name: 'Mensagens de Ramo da resposta' }).getByText('Quais faturas estão atrasadas?')).toBeVisible();
+  await page.getByRole('button', { name: 'Voltar às conversas à parte' }).click();
+  await expect(page.getByRole('list', { name: 'Conversas à parte' }).getByText('Ramo', { exact: true })).toBeVisible();
+
+  await page.getByRole('textbox').first().fill('E a FT-0047, foi paga?');
+  await page.getByRole('button', { name: 'À parte', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'E a FT-0047, foi paga?' })).toBeVisible();
+  await expect(page.getByText('Sobre "E a FT-0047, foi paga?": sigo a conversa principal enquanto respondo aqui.')).toBeVisible();
+});
+
+test('editor de fluxo pela spec: abre do formulário, renomeia um passo, salva; fluxo com problema não grava (#72)', async ({ page }) => {
+  await page.goto(story('fluxo-pelo-motor--no-formulario'));
+  await expect(page.getByText('6 passos')).toBeVisible();
+  await page.getByRole('link', { name: 'Abrir o fluxo' }).click();
+  await expect(page.getByRole('heading', { name: 'Passos da automação' })).toBeVisible();
+  const save = page.getByRole('button', { name: 'Salvar' });
+  await expect(save).toBeDisabled();
+
+  await page.getByText('Pedir à Cozinha', { exact: true }).click();
+  await page.getByRole('textbox', { name: 'Nome' }).fill('Pedir à cozinha agora');
+  await expect(save).toBeEnabled();
+  await save.click();
+  await expect(save).toBeDisabled();
+
+  await page.getByRole('combobox', { name: 'Próximo passo' }).click();
+  await page.getByRole('option', { name: 'Sem ligação' }).click();
+  await save.click();
+  await expect(page.getByText('Corrija os 2 problemas do fluxo antes de salvar.')).toBeVisible();
+  await page.getByRole('button', { name: 'Descartar' }).click();
+  await expect(save).toBeDisabled();
+});
