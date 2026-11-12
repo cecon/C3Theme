@@ -59,10 +59,6 @@ export const Financeiro: Story = { args: { page: '/financeiro' } };
 export const DocumentacaoDaApi: Story = { name: 'Documentação da API', args: { page: '/apis' } };
 
 /**
- * `pages[].wizard`: a primeira configuração da loja em passos sobre o registro único, com Pular no passo opcional e
- * o resumo no fim. No app, a guarda (`pending`) leva toda rota para cá até a loja e o caixa estarem gravados.
- */
-/**
  * Página de chat (`pages[].chat`, ADR 0005): o painel do assistente montado pela spec, com o título, as sugestões, o
  * placeholder e só as partes de `parts`. O agente aqui é um roteiro em memória; num sistema, é o backend (porta Chat).
  * Peça um cadastro: vem o rascunho de cliente, que grava pelo cadastro de sempre.
@@ -76,4 +72,32 @@ export const Assistente: Story = { args: { page: '/assistente' } };
  */
 export const AssistenteOrientando: Story = { name: 'Assistente: orientar', args: { page: '/assistente' }, play: steerAgent };
 
+/**
+ * A conversa vem da rota (`path: "/conversa/:conversation"` com `chat.conversation: "{conversation}"`, ADR 0009): o
+ * endereço /conversa/pedido-1042 abre a conversa desse pedido. Outra tela (lista de pedidos, notificação) só navega.
+ */
+export const ConversaDaRota: Story = {
+  name: 'Assistente: conversa da rota',
+  args: { page: '/conversa/:conversation' },
+  parameters: { route: '/conversa/pedido-1042' }
+};
+
+/** Outro id na rota, outra conversa: o painel remonta, sem histórico nem rascunho da anterior. */
+export const OutraConversaDaRota: Story = {
+  name: 'Assistente: outra conversa da rota',
+  args: { page: '/conversa/:conversation' },
+  parameters: { route: '/conversa/pedido-1043' }
+};
+
+/** Id que as rotas /_chat recusariam (espaço, acento, mais de 64): aviso, sem pedido ao backend. */
+export const ConversaInvalida: Story = {
+  name: 'Assistente: conversa inválida na rota',
+  args: { page: '/conversa/:conversation' },
+  parameters: { route: '/conversa/n%C3%A3o%20vale' }
+};
+
+/**
+ * `pages[].wizard`: a primeira configuração da loja em passos sobre o registro único, com Pular no passo opcional e
+ * o resumo no fim. No app, a guarda (`pending`) leva toda rota para cá até a loja e o caixa estarem gravados.
+ */
 export const PrimeiraConfiguracao: Story = { name: 'Primeira configuração (assistente)', args: { page: '/primeira-configuracao' } };

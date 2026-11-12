@@ -4,6 +4,7 @@
 
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { conversationIssue } from '../packages/engine/src/chat/chatRoute.mjs';
 
 export function checkPages(ajv, dir, app, errors) {
   let checked = 0;
@@ -58,4 +59,15 @@ export function checkWizards(app, entities, pagePaths, errors) {
       if (!pagePaths.has(item.path) && !entityRoute) errors.push(`${where}.summary: '${item.path}' não é página nem entidade do app`);
     }
   }
+}
+
+/** Conversa do chat (#100, ADR 0009): `{nome}` só em página com `:nome` na rota; no header não há rota. */
+export function checkChatConversations(app, errors) {
+  for (const page of app.pages ?? []) {
+    const issue = page.chat && conversationIssue(page.chat.conversation, page.path);
+    if (issue) errors.push(`app.json página '${page.path}' chat.conversation: ${issue}`);
+  }
+  const header = app.layout?.header?.assistant;
+  const issue = header && typeof header === 'object' && conversationIssue(header.conversation, undefined);
+  if (issue) errors.push(`app.json layout.header.assistant.conversation: ${issue}`);
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { AGENT_KINDS, chatRenderers, chatView, headerChat } from './chatDef';
+import { AGENT_KINDS, chatRenderers, chatView, headerChat, pageConversation } from './chatDef';
 
 const text = (t: unknown, fallback = '') => (t === undefined ? fallback : typeof t === 'string' ? t : `[${(t as { id: string }).id}]`);
 
@@ -42,5 +42,21 @@ describe('chatDef', () => {
     expect(Object.hasOwn(only, 'c3.tool')).toBe(false);
     expect(Object.hasOwn(only, 'c3.plan')).toBe(true);
     expect(AGENT_KINDS).toHaveLength(6);
+  });
+});
+
+describe('pageConversation (#100)', () => {
+  it('lê o parâmetro pedido pela spec; sem pedido, fica o id da spec', () => {
+    expect(pageConversation({ conversation: '{id}' }, '/c/:id', { id: 'p-1' })).toBe('p-1');
+    expect(pageConversation({}, '/c/:conversation', { conversation: 'p_2' })).toBe('p_2');
+    expect(pageConversation({ conversation: 'fixa' }, '/c/:conversation', { conversation: 'outra' })).toBe('fixa');
+    expect(pageConversation({}, '/assistente', {})).toBeUndefined();
+  });
+
+  it('parâmetro ausente ou fora de ^[A-Za-z0-9_-]{1,64}$ vira null', () => {
+    expect(pageConversation({ conversation: '{id}' }, '/c/:id', {})).toBeNull();
+    expect(pageConversation({ conversation: '{id}' }, '/c/:id', { id: 'não vale' })).toBeNull();
+    expect(pageConversation({ conversation: '{id}' }, '/c/:id', { id: 'a'.repeat(65) })).toBeNull();
+    expect(pageConversation({ conversation: '{id}' }, '/c/:id', { id: 'a'.repeat(64) })).toBe('a'.repeat(64));
   });
 });
