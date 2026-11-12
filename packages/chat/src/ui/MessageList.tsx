@@ -38,6 +38,9 @@ export interface MessageListProps extends Pick<MessageBubbleProps, 'renderText' 
   /** Catálogo de partes de interface (`message.ui`) e como respondê-las. */
   uiRenderers?: AssistantMessageProps['uiRenderers'];
   onAnswerUi?: AssistantMessageProps['onAnswerUi'];
+  /** Ações por mensagem (menu "Mais ações"), filtradas pelo `when` de cada uma, ex.: "Ramificar daqui". */
+  messageActions?: AssistantMessageProps['messageActions'];
+  onMessageAction?: AssistantMessageProps['onMessageAction'];
   /** Nome da conversa, para o leitor de tela ("Mensagens de Ana"). */
   title: string;
   hasMore?: boolean;
@@ -138,6 +141,8 @@ export default function MessageList(props: MessageListProps) {
       uiRenderers={props.uiRenderers}
       onAnswerUi={props.onAnswerUi}
       onOpenTask={props.onOpenTask}
+      messageActions={props.messageActions}
+      onMessageAction={props.onMessageAction}
     />
   );
 

@@ -21,3 +21,14 @@ export type { ActionPayload, FormPayload, RecordPayload, Suggested } from './pay
 export type { AgentAnswer, AgentPartProps } from './part';
 export { agentTaskOf } from './task';
 export type { AgentTask } from './task';
+export { BRANCH_ACTION, hasAside, laneActions, laneOfWire, lanesApi, runLaneAction } from './lanes';
+export type {
+  ChatLanesDef,
+  ChatLanesSpec,
+  ChatMessageActionDef,
+  LaneAction,
+  LaneKind,
+  LanesApi,
+  MessageActionReply,
+  WireLane
+} from './lanes';

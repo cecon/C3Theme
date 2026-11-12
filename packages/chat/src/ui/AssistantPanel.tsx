@@ -16,6 +16,7 @@ import Typography from '@mui/material/Typography';
 // third-party
 import { CloseCircle, Magicpen } from 'iconsax-reactjs';
 
+import type { MessageAction } from '../core/lanes';
 import type { Conversation, Message } from '../core/types';
 import type { ChatTelemetryPort, TaskOf } from '../core/telemetry';
 import useChatTelemetry from '../hooks/useChatTelemetry';
@@ -29,6 +30,7 @@ import MessageList from './MessageList';
 import type { UiRenderers } from './UiParts';
 import { shouldAnnounce, waitingFor } from '../core/waiting';
 import { hitlUiRenderers, WaitingBanner } from './hitl';
+import AsideButton from './lanes/AsideButton';
 import { useChatText } from './text';
 
 /** O que o painel usa do `useMessageWindow`: passe o retorno inteiro. */
@@ -84,6 +86,14 @@ export interface AssistantPanelProps {
   onTelemetry?: ChatTelemetryPort;
   /** Diz qual entidade e operação cada parte é; `null` não é tarefa. */
   taskOf?: TaskOf;
+  /** Ações por mensagem (menu "Mais ações"), ex.: "Ramificar daqui" (`opens: 'branch'`). */
+  messageActions?: MessageAction[];
+  onMessageAction?: (message: Message, actionId: string) => void;
+  /**
+   * Botão "À parte" na caixa: abre uma conversa à parte sem interromper esta. Recebe o texto escrito (que vira a
+   * primeira pergunta da conversa à parte, e sai da caixa); vazio abre a conversa à parte sem pergunta.
+   */
+  onAside?: (text: string) => void;
 }
 
 /**
@@ -114,6 +124,22 @@ export default function AssistantPanel(props: AssistantPanelProps) {
     queue.pause(); // quem parou quer decidir: a fila espera
     chat.stop?.();
   }
+
+  const onAside = props.onAside;
+  const withAside = (start: ReactNode) =>
+    onAside ? (
+      <>
+        {start}
+        <AsideButton
+          onClick={() => {
+            onAside(draft.text.trim());
+            draft.clear();
+          }}
+        />
+      </>
+    ) : (
+      start
+    );
 
   const empty = props.empty ?? (
     <Stack spacing={2} sx={{ alignItems: 'center', textAlign: 'center', mt: 6, px: 1 }}>
@@ -177,6 +203,8 @@ export default function AssistantPanel(props: AssistantPanelProps) {
               uiRenderers={renderers}
               jumpTo={jumpTo}
               onAnswerUi={chat.answerUi && ((m, partId, a) => chat.answerUi!(m.id, partId, a))}
+              messageActions={props.messageActions}
+              onMessageAction={props.onMessageAction}
               empty={empty}
             />
           </Stack>
@@ -186,6 +214,7 @@ export default function AssistantPanel(props: AssistantPanelProps) {
           <AgentComposer
             hint={t('c3.chat.hint')}
             {...composer}
+            startActions={withAside(composer?.startActions)}
             value={draft.text}
             onChange={draft.setText}
             onSend={send}
