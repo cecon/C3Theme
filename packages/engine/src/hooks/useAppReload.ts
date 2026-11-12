@@ -19,7 +19,8 @@ export default function useAppReload(
   const reload = useCallback(async () => {
     try {
       const { app, pageAccess } = await client.meta();
-      const entities = await loadEntities(client, app.entities);
+      // O status público substitui as páginas; entidades podem estar indisponíveis durante a manutenção.
+      const entities = app.status ? {} : await loadEntities(client, app.entities);
       setState((s) => s && { ...s, app, entities, pageAccess });
     } catch {
       notify('Não foi possível atualizar o menu.', 'error');

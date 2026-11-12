@@ -1,11 +1,6 @@
-import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { RouterProvider } from 'react-router/dom';
 import { mutate } from 'swr';
-
-// material-ui
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 
 import { AppSkeleton, C3ThemeProvider, C3ThemeProviderProps, DesktopOptions, LocaleMessages, Notifier } from '@c3theme/ui';
 import { C3Client, createClient } from './api';
@@ -28,7 +23,9 @@ import { useAuthSession } from './auth/session';
 import { sessionRoutes } from './auth/sessionUser';
 import type { AppDef } from './types';
 import type { TelemetryPort } from './telemetry';
-import { AppStatus, ShellBoundary } from './status/AppStatus';
+import { ApiError, loadFailure } from './apiError';
+import { AppStatus, ShellBoundary, type AppStatusDef } from './status/AppStatus';
+import { LoadErrorScreen } from './status/ErrorScreens';
 
 export interface C3ShellProps {
   /** Base da API do sistema, ex.: '/api'. */
@@ -118,8 +115,11 @@ function Shell(props: C3ShellProps) {
     () => createClient(apiUrl, allHeaders, logout, authorizingFetch(transport ?? browserFetch, authz.codes, authz.ask)),
     [apiUrl, allHeaders, logout, transport, authz.codes, authz.ask]
   );
-  const [error, setError] = useState<string>();
-  const [attempt, setAttempt] = useState(0);
+  const [error, setError] = useState<Error>();
+  // 503 de /_meta/* (proxy na frente do backend, sem app.json): a mesma tela do `status`
+  const [offline, setOffline] = useState<AppStatusDef>();
+  // cada pedido de nova tentativa é um objeto novo: o efeito roda de novo
+  const [attempt, retry] = useReducer(() => ({}), {});
   const catalog = useIconCatalog(icons);
   // função nova a cada render do app não recria o contexto: a shell chama sempre a última recebida
   const sink = useRef(onTelemetry);
@@ -139,7 +139,7 @@ function Shell(props: C3ShellProps) {
         setState((s) => s && { ...s, entities, pageAccess, org: s.org && { ...s.org, active: id } });
         mutate(() => true);
       } catch (e) {
-        setError((e as Error).message);
+        setError(e as Error);
       }
     },
     [client, state]
@@ -148,6 +148,7 @@ function Shell(props: C3ShellProps) {
   useEffect(() => {
     let active = true;
     setError(undefined);
+    setOffline(undefined);
     (async () => {
       // a primeira resposta já traz a permissão das páginas, na filial que foi no cabeçalho
       const sent = branch.current;
@@ -176,7 +177,12 @@ function Shell(props: C3ShellProps) {
         branch.current === sent ? first : loadPageAccess(client, app)
       ]);
       if (active) setState({ client, app, entities, components, org, pageAccess });
-    })().catch((e) => active && setError(e.message));
+    })().catch((e) => {
+      if (!active) return;
+      const failure = loadFailure(e);
+      setOffline(failure.offline);
+      setError(failure.error);
+    });
     return () => {
       active = false;
     };
@@ -219,6 +225,8 @@ function Shell(props: C3ShellProps) {
     [routes, basename, drawerFooter, props.router]
   );
 
+  const shown = offline ?? state?.app.status;
+
   return (
     <C3ThemeProvider
       {...theme}
@@ -231,21 +239,10 @@ function Shell(props: C3ShellProps) {
       branding={{ name: state?.app.name ?? '', homePath: state?.app.homePath ?? homePath(state?.app), ...theme?.branding }}
     >
       <ShellBoundary>
-        {state?.app.status ? (
-          <AppStatus status={state.app.status} />
+        {shown ? (
+          <AppStatus status={shown} onRetry={retry} />
         ) : error ? (
-          <Box sx={{ p: 4, maxWidth: 560, mx: 'auto', mt: 8 }}>
-            <Alert
-              severity="error"
-              action={
-                <Button color="inherit" size="small" onClick={() => setAttempt((n) => n + 1)}>
-                  Tentar de novo
-                </Button>
-              }
-            >
-              Não foi possível carregar o sistema: {error}
-            </Alert>
-          </Box>
+          <LoadErrorScreen message={error.message} httpStatus={error instanceof ApiError ? error.status : undefined} onRetry={retry} />
         ) : router ? (
           <EngineProvider value={engine!}>
             <RouterProvider router={router} />

@@ -40,14 +40,24 @@ interface FrameProps {
   /** Na aba da história o fundo do tema cobre o quadro todo; na documentação, só o bloco da história. */
   fill: boolean;
   route?: string;
+  /** `false` quando a história traz o próprio roteador (a shell inteira, `<C3Shell>`). */
+  router: boolean;
   /** Tokens do tema da história (ex.: `desktopTokens('mac')`); objeto constante, para não recriar o tema. */
   tokens?: C3Tokens;
   children: ReactNode;
 }
 
-function ThemeFrame({ globals, bare, fill, route, tokens, children }: FrameProps) {
+function ThemeFrame({ globals, bare, fill, route, router, tokens, children }: FrameProps) {
   const { look, brand, direction, locale } = globals;
   const defaults = useMemo(() => ({ look, brand, direction, locale }), [look, brand, direction, locale]);
+  const body = (
+    <>
+      <Box sx={{ bgcolor: 'background.default', color: 'text.primary', p: bare ? 0 : 3, minHeight: fill ? '100vh' : undefined }}>
+        {children}
+      </Box>
+      <Notifier />
+    </>
+  );
   return (
     <C3ThemeProvider
       storageKey="c3-storybook"
@@ -56,14 +66,7 @@ function ThemeFrame({ globals, bare, fill, route, tokens, children }: FrameProps
       branding={{ name: 'C3 Storybook' }}
       tokens={tokens}
     >
-      <SyncGlobals {...globals}>
-        <MemoryRouter initialEntries={[route ?? '/']}>
-          <Box sx={{ bgcolor: 'background.default', color: 'text.primary', p: bare ? 0 : 3, minHeight: fill ? '100vh' : undefined }}>
-            {children}
-          </Box>
-          <Notifier />
-        </MemoryRouter>
-      </SyncGlobals>
+      <SyncGlobals {...globals}>{router ? <MemoryRouter initialEntries={[route ?? '/']}>{body}</MemoryRouter> : body}</SyncGlobals>
     </C3ThemeProvider>
   );
 }
@@ -74,6 +77,7 @@ export const withC3Theme: Decorator = (Story, { globals, parameters, viewMode })
     bare={parameters.bare === true}
     fill={viewMode === 'story'}
     route={parameters.route}
+    router={parameters.router !== false}
     tokens={parameters.tokens}
   >
     <Story />

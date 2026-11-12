@@ -44,7 +44,7 @@ Storybook, exemplos, `create-app`).
 | Chat                            | `$defs/chat` no `app.json` e as partes do `agent-ui.schema.json` ([ADR 0006](0006-chat-no-app-json.md), issues #70 e #71).                                                            |
 | Flow                            | `views.flow` na entidade (issue #72, feito em 12/11/2026): grafo num campo text do registro, tipos de passo em JSON, rota `/{entity}/:id/flow`.                                       |
 | Moldura do desktop              | `layout.desktop` no `app.json` e a porta `desktopHost` ([ADR 0004](0004-moldura-do-desktop-no-app-json.md), issue #73).                                                               |
-| App sem o motor (`--sem-motor`) | Saiu do `create-app` (issue #74). O que o seed tinha e a shell não: páginas de manutenção e erro 500 (issue #81).                                                                     |
+| App sem o motor (`--sem-motor`) | Saiu do `create-app` (issue #74). O que o seed tinha e a shell não: páginas de manutenção e erro 500 (issue #81, [ADR 0007](0007-telas-de-status-e-erro-da-shell.md)).                |
 | Catálogo de primitivas          | Não é tela, então não é exceção: veja abaixo.                                                                                                                                         |
 
 ### O que não é tela
@@ -70,7 +70,7 @@ argumentos editáveis (`c3.tool`), plano editável (`c3.plan`) e navegador inter
   baixo que funciona, citando a issue.
 - **Custo**: cada lacuna é contrato para dois backends (Rust e Node) e para a conformidade; a regra do 0001 continua (só
   vira chave da spec com uso real).
-- **Ainda não está feito** em 12/11/2026: páginas de manutenção e erro 500 (#81), telas da vitrine L10–L33 e Storybook por JSON.
+- **Ainda não está feito** em 12/11/2026: telas da vitrine L10–L33 e Storybook por JSON.
 
 ## Alternativas consideradas
 

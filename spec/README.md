@@ -16,16 +16,28 @@ O motor monta as telas de manutenção e lançamento pelo `app.json`, sem págin
 
 `mode` aceita `maintenance` (Em manutenção) ou `comingSoon` (Em breve). `title` e `message` aceitam texto literal
 ou `{ "id": "...", "defaultMessage": "..." }`. `until` é opcional, uma data e hora com fuso; a shell a formata no
-idioma do usuário. É previsão, não agenda automática: remova `status` para liberar o sistema.
+idioma do usuário. Em manutenção, a tela mostra a previsão e "Tentar de novo", e pergunta sozinha ao backend quando a
+hora chega; em breve, mostra a contagem regressiva e pergunta de novo ao zerar. É previsão, não agenda automática:
+enquanto `status` estiver no `app.json`, a tela continua; remova-o para liberar o sistema.
 
 O estado é público em `GET /_meta/login`, ao lado de `name` e `auth`, nos backends Rust e Node. Com autenticação,
 a shell mostra a tela antes de validar a sessão e preserva o token guardado; sem autenticação, lê `/_meta/app` e
 não carrega as entidades enquanto há `status`. O campo não contém informação privada e **não bloqueia a API**:
 o sistema mantém as regras de autorização e indisponibilidade do seu backend.
 
-Falhas inesperadas de renderização na shell e nas rotas usam a tela padrão 500, em tela cheia, com Tentar de novo.
-A mensagem técnica do erro não é exibida ao usuário. As histórias “Estado do sistema pelo motor” demonstram os dois
-estados usando o mesmo contrato HTTP.
+Sem mexer no `app.json`, um proxy na frente do backend tira o sistema do ar respondendo **503 em `/_meta/*`**: a shell
+mostra "Em manutenção" com o `status` do corpo (`{ "status": { ... } }`), se vier, ou com a previsão do `Retry-After`
+(segundos ou data HTTP). O 503 com `error.code` `unavailable` (fonte externa de uma consulta) não conta. O motor nunca
+responde 503 sozinho por causa do `status`.
+
+Uma tela ainda não pronta fica no menu com `pages[].comingSoon: { "message"?, "until"? }`: a rota mostra "Em breve" na
+área de conteúdo, com o menu em volta, e a contagem até a data.
+
+Erros vêm da shell, sem declaração: uma tela que quebra mostra o 500 ("Tentar de novo" recarrega e "Voltar ao início")
+dentro do layout, com o menu em volta; se a própria moldura quebrar, o 500 ocupa a tela toda. Rota que não existe mostra
+o 404. Falha ao abrir o sistema (`/_meta/*` com outro erro ou sem conexão) mostra a tela de erro com "Tentar de novo". A
+mensagem técnica do erro vai para o console, nunca para a tela. As histórias "Telas/Fora do ar e erros" do Storybook
+montam cada caso pelo `<C3Shell>` com um backend falso. Decisão em [ADR 0007](../docs/adr/0007-telas-de-status-e-erro-da-shell.md).
 
 A shell (`@c3theme/ui` + `@c3theme/engine`) não tem telas próprias: ela lê a estrutura do sistema por HTTP e renderiza layout, menu e CRUDs a partir de JSON. Cada sistema (backend) é dono do seu banco e das suas migrations e só precisa cumprir este contrato.
 
@@ -1121,7 +1133,6 @@ O SmartX (Universo TOTVS 2026) é a mesma aposta: um renderer (SmartWise) lê co
 - Autenticação: o contrato só exige Bearer e `401`. Quem autentica (senha, refresh, SSO) é cada sistema; a shell só monta as telas de entrada pelo `auth` do app.json e chama a porta que o sistema passa (ver [Login pela shell](#login-pela-shell)).
 - Indicador com comparação entre períodos ("+12% sobre o mês passado"): por enquanto, página custom (`pages[].component`).
 - Gatilhos de formulário ("ao escolher o cliente, preencher a condição de pagamento"). As ações de registro e em lote já existem (ver [Ações](#ações)). Para os gatilhos, quando o piloto pedir, a direção é a do SmartX: um vocabulário fechado de ações tipadas (preencher campos, mensagem, navegar, chamar a API, validar no servidor), encadeáveis, com referências a valores do formulário. Os eventos ficam declarados na entidade, nunca na tela. Não haverá código livre nem operador em número mágico.
-
 
 ## Conversas à parte no chat declarado
 
