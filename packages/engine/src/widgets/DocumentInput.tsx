@@ -18,7 +18,7 @@ export default function DocumentInput({ field, value, onChange, error, required,
   const text = useText();
   // textos da shell com chave de tradução; o defaultMessage é o português
   const t = (id: string, defaultMessage: string) => text({ id: `c3.document.${id}`, defaultMessage });
-  const format = field.format!;
+  const format = field.format as Exclude<NonNullable<typeof field.format>, 'shortcut'>;
   const [touched, setTouched] = useState(false);
   const raw = (value ?? '') as string;
   const local = touched && raw ? documentError(format, raw) : null;

@@ -70,7 +70,19 @@ export async function checkFields(
     }
     values.push(c.value);
   }
+  checkShortcuts(entity, record, errors);
   return values;
+}
+
+/** Atalho de teclado (`format: "shortcut"`, #110) não repete dentro do registro: o segundo campo leva `unique`. */
+function checkShortcuts(entity: Entity, record: Rec, errors: FieldErrors): void {
+  const seen = new Set<string>();
+  for (const f of entity.fields) {
+    const v = record[f.name];
+    if (f.format !== 'shortcut' || typeof v !== 'string' || v === '' || !isVisible(entity, f, record)) continue;
+    if (seen.has(v)) errors.add(f.name, 'unique', 'Este atalho já está em uso neste registro.');
+    else seen.add(v);
+  }
 }
 
 interface Picked {

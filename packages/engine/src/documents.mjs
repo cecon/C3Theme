@@ -2,6 +2,8 @@
 // O valor trafega sem máscara: CPF com 11 dígitos; CNPJ com 12 caracteres [0-9A-Z] e 2 dígitos verificadores
 // (alfanumérico desde jul/2026; o numérico antigo é o caso particular só com dígitos).
 
+import { shortcutError } from './shortcut.mjs';
+
 const SHAPE = { cpf: /^\d{11}$/, cnpj: /^[0-9A-Z]{12}\d{2}$/, phone: /^\d{10,11}$/ };
 
 /** Dígito verificador módulo 11: pesos de 2 a `max` da direita para a esquerda. */
@@ -31,6 +33,7 @@ export function documentKind(format, value) {
 
 /** null = válido; 'pattern' = forma errada (máscara, minúscula, tamanho); 'check_digit' = dígito errado. */
 export function documentError(format, value) {
+  if (format === 'shortcut') return shortcutError(value);
   const kind = documentKind(format, value);
   if (!kind || !SHAPE[kind].test(value)) return 'pattern';
   if (kind === 'phone') return null; // telefone não tem dígito verificador
@@ -47,6 +50,7 @@ export function normalizeDocument(input) {
  * `cpf_cnpj`, até 11 dígitos é CPF.
  */
 export function maskDocument(value, format = 'cpf_cnpj') {
+  if (format === 'shortcut') return value;
   if (format === 'phone') return maskPhone(value);
   const v = normalizeDocument(value);
   if (format === 'cpf' || (format === 'cpf_cnpj' && v.length <= 11 && /^\d*$/.test(v))) {

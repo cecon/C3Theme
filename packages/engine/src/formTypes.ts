@@ -63,7 +63,12 @@ export interface FormSection {
   related?: RelatedDef;
   /** Ligar um aparelho por QR ou código, pelos campos do registro (#6). */
   pairing?: PairingDef;
+  /** Clientes em que a seção aparece; sem isso, todos. Só muda a tela. */
+  platforms?: ClientPlatform[];
 }
+
+/** Onde a shell roda: app de desktop, site ou celular (`platform` do C3Shell, ou detectado). */
+export type ClientPlatform = 'desktop' | 'web' | 'mobile';
 
 /** Estado da tela de ligar aparelho (`DeviceLink` do @c3theme/ui). */
 export type PairingState = 'connecting' | 'qr' | 'pairing-code' | 'connected' | 'logged-out' | 'error';
@@ -95,6 +100,8 @@ export interface FormView {
   afterCreate?: string;
   /** Só singleton: cada campo grava ao mudar ou ao sair, sem Editar nem Salvar. */
   autosave?: boolean;
+  /** Só com autosave: busca pelo rótulo, help e keywords, que abre a aba e destaca o ajuste. */
+  search?: boolean;
   /** Cabeçalho do registro: imagem (ou avatar) à esquerda do título e uma ou duas linhas embaixo. */
   header?: { image?: string | { component: string }; subtitle?: string; caption?: string[] };
   /** Folha para imprimir: as seções escolhidas (posições), a related inteira e as colunas em branco. */

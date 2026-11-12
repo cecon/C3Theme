@@ -29,6 +29,7 @@ function checkFormula(src, fields, vars, lists, where, errors) {
 }
 
 export function checkForm(entity, fields, entities, file, errors) {
+  checkSettings(entity, file, errors);
   const form = entity.views?.form;
   if (!form) return;
   for (const [name, value] of Object.entries(form.initial ?? {})) {
@@ -78,4 +79,17 @@ function checkPairing(entity, fields, p, where, errors) {
     else if (button !== 'code' && (a.input || a.confirm))
       errors.push(`${where}.actions.${button}: '${name}' roda no clique (sem input nem confirm)`);
   }
+}
+
+/**
+ * Configurações (#110): a busca, a confirmação e o aviso de reinício só existem na gravação na hora (autosave); fora
+ * dela, não fariam nada e enganariam quem lê a spec.
+ */
+function checkSettings(entity, file, errors) {
+  const autosave = entity.views?.form?.autosave === true;
+  if (entity.views?.form?.search && !autosave) errors.push(`${file}: views.form.search só vale com views.form.autosave`);
+  if (autosave) return;
+  for (const f of entity.fields ?? [])
+    for (const key of ['confirmChange', 'restart'])
+      if (f[key] !== undefined) errors.push(`${file}: campo '${f.name}': ${key} só vale com views.form.autosave`);
 }

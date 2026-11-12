@@ -8,7 +8,7 @@ export interface FormTab {
   sections: FormSection[];
 }
 
-const tabKey = (t: Text) => (typeof t === 'string' ? t : t.id);
+export const tabKey = (t: Text) => (typeof t === 'string' ? t : t.id);
 
 /** Seções sem `tab` (acima das abas) e as abas, na ordem da primeira seção de cada uma. */
 export function groupSections(sections: FormSection[]): { head: FormSection[]; tabs: FormTab[] } {

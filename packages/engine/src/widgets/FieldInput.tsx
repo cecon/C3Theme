@@ -25,6 +25,7 @@ import { useEngine, useText } from '../context';
 import { fromDay, toDay } from '../calendarForm';
 import { datetimeToLocalInput, displayValue, findOption, formatDate, localInputToDatetime, recordOptions } from '../format';
 import DocumentInput from './DocumentInput';
+import ShortcutInput from './ShortcutInput';
 import FlowFieldLink from '../pages/flow/FlowFieldLink';
 import PasswordInput from './PasswordInput';
 import ReferenceInput from './ReferenceInput';
@@ -81,6 +82,7 @@ export default function FieldInput(props: FieldInputProps) {
     return <FlowFieldLink label={label} value={value} entity={props.entity} id={props.record?.id} />;
   }
   if (field.writeOnly) return <PasswordInput {...props} label={withHint(label, hint)} />;
+  if (field.format === 'shortcut' && !readOnly) return <ShortcutInput {...props} label={withHint(label, hint)} />;
   if (field.format && !readOnly) return <DocumentInput {...props} label={withHint(label, hint)} />;
   const options = (field.options ?? []).map((o) => ({ value: o.value, label: text(o.label, String(o.value)) }));
   if (field.type === 'flags') {
