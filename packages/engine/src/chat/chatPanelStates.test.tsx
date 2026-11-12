@@ -43,15 +43,15 @@ const old: Message = {
 const def: ChatDef = {
   suggestions: ['Quanto vendi hoje?'],
   states: {
-    loading: { text: 'Abrindo a conversa…' },
-    empty: { text: 'Nenhum agente respondeu ainda.', action: { label: 'Ver agentes', path: '/agentes' } },
-    error: { text: 'O servidor não respondeu.', retry: 'Carregar de novo' },
+    loading: { message: 'Abrindo a conversa…' },
+    empty: { message: 'Nenhum agente respondeu ainda.', action: { label: 'Ver agentes', path: '/agentes' } },
+    error: { message: 'O servidor não respondeu.', action: { label: 'Carregar de novo', retry: true } },
     forbidden: {
-      text: 'Você não pode usar o assistente.',
-      howTo: 'Peça o papel Agentes ao administrador.',
-      action: { label: 'Pedir acesso', href: 'https://exemplo.dev/acesso' }
+      message: 'Você não pode usar o assistente.',
+      instruction: 'Peça o papel Agentes ao administrador.',
+      action: { label: 'Pedir acesso', path: '/acessos' }
     },
-    offline: { text: 'Você está sem rede.', keeps: ['O histórico continua visível.'] }
+    offline: { message: 'Você está sem rede.', works: ['O histórico continua visível.'] }
   }
 };
 
@@ -67,6 +67,15 @@ function mount(node: React.ReactNode, chat?: ChatTransport) {
     </ThemeProvider>
   );
 }
+
+// o navegador muda o navigator.onLine e avisa; o jsdom só avisa
+function setOnline(value: boolean) {
+  vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(value);
+  act(() => void window.dispatchEvent(new Event(value ? 'online' : 'offline')));
+}
+const goOffline = () => setOnline(false);
+const goOnline = () => setOnline(true);
+afterEach(() => vi.restoreAllMocks());
 
 const failing = (first: unknown, messages: Message[] = []): ChatTransport => {
   const t = memoryTransport(messages).transport;
@@ -104,7 +113,7 @@ describe('ChatPanel com states', () => {
     mount(<ChatPanel def={{ ...def, title: 'Ajuda' }} onClose={onClose} />, failing(new ApiError(403, 'forbidden', 'x')));
     expect(await screen.findByText('Você não pode usar o assistente.')).toBeTruthy();
     expect(screen.getByText('Peça o papel Agentes ao administrador.')).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Pedir acesso' }).getAttribute('href')).toBe('https://exemplo.dev/acesso');
+    expect(screen.getByRole('link', { name: 'Pedir acesso' }).getAttribute('href')).toBe('/acessos');
     expect(screen.queryByRole('textbox', { name: 'Mensagem' })).toBeNull();
     expect(screen.getByRole('heading', { name: 'Ajuda' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Fechar' }));
@@ -125,8 +134,8 @@ describe('ChatPanel com states', () => {
     expect(await screen.findByText('Você está sem rede.')).toBeTruthy();
     await new Promise((r) => setTimeout(r, 30));
     expect(load).toHaveBeenCalledTimes(1);
-    act(() => void window.dispatchEvent(new Event('offline')));
-    act(() => void window.dispatchEvent(new Event('online')));
+    goOffline();
+    goOnline();
     expect(await screen.findByText('Resposta antiga')).toBeTruthy();
     expect(screen.queryByText('Você está sem rede.')).toBeNull();
   });
@@ -134,11 +143,11 @@ describe('ChatPanel com states', () => {
   it('o navegador sem rede põe a faixa offline sobre o histórico, que fica visível', async () => {
     mount(<ChatPanel def={def} />, memoryTransport([old]).transport);
     expect(await screen.findByText('Resposta antiga')).toBeTruthy();
-    act(() => void window.dispatchEvent(new Event('offline')));
-    expect(within(await screen.findByRole('alert')).getByText('Você está sem rede.')).toBeTruthy();
+    goOffline();
+    expect(await screen.findByText('Você está sem rede.')).toBeTruthy();
     expect(screen.getByText('O histórico continua visível.')).toBeTruthy();
     expect(screen.getByText('Resposta antiga')).toBeTruthy();
-    act(() => void window.dispatchEvent(new Event('online')));
+    goOnline();
     expect(screen.queryByText('Você está sem rede.')).toBeNull();
   });
 
@@ -183,8 +192,8 @@ describe('ChatPanel com states', () => {
     mount(<ChatPanel def={def} />, t);
     expect(await screen.findByText('Resposta antiga')).toBeTruthy();
     const before = load.mock.calls.length;
-    act(() => void window.dispatchEvent(new Event('offline')));
-    act(() => void window.dispatchEvent(new Event('online')));
+    goOffline();
+    goOnline();
     await new Promise((r) => setTimeout(r, 30));
     expect(load.mock.calls.length).toBe(before);
   });

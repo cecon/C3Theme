@@ -20,8 +20,9 @@ import { agentTaskOf, agentUiRenderers } from '../agent';
 import { ApiError } from '../apiError';
 import { useAuthSession } from '../auth/session';
 import { useEngine, useText } from '../context';
-import StateView from '../states/StateView';
-import useOnline from '../states/useOnline';
+import { usePageOnline } from '../pageStates/connectivity';
+import { PageStateView } from '../pageStates/PageStateView';
+import type { PageStates } from '../pageStates/types';
 import { chatRenderers, chatView, type ChatDef, type ChatView } from './chatDef';
 import { chatStates, watchFailures, type ChatFailure } from './chatStates';
 import ChatLanes from './ChatLanes';
@@ -38,7 +39,9 @@ const FILL_SX = { height: '100%' } as const;
 const HEADER_SX = { alignItems: 'center', px: 2, py: 1.25, minHeight: 56, borderBottom: 1, borderColor: 'divider' } as const;
 const TITLE_SX = { alignItems: 'center', flex: 1, minWidth: 0, color: 'primary.main' } as const;
 const TITLE_TEXT_SX = { color: 'text.primary' } as const;
-const SLOT_SX = { alignItems: 'center', mt: 4 } as const;
+const SLOT_SX = { alignItems: 'center', gap: 2, mt: 4, px: 2 } as const;
+const STATE_SX = { p: 2 } as const;
+const BANNER_SX = { px: 2, pt: 1.5 } as const;
 const SUGGESTIONS_SX = { flexWrap: 'wrap', justifyContent: 'center', gap: 1, px: 1 } as const;
 const CHIP_SX = { height: 'auto', py: 0.5, whiteSpace: 'normal' } as const;
 
@@ -103,11 +106,11 @@ interface ConversationProps {
 }
 
 function Conversation({ transport, view, def, onClose, failure, onReload, onClear }: ConversationProps) {
-  const { telemetry } = useEngine();
+  const { telemetry, connectivity } = useEngine();
   const user = useAuthSession()?.user;
   const me = useMemo(() => (user ? { id: user.id, name: user.name } : GUEST), [user]);
   const chat = useMessageWindow(transport, view.conversation, { me });
-  const online = useOnline();
+  const online = usePageOnline(connectivity);
   // a rede voltou depois de uma abertura sem rede: abre de novo sozinho
   const wasOnline = useRef(online);
   useEffect(() => {
@@ -135,7 +138,9 @@ function Conversation({ transport, view, def, onClose, failure, onReload, onClea
             </IconButton>
           )}
         </Stack>
-        <StateView states={states} state={shown.cover} />
+        <Box sx={STATE_SX}>
+          <StateOf states={states} kind={shown.cover} retry={onReload} />
+        </Box>
       </Stack>
     );
   // com histórico, tentar de novo não descarta nada: reenvia o que falhou ou busca a página que não veio
@@ -163,20 +168,31 @@ function Conversation({ transport, view, def, onClose, failure, onReload, onClea
         composer: { sendKey: view.sendKey, ...(view.placeholder !== undefined && { placeholder: view.placeholder }) },
         onTelemetry: telemetry,
         taskOf: agentTaskOf,
-        ...(shown.banner && { banner: <StateView states={states} state={shown.banner} onRetry={retry} banner /> }),
+        ...(shown.banner && {
+          banner: (
+            <Box sx={BANNER_SX}>
+              <StateOf states={states} kind={shown.banner} retry={retry} />
+            </Box>
+          )
+        }),
         ...(shown.slot && {
           empty: (
             <Slot
               chat={chat}
               view={view}
               empty={shown.slot === 'empty'}
-              slot={<StateView states={states} state={shown.slot} onRetry={onReload} dense />}
+              slot={<StateOf states={states} kind={shown.slot} retry={onReload} />}
             />
           )
         })
       }}
     />
   );
+}
+
+/** O estado declarado, como nas páginas (`pages[].states`); só existe com `states`. */
+function StateOf({ states, kind, retry }: { states?: PageStates; kind: keyof PageStates; retry: () => void }) {
+  return states ? <PageStateView kind={kind} state={states[kind]} retry={retry} /> : null;
 }
 
 /** A conversa vazia declarada: o estado e, só no vazio, as perguntas prontas que enviam. */

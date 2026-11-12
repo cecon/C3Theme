@@ -4,19 +4,29 @@ import { describe, expect, it, vi } from 'vitest';
 import type { ChatTransport } from '@c3theme/chat';
 
 import { ApiError } from '../apiError';
-import type { StatesDef } from '../states/states';
-import { chatStates, watchFailures, type ChatStateInput } from './chatStates';
+import type { PageStates } from '../pageStates/types';
+import { chatStates, failureOf, watchFailures, type ChatStateInput } from './chatStates';
 
-const all: StatesDef = {
-  loading: { text: 'Abrindo a conversa' },
-  empty: { text: 'Nenhuma conversa ainda' },
-  error: { text: 'Não deu para abrir' },
-  forbidden: { text: 'Sem permissão' },
-  offline: { text: 'Sem rede' }
+const all: PageStates = {
+  loading: { message: 'Abrindo a conversa' },
+  empty: { message: 'Nenhuma conversa ainda', action: { label: 'Agentes', path: '/agentes' } },
+  error: { message: 'Não deu para abrir', action: { label: 'De novo', retry: true } },
+  forbidden: { message: 'Sem permissão', instruction: 'Peça acesso' },
+  offline: { message: 'Sem rede', works: ['O histórico'] }
 };
 const base: ChatStateInput = { loading: false, failure: null, online: true, count: 0 };
-const at = (s: Partial<ChatStateInput>, states: StatesDef | null = all) => chatStates(states ?? undefined, { ...base, ...s });
+const at = (s: Partial<ChatStateInput>, states: PageStates | null = all) => chatStates(states ?? undefined, { ...base, ...s });
 const none = { cover: null, banner: null, slot: null };
+
+describe('failureOf', () => {
+  it('403 é sem permissão, status 0 é offline e o resto é erro', () => {
+    expect(failureOf(new ApiError(403, 'forbidden', 'x'))).toBe('forbidden');
+    expect(failureOf(new ApiError(0, 'network', 'x'))).toBe('offline');
+    expect(failureOf(new ApiError(500, 'internal', 'x'))).toBe('error');
+    expect(failureOf(new ApiError(404, 'not_found', 'x'))).toBe('error');
+    expect(failureOf(new Error('x'))).toBe('error');
+  });
+});
 
 describe('chatStates', () => {
   it('sem states, nada muda', () => {
@@ -45,15 +55,6 @@ describe('chatStates', () => {
     expect(at({ loading: true })).toEqual({ ...none, slot: 'loading' });
     expect(at({})).toEqual({ ...none, slot: 'empty' });
     expect(at({ count: 1 })).toEqual(none);
-  });
-
-  it('estado não declarado fica como o painel já mostra', () => {
-    expect(at({ failure: 'forbidden' }, { empty: all.empty })).toEqual(none);
-    expect(at({ online: false }, { empty: all.empty })).toEqual(none);
-    expect(at({ failure: 'error' }, { empty: all.empty })).toEqual(none);
-    expect(at({ failure: 'error', count: 1 }, { empty: all.empty })).toEqual(none);
-    expect(at({ loading: true }, { empty: all.empty })).toEqual(none);
-    expect(at({}, { loading: all.loading })).toEqual(none);
   });
 });
 

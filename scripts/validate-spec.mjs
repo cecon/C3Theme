@@ -27,7 +27,6 @@ import { checkDashboards } from './spec-dashboard.mjs';
 import { checkActionInput, checkInverse, checkOpensForm, checkSummary } from './spec-actions.mjs';
 import { checkLookups } from './spec-lookups.mjs';
 import { checkPageStates } from './spec-page-states.mjs';
-import { checkPages, checkWizards } from './spec-pages.mjs';
 import { checkChatConversations, checkPages, checkWizards } from './spec-pages.mjs';
 import { checkBoardCalendar, checkListRules, checkMenu } from './spec-views.mjs';
 import { checkReport } from './spec-report.mjs';

@@ -5,7 +5,7 @@
 # `{conversation}`: o `conversation` da spec (padrão "assistant"), `^[A-Za-z0-9_-]{1,64}$`; fora disso, 400.
 # Mensagem, evento, resposta de pergunta e de parte seguem os tipos do @c3theme/chat (Message, ChatEvent,
 # QuestionAnswer, UiAnswer), em JSON.
-# Pessoa sem permissão para a conversa: 403 (a shell mostra `states.forbidden` do chat, ADR 0011).
+# Pessoa sem permissão para a conversa: 403 (a shell mostra `states.forbidden` do chat, ADR 0010).
 components:
   schemas:
     Message:
