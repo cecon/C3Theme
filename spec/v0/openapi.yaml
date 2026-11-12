@@ -31,6 +31,11 @@ paths:
                     description: >-
                       Para cada página com permission (pelo path): o usuário pode abri-la na filial ativa? A shell
                       esconde do menu e bloqueia a rota. Páginas sem permission não aparecem.
+        '503':
+          description: >-
+            Um proxy tirou o sistema do ar; a mesma tela de GET /_meta/login (status do corpo ou Retry-After).
+          headers:
+            Retry-After: { schema: { type: string } }
         '401': { $ref: '#/components/responses/Error' }
 
   /_meta/login:
@@ -60,6 +65,12 @@ paths:
                         oneOf:
                           - { $ref: 'app.schema.json#/properties/auth' }
                           - { type: 'null' }
+        '503':
+          description: >-
+            Um proxy na frente do backend tirou o sistema do ar (o motor não responde 503 sozinho). A shell mostra
+            'Em manutenção' com o status do corpo, se vier ({ status }), ou com a previsão do Retry-After.
+          headers:
+            Retry-After: { schema: { type: string } }
 
   /_meta/context:
     get:
@@ -662,7 +673,8 @@ components:
       required: [id, title]
       properties:
         id: { type: string }
-        title: { type: [string, 'null'], description: Valor do titleField do registro referenciado; null se ele está fora do escopo do usuário. }
+        title:
+          { type: [string, 'null'], description: Valor do titleField do registro referenciado; null se ele está fora do escopo do usuário. }
 
     RecordInput:
       type: object
@@ -784,7 +796,19 @@ components:
             code:
               type: string
               enum:
-                [bad_request, unauthorized, forbidden, not_found, method_not_allowed, conflict, refused, stale, validation_failed, unavailable, internal]
+                [
+                  bad_request,
+                  unauthorized,
+                  forbidden,
+                  not_found,
+                  method_not_allowed,
+                  conflict,
+                  refused,
+                  stale,
+                  validation_failed,
+                  unavailable,
+                  internal
+                ]
             message:
               type: string
               description: Mensagem pronta para o usuário final, no idioma do header Accept-Language.

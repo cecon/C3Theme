@@ -218,3 +218,44 @@ test('editor de fluxo pela spec: abre do formulário, renomeia um passo, salva; 
   await page.getByRole('button', { name: 'Descartar' }).click();
   await expect(save).toBeDisabled();
 });
+
+test('fora do ar pelo app.json (#81): manutenção com previsão e "Tentar de novo"', async ({ page }) => {
+  await page.goto(story('telas-fora-do-ar-e-erros--manutencao'));
+  await expect(page.getByRole('heading', { name: 'Em manutenção' })).toBeVisible();
+  await expect(page.getByText('Estamos trocando o servidor do banco.')).toBeVisible();
+  await expect(page.getByText(/^Previsão de retorno: /)).toBeVisible();
+  await page.getByRole('button', { name: 'Tentar de novo' }).click();
+  await expect(page.getByRole('heading', { name: 'Em manutenção' })).toBeVisible();
+});
+
+test('em breve (#81): a contagem anda e a página em breve fica no layout com o menu', async ({ page }) => {
+  await page.goto(story('telas-fora-do-ar-e-erros--em-breve'));
+  const timer = page.getByRole('timer', { name: 'Contagem regressiva' });
+  await expect(timer).toBeVisible();
+  const before = await timer.textContent();
+  await expect.poll(() => timer.textContent(), { timeout: 3000 }).not.toBe(before);
+
+  await page.goto(story('telas-fora-do-ar-e-erros--pagina-em-breve'));
+  await expect(page.getByRole('heading', { name: 'Em breve' })).toBeVisible();
+  await expect(page.getByText('Os relatórios de venda chegam em dezembro.')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Caixa' })).toBeVisible();
+});
+
+test('tela que quebra (#81): 500 no meio do layout e o menu leva para outra tela', async ({ page }) => {
+  page.on('pageerror', () => {});
+  await page.goto(story('telas-fora-do-ar-e-erros--erro-500'));
+  await expect(page.getByRole('heading', { name: 'Algo deu errado' })).toBeVisible();
+  await page.getByRole('link', { name: 'Relatórios' }).first().click();
+  await expect(page.getByText('Os relatórios de venda chegam em dezembro.')).toBeVisible();
+});
+
+test('proxy fora do ar e rota que não existe (#81)', async ({ page }) => {
+  await page.goto(story('telas-fora-do-ar-e-erros--proxy'));
+  await expect(page.getByRole('heading', { name: 'Em manutenção' })).toBeVisible();
+  await expect(page.getByText(/^Previsão de retorno: /)).toBeVisible();
+
+  await page.goto(story('telas-fora-do-ar-e-erros--nao-encontrada'));
+  await expect(page.getByRole('heading', { name: 'Página não encontrada' })).toBeVisible();
+  await page.getByRole('link', { name: 'Voltar ao início' }).click();
+  await expect(page.getByText('Os relatórios de venda chegam em dezembro.')).toBeVisible();
+});

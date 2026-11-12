@@ -85,6 +85,7 @@ export { default as EmptyState } from './components/EmptyState';
 export type { EmptyStateProps } from './components/EmptyState';
 export { default as MessagePage } from './components/MessagePage';
 export type { MessagePageProps } from './components/MessagePage';
+export * from './components/countdown';
 export { default as PasswordStrength, passwordScore } from './components/PasswordStrength';
 
 // assistente em passos (primeiro contato) e cartões de escolha

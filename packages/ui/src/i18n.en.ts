@@ -158,5 +158,10 @@ export const UI_MESSAGES_EN: Record<UiMessageId, string> = {
   'c3.table.min': 'min',
   'c3.table.max': 'max',
   'c3.table.minOf': '{label}: minimum',
-  'c3.table.maxOf': '{label}: maximum'
+  'c3.table.maxOf': '{label}: maximum',
+  'c3.countdown.label': 'Countdown',
+  'c3.countdown.days': 'days',
+  'c3.countdown.hours': 'hours',
+  'c3.countdown.minutes': 'min',
+  'c3.countdown.seconds': 'sec'
 };

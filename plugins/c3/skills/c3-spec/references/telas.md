@@ -29,6 +29,8 @@ Resumo. Quem decide são o `spec/v0/app.schema.json` e o `entity.schema.json` do
 - `auth` liga as telas de entrada da shell (login, esqueci a senha, cadastro, perfil). Quem autentica é o sistema, pela `AuthPort` do front. Sem `auth`, o sistema faz o login e passa o token em `headers`.
 - Rotas são derivadas e ninguém as declara: `/{entity}`, `/{entity}/board`, `/{entity}/calendar`, `/{entity}/gallery`, `/{entity}/new?f.campo=valor`, `/{entity}/:id`.
 - `pages[]`: `component` (React registrado) ou `dashboard`. `layout: "blank"` ocupa a tela toda (impressão, quiosque).
+- `status` mostra "Em manutenção" (previsão, "Tentar de novo" e volta sozinha) ou "Em breve" (contagem) no lugar do login e das telas: `{ "mode": "maintenance" | "comingSoon", "title"?, "message"?, "until"? }`. Não bloqueia a API. Um proxy que responda 503 em `/_meta/*` mostra a mesma tela. Não escreva página de manutenção em TS.
+- `pages[].comingSoon: { "message"?, "until"? }` deixa no menu uma tela ainda não pronta, com "Em breve" e a contagem. Erro 500 (tela que quebra) e 404 já vêm da shell: não declare nem registre.
 
 ## Lista e menu
 

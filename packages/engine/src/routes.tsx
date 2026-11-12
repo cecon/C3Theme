@@ -5,8 +5,6 @@ import { Navigate, RouteObject, useParams } from 'react-router';
 
 // material-ui
 import Alert from '@mui/material/Alert';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 
 import { PanelSkeleton } from '@c3theme/ui';
 import { useEngine } from './context';
@@ -22,7 +20,9 @@ import type { AppDef, MenuItemDef, PageDef } from './types';
 import { viewPath } from './views';
 import WizardGuard from './pages/wizard/WizardGuard';
 import WizardPage from './pages/wizard/WizardPage';
-import { ServerError } from './status/AppStatus';
+import { AppStatus } from './status/AppStatus';
+import { NotFoundScreen, RouteErrorScreen } from './status/ErrorScreens';
+import { PAGE_SOON_MESSAGE } from './status/status';
 
 // o painel traz a biblioteca de gráficos: só baixa quem abre um
 const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'));
@@ -52,16 +52,17 @@ export function buildRoutes(app: AppDef, layout: ReactNode, extra: RouteObject[]
   const pages = app.pages ?? [];
   const pageRoute = (p: (typeof pages)[number]): RouteObject => ({
     path: p.path,
-    errorElement: <ServerError />,
+    errorElement: <RouteErrorScreen fullScreen={p.layout === 'blank'} />,
     element: <PageGate path={p.path}>{p.layout === 'blank' ? <WizardGuard>{pageBody(p)}</WizardGuard> : pageBody(p)}</PageGate>
   });
 
   return [
     {
       path: '/',
-      errorElement: <ServerError />,
+      errorElement: <RouteErrorScreen fullScreen />,
       element: <WizardGuard>{layout}</WizardGuard>,
-      children: [
+      // erro numa tela fica nela: o menu continua em volta
+      children: inLayout([
         { index: true, element: <Navigate to={app.homePath ?? homePath(app)} replace /> },
         ...app.entities.flatMap((e) => [
           { path: e, element: <EntityHome key={e} entity={e} /> },
@@ -77,12 +78,14 @@ export function buildRoutes(app: AppDef, layout: ReactNode, extra: RouteObject[]
         ]),
         ...pages.filter((p) => p.layout !== 'blank').map(pageRoute),
         ...extra,
-        { path: '*', element: <NotFound /> }
-      ]
+        { path: '*', element: <NotFoundScreen /> }
+      ])
     },
     ...pages.filter((p) => p.layout === 'blank').map(pageRoute)
   ];
 }
+
+const inLayout = (routes: RouteObject[]): RouteObject[] => routes.map((r) => ({ errorElement: <RouteErrorScreen />, ...r }));
 
 function RecordRoute({ entity }: { entity: string }) {
   const { id } = useParams();
@@ -99,10 +102,16 @@ function FlowRoute({ entity }: { entity: string }) {
 }
 
 function pageBody(p: PageDef) {
+  if (p.comingSoon) return <SoonPage soon={p.comingSoon} />;
   if (p.dashboard) return <DashboardPage dashboard={p.dashboard} />;
   if (p.wizard) return <WizardPage wizard={p.wizard} />;
   if (!p.apiDocs && !p.chat) return <CustomPage page={p} />;
   return <Suspense fallback={<PanelSkeleton />}>{p.chat ? <ChatPage def={p.chat} /> : <ApiDocs def={p.apiDocs!} />}</Suspense>;
+}
+
+/** Página ainda não pronta: o "Em breve" do sistema, na área de conteúdo. */
+function SoonPage({ soon }: { soon: NonNullable<PageDef['comingSoon']> }) {
+  return <AppStatus fullScreen={false} status={{ mode: 'comingSoon', message: soon.message ?? PAGE_SOON_MESSAGE, until: soon.until }} />;
 }
 
 function DashboardPage({ dashboard }: { dashboard: DashboardDef }) {
@@ -135,13 +144,4 @@ function CustomPage({ page }: { page: PageDef }) {
   const Page = components[component];
   if (!Page) return <Alert severity="warning">{`Página usa o componente '${component}', que este sistema não registrou.`}</Alert>;
   return <Page config={page.config ?? {}} page={page} />;
-}
-
-function NotFound() {
-  return (
-    <Stack spacing={1} sx={{ py: 8, alignItems: 'center' }}>
-      <Typography variant="h3">Página não encontrada</Typography>
-      <Typography color="text.secondary">O endereço não existe ou mudou.</Typography>
-    </Stack>
-  );
 }
