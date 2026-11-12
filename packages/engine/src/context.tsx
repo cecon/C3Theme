@@ -2,6 +2,7 @@ import { ComponentType, createContext, ReactNode, useContext } from 'react';
 import { useIntl } from 'react-intl';
 
 import type { C3Client } from './api';
+import type { DesktopFrame } from './desktop/frame';
 import type { TelemetryPort } from './telemetry';
 import type { AppDef, Capabilities, EntityDef, FieldDef, OrgContext, Text, WireRecord } from './types';
 
@@ -33,6 +34,8 @@ export interface EngineState {
   telemetry?: TelemetryPort;
   /** Lê o GET /_meta/app de novo sem remontar a shell (menu que muda com os dados). Ver `appVersion` no C3Shell. */
   reloadApp?: () => Promise<void>;
+  /** Moldura do desktop (`layout.desktop` com a porta `desktopHost`). Sem ela, o app roda como site. */
+  desktop?: DesktopFrame;
 }
 
 const EngineContext = createContext<EngineState | null>(null);

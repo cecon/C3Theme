@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
+import { desktopFrame, type DesktopDef } from '@c3theme/engine';
+
 import MotorShell from '../motor/MotorShell';
 import { searchFor } from '../motor/play';
 import { appSource } from '../motor/source';
@@ -8,6 +10,8 @@ import { withMotor } from '../motor/withMotor';
 /**
  * A shell pelo `app.json`: grupos e itens do menu (`layout.menu`, com ícone, filhos e contador do preset), botões do
  * cabeçalho (`layout.header`), rodapé e a tela da entidade da rota. A aba Code mostra o app.json.
+ *
+ * Com `layout.desktop` e a porta `desktopHost`, a mesma shell vira janela de app de desktop (histórias "Janela de desktop").
  *
  * Lacunas (uso direto em "Layout/AppLayout" e "Layout/Cabeçalho"): o menu do usuário só aparece com a sessão do `auth`,
  * e `layout.header.languages` e `userMenu` estão na spec mas a shell ainda não desenha.
@@ -48,3 +52,27 @@ export const PosicaoParaKardex: Story = { name: 'Posição de estoque, link para
  * de leitura: não arrasta nem cria. O clique leva à entrega (`open.href`).
  */
 export const AgendaSemana: Story = { name: 'Controle semanal, agenda da semana', parameters: { route: '/agenda_entrega/calendar' } };
+
+const MAC: DesktopDef = { translucent: true };
+const WINDOWS: DesktopDef = { translucent: 0.6, drawerFrom: 900 };
+// constantes: um objeto novo a cada render recriaria o tema
+const tokensOf = (def: DesktopDef, platform: 'mac' | 'windows') => desktopFrame(def, { platform })!.tokens;
+
+/**
+ * `layout.desktop: { "translucent": true }` com a porta `desktopHost` dizendo Mac (no app, `electronDesktop()` de
+ * @c3theme/electron/renderer): sem barra de título, o cabeçalho e o topo do menu arrastam a janela, a marca abre espaço
+ * para os três botões (tracejado), o menu deixa a vibrancy aparecer (aqui, o degradê), e o tema ganha a fonte do
+ * sistema e a densidade compacta. O main abre a janela pela mesma declaração (`windowFrame` de @c3theme/electron/main).
+ */
+export const JanelaMac: Story = {
+  name: 'Janela de desktop: Mac',
+  args: { desktop: MAC, platform: 'mac' },
+  parameters: { tokens: tokensOf(MAC, 'mac') }
+};
+
+/** No Windows os botões ficam à direita do cabeçalho; menu com 60% do fundo para o mica e menu fixo a partir de 900 px. */
+export const JanelaWindows: Story = {
+  name: 'Janela de desktop: Windows',
+  args: { desktop: WINDOWS, platform: 'windows' },
+  parameters: { tokens: tokensOf(WINDOWS, 'windows') }
+};

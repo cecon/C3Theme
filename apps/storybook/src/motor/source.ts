@@ -1,6 +1,6 @@
 // O painel Code das histórias pelo motor mostra o JSON da spec, não o JSX: é o que quem usa o motor escreve.
 
-import type { AppDef } from '@c3theme/engine';
+import type { AppDef, DesktopDef } from '@c3theme/engine';
 
 import { APP, ENTITIES } from './spec';
 
@@ -50,10 +50,14 @@ export const jsonSource = {
 
 type Orientation = NonNullable<AppDef['layout']['orientation']>;
 
-/** O app.json da spec com outra orientação do menu: a única chave que muda entre as histórias da shell. */
-export const appWith = (orientation: Orientation): AppDef => ({ ...APP, layout: { ...APP.layout, orientation } });
+/** O app.json da spec com outra orientação do menu e, nas histórias de janela, a moldura do desktop (`layout.desktop`). */
+export const appWith = (orientation: Orientation, desktop?: DesktopDef): AppDef => ({
+  ...APP,
+  layout: { ...APP.layout, orientation, ...(desktop && { desktop }) }
+});
 
-/** `parameters.docs.source` das histórias da shell: o app.json com a orientação da história (`args.orientation`). */
+/** `parameters.docs.source` das histórias da shell: o app.json com a orientação e a moldura da história. */
 export const appSource = {
-  transform: (_code: string, { args }: Ctx) => pretty(appWith((args.orientation as Orientation | undefined) ?? 'vertical'))
+  transform: (_code: string, { args }: Ctx) =>
+    pretty(appWith((args.orientation as Orientation | undefined) ?? 'vertical', args.desktop as DesktopDef | undefined))
 };

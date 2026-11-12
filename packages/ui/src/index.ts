@@ -26,6 +26,8 @@ export { default as AppLayout, DRAWER_WIDTH, MINI_DRAWER_WIDTH, HEADER_HEIGHT, C
 export type { AppLayoutProps } from './layout/AppLayout';
 export { DESKTOP_DRAWER_FROM, desktopTokens, resolveDesktop, SYSTEM_FONT } from './layout/desktop';
 export type { DesktopOptions, DesktopPlatform, ResolvedDesktop, WindowControls } from './layout/desktop';
+export { default as WindowDragBar } from './layout/WindowDragBar';
+export type { WindowDragBarProps } from './layout/WindowDragBar';
 export { COMPACT_FIELD_HEIGHT, HEADER_HEIGHTS, useHeaderHeight } from './theme/density';
 export type { Density } from './theme/density';
 export { default as FillHeight } from './layout/FillHeight';

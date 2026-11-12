@@ -15,6 +15,9 @@ export type { C3Client, C3Notification, ListParams, NotificationList, SearchResu
 // transporte e roteador trocáveis (Electron: `transport={ipcFetch(...)}` de @c3theme/electron e `router="hash"`)
 export type { C3Fetch } from './transport';
 export type { RouterMode } from './router';
+export { desktopFrame } from './desktop/frame';
+export type { DesktopDef, DesktopFrame } from './desktop/frame';
+export type { DesktopHost } from './desktop/port';
 // adaptador em memória da mesma porta: vitrine estática, protótipo e teste de tela, sem backend
 export { createMemoryClient } from './memory/memoryClient';
 export type { MemoryAction, MemorySeed } from './memory/memoryClient';

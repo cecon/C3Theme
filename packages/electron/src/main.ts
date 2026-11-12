@@ -1,5 +1,5 @@
-// Entrada do processo main: liga o IPC (`serveC3`) e escolhe para onde vão os pedidos (`forwardTo`), com um
-// backend local opcional (`startSidecar`).
+// Entrada do processo main: liga o IPC (`serveC3`), escolhe para onde vão os pedidos (`forwardTo`), com um
+// backend local opcional (`startSidecar`), e abre a janela com a moldura do app.json (`windowFrame`).
 
 export { fromPage, serveC3 } from './serve';
 export type { C3Caller, C3Handler, IpcEventLike, IpcMainLike, ServeOptions } from './serve';
@@ -8,3 +8,5 @@ export type { ForwardOptions } from './forward';
 export { freePort, startSidecar } from './sidecar';
 export type { Sidecar, SidecarOptions } from './sidecar';
 export type { WireRequest } from './wire';
+export { windowFrame, WINDOWS_CONTROLS_HEIGHT } from './frame';
+export type { WindowFrameDef, WindowFrameOptions } from './frame';

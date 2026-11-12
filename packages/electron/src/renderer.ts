@@ -4,6 +4,8 @@
 import type { C3Bridge, WireHead, WireRequest } from './wire';
 
 export type { C3Bridge } from './wire';
+export { electronDesktop, platformOf } from './desktop';
+export type { DesktopPlatform, ElectronDesktopOptions, NavigatorLike } from './desktop';
 
 /** Status que não podem ter corpo numa `Response`. */
 const NO_BODY = new Set([101, 204, 205, 304]);
