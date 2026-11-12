@@ -12,7 +12,7 @@ export type ChatRequest = (path: string, init?: RequestInit) => Promise<Response
 /** Espera antes de reconectar o SSE, dobrando até 30 s. */
 export const nextDelay = (ms: number) => Math.min(ms * 2, 30_000);
 
-const EVENTS = new Set(['message', 'delta', 'typing', 'removed', 'ui.cancel']);
+const EVENTS = new Set(['message', 'delta', 'typing', 'removed', 'ui.cancel', 'notice']);
 
 /** Evento do SSE em ChatEvent; `ready`, nome desconhecido ou JSON quebrado viram null. */
 export function toChatEvent(e: { event: string; data: string }): ChatEvent | null {
@@ -73,7 +73,8 @@ export function httpChatTransport(request: ChatRequest): ChatTransport {
         clientId: m.clientId,
         text: m.text ?? '',
         ...(m.replyTo && { replyTo: m.replyTo }),
-        ...(m.pendingPart && { pendingPart: m.pendingPart })
+        ...(m.pendingPart && { pendingPart: m.pendingPart }),
+        ...(m.steer && { steer: true })
       };
       return call<{ data: Message }>(path(m.conversationId, '/messages'), 'POST', body).then((r) => r.data);
     },
@@ -95,6 +96,7 @@ export function httpChatTransport(request: ChatRequest): ChatTransport {
       })();
       return () => ctrl.abort();
     },
+    remove: (conversation, id) => call<void>(path(conversation, `/messages/${encodeURIComponent(id)}`), 'DELETE'),
     stop: (conversation) => void call(path(conversation, '/_stop'), 'POST').catch(() => undefined),
     answer: (conversation, id, answer) => call<void>(path(conversation, `/messages/${encodeURIComponent(id)}/_answer`), 'POST', answer),
     answerUi: (conversation, id, part, answer) =>

@@ -24,11 +24,13 @@ export type { ModelFlag, ModelGroup, ModelOption, ModelTag, ModelTagTone } from 
 export { acceptsFile, addFiles } from './core/files';
 export { newTaskWatch, watchTasks } from './core/telemetry';
 export type { ChatTaskEvent, ChatTelemetryPort, PartTask, TaskOf, TaskWatch } from './core/telemetry';
-export type { ChatEvent, ChatTransport, DraftStorage, MessagePage } from './core/transport';
+export type { ChatEvent, ChatTransport, DraftStorage, MessagePage, NoticeTone } from './core/transport';
+export { composerKey, isSteering, splitSteering } from './core/steer';
+export type { ComposerKeyState, KeyPress, SendKey } from './core/steer';
 export { appendDelta, isGenerating, mergeMessages, openWindow, windowReducer, oldestId } from './core/window';
 export { inlineText, parseInline, parseMarkdown, safeHref } from './core/markdown';
 export type { MdAlign, MdBlock, MdInline } from './core/markdown';
-export type { WindowAction, WindowState } from './core/window';
+export type { Notice, WindowAction, WindowState } from './core/window';
 export { continuesGroup, localDay, startsDay, GROUP_GAP_MS } from './core/grouping';
 export { APPROVAL, approvalAnswer, approvalChoice, isAgent, latestBlocks, stateFor } from './core/team';
 export type { ApprovalChoice, Handoff, ToolRequest } from './core/team';

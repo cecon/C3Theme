@@ -559,6 +559,16 @@
           "type": "boolean",
           "default": true,
           "description": "Fila da próxima mensagem enquanto o agente responde."
+        },
+        "sendKey": {
+          "enum": ["enter", "modEnter"],
+          "default": "enter",
+          "description": "Como a pessoa envia: 'enter' (Shift+Enter quebra a linha) ou 'modEnter' (Ctrl+Enter, ⌘+Enter no Mac; Enter quebra a linha)."
+        },
+        "steer": {
+          "type": "boolean",
+          "default": false,
+          "description": "Orientar o turno em andamento (ADR 0008): com o agente ocupado, Ctrl+Enter (⌘+Enter) manda o texto para dentro do turno sem interromper (POST messages com steer: true); com a caixa vazia, orienta com a primeira da fila. A fila ganha Orientar em cada mensagem, a orientação espera como 'Orientando' com Remover (DELETE messages/{m}) e o rótulo do atalho aparece junto da caixa. Avisos do sistema (evento notice) aparecem como aviso passageiro."
         }
       }
     },

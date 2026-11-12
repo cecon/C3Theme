@@ -1130,3 +1130,12 @@ Em `pages[].chat` ou `layout.header.assistant`, `lanes: {}` liga a lista lateral
 As rotas de `chat-lanes.yaml` são montadas pelos backends e delegadas à porta `Chat`: `lanes`, `openLane` e `messageAction` no Node; `lanes`, `open_lane` e `message_action` no Rust. São opcionais, com 404 quando ausentes. A sala entregue à porta contém o usuário do pedido; a implementação deve autorizar cada conversa e mensagem. Um ramo copia só o histórico até a origem; a pergunta à parte começa sem o histórico. `ChatRoom.inConversation` (Rust: `in_conversation`) cria uma sala do mesmo usuário para iniciar uma resposta na filha.
 
 Os exemplos Node/Rust guardam essas conversas em memória por usuário e pai. A página do assistente em `spec/v0/examples/app.json` declara o recurso; a conformidade confere cópia do ramo, envio separado e isolamento entre usuários.
+
+## Orientar o agente no meio do trabalho
+
+`"steer": true` em `pages[].chat` ou `layout.header.assistant` ([ADR 0008](../docs/adr/0008-orientar-o-turno-em-andamento.md)): com o agente respondendo, Ctrl+Enter (⌘+Enter no Mac) manda o texto para dentro do turno, sem parar; com a caixa vazia, orienta com a primeira da fila, e cada mensagem da fila ganha Orientar. `"sendKey": "modEnter"` troca o envio para Ctrl+Enter (Enter quebra a linha); Ctrl+Enter orienta nos dois modos, só com turno em andamento.
+
+- Envio com `steer: true` (POST messages). O agente devolve a mensagem com `steer: "pending"` e, no próximo ponto seguro, emite de novo com `steer: "taken"`. A shell mostra a pendente na fila ("Orientando", só com Remover) e a lida na conversa ("Orientou").
+- Remover a pendente: DELETE `/_chat/{c}/messages/{m}` → porta `remove` (opcional; já lida, 409; sem a porta, 404), que emite `removed`.
+- Agente que não recebe mensagem no meio do trabalho, ou orientação sem turno: evento `notice` com texto pronto (`ChatRoom::notice` / `room.notice`) e a mensagem segue como comum. A shell mostra o aviso acima da caixa, e ele some sozinho.
+- Os exemplos Node/Rust leem as orientações a cada pedaço da resposta e as respondem no fim; a conformidade confere nos dois.

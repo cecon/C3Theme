@@ -80,7 +80,8 @@ export function memoryTransport(
         text: out.text,
         createdAt: new Date().toISOString(),
         status: 'sent',
-        replyTo: out.replyTo
+        replyTo: out.replyTo,
+        ...(out.steer && { steer: 'pending' as const })
       };
       store.push(saved);
       // os outros assinantes (outra aba, lista de conversas) também ficam sabendo
@@ -94,6 +95,14 @@ export function memoryTransport(
       return () => set.delete(onEvent);
     },
     sendTyping() {},
+    /** Só a orientação que o agente ainda não leu sai; o resto dá 409. */
+    async remove(conversationId, messageId) {
+      await wait();
+      const at = store.findIndex((m) => m.id === messageId && m.conversationId === conversationId);
+      if (at < 0 || store[at].steer !== 'pending') throw Object.assign(new Error('mensagem já lida'), { status: 409 });
+      store.splice(at, 1);
+      notify(conversationId, { type: 'removed', conversationId, id: messageId });
+    },
     async answerUi(conversationId, messageId, partId, answer) {
       await wait();
       const i = store.findIndex((m) => m.id === messageId);

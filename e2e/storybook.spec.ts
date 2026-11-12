@@ -218,3 +218,36 @@ test('editor de fluxo pela spec: abre do formulário, renomeia um passo, salva; 
   await page.getByRole('button', { name: 'Descartar' }).click();
   await expect(save).toBeDisabled();
 });
+
+test('orientar pelo motor: com o agente escrevendo, Ctrl+Enter orienta, ele lê no meio e responde no fim (#91)', async ({ page }) => {
+  await page.goto(story('telas-pelo-motor--assistente'));
+  await page.getByText('Pesquisar faturas atrasadas').click();
+  await expect(page.getByText('orienta o agente sem parar o trabalho')).toBeVisible();
+  const box = page.getByRole('textbox', { name: 'Mensagem' });
+  await box.fill('Comece pelos maiores valores');
+  await box.press('Control+Enter');
+  await expect(box).toHaveValue('');
+  await expect(page.getByText('Orientou ·')).toBeVisible();
+  await box.fill('Deixe de fora quem já negociou');
+  await box.press('Enter');
+  const queue = page.getByRole('list', { name: 'Mensagens na fila' });
+  await queue.getByRole('button', { name: 'Orientar' }).click();
+  await expect(page.getByText(/Anotei e já considerei/)).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole('listitem').filter({ hasText: 'Comece pelos maiores valores' })).toBeVisible();
+  await expect(page.getByRole('listitem').filter({ hasText: 'Deixe de fora quem já negociou' })).toBeVisible();
+  await expect(page.getByText('orienta o agente sem parar o trabalho')).toHaveCount(0);
+});
+
+test('orientar: a orientação esperando aparece na fila e sai pelo Remover; o aviso passageiro fecha (#91)', async ({ page }) => {
+  await page.goto(story('chat-assistente-de-ia--caixa-orientando'));
+  await expect(page.getByRole('status', { name: 'Aviso da conversa' })).toBeVisible();
+  await page.getByRole('button', { name: 'Fechar' }).click();
+  await expect(page.getByRole('status', { name: 'Aviso da conversa' })).toHaveCount(0);
+  const box = page.getByRole('textbox', { name: 'Mensagem' });
+  await box.fill('vá pelo norte');
+  await box.press('Control+Enter');
+  const queue = page.getByRole('list', { name: 'Mensagens na fila' });
+  await expect(queue.getByText('Orientando')).toBeVisible();
+  await queue.getByRole('button', { name: 'Remover orientação' }).click();
+  await expect(queue).toHaveCount(0);
+});

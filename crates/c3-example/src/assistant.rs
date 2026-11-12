@@ -3,7 +3,7 @@
 //! pelo motor. Só uma parte fica pendente: a nova fecha a anterior (`ui.cancel` superseded). Sistema de verdade guarda
 //! numa tabela própria e chama o modelo.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -17,6 +17,8 @@ use crate::assistant_script::{after, last_open_order, needs_order, turn, Reply, 
 
 #[path = "assistant_lanes.rs"]
 mod lanes;
+#[path = "assistant_steer.rs"]
+mod steer;
 
 type Key = (String, String);
 
@@ -30,6 +32,9 @@ struct State {
     lanes: HashMap<Key, Vec<Value>>,
     /// Sobe a cada Parar: a resposta em andamento confere e para.
     generation: HashMap<Key, u64>,
+    /// Conversas com resposta sendo escrita, e as orientações lidas nela (respondidas no fim).
+    writing: HashSet<Key>,
+    notes: HashMap<Key, Vec<String>>,
 }
 
 #[derive(Clone)]
@@ -135,6 +140,7 @@ impl Assistant {
         let started = self.generation(&room);
         let mut message = bot(&id, "");
         message["streaming"] = json!(true);
+        self.set_writing(&room, true);
         let _ = room.message(message.clone());
         tokio::time::sleep(THINK).await;
         let mut said = String::new();
@@ -142,6 +148,7 @@ impl Assistant {
             if self.generation(&room) != started {
                 break;
             }
+            self.take_steers(&room);
             said.push_str(word);
             let _ = room.delta(&id, word, false);
             tokio::time::sleep(CHUNK).await;
@@ -162,6 +169,8 @@ impl Assistant {
         if done.get("ui").is_some() {
             self.supersede(&room);
         }
+        self.set_writing(&room, false);
+        self.answer_steers(room);
     }
 
     /// Mensagem curta do assistente, sem pedaços (resposta a uma parte).
@@ -202,9 +211,18 @@ impl Chat for Assistant {
     }
 
     async fn send(&self, room: ChatRoom, m: Outgoing) -> Result<Value, ApiError> {
-        let mine = json!({ "id": self.next("me-"), "clientId": m.client_id, "author": { "id": room.audience(), "name": "Você" },
+        let mut mine = json!({ "id": self.next("me-"), "clientId": m.client_id, "author": { "id": room.audience(), "name": "Você" },
                            "direction": "out", "text": m.text, "status": "sent", "createdAt": now() });
+        let steering = m.steer && self.writing(&room);
+        if steering {
+            mine["steer"] = json!("pending");
+        } else if m.steer {
+            let _ = room.notice(steer::IDLE);
+        }
         self.store(&room, &mine);
+        if steering {
+            return Ok(mine);
+        }
         let pending = self.pending(&room);
         let order = if needs_order(&m.text) {
             last_open_order(&self.pool).await
@@ -225,6 +243,10 @@ impl Chat for Assistant {
             }
         });
         Ok(mine)
+    }
+
+    async fn remove(&self, room: ChatRoom, message_id: &str) -> Result<(), ApiError> {
+        self.remove_steer(&room, message_id)
     }
 
     async fn stop(&self, room: ChatRoom) -> Result<(), ApiError> {

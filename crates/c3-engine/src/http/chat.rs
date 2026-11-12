@@ -54,6 +54,18 @@ pub(super) async fn stop(State(engine): State<Engine>, Path(conversation): Path<
     Ok(StatusCode::NO_CONTENT)
 }
 
+/// Tira a orientação que o agente ainda não leu (ADR 0008); a porta confere o estado (409) e emite `removed`.
+pub(super) async fn remove(
+    State(engine): State<Engine>,
+    Path((conversation, message)): Path<(String, String)>,
+    req: Parts,
+) -> Result<StatusCode, ApiError> {
+    let (port, room) = chat::open(&engine, &req, &conversation)?;
+    chat::check_id(&message, "Mensagem")?;
+    port.remove(room, &message).await?;
+    Ok(StatusCode::NO_CONTENT)
+}
+
 pub(super) async fn answer(
     State(engine): State<Engine>,
     Path((conversation, message)): Path<(String, String)>,

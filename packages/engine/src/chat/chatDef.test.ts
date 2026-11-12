@@ -19,14 +19,18 @@ describe('chatDef', () => {
       title: 'Assistente',
       placeholder: undefined,
       suggestions: [],
-      queue: true
+      queue: true,
+      sendKey: 'enter',
+      steer: false
     });
     expect(
       chatView(
         { conversation: 'vendas', title: { id: 'chat.t' }, placeholder: 'Pergunte', suggestions: ['a', { id: 'b' }], queue: false },
         text
       )
-    ).toEqual({ conversation: 'vendas', title: '[chat.t]', placeholder: 'Pergunte', suggestions: ['a', '[b]'], queue: false });
+    ).toMatchObject({ conversation: 'vendas', title: '[chat.t]', placeholder: 'Pergunte', suggestions: ['a', '[b]'], queue: false });
+    expect(chatView({ sendKey: 'modEnter', steer: true }, text)).toMatchObject({ sendKey: 'modEnter', steer: true });
+    expect(chatView({ sendKey: 'outra' as never, steer: 'sim' as never }, text)).toMatchObject({ sendKey: 'enter', steer: false });
   });
 
   it('chatRenderers: os do motor que a conversa aceita e um buraco para cada kind fora de `parts`', () => {

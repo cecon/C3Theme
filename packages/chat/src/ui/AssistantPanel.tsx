@@ -1,12 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react';
 
 // material-ui
-import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
@@ -26,11 +21,15 @@ import type useMessageWindow from '../hooks/useMessageWindow';
 import AgentComposer, { type AgentComposerProps } from './AgentComposer';
 import VoiceConversation, { type VoiceConversationProps } from './voice/VoiceConversation';
 import ConversationPicker from './ConversationPicker';
+import DeleteConversationDialog from './DeleteConversationDialog';
+import NoticeBar from './steer/NoticeBar';
+import { splitSteering } from '../core/steer';
 import MessageList from './MessageList';
 import type { UiRenderers } from './UiParts';
 import { shouldAnnounce, waitingFor } from '../core/waiting';
 import { hitlUiRenderers, WaitingBanner } from './hitl';
 import AsideButton from './lanes/AsideButton';
+import { SUBMIT_LABEL } from './Shortcut';
 import { useChatText } from './text';
 
 /** O que o painel usa do `useMessageWindow`: passe o retorno inteiro. */
@@ -38,7 +37,7 @@ export type AssistantChat = Pick<
   ReturnType<typeof useMessageWindow>,
   'conversationId' | 'messages' | 'hasMore' | 'loading' | 'loadOlder' | 'send' | 'retry' | 'stop' | 'generating' | 'answer'
 > &
-  Partial<Pick<ReturnType<typeof useMessageWindow>, 'answerUi'>>;
+  Partial<Pick<ReturnType<typeof useMessageWindow>, 'answerUi' | 'remove' | 'notice' | 'dismissNotice'>>;
 
 export interface AssistantPanelProps {
   chat: AssistantChat;
@@ -80,6 +79,12 @@ export interface AssistantPanelProps {
   /** Fila da próxima mensagem enquanto o assistente responde. Padrão: ligada. */
   queue?: boolean;
   /**
+   * Orientar o turno em andamento (ADR 0008): Ctrl+Enter (⌘+Enter) com o agente ocupado manda a mensagem para dentro
+   * do turno, sem interromper, e a fila ganha Orientar. A orientação espera na fila como "Orientando" até o agente ler
+   * (Remover com `chat.remove`). Padrão: desligado.
+   */
+  steer?: boolean;
+  /**
    * Eventos de tarefa das partes de interface (`task.start` ao aparecer, `task.done` ao gravar, `task.abandon` ao
    * recusar ou vencer), com `channel: 'chat'`. Precisa de `taskOf` (ex.: `agentTaskOf` do @c3theme/engine).
    */
@@ -109,11 +114,14 @@ export default function AssistantPanel(props: AssistantPanelProps) {
   const renderers = useMemo(() => ({ ...hitlUiRenderers, ...props.uiRenderers }), [props.uiRenderers]);
   const waiting = waitingFor(chat.messages);
   const [jumpTo, setJumpTo] = useState<{ messageId: string; seq: number }>();
+  const steer = props.steer ? (text: string, files: File[]) => chat.send(text, { files, steer: true }) : undefined;
   const queue = useMessageQueue({
     generating: chat.generating,
     send: (text, files) => chat.send(text, { files }),
-    conversationId: chat.conversationId
+    conversationId: chat.conversationId,
+    steer
   });
+  const { shown, steering } = splitSteering(chat.messages);
 
   function send(text: string, files: File[] = []) {
     chat.send(text, { files });
@@ -198,7 +206,7 @@ export default function AssistantPanel(props: AssistantPanelProps) {
             <MessageList
               variant="assistant"
               title={typeof title === 'string' ? title : t('c3.chat.assistant')}
-              messages={chat.messages}
+              messages={shown}
               hasMore={chat.hasMore}
               loadingOlder={chat.loading === 'older'}
               onLoadOlder={chat.loadOlder}
@@ -217,9 +225,13 @@ export default function AssistantPanel(props: AssistantPanelProps) {
           {shouldAnnounce(chat.messages, waiting) && (
             <WaitingBanner waiting={waiting} onGo={(id) => setJumpTo((j) => ({ messageId: id, seq: (j?.seq ?? 0) + 1 }))} />
           )}
+          {chat.dismissNotice && <NoticeBar notice={chat.notice ?? null} onDismiss={chat.dismissNotice} />}
           <AgentComposer
-            hint={t('c3.chat.hint')}
+            hint={composer?.sendKey === 'modEnter' ? t('c3.chat.hintMod', { keys: SUBMIT_LABEL }) : t('c3.chat.hint')}
             {...composer}
+            onSteer={steer}
+            steering={steering}
+            onRemoveSteering={chat.remove && ((id) => void chat.remove!(id))}
             startActions={withAside(composer?.startActions)}
             value={draft.text}
             onChange={draft.setText}
@@ -230,26 +242,11 @@ export default function AssistantPanel(props: AssistantPanelProps) {
           />
         </>
       )}
-      <Dialog open={!!confirm} onClose={() => setConfirm(null)} maxWidth="xs" fullWidth>
-        <DialogContent>
-          <DialogContentText>{t('c3.chat.deleteConfirm', { title: confirm?.title ?? '' })}</DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button color="secondary" onClick={() => setConfirm(null)}>
-            {t('c3.chat.cancel')}
-          </Button>
-          <Button
-            color="error"
-            variant="contained"
-            onClick={() => {
-              if (confirm) props.onDeleteConversation?.(confirm.id);
-              setConfirm(null);
-            }}
-          >
-            {t('c3.chat.delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <DeleteConversationDialog
+        conversation={confirm}
+        onClose={() => setConfirm(null)}
+        onDelete={(id) => props.onDeleteConversation?.(id)}
+      />
     </Stack>
   );
 }

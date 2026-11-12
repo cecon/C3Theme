@@ -4,7 +4,7 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { IntlProvider } from 'react-intl';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { memoryTransport, type ChatTransport, type Message } from '@c3theme/chat';
 
@@ -85,6 +85,22 @@ describe('ChatPanel', () => {
     expect(await screen.findByText('Veja:')).toBeTruthy();
     expect(screen.getByText('Esta resposta traz um conteúdo que esta tela não sabe mostrar.')).toBeTruthy();
     expect(screen.queryByText('Ler')).toBeNull();
+  });
+
+  it('steer e sendKey da spec: Ctrl+Enter com o agente ocupado orienta e a orientação espera na fila', async () => {
+    const working = { ...reply(undefined), id: 'r0', text: 'Trabalhando', streaming: true };
+    const t = memoryTransport([working]);
+    mount(<ChatPanel def={{ steer: true, sendKey: 'modEnter' }} />, t.transport);
+    expect(await screen.findByText('orienta o agente sem parar o trabalho')).toBeTruthy();
+    const box = screen.getByRole('textbox', { name: 'Mensagem' });
+    fireEvent.change(box, { target: { value: 'vá pelo norte' } });
+    fireEvent.keyDown(box, { key: 'Enter' });
+    expect((box as HTMLTextAreaElement).value).toBe('vá pelo norte');
+    fireEvent.keyDown(box, { key: 'Enter', ctrlKey: true });
+    const queue = await screen.findByRole('list', { name: 'Mensagens na fila' });
+    expect(await within(queue).findByText('Orientando')).toBeTruthy();
+    fireEvent.click(within(queue).getByRole('button', { name: 'Remover orientação' }));
+    await vi.waitFor(() => expect(screen.queryByText('Orientando')).toBeNull());
   });
 
   it('watchMissing só avisa no 404', async () => {

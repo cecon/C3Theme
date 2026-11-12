@@ -52,7 +52,16 @@ export function answer(conversationId: string, text: string): Message {
   return reply(conversationId, 'Claro.', [periodo()]);
 }
 
-/** Transporte em memória com o roteiro: responde 300 ms depois de cada envio e de cada resposta de parte. */
+/** Texto da pesquisa longa: dá tempo de orientar o agente (ADR 0008) enquanto ele escreve. */
+export const PESQUISA =
+  'Estou levantando as faturas em aberto, cliente por cliente, e cruzando com os pagamentos do mês para ver quem atrasou ' +
+  'e quanto. Depois separo por faixa de atraso e por valor, para você decidir a ordem da cobrança.';
+
+/**
+ * Transporte em memória com o roteiro: responde 300 ms depois de cada envio e de cada resposta de parte. "Pesquisar…"
+ * escreve aos pedaços por uns segundos; a orientação mandada nesse meio é lida no pedaço seguinte (`steer: taken`) e
+ * respondida no fim. Orientação sem trabalho em andamento vira mensagem comum, com o aviso passageiro.
+ */
 export function assistente() {
   const later = (fn: () => void) => window.setTimeout(fn, 300);
   const mem = memoryTransport([], {
@@ -67,9 +76,52 @@ export function assistente() {
       )
   });
   const send = mem.transport.send;
+  const writing = new Set<string>();
+  const notes: string[] = [];
+  /** Lê as orientações que esperam: marca `taken` e guarda o texto para responder no fim. */
+  const take = (conversationId: string) =>
+    mem.store
+      .filter((m) => m.conversationId === conversationId && m.steer === 'pending')
+      .forEach((m) => {
+        notes.push(m.text ?? '');
+        mem.emit(conversationId, { type: 'message', message: { ...m, steer: 'taken' } });
+      });
+  /** Escreve a pesquisa aos pedaços; no fim, responde as orientações lidas. */
+  const research = (conversationId: string) => {
+    writing.add(conversationId);
+    later(() => write(conversationId));
+  };
+  const write = (conversationId: string) => {
+    const first = reply(conversationId, '');
+    const words = PESQUISA.split(/(?<= )/);
+    mem.emit(conversationId, { type: 'message', message: { ...first, streaming: true } });
+    words.forEach((word, i) =>
+      window.setTimeout(
+        () => {
+          take(conversationId);
+          mem.emit(conversationId, { type: 'delta', conversationId, id: first.id, text: word, done: i === words.length - 1 });
+          if (i < words.length - 1) return;
+          writing.delete(conversationId);
+          const said = notes.splice(0).map((n) => `- ${n}`);
+          if (said.length)
+            mem.emit(conversationId, { type: 'message', message: reply(conversationId, `Anotei e já considerei:\n\n${said.join('\n')}`) });
+        },
+        400 + i * 120
+      )
+    );
+  };
   mem.transport.send = async (out) => {
-    const saved = await send(out);
-    later(() => mem.emit(out.conversationId, { type: 'message', message: answer(out.conversationId, out.text ?? '') }));
+    const idle = !writing.has(out.conversationId);
+    const saved = await send({ ...out, steer: out.steer && !idle });
+    if (out.steer && !idle) return saved;
+    if (out.steer)
+      mem.emit(out.conversationId, {
+        type: 'notice',
+        conversationId: out.conversationId,
+        text: 'O agente já tinha terminado: a mensagem foi como pergunta comum.'
+      });
+    if ((out.text ?? '').toLowerCase().includes('pesquis')) research(out.conversationId);
+    else later(() => mem.emit(out.conversationId, { type: 'message', message: answer(out.conversationId, out.text ?? '') }));
     return saved;
   };
   return mem.transport;

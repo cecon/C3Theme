@@ -137,8 +137,9 @@
       "title": "Assistente",
       "chat": {
         "title": "Assistente",
+        "steer": true,
         "placeholder": "Peça um cadastro ou um relatório",
-        "suggestions": ["Cadastrar o cliente Padaria Bom Dia", "Relatório de faturas do mês"],
+        "suggestions": ["Cadastrar o cliente Padaria Bom Dia", "Relatório de faturas do mês", "Pesquisar faturas atrasadas"],
         "parts": ["c3.form", "c3.record", "c3.action"]
       }
     },

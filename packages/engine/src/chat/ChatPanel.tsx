@@ -71,7 +71,8 @@ function Conversation({ transport, view, def, onClose }: { transport: ChatTransp
         suggestions: view.suggestions,
         uiRenderers: renderers,
         queue: view.queue,
-        composer: view.placeholder === undefined ? undefined : { placeholder: view.placeholder },
+        steer: view.steer,
+        composer: { sendKey: view.sendKey, ...(view.placeholder !== undefined && { placeholder: view.placeholder }) },
         onTelemetry: telemetry,
         taskOf: agentTaskOf
       }}

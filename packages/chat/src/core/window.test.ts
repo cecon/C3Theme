@@ -97,4 +97,18 @@ describe('resposta em streaming (assistente)', () => {
     const s = windowReducer(openWindow('c1'), { type: 'event', event: { type: 'message', message: msg('r1', 1, { text: 'a' }) } });
     expect(windowReducer(s, { type: 'event', event: { type: 'delta', conversationId: 'c2', id: 'r1', text: 'x' } })).toBe(s);
   });
+
+  it('aviso passageiro: guarda o mais recente com seq novo, tom padrão info; de outra conversa é ignorado', () => {
+    const notice = (text: string, more = {}) => ({
+      type: 'event' as const,
+      event: { type: 'notice' as const, conversationId: 'c1', text, ...more }
+    });
+    let s = windowReducer(openWindow('c1'), notice('O agente vai parar.'));
+    expect(s.notice).toEqual({ seq: 1, text: 'O agente vai parar.', tone: 'info' });
+    s = windowReducer(s, notice('O agente vai parar.', { tone: 'warning' }));
+    expect(s.notice).toEqual({ seq: 2, text: 'O agente vai parar.', tone: 'warning' });
+    expect(windowReducer(s, { type: 'event', event: { type: 'notice', conversationId: 'c2', text: 'x' } })).toBe(s);
+    expect(windowReducer(s, { type: 'dismissNotice' }).notice).toBeNull();
+    expect(openWindow('c1').notice).toBeNull();
+  });
 });

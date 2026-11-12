@@ -12,13 +12,12 @@ use tokio::sync::broadcast;
 use crate::error::ApiError;
 use crate::Engine;
 
-/// Mensagens por página do histórico, no máximo.
-pub const MAX_LIMIT: usize = 100;
-const DEFAULT_LIMIT: usize = 30;
-/// Tamanho máximo do texto que o usuário manda, em caracteres.
-pub const MAX_TEXT: usize = 20_000;
+#[path = "chat_body.rs"]
+mod body;
+pub(crate) use body::{check_id, parse_answer, parse_limit, parse_outgoing, parse_ui_answer, MAX_TEXT};
+
 /// Eventos que o navegador entende (`ChatEvent` do @c3theme/chat).
-const EVENTS: [&str; 5] = ["message", "delta", "typing", "removed", "ui.cancel"];
+const EVENTS: [&str; 6] = ["message", "delta", "typing", "removed", "ui.cancel", "notice"];
 
 /// Uma página do histórico, da mais antiga para a mais nova (`Message` do @c3theme/chat, em JSON).
 #[derive(Debug, Clone, Default)]
@@ -28,8 +27,9 @@ pub struct ChatPage {
     pub has_more: bool,
 }
 
-/// O que o usuário mandou (POST /_chat/{conversation}/messages), já conferido.
-#[derive(Debug, Clone, PartialEq)]
+/// O que o usuário mandou (POST /_chat/{conversation}/messages), já conferido. Para montar à mão, use
+/// `..Outgoing::default()` nos campos que não importam.
+#[derive(Debug, Clone, PartialEq, Default)]
 pub struct Outgoing {
     /// Id gerado no navegador: a mensagem gravada volta com ele.
     pub client_id: String,
@@ -37,6 +37,10 @@ pub struct Outgoing {
     pub reply_to: Option<String>,
     /// Parte que esperava resposta quando o usuário digitou (`{ messageId, partId, kind, version? }`).
     pub pending_part: Option<Value>,
+    /// Orientar o turno em andamento (ADR 0008): devolva a mensagem com `steer: "pending"` e, ao ler no próximo ponto
+    /// seguro, emita de novo com `steer: "taken"`. Sem turno, ou agente que não recebe no meio, avise com
+    /// [`ChatRoom::notice`] e trate como mensagem comum.
+    pub steer: bool,
 }
 
 /// Porta do chat: o sistema guarda as conversas e fala com o modelo.
@@ -60,6 +64,11 @@ pub trait Chat: Send + Sync + 'static {
     async fn history(&self, room: &ChatRoom, before: Option<&str>, limit: usize) -> Result<ChatPage, ApiError>;
     /// Grava a mensagem do usuário e devolve como ficou (com o `client_id`). A resposta vai pelo `room`.
     async fn send(&self, room: ChatRoom, message: Outgoing) -> Result<Value, ApiError>;
+    /// Tira a orientação `message_id` que o agente ainda não leu (`steer: "pending"`) e emita `removed`. Já lida ou
+    /// outra mensagem: 409. Padrão: 404 (o sistema não orienta).
+    async fn remove(&self, _room: ChatRoom, _message_id: &str) -> Result<(), ApiError> {
+        Err(ApiError::not_found("Este sistema não orienta o agente no meio do trabalho."))
+    }
     /// Para a resposta em andamento. Padrão: não faz nada.
     async fn stop(&self, room: ChatRoom) -> Result<(), ApiError> {
         let _ = room;
@@ -120,7 +129,12 @@ impl ChatRoom {
         self.emit(json!({ "type": "delta", "id": id, "text": text, "done": done }))
     }
 
-    /// Qualquer `ChatEvent` (`message`, `delta`, `typing`, `removed`, `ui.cancel`). O `conversationId` é o da sala.
+    /// Aviso passageiro com texto pronto (evento `notice`, `tone` `info`): não entra no histórico.
+    pub fn notice(&self, text: &str) -> Result<(), String> {
+        self.emit(json!({ "type": "notice", "text": text, "tone": "info" }))
+    }
+
+    /// Qualquer `ChatEvent` (`message`, `delta`, `typing`, `removed`, `ui.cancel`, `notice`). O `conversationId` é o da sala.
     pub fn emit(&self, mut event: Value) -> Result<(), String> {
         let obj = event.as_object_mut().ok_or("o evento precisa ser um objeto")?;
         let kind = obj.get("type").and_then(Value::as_str).unwrap_or_default();
@@ -177,90 +191,6 @@ pub(crate) fn open<'a>(engine: &'a Engine, req: &Parts, conversation: &str) -> R
         conversation: conversation.to_owned(),
     };
     Ok((port, room))
-}
-
-/// `limit` da query: ausente vale 30; fora de 1..=100 ou não numérico, 400.
-pub(crate) fn parse_limit(raw: Option<&str>) -> Result<usize, ApiError> {
-    match raw {
-        None => Ok(DEFAULT_LIMIT),
-        Some(s) => match s.parse::<usize>() {
-            Ok(n) if (1..=MAX_LIMIT).contains(&n) => Ok(n),
-            _ => Err(ApiError::bad_request("limit precisa ser um número de 1 a 100.")),
-        },
-    }
-}
-
-fn text_of(body: &Map<String, Value>, key: &str, max: usize) -> Result<Option<String>, ApiError> {
-    match body.get(key) {
-        None | Some(Value::Null) => Ok(None),
-        Some(Value::String(s)) if !s.is_empty() && s.chars().count() <= max => Ok(Some(s.clone())),
-        Some(_) => Err(ApiError::bad_request(format!("{key} precisa ser texto de 1 a {max} caracteres."))),
-    }
-}
-
-/// Corpo de POST messages: `{ clientId, text, replyTo?, pendingPart? }`, sem outras chaves.
-pub(crate) fn parse_outgoing(body: &Map<String, Value>) -> Result<Outgoing, ApiError> {
-    if let Some(k) = body
-        .keys()
-        .find(|k| !["clientId", "text", "replyTo", "pendingPart"].contains(&k.as_str()))
-    {
-        return Err(ApiError::bad_request(format!("'{k}' não vale no envio.")));
-    }
-    let required = |v: Option<String>, key: &str| v.ok_or_else(|| ApiError::bad_request(format!("{key} é obrigatório.")));
-    let pending_part = match body.get("pendingPart") {
-        None | Some(Value::Null) => None,
-        Some(p @ Value::Object(o))
-            if ["messageId", "partId", "kind"]
-                .iter()
-                .all(|k| o.get(*k).is_some_and(Value::is_string)) =>
-        {
-            Some(p.clone())
-        }
-        Some(_) => return Err(ApiError::bad_request("pendingPart precisa de messageId, partId e kind.")),
-    };
-    Ok(Outgoing {
-        client_id: required(text_of(body, "clientId", 100)?, "clientId")?,
-        text: required(text_of(body, "text", MAX_TEXT)?, "text")?,
-        reply_to: text_of(body, "replyTo", 100)?,
-        pending_part,
-    })
-}
-
-/// Corpo da resposta de pergunta: `{ optionIds?: string[], text?: string, dismissed?: boolean }`.
-pub(crate) fn parse_answer(body: Map<String, Value>) -> Result<Map<String, Value>, ApiError> {
-    let ok = body.iter().all(|(k, v)| match k.as_str() {
-        "optionIds" => v.as_array().is_some_and(|a| a.iter().all(Value::is_string)),
-        "text" => v.is_string(),
-        "dismissed" => v.is_boolean(),
-        _ => false,
-    });
-    if ok {
-        Ok(body)
-    } else {
-        Err(ApiError::bad_request("Resposta precisa ser { optionIds?, text?, dismissed? }."))
-    }
-}
-
-/// Corpo da resposta de parte: `action` é `accept`, `decline`, `cancel` ou `undo`; `values` objeto; `version` número.
-pub(crate) fn parse_ui_answer(body: Map<String, Value>) -> Result<Map<String, Value>, ApiError> {
-    let action = body.get("action").and_then(Value::as_str);
-    if !action.is_some_and(|a| ["accept", "decline", "cancel", "undo"].contains(&a)) {
-        return Err(ApiError::bad_request("action precisa ser accept, decline, cancel ou undo."));
-    }
-    let shape = |k: &str, ok: fn(&Value) -> bool| body.get(k).is_none_or(ok);
-    if !shape("values", Value::is_object) || !shape("version", Value::is_u64) || !shape("reason", Value::is_string) {
-        return Err(ApiError::bad_request("values precisa ser objeto, version número e reason texto."));
-    }
-    Ok(body)
-}
-
-/// Id de mensagem ou de parte no caminho: não vazio.
-pub(crate) fn check_id(id: &str, what: &str) -> Result<(), ApiError> {
-    if id.is_empty() {
-        Err(ApiError::bad_request(format!("{what} vazio.")))
-    } else {
-        Ok(())
-    }
 }
 
 #[cfg(test)]
