@@ -5,7 +5,7 @@ import type { MessageDelivery, SendKey } from '@c3theme/chat';
 import type { Text } from '../types';
 import type { ChatLanesSpec } from '../agent/lanes';
 import { CONVERSATION_ID, conversationParam } from './chatRoute.mjs';
-import type { StatesDef } from '../states/states';
+import type { PageStates } from '../pageStates/types';
 
 /** Partes do catálogo fechado (spec/v0/agent-ui.schema.json). */
 export const AGENT_KINDS = ['c3.form', 'c3.record', 'c3.action', 'c3.tool', 'c3.plan', 'c3.browser'] as const;
@@ -33,8 +33,8 @@ export interface ChatDef extends ChatLanesSpec {
   steer?: boolean;
   /** Resumo opcional de entrega externa, usado apenas na última resposta sem entrega própria. */
   entregaDaUltimaMensagem?: MessageDelivery;
-  /** Carregando, vazio, erro, sem permissão e offline com os textos da spec (ADR 0011). Ausente: o painel de sempre. */
-  states?: StatesDef;
+  /** Carregando, vazio, erro, sem permissão e offline com os textos da spec (ADR 0010). Ausente: o painel de sempre. */
+  states?: PageStates;
 }
 
 /** `layout.header.assistant`: `true` vale o padrão; `false`, ausente ou outra coisa, sem botão. */

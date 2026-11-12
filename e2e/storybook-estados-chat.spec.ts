@@ -1,4 +1,4 @@
-// Estados declarados do chat (#101, ADR 0011), pela shell inteira montada do app.json no Storybook.
+// Estados declarados do chat (#101, ADR 0010), pela shell inteira montada do app.json no Storybook.
 import { expect, test } from '@playwright/test';
 
 const story = (id: string) => `/iframe.html?id=telas-estados-do-chat--${id}&viewMode=story`;

@@ -34,20 +34,20 @@ const app: AppDef = {
       chat: {
         suggestions: ['Quanto vendi ontem?', 'Quais faturas vencem hoje?'],
         states: {
-          loading: { text: 'Abrindo a conversa com o assistente…' },
+          loading: { message: 'Abrindo a conversa com o assistente…' },
           empty: {
-            text: 'Nenhuma conversa ainda. Comece por uma pergunta ou veja quem são os agentes.',
+            message: 'Nenhuma conversa ainda. Comece por uma pergunta ou veja quem são os agentes.',
             action: { label: 'Ver agentes', path: '/agentes' }
           },
-          error: { text: 'O assistente não respondeu agora.', retry: 'Tentar de novo' },
+          error: { message: 'O assistente não respondeu agora.', action: { label: 'Tentar de novo', retry: true } },
           forbidden: {
-            text: 'Você ainda não pode usar o assistente.',
-            howTo: 'Peça a quem administra a loja o papel "Agentes" em Configurações, Pessoas.',
+            message: 'Você ainda não pode usar o assistente.',
+            instruction: 'Peça a quem administra a loja o papel "Agentes" em Configurações, Pessoas.',
             action: { label: 'Ver meus acessos', path: '/acessos' }
           },
           offline: {
-            text: 'Sem conexão com o servidor.',
-            keeps: ['O que já foi conversado continua aqui.', 'O texto que você escrever fica na caixa até voltar.']
+            message: 'Sem conexão com o servidor.',
+            works: ['O que já foi conversado continua aqui.', 'O texto que você escrever fica na caixa até voltar.']
           }
         }
       }
@@ -57,7 +57,7 @@ const app: AppDef = {
 } as AppDef;
 
 /**
- * Os cinco estados da página de chat declarados na spec (`chat.states`, issue #101, ADR 0011): cada um com o texto e a
+ * Os cinco estados da página de chat declarados na spec (`chat.states`, issue #101, ADR 0010): cada um com o texto e a
  * ação que a pessoa vê. O app.json é o mesmo nas cinco; muda só o que o /_chat responde. "Mostrar código" traz o JSON.
  */
 const meta = {
