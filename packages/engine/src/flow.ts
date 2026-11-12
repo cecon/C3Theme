@@ -11,20 +11,14 @@ import type { FlowKindDef, FlowView } from './viewTypes';
 export const EMPTY_FLOW: FlowGraph = { nodes: [], edges: [] };
 
 const isText = (v: unknown): v is string => typeof v === 'string' && v !== '';
+const isPoint = (p: FlowNode['position'] | undefined) => !!p && Number.isFinite(p.x) && Number.isFinite(p.y);
 const isNode = (n: unknown): n is FlowNode => {
-  const node = n as FlowNode;
-  return (
-    typeof n === 'object' &&
-    n !== null &&
-    isText(node.id) &&
-    isText(node.type) &&
-    Number.isFinite(node.position?.x) &&
-    Number.isFinite(node.position?.y)
-  );
+  const node = n as FlowNode | null;
+  return !!node && isText(node.id) && isText(node.type) && isPoint(node.position);
 };
 const isEdge = (e: unknown): e is FlowEdge => {
-  const edge = e as FlowEdge;
-  return typeof e === 'object' && e !== null && [edge.id, edge.source, edge.sourcePort, edge.target].every(isText);
+  const edge = e as FlowEdge | null;
+  return !!edge && [edge.id, edge.source, edge.sourcePort, edge.target].every(isText);
 };
 
 /** O grafo gravado no campo (JSON). Vazio é fluxo sem passos; JSON quebrado ou fora do formato devolve `undefined`. */

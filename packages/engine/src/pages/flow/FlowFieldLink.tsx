@@ -18,6 +18,10 @@ export interface FlowFieldLinkProps {
   id?: string;
 }
 
+const ROW_SX = { alignItems: 'center', justifyContent: 'space-between' };
+const PAPER_SX = { p: 2 };
+const HINT_SX = { color: 'text.secondary' };
+
 export function flowStepsText(value: unknown): string {
   const graph = parseFlow(value);
   if (!graph) return 'O fluxo gravado não é válido.';
@@ -28,11 +32,11 @@ export function flowStepsText(value: unknown): string {
 
 export default function FlowFieldLink({ label, value, entity, id }: FlowFieldLinkProps) {
   return (
-    <Paper variant="outlined" sx={{ p: 2 }}>
-      <Stack direction="row" spacing={2} sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
+    <Paper variant="outlined" sx={PAPER_SX}>
+      <Stack direction="row" spacing={2} sx={ROW_SX}>
         <div>
           <Typography variant="subtitle2">{label}</Typography>
-          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+          <Typography variant="body2" sx={HINT_SX}>
             {id ? flowStepsText(value) : 'Salve o cadastro para montar o fluxo.'}
           </Typography>
         </div>

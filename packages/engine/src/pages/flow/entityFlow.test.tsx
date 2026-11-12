@@ -1,194 +1,158 @@
 // @vitest-environment jsdom
 // Editor de fluxo pela spec (#72): lê o registro, monta os tipos da spec, grava o grafo no campo text com If-Match,
-// barra fluxo com problema, avisa o registro que mudou, só olha sem permissão; e o campo no formulário.
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import type { ReactNode } from 'react';
-import { IntlProvider } from 'react-intl';
-import { MemoryRouter, Route, Routes } from 'react-router';
-import { SWRConfig } from 'swr';
+// barra fluxo com problema, avisa o registro que mudou e só olha sem permissão.
+import { act, cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
+import type { ReactElement } from 'react';
+import { unstable_serialize } from 'swr';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import type { FlowEditorProps, FlowGraph } from '@c3theme/flow';
-
 import { ApiError, type C3Client } from '../../api';
-import { EngineProvider } from '../../context';
-import type { EntityDef, WireRecord } from '../../types';
-import FieldInput from '../../widgets/FieldInput';
+import type { EntityDef } from '../../types';
 import EntityFlow from './EntityFlow';
+import { automacao, editor, fakeClient, mount, node, record, SAVED, VALID } from './flowFixture.test-utils';
 
-// o canvas de verdade (React Flow) não roda no jsdom: o editor de mentira mostra o que recebeu e muda o grafo
-let editor: FlowEditorProps;
-vi.mock('@c3theme/flow', () => ({
-  FlowEditor: (props: FlowEditorProps) => {
-    editor = props;
-    return <p>{`${props.value.nodes.length} passos no editor`}</p>;
-  }
-}));
+vi.mock('@c3theme/flow', async () => ({ FlowEditor: (await import('./flowFixture.test-utils')).FakeEditor }));
 
 afterEach(cleanup);
 
-const automacao = {
-  name: 'automacao',
-  label: { singular: 'Automação', plural: 'Automações' },
-  titleField: 'nome',
-  fields: [
-    { name: 'nome', type: 'string', label: 'Nome' },
-    { name: 'grafo', type: 'text', label: 'Passos' }
-  ],
-  views: {
-    flow: {
-      field: 'grafo',
-      title: 'Passos da automação',
-      kinds: [
-        { type: 'gatilho', label: 'Gatilho', icon: 'Flash', input: false },
-        { type: 'fim', label: 'Fim', outputs: [] }
-      ]
-    }
-  }
-} as unknown as EntityDef;
-
-const node = (id: string, type: string) => ({ id, type, position: { x: 0, y: 0 } });
-const VALID: FlowGraph = {
-  nodes: [node('a', 'gatilho'), node('b', 'fim')],
-  edges: [{ id: 'e', source: 'a', sourcePort: 'out', target: 'b' }]
-};
-const SAVED = { nodes: [node('a', 'gatilho')], edges: [] };
-
-function fakeClient(record: WireRecord, update?: C3Client['update']) {
-  return {
-    get: vi.fn(async () => record),
-    update: vi.fn(update ?? (async (_e: string, _id: string, patch: WireRecord) => ({ ...record, ...patch, _version: 'v2' })))
-  } as unknown as C3Client & { get: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn> };
-}
-
-function mount(client: C3Client, ui: ReactNode, opts: { def?: EntityDef; update?: boolean; path?: string } = {}) {
-  const def = opts.def ?? automacao;
-  const value = {
-    client,
-    app: { name: 'x', entities: ['automacao'], layout: { menu: [] } },
-    entities: { automacao: { def, capabilities: { read: true, update: opts.update ?? true } } },
-    components: {},
-    icons: { Flash: () => <svg /> }
-  } as never;
-  render(
-    <IntlProvider locale="pt-BR" onError={() => {}}>
-      <SWRConfig value={{ provider: () => new Map() }}>
-        <EngineProvider value={value}>
-          <MemoryRouter initialEntries={[opts.path ?? '/automacao/7/flow']}>
-            <Routes>
-              <Route path="/automacao/:id/flow" element={ui} />
-              <Route path="/automacao/:id" element={<p>formulário</p>} />
-            </Routes>
-          </MemoryRouter>
-        </EngineProvider>
-      </SWRConfig>
-    </IntlProvider>
-  );
-}
-
-const record = (grafo: unknown = JSON.stringify(SAVED)) => ({ id: '7', nome: 'Pedido pelo WhatsApp', grafo, _version: 'v1' });
 const flowPage = <EntityFlow entity="automacao" id="7" />;
+const KEY = unstable_serialize(['c3-record', 'automacao', '7']);
+const button = (name: string) => screen.getByRole('button', { name }) as HTMLButtonElement;
+const change = (graph: Parameters<NonNullable<typeof editor.props.onChange>>[0]) => act(() => editor.props.onChange!(graph));
 
 describe('EntityFlow', () => {
   it('abre o grafo gravado com os tipos da spec e grava no campo text com If-Match', async () => {
     const client = fakeClient(record());
-    mount(client, flowPage);
+    const cache = new Map<string, unknown>();
+    mount(client, flowPage, { cache });
     expect(await screen.findByText('1 passos no editor')).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Passos da automação' })).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Pedido pelo WhatsApp' }).getAttribute('href')).toBe('/automacao/7');
-    expect(editor.kinds.map((k) => k.type)).toEqual(['gatilho', 'fim']);
-    expect(editor.kinds[0].icon).toBeTruthy();
-    expect(editor.kinds[1].icon).toBeUndefined();
-    expect(editor.minimap).toBe(true);
-    const save = screen.getByRole('button', { name: 'Salvar' }) as HTMLButtonElement;
-    expect(save.disabled).toBe(true);
+    const { kinds } = editor.props;
+    expect(kinds.map((k) => k.type)).toEqual(['gatilho', 'fim']);
+    expect((kinds[0].icon as ReactElement<{ variant: string }>).props.variant).toBe('Bold');
+    expect(kinds[1].icon).toBeUndefined();
+    expect(editor.props.minimap).toBe(true);
+    expect(button('Salvar').disabled).toBe(true);
+    expect(button('Descartar').disabled).toBe(true);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Descartar' }));
-    act(() => editor.onChange!(VALID));
+    change(VALID);
     expect(await screen.findByText('2 passos no editor')).toBeTruthy();
-    expect(save.disabled).toBe(false);
-    fireEvent.click(save);
+    expect(button('Descartar').disabled).toBe(false);
+    fireEvent.click(button('Salvar'));
+    // gravando: os dois botões param até a resposta
+    expect(button('Salvar').disabled).toBe(true);
+    expect(button('Descartar').disabled).toBe(true);
     await waitFor(() => expect(client.update).toHaveBeenCalledWith('automacao', '7', { grafo: JSON.stringify(VALID) }, { ifMatch: 'v1' }));
-    await waitFor(() => expect(save.disabled).toBe(true));
+    await waitFor(() => expect(button('Salvar').disabled).toBe(true));
+    // o formulário lê a mesma chave: já fica com o grafo novo, sem ler de novo
+    expect((cache.get(KEY) as { data: { grafo: string } }).data.grafo).toBe(JSON.stringify(VALID));
+    expect(client.get).toHaveBeenCalledTimes(1);
 
     // a segunda gravação vai com a versão que a primeira devolveu
     const renamed = { ...VALID, nodes: VALID.nodes.map((n) => ({ ...n, label: 'Novo' })) };
-    act(() => editor.onChange!(renamed));
+    change(renamed);
     fireEvent.click(await screen.findByRole('button', { name: 'Salvar' }));
     await waitFor(() =>
       expect(client.update).toHaveBeenLastCalledWith('automacao', '7', { grafo: JSON.stringify(renamed) }, { ifMatch: 'v2' })
     );
   });
 
-  it('Descartar volta ao que está gravado', async () => {
+  it('com o registro já no cache, abre sem esperar o servidor', async () => {
+    const client = { get: vi.fn(() => new Promise(() => {})) } as unknown as C3Client;
+    const cache = new Map<string, unknown>([[KEY, { data: record(JSON.stringify(VALID)) }]]);
+    mount(client, flowPage, { cache });
+    expect(await screen.findByText('2 passos no editor')).toBeTruthy();
+  });
+
+  it('Descartar volta ao que está gravado; com mudança, fechar a aba pede confirmação', async () => {
     mount(fakeClient(record()), flowPage);
     await screen.findByText('1 passos no editor');
-    act(() => editor.onChange!(VALID));
+    const leave = () => {
+      const e = new Event('beforeunload', { cancelable: true });
+      window.dispatchEvent(e);
+      return e.defaultPrevented;
+    };
+    expect(leave()).toBe(false);
+    change(VALID);
     await screen.findByText('2 passos no editor');
-    fireEvent.click(screen.getByRole('button', { name: 'Descartar' }));
+    expect(leave()).toBe(true);
+    fireEvent.click(button('Descartar'));
     expect(await screen.findByText('1 passos no editor')).toBeTruthy();
+    expect(leave()).toBe(false);
   });
 
   it('fluxo com problema não grava e diz quantos são', async () => {
     const client = fakeClient(record(''));
     mount(client, flowPage);
     await screen.findByText('0 passos no editor');
-    act(() => editor.onChange!({ nodes: [node('a', 'gatilho')], edges: [] }));
+    change({ nodes: [node('a', 'gatilho')], edges: [] });
     fireEvent.click(await screen.findByRole('button', { name: 'Salvar' }));
     expect(await screen.findByText('Corrija o problema do fluxo antes de salvar.')).toBeTruthy();
-    act(() => editor.onChange!({ nodes: [node('a', 'gatilho'), node('b', 'gatilho')], edges: [] }));
+    change({ nodes: [node('a', 'gatilho'), node('b', 'gatilho')], edges: [] });
     expect(screen.queryByText(/Corrija/)).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+    fireEvent.click(button('Salvar'));
     expect(await screen.findByText('Corrija os 2 problemas do fluxo antes de salvar.')).toBeTruthy();
     expect(client.update).not.toHaveBeenCalled();
   });
 
-  it('registro que mudou em outra sessão: avisa e Recarregar lê de novo', async () => {
+  it('registro que mudou em outra sessão: avisa e Recarregar traz o gravado e a versão nova', async () => {
     const client = fakeClient(record(), async () => {
       throw new ApiError(412, 'stale', 'mudou');
     });
-    mount(client, flowPage);
+    const cache = new Map<string, unknown>();
+    mount(client, flowPage, { cache });
     await screen.findByText('1 passos no editor');
-    act(() => editor.onChange!(VALID));
+    change(VALID);
     fireEvent.click(await screen.findByRole('button', { name: 'Salvar' }));
-    expect(await screen.findByText(/Outra pessoa alterou este registro/)).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Recarregar' }));
-    await waitFor(() => expect(client.get).toHaveBeenCalledTimes(2));
-    expect(await screen.findByText('1 passos no editor')).toBeTruthy();
+    const alert = (await screen.findByText(/Outra pessoa alterou este registro/)).closest('[role="alert"]')!;
+    expect(alert.className).toContain('Warning');
+    client.get.mockResolvedValueOnce({ ...record(JSON.stringify(VALID)), _version: 'v9' });
+    fireEvent.click(button('Recarregar'));
+    expect(await screen.findByText('2 passos no editor')).toBeTruthy();
     expect(screen.queryByText(/Outra pessoa/)).toBeNull();
+    expect(button('Salvar').disabled).toBe(true);
+    expect((cache.get(KEY) as { data: { _version: string } }).data._version).toBe('v9');
+    change({ ...VALID, nodes: VALID.nodes.map((n) => ({ ...n, label: 'x' })) });
+    fireEvent.click(button('Salvar'));
+    await waitFor(() => expect(client.update).toHaveBeenLastCalledWith('automacao', '7', expect.anything(), { ifMatch: 'v9' }));
   });
 
-  it('outro erro do servidor aparece como veio; registro sem _version grava sem If-Match', async () => {
-    const client = fakeClient({ ...record(), _version: undefined }, async () => {
-      throw new ApiError(422, 'invalid', 'Grafo grande demais');
-    });
+  it('outro erro aparece como veio e some quando a gravação seguinte dá certo; sem _version, grava sem If-Match', async () => {
+    const client = fakeClient({ ...record(), _version: undefined });
+    client.update.mockRejectedValueOnce(new ApiError(422, 'invalid', 'Grafo grande demais')).mockRejectedValueOnce('caiu a rede');
     mount(client, flowPage);
     await screen.findByText('1 passos no editor');
-    act(() => editor.onChange!(VALID));
+    change(VALID);
     fireEvent.click(await screen.findByRole('button', { name: 'Salvar' }));
-    expect(await screen.findByText('Grafo grande demais')).toBeTruthy();
+    const alert = (await screen.findByText('Grafo grande demais')).closest('[role="alert"]')!;
+    expect(alert.className).toContain('Error');
     expect(client.update).toHaveBeenCalledWith('automacao', '7', { grafo: JSON.stringify(VALID) }, undefined);
     expect(screen.queryByRole('button', { name: 'Recarregar' })).toBeNull();
+    fireEvent.click(button('Salvar'));
+    expect(await screen.findByText('Erro ao salvar o fluxo.')).toBeTruthy();
+    fireEvent.click(button('Salvar'));
+    await waitFor(() => expect(screen.queryByRole('alert')).toBeNull());
   });
 
-  it('sem permissão de alterar: só olha, sem Salvar', async () => {
-    mount(fakeClient(record()), flowPage, { update: false });
-    expect(await screen.findByText('Você pode ver o fluxo, mas não tem permissão para alterar.')).toBeTruthy();
-    expect(editor.onChange).toBeUndefined();
-    expect(screen.queryByRole('button', { name: 'Salvar' })).toBeNull();
-  });
-
-  it('campo travado (denied ou readOnly) também só olha', async () => {
-    for (const lock of [{ denied: 'readOnly' }, { readOnly: true }]) {
-      const def = { ...automacao, fields: [automacao.fields[0], { ...automacao.fields[1], ...lock }] } as EntityDef;
-      mount(fakeClient(record()), flowPage, { def });
-      await screen.findByText('1 passos no editor');
-      expect(editor.onChange).toBeUndefined();
+  it('sem permissão, campo travado ou fora do que o usuário vê: só olha, sem Salvar', async () => {
+    const lock = (extra: object) => ({ ...automacao, fields: [automacao.fields[0], { ...automacao.fields[1], ...extra }] }) as EntityDef;
+    const cases = [
+      { update: false },
+      { def: lock({ denied: 'readOnly' }) },
+      { def: lock({ readOnly: true }) },
+      { def: { ...automacao, fields: [automacao.fields[0]] } as EntityDef }
+    ];
+    for (const opts of cases) {
+      mount(fakeClient(record()), flowPage, opts);
+      expect(await screen.findByText('Você pode ver o fluxo, mas não tem permissão para alterar.')).toBeTruthy();
+      expect(editor.props.onChange).toBeUndefined();
+      expect(screen.queryByRole('button', { name: 'Salvar' })).toBeNull();
       cleanup();
     }
   });
 
-  it('JSON quebrado no campo, erro de leitura e entidade sem views.flow', async () => {
+  it('JSON quebrado no campo, erro de leitura, entidade sem views e entidade fora do app', async () => {
     mount(fakeClient(record('{')), flowPage);
     expect(await screen.findByText("O campo 'grafo' não tem um fluxo válido (JSON com nodes e edges).")).toBeTruthy();
     cleanup();
@@ -198,9 +162,15 @@ describe('EntityFlow', () => {
     expect(await screen.findByText('caiu')).toBeTruthy();
     cleanup();
 
-    const plain = { ...automacao, views: {} } as EntityDef;
-    mount(fakeClient(record()), flowPage, { def: plain });
+    const plain = { ...automacao, views: undefined } as unknown as EntityDef;
+    const client = fakeClient(record());
+    mount(client, flowPage, { def: plain });
     expect(screen.getByText("A entidade 'automacao' não declara views.flow.")).toBeTruthy();
+    expect(client.get).not.toHaveBeenCalled();
+    cleanup();
+
+    mount(fakeClient(record()), <EntityFlow entity="nada" id="7" />);
+    expect(screen.getByText("A entidade 'nada' não declara views.flow.")).toBeTruthy();
   });
 
   it('sem titleField nem string, o link volta com o nome da entidade; title padrão é Fluxo', async () => {
@@ -213,45 +183,13 @@ describe('EntityFlow', () => {
     mount(fakeClient(record()), flowPage, { def });
     expect(await screen.findByRole('link', { name: 'Automação' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Fluxo' })).toBeTruthy();
-    expect(editor.minimap).toBe(false);
-  });
-});
-
-describe('campo do grafo no formulário', () => {
-  const field = automacao.fields[1];
-  const input = (value: unknown, rec: WireRecord | undefined, readOnly = false) => (
-    <FieldInput field={field} value={value} onChange={() => {}} entity="automacao" record={rec} readOnly={readOnly} />
-  );
-
-  it('mostra quantos passos e abre o editor do registro', () => {
-    mount(fakeClient(record()), input(JSON.stringify(VALID), { id: '7' }));
-    expect(screen.getByText('2 passos')).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Abrir o fluxo' }).getAttribute('href')).toBe('/automacao/7/flow');
+    expect(editor.props.minimap).toBe(false);
   });
 
-  it('um passo, nenhum e inválido; com o formulário em leitura o botão continua abrindo o editor', () => {
-    mount(fakeClient(record()), input(JSON.stringify(SAVED), { id: '7' }, true));
-    expect(screen.getByText('1 passo')).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Abrir o fluxo' }).getAttribute('href')).toBe('/automacao/7/flow');
-    cleanup();
-    mount(fakeClient(record()), input('', { id: '7' }));
-    expect(screen.getByText('Nenhum passo ainda.')).toBeTruthy();
-    cleanup();
-    mount(fakeClient(record()), input('{', { id: '7' }));
-    expect(screen.getByText('O fluxo gravado não é válido.')).toBeTruthy();
-  });
-
-  it('cadastro novo: pede para salvar antes, botão desligado', () => {
-    mount(fakeClient(record()), input(undefined, {}));
-    expect(screen.getByText('Salve o cadastro para montar o fluxo.')).toBeTruthy();
-    expect((screen.getByRole('button', { name: 'Abrir o fluxo' }) as HTMLButtonElement).disabled).toBe(true);
-    cleanup();
-    mount(fakeClient(record()), input(undefined, undefined));
-    expect(screen.getByText('Salve o cadastro para montar o fluxo.')).toBeTruthy();
-  });
-
-  it('outro campo text da entidade continua texto', () => {
-    mount(fakeClient(record()), <FieldInput field={{ ...field, name: 'obs' }} value="oi" onChange={() => {}} entity="automacao" />);
-    expect(screen.getByRole('textbox')).toBeTruthy();
+  it('o grafo gravado é a base do Salvar: sem mudança real, continua desligado', async () => {
+    mount(fakeClient(record(JSON.stringify(SAVED))), flowPage);
+    await screen.findByText('1 passos no editor');
+    change(JSON.parse(JSON.stringify(SAVED)));
+    expect(button('Salvar').disabled).toBe(true);
   });
 });

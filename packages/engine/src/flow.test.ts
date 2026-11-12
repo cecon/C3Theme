@@ -36,6 +36,11 @@ describe('parseFlow', () => {
       JSON.stringify({ nodes: [{ id: '', type: 'x', position: { x: 0, y: 0 } }], edges: [] }),
       JSON.stringify({ nodes: [{ id: 'a', type: 'x', position: { x: 0 } }], edges: [] }),
       JSON.stringify({ nodes: [{ id: 'a', type: 'x' }], edges: [] }),
+      JSON.stringify({ nodes: [{ id: 'a', type: 'x', position: null }], edges: [] }),
+      JSON.stringify({ nodes: [{ id: 'a', type: 'x', position: { y: 0 } }], edges: [] }),
+      JSON.stringify({ nodes: [GRAPH.nodes[0], { id: 'b', type: 'x' }], edges: [] }),
+      JSON.stringify({ nodes: [], edges: [GRAPH.edges[0], { id: 'e2' }] }),
+      JSON.stringify({ nodes: [5, 'a'], edges: [] }),
       JSON.stringify({ nodes: [{ id: 'a', position: { x: 0, y: 0 } }], edges: [] }),
       JSON.stringify({ nodes: [], edges: [null] }),
       JSON.stringify({ nodes: [], edges: [{ id: 'e', source: 'a', sourcePort: 'out' }] }),
@@ -87,15 +92,18 @@ describe('flowKinds', () => {
     ]
   };
   const icon = (name: string | undefined) => (name ? `icone:${name}` : undefined);
-  const [gatilho, condicao, agente, fim] = flowKinds(view, text, icon);
+  // monta dentro de cada teste: a mutação só conta o teste que roda o código
+  const kinds = () => flowKinds(view, text, icon);
 
   it('gatilho: sem entrada, uma saída padrão, ícone do catálogo e as regras do tipo', () => {
+    const [gatilho] = kinds();
     expect(gatilho).toMatchObject({ type: 'gatilho', label: 'Gatilho', tone: 'warning', icon: 'icone:Flash', hasInput: false });
     expect(gatilho.outputs).toEqual([{ id: 'out', label: undefined, optional: undefined }]);
     expect(gatilho).toMatchObject({ max: 1, removable: false, fields: undefined, defaults: undefined, summary: undefined });
   });
 
   it('condição: textos traduzidos, saídas com rótulo, campos com padrão text e limite de voltas', () => {
+    const condicao = kinds()[1];
     expect(condicao.label).toBe('#k.cond');
     expect(condicao.hasInput).toBe(true);
     expect(condicao.icon).toBeUndefined();
@@ -115,6 +123,7 @@ describe('flowKinds', () => {
   });
 
   it('agente: select mostra o rótulo da opção no cartão; o valor fora da lista sai como está; defaults novos a cada passo', () => {
+    const agente = kinds()[2];
     const node = (agente: string) => ({ id: 'n', type: 'agente', position: { x: 0, y: 0 }, config: { agente } });
     expect(agente.fields![0].options).toEqual([{ value: 'cozinha', label: 'Cozinha' }]);
     expect(agente.summary!(node('cozinha'))).toBe('Cozinha');
@@ -126,6 +135,7 @@ describe('flowKinds', () => {
   });
 
   it('fim: sem saídas; summary que não está em fields não monta resumo', () => {
+    const fim = kinds()[3];
     expect(fim.outputs).toEqual([]);
     expect(fim.summary).toBeUndefined();
   });

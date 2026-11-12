@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 // A rota /{entity}/:id/flow que a shell monta para toda entidade (#72): carrega o editor só quando abre.
-import { cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, render, screen } from '@testing-library/react';
 import { IntlProvider } from 'react-intl';
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router';
 import { SWRConfig } from 'swr';
@@ -18,7 +18,7 @@ vi.mock('@c3theme/flow', () => ({
 
 afterEach(cleanup);
 
-it('/{entity}/:id/flow abre o editor do registro, carregado à parte', async () => {
+it('/{entity}/:id/flow abre o editor do registro, carregado à parte, e trocar de registro troca o rascunho', async () => {
   const def = {
     name: 'automacao',
     label: { singular: 'Automação', plural: 'Automações' },
@@ -27,7 +27,9 @@ it('/{entity}/:id/flow abre o editor do registro, carregado à parte', async () 
   } as unknown as EntityDef;
   const app = { name: 'x', entities: ['automacao'], layout: { menu: [] } } as unknown as AppDef;
   const graph = { nodes: [{ id: 'f', type: 'fim', position: { x: 0, y: 0 } }], edges: [] };
-  const client = { get: vi.fn(async (_e: string, id: string) => ({ id, grafo: JSON.stringify(graph) })) };
+  // o registro 8 tem dois passos: trocar de registro tem que trocar o rascunho também
+  const two = { nodes: [...graph.nodes, { id: 'g', type: 'fim', position: { x: 1, y: 1 } }], edges: [] };
+  const client = { get: vi.fn(async (_e: string, id: string) => ({ id, grafo: JSON.stringify(id === '8' ? two : graph) })) };
   const router = createMemoryRouter(buildRoutes(app, <Outlet />), { initialEntries: ['/automacao/7/flow'] });
   const value = { client, app, entities: { automacao: { def, capabilities: { update: true } } }, components: {} } as never;
   render(
@@ -41,6 +43,8 @@ it('/{entity}/:id/flow abre o editor do registro, carregado à parte', async () 
   );
   expect(await screen.findByText('editor com 1 passos')).toBeTruthy();
   expect(client.get).toHaveBeenCalledWith('automacao', '7');
-  const match = router.routes[0].children!.find((r) => r.path === 'automacao/:id/flow');
-  expect(match).toBeTruthy();
+  const paths = router.routes[0].children!.map((r) => r.path);
+  expect(paths).toEqual(expect.arrayContaining(['automacao/:id', 'automacao/:id/flow']));
+  await act(() => router.navigate('/automacao/8/flow'));
+  expect(await screen.findByText('editor com 2 passos')).toBeTruthy();
 });
