@@ -5,7 +5,7 @@ import type { AggregateItem, AggregateParams } from './dashboard';
 import { readSse, type LiveMessage } from './live/sse';
 import type { ChatTransport } from '@c3theme/chat';
 
-import { ApiError } from './apiError';
+import { ApiError, replyError } from './apiError';
 import type { NotificationList, RawReply, SearchResult } from './apiTypes';
 import { httpChatTransport } from './chat/httpChat';
 import { browserFetch, type C3Fetch } from './transport';
@@ -137,10 +137,7 @@ export function createClient(
     // ação `returns: "file"`: o corpo é o arquivo, e o aviso vem no cabeçalho
     if (res.ok && !res.headers.get('content-type')?.includes('json')) return (await fileReply(res)) as T;
     const json = await res.json().catch(() => null);
-    if (!res.ok) {
-      const err = json?.error;
-      throw new ApiError(res.status, err?.code ?? 'internal', err?.message ?? `Erro ${res.status}.`, err?.fields, err?.records);
-    }
+    if (!res.ok) throw replyError(res, json);
     return json as T;
   }
 

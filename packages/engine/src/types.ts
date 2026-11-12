@@ -208,6 +208,8 @@ export interface PageDef {
   dashboard?: DashboardDef;
   /** Documentação da API (openapi.json servido pelo app), com busca e "experimentar". */
   apiDocs?: { spec: string };
+  /** Tela que ainda não está pronta: "Em breve" no lugar dela, com o menu em volta. */
+  comingSoon?: { message?: Text; until?: string };
   /** Assistente em passos sobre um registro único, com resumo e a guarda que prende o app até terminar. */
   wizard?: WizardDef;
   /** Página de chat com o agente do sistema (spec/v0/chat.yaml, ADR 0006). */

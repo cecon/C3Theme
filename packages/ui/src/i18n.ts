@@ -165,7 +165,12 @@ const PT = {
   'c3.table.min': 'mín',
   'c3.table.max': 'máx',
   'c3.table.minOf': '{label}: valor mínimo',
-  'c3.table.maxOf': '{label}: valor máximo'
+  'c3.table.maxOf': '{label}: valor máximo',
+  'c3.countdown.label': 'Contagem regressiva',
+  'c3.countdown.days': 'dias',
+  'c3.countdown.hours': 'horas',
+  'c3.countdown.minutes': 'min',
+  'c3.countdown.seconds': 'seg'
 } as const;
 
 export type UiMessageId = keyof typeof PT;

@@ -1,8 +1,9 @@
-import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useReducer, useState } from 'react';
 
 import { browserFetch, type C3Fetch } from '../transport';
 import type { AuthConfig, AuthPort, AuthUser } from './port';
 import type { AppStatusDef } from '../status/AppStatus';
+import { readLoginMeta } from './loginMeta';
 
 const TOKEN_KEY = 'c3.token';
 
@@ -30,6 +31,8 @@ export interface AuthSession {
   /** Nome do sistema, de GET /_meta/login (a tela de entrada vem antes do /_meta/app). */
   appName: string;
   status?: AppStatusDef;
+  /** Pergunta de novo ao GET /_meta/login (o sistema fora do ar pode ter voltado). */
+  retry(): void;
   user: AuthUser | null;
   token: string | null;
   login(identifier: string, password: string): Promise<void>;
@@ -76,21 +79,19 @@ export function AuthSessionProvider({
   const [token, setToken] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string>();
-  const [attempt, setAttempt] = useState(0);
+  // cada pedido de nova tentativa é um objeto novo: o efeito roda de novo
+  const [attempt, retry] = useReducer(() => ({}), {});
 
   useEffect(() => {
     let active = true;
     setError(undefined);
     (async () => {
-      const res = await transport(`${apiUrl.replace(/\/$/, '')}/_meta/login`).catch(() => null);
-      if (!res || (!res.ok && res.status !== 404)) throw new Error(res ? `Erro ${res.status}.` : 'Sem conexão com o servidor.');
-      // backend sem a rota: login com o padrão, já que o sistema passou a porta
-      const data = res.ok ? (await res.json()).data : { name: '', auth: null };
+      const data = await readLoginMeta(transport, apiUrl);
       const saved = tokenStore.get();
       const me = saved && !data.status ? await port.me(saved).catch(() => null) : null;
       if (!me && !data.status) tokenStore.set(null);
       if (!active) return;
-      setMeta({ name: data.name ?? '', auth: data.auth ?? {}, status: data.status ?? undefined });
+      setMeta(data);
       setUserState(me);
       setToken(me ? saved : null);
       setReady(true);
@@ -119,11 +120,23 @@ export function AuthSessionProvider({
   }, [port]);
 
   const session = useMemo<AuthSession | undefined>(
-    () => meta && { port, config: meta.auth, appName: meta.name, status: meta.status, user, token, login, logout, setUser: setUserState },
-    [meta, port, user, token, login, logout]
+    () =>
+      meta && {
+        port,
+        config: meta.auth,
+        appName: meta.name,
+        status: meta.status,
+        retry,
+        user,
+        token,
+        login,
+        logout,
+        setUser: setUserState
+      },
+    [meta, port, retry, user, token, login, logout]
   );
 
-  if (error) return <>{failed(error, () => setAttempt((n) => n + 1))}</>;
+  if (error) return <>{failed(error, retry)}</>;
   if (!ready || !session) return <>{loading}</>;
   return <SessionContext.Provider value={session}>{children(session)}</SessionContext.Provider>;
 }

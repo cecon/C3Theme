@@ -2,6 +2,7 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { IntlProvider } from 'react-intl';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { C3ThemeProvider } from '@c3theme/ui';
 import C3Shell from '../C3Shell';
 import type { AuthPort } from '../auth/port';
@@ -19,6 +20,8 @@ afterEach(() => {
 });
 const status = { mode: 'maintenance' as const, message: 'Atualizando o sistema', until: '2026-11-13T15:00:00Z' };
 const app = { name: 'Teste', entities: ['nota'], layout: { menu: [] }, status };
+// o ícone do status usa as variáveis de cor do tema
+const theme = createTheme({ cssVariables: true });
 const json = (data: unknown) => new Response(JSON.stringify({ data }), { status: 200, headers: { 'content-type': 'application/json' } });
 
 describe('status público da shell', () => {
@@ -33,9 +36,11 @@ describe('status público da shell', () => {
 
   it('mostra lançamento traduzido, sem previsão quando não declarada', () => {
     render(
-      <IntlProvider locale="en" messages={{ coming: 'Coming soon' }}>
-        <AppStatus status={{ mode: 'comingSoon', title: { id: 'coming' } }} />
-      </IntlProvider>
+      <ThemeProvider theme={theme}>
+        <IntlProvider locale="en" messages={{ coming: 'Coming soon' }}>
+          <AppStatus status={{ mode: 'comingSoon', title: { id: 'coming' } }} />
+        </IntlProvider>
+      </ThemeProvider>
     );
     expect(screen.getByText('Coming soon')).toBeTruthy();
     expect(screen.queryByText(/Lançamento:/)).toBeNull();
@@ -43,9 +48,11 @@ describe('status público da shell', () => {
 
   it('em breve exibe a data e a mensagem declaradas', () => {
     render(
-      <IntlProvider locale="pt-BR" onError={() => {}}>
-        <AppStatus status={{ mode: 'comingSoon', message: 'Nova loja', until: status.until }} />
-      </IntlProvider>
+      <ThemeProvider theme={theme}>
+        <IntlProvider locale="pt-BR" onError={() => {}}>
+          <AppStatus status={{ mode: 'comingSoon', message: 'Nova loja', until: status.until }} />
+        </IntlProvider>
+      </ThemeProvider>
     );
     expect(screen.getByText('Em breve')).toBeTruthy();
     expect(screen.getByText('Nova loja')).toBeTruthy();

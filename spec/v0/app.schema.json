@@ -27,7 +27,7 @@
       "type": "object",
       "required": ["mode"],
       "additionalProperties": false,
-      "description": "Tela pública em vez do login e das páginas. Não bloqueia a API: autorização e manutenção de serviços continuam sendo responsabilidade do sistema. Até a remoção deste objeto, a tela permanece ativa; until é previsão, não agenda automática.",
+      "description": "Tela pública em vez do login e das páginas. Não bloqueia a API: autorização e manutenção de serviços continuam sendo responsabilidade do sistema. Até a remoção deste objeto, a tela permanece ativa; until é previsão, não agenda automática (quando chega, a tela só pergunta de novo ao backend). Um proxy na frente do backend mostra a mesma tela respondendo 503 em /_meta/* (corpo opcional { \"status\": {...} } e Retry-After).",
       "properties": {
         "mode": { "enum": ["maintenance", "comingSoon"] },
         "title": { "$ref": "#/$defs/text" },
@@ -327,6 +327,22 @@
           "$ref": "#/$defs/chat",
           "description": "Página de chat com o agente do sistema: o AssistantPanel na altura da página, pelas rotas de spec/v0/chat.yaml. Use isto, dashboard, wizard, apiDocs ou component."
         },
+        "comingSoon": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Tela que ainda não está pronta: o item fica no menu e a rota mostra 'Em breve' na área de conteúdo, com a frase e a contagem até a data. Use isto, dashboard, wizard, apiDocs, chat ou component.",
+          "properties": {
+            "message": {
+              "$ref": "#/$defs/text",
+              "description": "Frase abaixo do título. Padrão: 'Esta tela está quase pronta.'"
+            },
+            "until": {
+              "type": "string",
+              "format": "date-time",
+              "description": "Data do lançamento, com fuso. Sem ela, só o recado."
+            }
+          }
+        },
         "apiDocs": {
           "type": "object",
           "required": ["spec"],
@@ -370,6 +386,12 @@
         },
         {
           "required": ["chat"],
+          "not": {
+            "required": ["config"]
+          }
+        },
+        {
+          "required": ["comingSoon"],
           "not": {
             "required": ["config"]
           }

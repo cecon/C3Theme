@@ -1,10 +1,5 @@
 import { ReactNode } from 'react';
 
-// material-ui
-import Alert from '@mui/material/Alert';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-
 import { AppSkeleton, C3ThemeProvider, C3ThemeProviderProps, LocaleMessages, Notifier, WindowDragBar } from '@c3theme/ui';
 import AuthScreens from './AuthScreens';
 import type { DesktopHost } from '../desktop/port';
@@ -13,6 +8,7 @@ import type { RouterMode } from '../router';
 import type { AuthPort } from './port';
 import { AuthSession, AuthSessionProvider } from './session';
 import { AppStatus, ShellBoundary } from '../status/AppStatus';
+import { LoadErrorScreen } from '../status/ErrorScreens';
 
 interface AuthGateProps {
   port: AuthPort;
@@ -44,27 +40,11 @@ export default function AuthGate({ port, apiUrl, basename, router, transport, th
       apiUrl={apiUrl}
       transport={transport}
       loading={frame('', <AppSkeleton />)}
-      failed={(message, retry) =>
-        frame(
-          '',
-          <Box sx={{ p: 4, maxWidth: 560, mx: 'auto', mt: 8 }}>
-            <Alert
-              severity="error"
-              action={
-                <Button color="inherit" size="small" onClick={retry}>
-                  Tentar de novo
-                </Button>
-              }
-            >
-              Não foi possível abrir o sistema: {message}
-            </Alert>
-          </Box>
-        )
-      }
+      failed={(message, retry) => frame('', <LoadErrorScreen message={message} onRetry={retry} />)}
     >
       {(session) =>
         session.status
-          ? frame(session.appName, <AppStatus status={session.status} />)
+          ? frame(session.appName, <AppStatus status={session.status} onRetry={session.retry} />)
           : session.user
             ? children(session)
             : frame(session.appName, <AuthScreens basename={basename} router={router} />)
