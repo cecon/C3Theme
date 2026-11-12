@@ -42,6 +42,18 @@ pub struct Outgoing {
 /// Porta do chat: o sistema guarda as conversas e fala com o modelo.
 #[async_trait::async_trait]
 pub trait Chat: Send + Sync + 'static {
+    /// Filhas visíveis ao usuário da sala. Confira acesso antes de listar, abrir ou executar ações.
+    async fn lanes(&self, _room: ChatRoom) -> Result<Vec<Value>, ApiError> {
+        Err(ApiError::not_found("Este sistema não tem conversas à parte."))
+    }
+    /// Cria uma filha; ramo copia apenas até `fromMessageId`, que precisa pertencer à sala.
+    async fn open_lane(&self, _room: ChatRoom, _input: Value) -> Result<Value, ApiError> {
+        Err(ApiError::not_found("Este sistema não tem conversas à parte."))
+    }
+    /// Confira a ação declarada e a mensagem na sala antes de executar.
+    async fn message_action(&self, _room: ChatRoom, _message: &str, _action: &str) -> Result<Value, ApiError> {
+        Err(ApiError::not_found("Este sistema não tem ações por mensagem."))
+    }
     /// De quem é a conversa deste pedido (o id do usuário logado). A autenticação já passou pelo sistema.
     fn audience(&self, req: &Parts) -> String;
     /// Sem `before`, as `limit` mais recentes; com `before` (id de mensagem), as anteriores a ela.
@@ -80,6 +92,15 @@ pub struct ChatRoom {
 }
 
 impl ChatRoom {
+    /// Outra conversa do mesmo usuário; não muda a audiência nem a sessão.
+    pub fn in_conversation(&self, conversation: &str) -> Result<Self, ApiError> {
+        check_conversation(conversation)?;
+        Ok(Self {
+            engine: self.engine.clone(),
+            audience: self.audience.clone(),
+            conversation: conversation.to_owned(),
+        })
+    }
     pub fn audience(&self) -> &str {
         &self.audience
     }

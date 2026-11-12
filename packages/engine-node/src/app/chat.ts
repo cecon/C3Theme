@@ -42,6 +42,10 @@ function room(engine: Engine, audience: string, conversation: string): ChatRoom 
   return {
     audience,
     conversation,
+    inConversation: (id) => {
+      checkConversation(id);
+      return room(engine, audience, id);
+    },
     emit,
     message: (message) => emit({ type: 'message', message }),
     delta: (id, text, done = false) => emit({ type: 'delta', id, text, done })
@@ -49,7 +53,7 @@ function room(engine: Engine, audience: string, conversation: string): ChatRoom 
 }
 
 /** A porta e a sala do pedido (404 sem chat, 400 com conversa inválida). */
-function open(engine: Engine, req: EngineRequest, conversation: string): [Chat, ChatRoom] {
+export function open(engine: Engine, req: EngineRequest, conversation: string): [Chat, ChatRoom] {
   const port = engine.chat;
   if (!port) throw ApiError.notFound('Este sistema não tem assistente.');
   checkConversation(conversation);

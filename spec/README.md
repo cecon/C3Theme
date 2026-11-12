@@ -1094,3 +1094,12 @@ O SmartX (Universo TOTVS 2026) é a mesma aposta: um renderer (SmartWise) lê co
 - Autenticação: o contrato só exige Bearer e `401`. Quem autentica (senha, refresh, SSO) é cada sistema; a shell só monta as telas de entrada pelo `auth` do app.json e chama a porta que o sistema passa (ver [Login pela shell](#login-pela-shell)).
 - Indicador com comparação entre períodos ("+12% sobre o mês passado"): por enquanto, página custom (`pages[].component`).
 - Gatilhos de formulário ("ao escolher o cliente, preencher a condição de pagamento"). As ações de registro e em lote já existem (ver [Ações](#ações)). Para os gatilhos, quando o piloto pedir, a direção é a do SmartX: um vocabulário fechado de ações tipadas (preencher campos, mensagem, navegar, chamar a API, validar no servidor), encadeáveis, com referências a valores do formulário. Os eventos ficam declarados na entidade, nunca na tela. Não haverá código livre nem operador em número mágico.
+
+
+## Conversas à parte no chat declarado
+
+Em `pages[].chat` ou `layout.header.assistant`, `lanes: {}` liga a lista lateral, o botão À parte e Ramificar daqui. `lanes.aside` e `lanes.branch` desligam os respectivos atalhos com `false`. `messageActions` aceita ações declaradas com `id`, `label`, `when` e `opens` (`aside` ou `branch`); sem `opens`, o motor chama a ação da mensagem. O painel preserva a conversa principal e usa o mesmo transporte nas filhas.
+
+As rotas de `chat-lanes.yaml` são montadas pelos backends e delegadas à porta `Chat`: `lanes`, `openLane` e `messageAction` no Node; `lanes`, `open_lane` e `message_action` no Rust. São opcionais, com 404 quando ausentes. A sala entregue à porta contém o usuário do pedido; a implementação deve autorizar cada conversa e mensagem. Um ramo copia só o histórico até a origem; a pergunta à parte começa sem o histórico. `ChatRoom.inConversation` (Rust: `in_conversation`) cria uma sala do mesmo usuário para iniciar uma resposta na filha.
+
+Os exemplos Node/Rust guardam essas conversas em memória por usuário e pai. A página do assistente em `spec/v0/examples/app.json` declara o recurso; a conformidade confere cópia do ramo, envio separado e isolamento entre usuários.

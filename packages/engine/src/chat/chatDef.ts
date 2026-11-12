@@ -1,13 +1,14 @@
 // `$defs/chat` do app.json (`pages[].chat`, `layout.header.assistant`; ADR 0005) em props do AssistantPanel. Puro.
 
 import type { Text } from '../types';
+import type { ChatLanesSpec } from '../agent/lanes';
 
 /** Partes do catálogo fechado (spec/v0/agent-ui.schema.json). */
 export const AGENT_KINDS = ['c3.form', 'c3.record', 'c3.action', 'c3.tool', 'c3.plan', 'c3.browser'] as const;
 export type AgentKind = (typeof AGENT_KINDS)[number];
 
 /** Conversa com o agente do sistema, como no app.json. */
-export interface ChatDef {
+export interface ChatDef extends ChatLanesSpec {
   /** Id da conversa nas rotas (/_chat/{conversation}). Padrão: "assistant". */
   conversation?: string;
   /** Título do painel e do botão do header. Padrão: "Assistente". */

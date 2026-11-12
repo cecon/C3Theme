@@ -5,6 +5,7 @@ import { aggregate } from '../app/aggregate';
 import { listNotifications, notificationEvents, readNotifications } from '../app/bell';
 import { runAction, runBulk } from '../app/action';
 import { chatAnswer, chatAnswerUi, chatEvents, chatHistory, chatSend, chatStop } from '../app/chat';
+import { chatLanes, chatOpenLane, chatMessageAction } from '../app/chat-lanes';
 import { prefill } from '../app/action-prefill';
 import { preview } from '../app/action-preview';
 import type { ActionReply } from '../app/action-reply';
@@ -149,6 +150,13 @@ const sseResponse = (stream: AsyncIterable<string>): EngineResponse => ({
 /** Rotas de spec/v0/chat.yaml: `/_chat/{conversation}/...`. */
 function chatRoute(p: string[], pick: (table: Record<string, Route>) => Route | 'method'): Route | 'method' | undefined {
   const [, c, a, m, b, part] = p;
+  if (p.length === 3 && a === '_lanes')
+    return pick({
+      GET: async (e, r) => json(await chatLanes(e, r, c)),
+      POST: async (e, r) => ({ ...json(await chatOpenLane(e, r, c, objectOrEmpty(r.body))), status: 201 })
+    });
+  if (p.length === 6 && a === 'messages' && b === '_actions')
+    return pick({ POST: async (e, r) => json(await chatMessageAction(e, r, c, m, part)) });
   if (p.length === 3 && a === 'messages')
     return pick({
       GET: async (e, r) => json(await chatHistory(e, r, c)),

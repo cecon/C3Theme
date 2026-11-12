@@ -4,6 +4,7 @@
 //! resultado (ou o `ApiError`) vira a resposta do contrato. Nenhuma regra de negócio mora aqui.
 
 mod chat;
+mod chat_lanes;
 mod handlers;
 mod live;
 mod notifications;
@@ -32,6 +33,8 @@ pub(crate) fn router(engine: Engine) -> Router {
         .route("/_notifications/_events", get(notifications::events))
         .route("/_search", get(search::search))
         .route("/_chat/{conversation}/messages", get(chat::history).post(chat::send))
+        .route("/_chat/{conversation}/_lanes", get(chat_lanes::list).post(chat_lanes::open))
+        .route("/_chat/{conversation}/messages/{message}/_actions/{action}", post(chat_lanes::act))
         .route("/_chat/{conversation}/_events", get(chat::events))
         .route("/_chat/{conversation}/_stop", post(chat::stop))
         .route("/_chat/{conversation}/messages/{message}/_answer", post(chat::answer))

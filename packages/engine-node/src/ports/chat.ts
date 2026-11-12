@@ -26,6 +26,8 @@ export interface Outgoing {
 export interface ChatRoom {
   readonly audience: string;
   readonly conversation: string;
+  /** Outra conversa do mesmo usuário, para começar a resposta de uma filha. */
+  inConversation(conversation: string): ChatRoom;
   /** Mensagem nova ou atualizada (o `conversationId` é o da sala). */
   message(message: Rec): void;
   /** Pedaço de texto da resposta `id` (que já saiu com `streaming: true`); `done` encerra. */
@@ -37,6 +39,12 @@ export interface ChatRoom {
 type Maybe<T> = Promise<T> | T;
 
 export interface Chat {
+  /** Conversas filhas visíveis ao usuário da sala; sem implementação o recurso responde 404. */
+  lanes?(room: ChatRoom): Maybe<Rec[]>;
+  /** Abra uma filha do usuário da sala; branch precisa copiar apenas até a mensagem de origem. */
+  openLane?(room: ChatRoom, input: { kind: 'aside' | 'branch'; fromMessageId?: string; text?: string }): Maybe<Rec>;
+  /** Ações declaradas para a mensagem; confira declaração e acesso antes de executar. */
+  messageAction?(room: ChatRoom, messageId: string, actionId: string): Maybe<Rec>;
   /** De quem é a conversa deste pedido (o id do usuário logado). A autenticação já passou pelo sistema. */
   audience(req: EngineRequest): string;
   /** Sem `before`, as `limit` mais recentes; com `before` (id de mensagem), as anteriores a ela. */

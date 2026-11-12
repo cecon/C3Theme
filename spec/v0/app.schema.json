@@ -506,6 +506,8 @@
       "additionalProperties": false,
       "description": "Conversa com o agente do sistema (ADR 0005). O agente é do sistema, como a autenticação: o motor expõe as rotas de spec/v0/chat.yaml e desenha o AssistantPanel; o que o agente pede ao humano são as partes de agent-ui.schema.json.",
       "properties": {
+        "messageActions": { "type": "array", "items": { "$ref": "#/$defs/chatMessageAction" } },
+        "lanes": { "$ref": "#/$defs/chatLanes" },
         "conversation": {
           "type": "string",
           "pattern": "^[A-Za-z0-9_-]{1,64}$",
@@ -868,7 +870,11 @@
                 "label": { "$ref": "#/$defs/text", "description": "O outro recorte, depois de 'vs.' (ex.: 'em 30 dias')." },
                 "preset": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
                 "where": { "$ref": "entity.schema.json#/$defs/condition" },
-                "invert": { "type": "boolean", "default": false, "description": "Subir é ruim (despesa, atraso): a alta fica vermelha e a queda verde." }
+                "invert": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Subir é ruim (despesa, atraso): a alta fica vermelha e a queda verde."
+                }
               }
             }
           }

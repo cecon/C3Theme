@@ -28,6 +28,7 @@ const open = (p: Rec) => (p.state ?? 'pending') === 'pending';
 export function exampleAssistant(db: Db): Chat {
   const log = new Map<string, Rec[]>();
   const generation = new Map<string, number>();
+  const children = new Map<string, Rec[]>();
   let seq = 0;
   const next = (prefix: string) => `${prefix}${++seq}`;
   const key = (r: ChatRoom) => `${r.audience}/${r.conversation}`;
@@ -89,7 +90,31 @@ export function exampleAssistant(db: Db): Chat {
     store(r, m);
   }
 
-  return {
+  const assistant: Chat = {
+    lanes: (r) => children.get(key(r)) ?? [],
+    openLane: async (r, input) => {
+      const history = all(r);
+      const end = input.fromMessageId === undefined ? -1 : history.findIndex((m) => m.id === input.fromMessageId);
+      if (input.fromMessageId !== undefined && end < 0) throw ApiError.badRequest('Mensagem não pertence à conversa.');
+      const id = next('lane-');
+      const lane: Rec = {
+        id,
+        title: input.text || (input.kind === 'branch' ? 'Ramo da resposta' : 'Pergunta à parte'),
+        kind: input.kind,
+        parentId: r.conversation,
+        fromMessageId: input.fromMessageId,
+        unread: 0,
+        updatedAt: now()
+      };
+      const child = r.inConversation(id);
+      log.set(
+        key(child),
+        input.kind === 'branch' ? structuredClone(history.slice(0, end + 1)).map((m) => ({ ...m, conversationId: id })) : []
+      );
+      children.set(key(r), [...(children.get(key(r)) ?? []), lane]);
+      if (input.text) await assistant.send(child, { clientId: next('lane-msg-'), text: input.text });
+      return lane;
+    },
     audience: (req) => user(req) ?? 'anon',
     history: (r, before, limit) => {
       const list = all(r);
@@ -139,4 +164,5 @@ export function exampleAssistant(db: Db): Chat {
       void sayLater(r, after(String(p.kind), answer));
     }
   };
+  return assistant;
 }

@@ -7,13 +7,14 @@ import { useMemo, useState } from 'react';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 
-import { AssistantPanel, useMessageWindow, type Author, type ChatTransport, type UiRenderers } from '@c3theme/chat';
+import { useMessageWindow, type Author, type ChatTransport, type UiRenderers } from '@c3theme/chat';
 
 import { agentTaskOf, agentUiRenderers } from '../agent';
 import { ApiError } from '../apiError';
 import { useAuthSession } from '../auth/session';
 import { useEngine, useText } from '../context';
 import { chatRenderers, chatView, type ChatDef, type ChatView } from './chatDef';
+import ChatLanes from './ChatLanes';
 
 export interface ChatPanelProps {
   def: ChatDef;
@@ -58,16 +59,22 @@ function Conversation({ transport, view, def, onClose }: { transport: ChatTransp
   // os buracos (kind fora de `parts`) tiram também os de humano no circuito que o painel já traz
   const renderers = useMemo(() => chatRenderers(def, agentUiRenderers) as UiRenderers, [def]);
   return (
-    <AssistantPanel
+    <ChatLanes
+      key={view.conversation}
+      def={def}
       chat={chat}
-      title={view.title}
-      onClose={onClose}
-      suggestions={view.suggestions}
-      uiRenderers={renderers}
-      queue={view.queue}
-      composer={view.placeholder === undefined ? undefined : { placeholder: view.placeholder }}
-      onTelemetry={telemetry}
-      taskOf={agentTaskOf}
+      transport={transport}
+      me={me}
+      panel={{
+        title: view.title,
+        onClose,
+        suggestions: view.suggestions,
+        uiRenderers: renderers,
+        queue: view.queue,
+        composer: view.placeholder === undefined ? undefined : { placeholder: view.placeholder },
+        onTelemetry: telemetry,
+        taskOf: agentTaskOf
+      }}
     />
   );
 }

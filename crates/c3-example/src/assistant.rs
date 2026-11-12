@@ -15,6 +15,9 @@ use sqlx::SqlitePool;
 
 use crate::assistant_script::{after, last_open_order, needs_order, turn, Reply, Turn};
 
+#[path = "assistant_lanes.rs"]
+mod lanes;
+
 type Key = (String, String);
 
 /// Pausa antes de responder e entre os pedaços, para a tela mostrar "pensando" e o texto chegando.
@@ -24,6 +27,7 @@ const CHUNK: Duration = Duration::from_millis(40);
 #[derive(Default)]
 struct State {
     log: HashMap<Key, Vec<Value>>,
+    lanes: HashMap<Key, Vec<Value>>,
     /// Sobe a cada Parar: a resposta em andamento confere e para.
     generation: HashMap<Key, u64>,
 }
@@ -174,6 +178,13 @@ impl Assistant {
 
 #[c3_engine::async_trait]
 impl Chat for Assistant {
+    async fn lanes(&self, room: ChatRoom) -> Result<Vec<Value>, ApiError> {
+        self.list_lanes(room)
+    }
+    async fn open_lane(&self, room: ChatRoom, input: Value) -> Result<Value, ApiError> {
+        self.create_lane(room, input).await
+    }
+
     fn audience(&self, req: &Parts) -> String {
         crate::user(req).unwrap_or("anon").to_owned()
     }

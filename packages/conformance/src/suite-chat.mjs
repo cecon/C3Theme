@@ -95,4 +95,38 @@ export function chatTests({ test, call, base, tag }) {
     assert.deepEqual((await call('GET', `/_chat/vazia-${tag}/messages`)).body, { messages: [], hasMore: false });
     assert.equal((await call('POST', `${path}/_stop`)).status, 204);
   });
+
+  test('chat', 'conversas filhas: ramo copia até a origem, à parte não copia e enviar não altera a principal', async () => {
+    const before = (await call('GET', `${path}/messages`)).body.messages;
+    const branch = await call('POST', `${path}/_lanes`, { kind: 'branch', fromMessageId: before[0].id });
+    assert.equal(branch.status, 201, JSON.stringify(branch.body));
+    assert.equal(branch.body.data.parentId, conv);
+    const childPath = `/_chat/${branch.body.data.id}`;
+    const copy = (await call('GET', `${childPath}/messages`)).body.messages;
+    assert.deepEqual(
+      copy.map((m) => m.id),
+      [before[0].id],
+      'somente o histórico até a origem'
+    );
+    assert.equal((await call('POST', `${childPath}/messages`, { clientId: 'filha', text: 'uma pergunta filha' })).status, 200);
+    const after = (await call('GET', `${path}/messages`)).body.messages;
+    assert.ok(!after.some((m) => m.clientId === 'filha'), 'o envio ficou somente na filha');
+    const aside = await call('POST', `${path}/_lanes`, { kind: 'aside', text: 'pergunta sem histórico' });
+    assert.equal(aside.status, 201);
+    const asideMessages = (await call('GET', `/_chat/${aside.body.data.id}/messages`)).body.messages;
+    assert.equal(asideMessages[0].text, 'pergunta sem histórico');
+    assert.ok(!asideMessages.some((m) => m.id === before[0].id));
+    const list = (await call('GET', `${path}/_lanes`)).body.data;
+    assert.ok(list.some((l) => l.id === branch.body.data.id));
+    assert.ok(list.some((l) => l.id === aside.body.data.id));
+    assert.deepEqual((await call('GET', `/_chat/sem-filhas-${tag}/_lanes`)).body.data, []);
+    const otherUser = { headers: { authorization: 'Bearer reader' } };
+    const hidden = await fetch(base + `${childPath}/messages`, otherUser);
+    assert.equal(hidden.status, 200);
+    assert.deepEqual((await hidden.json()).messages, [], 'histórico da filha não atravessa usuários');
+    const hiddenLanes = await fetch(base + `${path}/_lanes`, otherUser);
+    assert.deepEqual((await hiddenLanes.json()).data, [], 'a lista não atravessa usuários');
+    assert.equal((await call('POST', `${path}/_lanes`, { kind: 'branch', fromMessageId: 'outra-conversa' })).status, 400);
+    assert.equal((await call('POST', `${path}/_lanes`, { kind: 'branch' })).status, 400);
+  });
 }
