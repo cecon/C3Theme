@@ -27,6 +27,8 @@ export interface KpiWidget extends WidgetBase {
   count?: boolean;
   /** Barra de progresso: `part` (somado ao filtro do widget) sobre `whole` (ausente: o próprio widget), com o rótulo. */
   progress?: { label: Text; part?: Condition; whole?: Condition };
+  /** Variação sobre outro recorte (preset e where no lugar dos do widget), com a seta e a cor; `invert`: subir é ruim. */
+  compare?: { label: Text; preset?: string; where?: Condition; invert?: boolean };
 }
 export interface ChartWidget extends WidgetBase {
   type: 'chart';
@@ -73,13 +75,28 @@ export interface ListWidget extends WidgetBase {
   type: 'list';
   columns?: string[];
   sort?: string;
+  /** Até 200 (`LIST_MAX`); acima de 10 linhas o cartão rola por dentro, com o cabeçalho fixo. */
   limit?: number;
+  /** Abas, cada uma com a sua entidade e filtro (A receber / A pagar); colunas, ordem e limite vêm do widget. */
+  tabs?: ListTab[];
+  /** Campo enum ou boolean: um seletor no cartão filtra a lista sem sair do painel. */
+  filter?: string;
+}
+export interface ListTab {
+  label: Text;
+  entity?: string;
+  preset?: string;
+  where?: Condition;
+  columns?: string[];
+  sort?: string;
 }
 /** Aviso: aparece só quando a contagem passa de zero, e leva à lista com o mesmo recorte. */
 export interface AlertWidget extends WidgetBase {
   type: 'alert';
-  /** Texto com `{count}` (ex.: "{count} vendas sem NFC-e"). */
+  /** Texto com `{count}` e, com `measure`, `{value}` (ex.: "{count} títulos vencendo, {value}"). */
   text: Text;
+  /** Soma mostrada em `{value}`, no formato do campo (`sum:valor`). */
+  measure?: Measure;
   tone?: 'info' | 'warning' | 'error';
 }
 /** Grade de atividade: uma coluna por semana, uma linha por dia da semana, mais forte quanto maior o valor do dia. */
@@ -247,4 +264,12 @@ export function bothWhere(a?: Condition, b?: Condition): Condition | undefined {
 /** Parte sobre o todo em %, 0 sem todo; nunca passa de 100. */
 export function share(part: number, whole: number): number {
   return whole > 0 ? Math.min(100, (part / whole) * 100) : 0;
+}
+
+/** Texto do aviso: `{count}` vira a contagem e `{value}` a soma de `measure`, no formato do campo somado (#64). */
+export function alertText(template: string, w: AlertWidget, def: EntityDef, item: AggregateItem | undefined, locale: string): string {
+  const count = Number(item?.values?.[0] ?? item?.value ?? 0);
+  const sum = w.measure ? (item?.values?.[1] ?? 0) : undefined;
+  const out = template.replace('{count}', count.toLocaleString(locale));
+  return sum === undefined ? out : out.replace('{value}', formatMeasure(sum, measureField(def, w.measure), locale));
 }

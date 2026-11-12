@@ -1,5 +1,7 @@
 // Regras do painel (app.json pages[].dashboard) que o JSON Schema não expressa sozinho.
 
+import { checkAlertCompare, checkListTabs } from './spec-dashboard-list.mjs';
+
 const DATES = new Set(['date', 'datetime']);
 const GROUPABLE = new Set(['enum', 'boolean', 'reference', ...DATES]);
 const SUMMABLE = new Set(['integer', 'decimal']);
@@ -36,6 +38,7 @@ export function checkDashboards(app, entities, checkCondition, errors) {
       if (w.preset && !(entity.views?.list?.presets ?? []).some((p) => p.id === w.preset))
         errors.push(`${where}: preset '${w.preset}' não existe em ${w.entity}.views.list.presets`);
       if (w.where) checkCondition(w.where, fields, `${where} where`, true);
+      checkAlertCompare(w, entity, fields, where, checkCondition, errors);
       for (const [name, target] of Object.entries(w.bind ?? {})) {
         const f = filters.get(name);
         const g = fields.get(target);
@@ -98,6 +101,7 @@ export function checkDashboards(app, entities, checkCondition, errors) {
           if (name !== 'id') field(name, 'sort');
         }
         if (!w.columns && !entity.titleField) errors.push(`${where}: sem columns, a entidade precisa de titleField`);
+        checkListTabs(app, entities, w, entity, where, checkCondition, errors);
       }
     }
   }

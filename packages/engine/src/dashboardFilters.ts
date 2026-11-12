@@ -91,8 +91,13 @@ export function applyFilters<W extends WidgetDef>(widget: W, filters: DashboardF
     if (c) parts.push(c);
   }
   if (parts.length === 0) return widget;
-  const all = widget.where ? [widget.where, ...parts] : parts;
-  return { ...widget, where: all.length === 1 ? all[0] : { and: all } };
+  const join = (where?: Condition): Condition => {
+    const all = where ? [where, ...parts] : parts;
+    return all.length === 1 ? all[0] : { and: all };
+  };
+  // lista com abas (#64): cada aba tem o seu filtro, e o do painel entra em todas
+  if (widget.type === 'list' && widget.tabs) return { ...widget, tabs: widget.tabs.map((t) => ({ ...t, where: join(t.where) })) };
+  return { ...widget, where: join(widget.where) };
 }
 
 /** Valores na URL (`f.<nome>`, e o título do registro em `ft.<nome>`): voltar e compartilhar mantêm o recorte. */

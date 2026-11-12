@@ -86,3 +86,17 @@ test('agenda da semana: pedidos na hora, atrasado em vermelho e o clique leva à
   await late.click();
   await expect(page.getByRole('textbox', { name: 'Cliente' })).toHaveValue('Ana Souza');
 });
+
+test('painel financeiro: variação no KPI, soma no aviso, abas e filtro na lista (#64)', async ({ page }) => {
+  await page.goto(story('telas-pelo-motor--financeiro'));
+  await expect(page.getByLabel(/em relação a setembro/).first()).toBeVisible();
+  await expect(page.getByText(/^\d+ faturas atrasadas somando R\$/)).toBeVisible();
+  await page.getByRole('tab', { name: 'Boletos' }).click();
+  await expect(page.getByRole('link', { name: 'BL-001' })).toBeVisible();
+  const todas = page.getByLabel(/Todas as faturas: \d+ linhas, role para ver todas/);
+  await expect(todas).toBeVisible();
+  await page.getByRole('combobox', { name: 'Status' }).click();
+  await page.getByRole('option', { name: 'Paga' }).click();
+  await expect(page.getByLabel(/Todas as faturas: \d+ linhas/)).toBeVisible();
+  await expect(todas.getByText('Atrasada')).toHaveCount(0);
+});
