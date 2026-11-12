@@ -16,7 +16,11 @@ trocada ganha um ADR novo, e o antigo passa a `Substituída por NNNN`.
 | [0009](0009-conversa-pela-rota.md)              | Conversa da página de chat vinda da rota                 | Aceita                                  |
 | [0010](0010-estados-da-pagina.md)               | Estados da página declarados na spec                     | Aceita                                  |
 | [0011](0011-estados-do-chat.md)                 | Estados declarados do chat, sobre os da página           | Aceita                                  |
+<<<<<<< HEAD
 | [0012](0012-modo-controlado-de-fora.md)         | Modo claro/escuro trocado de fora da casca               | Aceita                                  |
+=======
+| [0013](0013-painel-por-resumo.md)               | Painel alimentado por resumo do sistema                  | Aceita                                  |
+>>>>>>> f4039a9 (feat(engine): painel alimentado por resumo do sistema (#108))
 
 ## Formato
 

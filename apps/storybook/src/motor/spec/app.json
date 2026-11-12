@@ -155,6 +155,70 @@
       }
     },
     {
+      "path": "/uso",
+      "title": "Uso",
+      "dashboard": {
+        "source": { "path": "/uso", "refresh": 5 },
+        "widgets": [
+          {
+            "type": "meter",
+            "title": "Uso por provedor",
+            "subtitle": "Tokens na janela atual",
+            "from": "provedores",
+            "label": "nome",
+            "value": "tokens.total",
+            "limit": "tokens.limite",
+            "details": [
+              { "label": "Entrada", "value": "tokens.entrada" },
+              { "label": "Saída", "value": "tokens.saida" },
+              { "label": "Início da janela", "value": "janela.inicio", "format": "datetime" },
+              { "label": "Fim da janela", "value": "janela.fim", "format": "datetime" },
+              { "label": "Custo estimado", "value": "custo.valor", "format": "money", "currency": "custo.moeda" }
+            ]
+          },
+          {
+            "type": "share",
+            "title": "Consumo por agente",
+            "subtitle": "Participação no total de tokens",
+            "from": "agentes",
+            "label": "nome",
+            "value": "tokens",
+            "share": "participacao"
+          },
+          {
+            "type": "status",
+            "title": "Atualização do app",
+            "from": "atualizacao",
+            "state": "estado",
+            "states": {
+              "verificando": { "label": "Verificando", "tone": "info" },
+              "disponivel": { "label": "Versão nova disponível", "tone": "primary" },
+              "baixando": { "label": "Baixando", "tone": "info" },
+              "pronto": { "label": "Pronto para instalar", "tone": "success" },
+              "atualizado": { "label": "Atualizado", "tone": "success" },
+              "erro": { "label": "Falhou", "tone": "danger" }
+            },
+            "fields": [
+              { "label": "Versão atual", "value": "atual", "format": "text" },
+              { "label": "Versão disponível", "value": "disponivel", "format": "text" },
+              { "label": "Canal", "value": "canal", "format": "text" }
+            ],
+            "notices": [
+              { "when": { "field": "canal", "op": "eq", "value": "beta" }, "text": "Canal beta: versões de teste podem ter falhas.", "tone": "warning" }
+            ],
+            "progress": "progresso",
+            "message": "mensagem",
+            "actions": [
+              { "id": "verificar", "label": "Verificar agora", "path": "/atualizacao/verificar" },
+              { "id": "baixar", "label": "Baixar", "path": "/atualizacao/baixar", "variant": "contained" },
+              { "id": "instalar", "label": "Instalar e reiniciar", "path": "/atualizacao/instalar", "variant": "contained" },
+              { "id": "tentar", "label": "Tentar de novo", "path": "/atualizacao/verificar" }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "path": "/painel",
       "title": "Painel de faturas",
       "dashboard": {

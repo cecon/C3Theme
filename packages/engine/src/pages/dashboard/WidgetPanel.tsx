@@ -11,7 +11,7 @@ import { Chart as ChartIcon, RowVertical } from 'iconsax-reactjs';
 
 import { Panel } from '@c3theme/ui';
 import { useText } from '../../context';
-import { chartKind, type ChartWidget as Chart, type WidgetDef } from '../../dashboard';
+import { chartKind, type ChartWidget as Chart, type EntityWidget } from '../../dashboard';
 import AreaWidget from './AreaWidget';
 import ChartWidget from './ChartWidget';
 import ChartsText from './ChartsText';
@@ -22,7 +22,7 @@ import ListWidget from './ListWidget';
 import RankingWidget from './RankingWidget';
 
 /** Um widget do painel no seu cartão: título, subtítulo e o controle do cabeçalho (períodos ou gráfico/tabela). */
-export default function WidgetPanel({ widget }: { widget: Exclude<WidgetDef, { type: 'alert' }> }) {
+export default function WidgetPanel({ widget }: { widget: Exclude<EntityWidget, { type: 'alert' }> }) {
   const text = useText();
   const title = text(widget.title);
   if (widget.type === 'kpi')

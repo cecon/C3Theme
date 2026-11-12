@@ -50,6 +50,12 @@ export interface MemorySeed {
   onSave?: Record<string, (record: WireRecord) => WireRecord>;
   /** O agente do chat (`pages[].chat`, `header.assistant`), no lugar das rotas /_chat: ex. o `memoryTransport` do @c3theme/chat. */
   chat?: ChatTransport;
+  /**
+   * Resumos do painel (#108), no lugar do sistema: `summaries['/uso'] = () => ({ providers: [...] })` no GET, e
+   * `summaryActions['/atualizacao/verificar'] = () => resumoNovo` no POST do widget `status`.
+   */
+  summaries?: Record<string, () => unknown>;
+  summaryActions?: Record<string, () => unknown>;
   /** Respostas de GET por caminho, para o pedido livre (`raw`): `{ '/openapi.json': doc }` na página apiDocs. */
   files?: Record<string, unknown>;
 }
@@ -201,7 +207,9 @@ export function createMemoryClient(seed: MemorySeed): C3Client {
     notifications: (limit) => wait(() => bell.list(limit)),
     readNotifications: (ids) => wait(() => bell.read(ids)),
     search: (q, limit) => wait(() => memorySearch(store, q, limit)),
-    chat: seed.chat
+    chat: seed.chat,
+    summary: (path) => wait(() => (seed.summaries?.[path] ?? (() => unsupported('O resumo')))()),
+    summaryAction: (path) => wait(() => (seed.summaryActions?.[path] ?? (() => unsupported('A ação do resumo')))())
   };
   client.raw = memoryRaw(
     client,

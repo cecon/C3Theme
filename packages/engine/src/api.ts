@@ -94,6 +94,10 @@ export interface C3Client {
   notificationEvents?(onMessage: (m: LiveMessage) => void, signal: AbortSignal): Promise<void>;
   /** Ctrl K com `header.search: { records: true }`: GET /_search, registros e mensagens que o sistema acha. */
   search?(q: string, limit: number, signal?: AbortSignal): Promise<SearchResult[]>;
+  /** Painel por resumo (#108): GET do documento que o sistema calcula (`{ data }`), com o token da sessão. */
+  summary?(path: string): Promise<unknown>;
+  /** Ação do widget `status` do resumo: POST no caminho; devolve o resumo novo quando a resposta traz `data`. */
+  summaryAction?(path: string): Promise<unknown>;
   /** Pedido livre à API, com o token da sessão (página `apiDocs`): devolve o status e o corpo como texto. */
   raw?(method: string, path: string, body?: string): Promise<RawReply>;
   /** Chat com o agente (`pages[].chat`, `layout.header.assistant`): /_chat/{conversation}/... (spec/v0/chat.yaml). */
@@ -217,6 +221,8 @@ export function createClient(
       call<{ data: SearchResult[] }>('GET', `/_search?${new URLSearchParams({ q, limit: String(limit) })}`, undefined, {}, signal).then(
         (r) => r.data
       ),
+    summary: (path) => call<{ data: unknown }>('GET', path).then((r) => r.data),
+    summaryAction: (path) => call<{ data?: unknown } | undefined>('POST', path, {}).then((r) => r?.data),
     raw: async (method, path, body) => {
       const init = { method, body, headers: { ...(body ? { 'content-type': 'application/json' } : {}), ...headers?.() } };
       const res = await fetch(base + path, init).catch(() => {

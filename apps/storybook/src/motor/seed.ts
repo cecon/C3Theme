@@ -10,6 +10,7 @@ import { PEDIDO } from '../fluxo/fluxos';
 import { OPENAPI } from './openapi';
 import { avisos, eventos, mesas, tarefas } from './operacao';
 import { APP, ENTITIES } from './spec';
+import { USO_ACTIONS, USO_SUMMARIES } from './uso';
 
 const NOMES = ['Ana Souza', 'Bruno Lima', 'Carla Mendes', 'Diego Araújo', 'Elisa Prado', 'Fábio Nogueira', 'Gisele Rocha'];
 const CIDADES = [
@@ -135,6 +136,9 @@ export const SEED: MemorySeed = {
   },
   // o openapi.json da página `apiDocs` (/apis)
   files: { '/openapi.json': OPENAPI },
+  // o resumo do painel /uso, que o sistema calcula (#108)
+  summaries: USO_SUMMARIES,
+  summaryActions: USO_ACTIONS,
   // ações da lista, como o backend: a revisão em etapas do balancete
   listActions: { conta_contabil: { revisar }, entrega: { imprimir_relacao: () => ({ message: 'Relação enviada para a impressora.' }) } },
   // a prévia que o backend montaria: o cupom da térmica, em texto pré-formatado (#66)

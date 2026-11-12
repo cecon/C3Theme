@@ -7,10 +7,12 @@ import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 
 import { iconByName, useEngine, useText } from '../../context';
-import { DashboardDef, WidgetDef, widgetWidth } from '../../dashboard';
+import { DashboardDef, EntityWidget, WidgetDef, widgetWidth } from '../../dashboard';
 import { applyFilters, readValues, type FilterValues } from '../../dashboardFilters';
+import { isSummaryWidget } from '../../summary';
 import AlertWidget from './AlertWidget';
 import DashboardFilters from './DashboardFilters';
+import SummaryPanel from './summary/SummaryPanel';
 import WidgetPanel from './WidgetPanel';
 
 /**
@@ -34,8 +36,11 @@ export default function Dashboard({ dashboard }: { dashboard: DashboardDef }) {
     }
     setParams(next, { replace: true });
   };
-  // widget de entidade que o usuário não lista (ou que o sistema não carregou) não aparece
-  const widgets = dashboard.widgets.filter((w) => entities[w.entity]?.capabilities.list).map((w) => applyFilters(w, filters, values));
+  // widget de entidade que o usuário não lista (ou que o sistema não carregou) não aparece; o do resumo não tem entidade
+  const widgets = dashboard.widgets.flatMap((w): WidgetDef[] => {
+    if (isSummaryWidget(w)) return [w];
+    return entities[w.entity]?.capabilities.list ? [applyFilters(w, filters, values)] : [];
+  });
   return (
     <>
       {filters.length > 0 && <DashboardFilters filters={filters} values={values} onChange={change} />}
@@ -63,6 +68,10 @@ export default function Dashboard({ dashboard }: { dashboard: DashboardDef }) {
         {widgets.map((w, i) =>
           w.type === 'alert' ? (
             <AlertWidget key={i} widget={w} />
+          ) : isSummaryWidget(w) ? (
+            <Grid key={i} size={{ xs: 12, lg: widgetWidth(w) }}>
+              <SummaryPanel widget={w} source={dashboard.source} />
+            </Grid>
           ) : (
             <Grid key={i} size={size(w)}>
               <WidgetPanel widget={w} />
@@ -75,7 +84,7 @@ export default function Dashboard({ dashboard }: { dashboard: DashboardDef }) {
 }
 
 /** KPI com ícone ocupa a linha no celular e meia no tablet; o simples, meia linha. O resto: a linha toda até o desktop. */
-function size(w: Exclude<WidgetDef, { type: 'alert' }>) {
+function size(w: Exclude<EntityWidget, { type: 'alert' }>) {
   const lg = widgetWidth(w);
   if (w.type === 'kpi') return w.icon ? { xs: 12, sm: 6, lg } : { xs: 6, lg };
   return { xs: 12, lg };
