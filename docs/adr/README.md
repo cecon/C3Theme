@@ -15,7 +15,7 @@ trocada ganha um ADR novo, e o antigo passa a `Substituída por NNNN`.
 | [0008](0008-orientar-o-turno-em-andamento.md)   | Orientar o turno do agente sem interromper               | Aceita                                  |
 | [0009](0009-conversa-pela-rota.md)              | Conversa da página de chat vinda da rota                 | Aceita                                  |
 | [0010](0010-estados-da-pagina.md)               | Estados da página declarados na spec                     | Aceita                                  |
-| [0011](0011-estados-do-chat.md)                 | Estados declarados do chat (carregando, vazio, erro…)    | Aceita                                  |
+| [0011](0011-estados-do-chat.md)                 | Estados declarados do chat, sobre os da página           | Aceita                                  |
 
 ## Formato
 

@@ -870,7 +870,7 @@
         },
         "states": {
           "$ref": "#/$defs/pageStates",
-          "description": "Estados da conversa, no mesmo formato de pages[].states (ADR 0010): carregando o histórico, conversa vazia (com a ação e as sugestões), erro (5xx ou outro erro nas rotas /_chat; a ação retry carrega de novo), sem permissão (403 em /_chat cobre o painel) e offline (falha de rede ou conexão da shell caída; o histórico já carregado fica visível). Sem states, nada muda."
+          "description": "Estados da conversa, no mesmo formato de pages[].states (ADR 0010; chat no ADR 0011): carregando o histórico, conversa vazia (com a ação e as sugestões), erro (5xx ou outro erro nas rotas /_chat; a ação retry carrega de novo), sem permissão (403 em /_chat cobre o painel) e offline (falha de rede ou conexão da shell caída; o histórico já carregado fica visível). Sem states, nada muda."
         },
         "steer": {
           "type": "boolean",
