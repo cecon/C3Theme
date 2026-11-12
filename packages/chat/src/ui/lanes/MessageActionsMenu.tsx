@@ -59,7 +59,7 @@ export default function MessageActionsMenu({ message, actions, onAction }: Messa
       <Menu id={menuId} anchorEl={anchor} open={!!anchor} onClose={() => setAnchor(null)}>
         {items.map((a) => (
           <MenuItem key={a.id} onClick={() => pick(a.id)}>
-            {a.opens && <ListItemIcon>{a.opens === 'branch' ? <Hierarchy size={18} /> : <MessageQuestion size={18} />}</ListItemIcon>}
+            {a.opens && <ListItemIcon>{OPENS_ICON[a.opens]}</ListItemIcon>}
             <ListItemText>{a.label}</ListItemText>
           </MenuItem>
         ))}
