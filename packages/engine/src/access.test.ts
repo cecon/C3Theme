@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { loadEntities, referencedEntities } from './access';
+import { applyAccess, loadEntities, referencedEntities } from './access';
 import type { C3Client } from './api';
 import type { EntityDef } from './types';
 
@@ -46,5 +46,26 @@ describe('loadEntities', () => {
   it('a entidade pedida que falha derruba a carga', async () => {
     const client = { entity: async () => Promise.reject(new Error('403')) } as unknown as C3Client;
     await expect(loadEntities(client, ['product'])).rejects.toThrow('403');
+  });
+});
+
+describe('applyAccess nos presets', () => {
+  const custo = def('item', {
+    fields: [
+      { name: 'custo', type: 'decimal' },
+      { name: 'nome', type: 'string' }
+    ],
+    views: {
+      list: {
+        presets: [
+          { id: 'todos', label: 'Todos' },
+          { id: 'caros', label: 'Caros', where: { field: 'custo', op: 'gt', value: '100' } }
+        ]
+      }
+    }
+  });
+  it('tira o preset que cita o campo escondido e mantém o "Todos" sem where (#67)', () => {
+    const seen = applyAccess(custo, { ...caps, actions: {}, fields: { custo: 'hidden' } } as never);
+    expect(seen.views?.list?.presets?.map((p) => p.id)).toEqual(['todos']);
   });
 });

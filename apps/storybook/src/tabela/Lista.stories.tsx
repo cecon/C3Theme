@@ -45,7 +45,8 @@ export const SaldoAnterior: Story = {
 
 /**
  * Seção `related` com `editable`, `search` e `presets`: a contagem do inventário na própria linha. Digite e tecle
- * Enter: grava e desce para o item de baixo. A aba "Só não contados" e a busca vêm da lista da filha.
+ * Enter: grava e desce para o item de baixo. A aba "Só não contados" e a busca vêm da lista da filha; o preset "Todos"
+ * sem `where` ocupa o lugar da aba "Todos" própria (uma só) e mostra todos os itens.
  */
 export const Inventario: Story = { name: 'Inventário, contando na seção', args: { entity: 'inventario', screen: 'form', id: '1' } };
 

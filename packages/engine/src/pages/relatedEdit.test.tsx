@@ -31,10 +31,10 @@ const item = {
 } as unknown as EntityDef;
 const inventario = { name: 'inventario', label: { singular: 'Inventário', plural: 'Inventários' }, fields: [] } as unknown as EntityDef;
 
-function setup(related: Partial<RelatedDef>) {
+function setup(related: Partial<RelatedDef>, def: EntityDef = item) {
   const client = createMemoryClient({
     app: { name: 'demo', entities: ['inventario', 'item'] } as never,
-    entities: [inventario, item],
+    entities: [inventario, def],
     records: {
       inventario: [{ id: '1' }],
       item: ['Arroz', 'Feijão', 'Café'].map((produto, i) => ({ id: String(i + 1), inventario: '1', produto, contado: i === 2 ? 4 : null }))
@@ -42,7 +42,7 @@ function setup(related: Partial<RelatedDef>) {
   });
   const update = vi.spyOn(client, 'update');
   const caps = { create: true, update: true, delete: true, actions: {} };
-  const value = { client, app: { name: 'demo' } as never, entities: { item: { def: item, capabilities: caps } } as never, components: {} };
+  const value = { client, app: { name: 'demo' } as never, entities: { item: { def, capabilities: caps } } as never, components: {} };
   render(
     <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0 }}>
       <ThemeProvider theme={createTheme({ cssVariables: true })}>
@@ -86,5 +86,17 @@ describe('related editável', () => {
     fireEvent.change(screen.getByRole('textbox', { name: 'Buscar itens' }), { target: { value: 'feij' } });
     await waitFor(() => expect(document.querySelector('[data-edit-cell="1:contado"]')).toBeNull(), { timeout: 2000 });
     expect(cell('2')).toBeTruthy();
+  });
+
+  it('preset sem where é o "Todos": carrega a lista e não duplica a aba (#67)', async () => {
+    const presets = [{ id: 'todos', label: 'Todos', default: true }, ...item.views!.list!.presets!];
+    const { cell } = setup({ presets: true }, { ...item, views: { list: { ...item.views!.list, presets } } });
+    await waitFor(() => expect(cell('3')).toBeTruthy());
+    expect(screen.getAllByRole('tab', { name: 'Todos' })).toHaveLength(1);
+    expect(screen.getByRole('tab', { name: 'Todos' }).getAttribute('aria-selected')).toBe('true');
+    fireEvent.click(screen.getByRole('tab', { name: 'Só não contados' }));
+    await waitFor(() => expect(document.querySelector('[data-edit-cell="3:contado"]')).toBeNull());
+    fireEvent.click(screen.getByRole('tab', { name: 'Todos' }));
+    await waitFor(() => expect(cell('3')).toBeTruthy());
   });
 });

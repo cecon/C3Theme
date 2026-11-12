@@ -13,6 +13,7 @@ import TextField from '@mui/material/TextField';
 import { SearchNormal1 } from 'iconsax-reactjs';
 
 import { useText } from '../context';
+import { presetTabValue, presetTabs } from '../presetTabs';
 import type { EntityDef } from '../types';
 
 export default function RelatedToolbar({
@@ -40,12 +41,18 @@ export default function RelatedToolbar({
     return () => clearTimeout(t);
   }, [typed]); // eslint-disable-line react-hooks/exhaustive-deps
   const list = def.views?.list ?? {};
-  const tabs = presets ? [{ id: '', label: text(list.presetTabs?.all ?? 'Todos') }, ...(list.presets ?? [])] : [];
+  const tabs = presets ? presetTabs(list.presets ?? [], list.presetTabs?.all ?? 'Todos') : [];
   if (!search && !tabs.length) return null;
   return (
     <Stack direction={{ xs: 'column', md: 'row' }} sx={{ px: 2, pb: 1, gap: 1, alignItems: { md: 'center' } }}>
       {tabs.length > 0 && (
-        <Tabs value={preset} onChange={(_, id: string) => onPreset(id)} variant="scrollable" allowScrollButtonsMobile sx={{ flex: 1 }}>
+        <Tabs
+          value={presetTabValue(tabs, preset)}
+          onChange={(_, id: string) => onPreset(id)}
+          variant="scrollable"
+          allowScrollButtonsMobile
+          sx={{ flex: 1 }}
+        >
           {tabs.map((t) => (
             <Tab key={t.id} value={t.id} label={text(t.label)} sx={{ minHeight: 44 }} />
           ))}

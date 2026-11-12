@@ -102,7 +102,8 @@ export type { LookupDef } from './formTypes';
 export interface Preset {
   id: string;
   label: Text;
-  where: Condition;
+  /** Sem `where`, é o "Todos": só o recorte da tela (#67). */
+  where?: Condition;
   default?: boolean;
   /** Valores iniciais do registro novo criado com este filtro ativo. */
   defaults?: WireRecord;

@@ -28,6 +28,8 @@ import EditBar from './list/EditBar';
 import { EditCell } from './list/EditCell';
 import useInlineEdit from './list/useInlineEdit';
 import RelatedToolbar from './RelatedToolbar';
+import { joinAnd } from './list/useListQuery';
+import { withPreset } from '../presetTabs';
 
 const PAGE_SIZE = 10;
 
@@ -46,7 +48,7 @@ export default function RelatedSection({ parentId, related, title }: { parentId:
   const preset = listDef?.presets?.find((p) => p.id === presetId);
   const sort = related.sort ?? (listDef?.defaultSort ?? []).map((s) => (s.direction === 'desc' ? '-' : '') + s.field).join(',');
   const own = { field: related.field, op: 'eq' as const, value: parentId };
-  const where = preset ? { and: [own, preset.where] } : own;
+  const where = joinAnd([own, ...withPreset(preset, [])])!;
   const key = child ? ['c3-list', related.entity, 'related', related.field, parentId, page, sort, q, presetId] : null;
   const { data, mutate } = useSWR(key, () =>
     client.list(related.entity, { page, pageSize: PAGE_SIZE, sort: sort || undefined, q: q || undefined, where })

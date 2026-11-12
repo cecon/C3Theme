@@ -126,7 +126,7 @@ export default function EntityList({ entity, view = 'list' }: { entity: string; 
     columns.map((c) => c.field),
     query
   );
-  const openingValue = useListOpening(entity, list.opening, query);
+  const openingValue = useListOpening(entity, def, list.opening, query);
   const opening = openingValue && {
     field: list.opening!.field,
     value: openingValue.value,

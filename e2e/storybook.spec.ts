@@ -34,3 +34,17 @@ test('tabela com seleção: marcar uma linha e depois a página inteira', async 
   const rows = await page.getByRole('checkbox', { name: /^Selecionar linha / }).count();
   await expect(page.getByText(`${rows} marcadas`)).toBeVisible();
 });
+
+test('seção related com o preset "Todos" sem where: carrega os itens e a aba aparece uma vez (#67)', async ({ page }) => {
+  await page.goto(story('tabela-lista-pelo-motor--inventario'));
+  const todos = page.getByRole('tab', { name: 'Todos' });
+  await expect(todos).toHaveCount(1);
+  await expect(todos).toHaveAttribute('aria-selected', 'true');
+  const contado = page.locator('[data-edit-cell$=":contado"]');
+  await expect(contado.first()).toBeVisible();
+  const all = await contado.count();
+  await page.getByRole('tab', { name: 'Só não contados' }).click();
+  await expect.poll(() => contado.count()).toBeLessThan(all);
+  await todos.click();
+  await expect.poll(() => contado.count()).toBe(all);
+});

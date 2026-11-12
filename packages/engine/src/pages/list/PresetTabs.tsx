@@ -7,6 +7,7 @@ import Tabs from '@mui/material/Tabs';
 
 import { useEngine, useText } from '../../context';
 import type { EntityDef } from '../../types';
+import { presetTabValue, presetTabs, withPreset } from '../../presetTabs';
 import { joinAnd, type ListQuery } from './useListQuery';
 
 /**
@@ -19,7 +20,7 @@ export default function PresetTabs({ entity, def, query }: { entity: string; def
   const list = def.views?.list ?? {};
   const presets = list.presets ?? [];
   const { q, baseParts, presetId, set, branchesParam, shownBranches, sourceParams } = query;
-  const tabs = [{ id: '', label: text(list.presetTabs?.all ?? 'Todos'), where: undefined }, ...presets];
+  const tabs = presetTabs(presets, list.presetTabs?.all ?? 'Todos');
 
   const key = ['c3-list', entity, 'tabs', q, JSON.stringify(baseParts), branchesParam, JSON.stringify(sourceParams), org?.active];
   const { data: counts } = useSWR(
@@ -31,7 +32,7 @@ export default function PresetTabs({ entity, def, query }: { entity: string; def
             .aggregate(entity, {
               measure: 'count',
               q: q || undefined,
-              where: joinAnd([...(t.where ? [t.where] : []), ...baseParts]),
+              where: joinAnd(withPreset(t, baseParts)),
               branches: branchesParam ? shownBranches : undefined,
               params: sourceParams
             })
@@ -40,11 +41,11 @@ export default function PresetTabs({ entity, def, query }: { entity: string; def
       ),
     { keepPreviousData: true }
   );
-  const current = presetId ?? '';
+  const current = presetTabValue(tabs, presetId ?? '');
 
   return (
     <Tabs
-      value={tabs.some((t) => t.id === current) ? current : ''}
+      value={current}
       onChange={(_, id: string) => set({ preset: id })}
       variant="scrollable"
       allowScrollButtonsMobile
