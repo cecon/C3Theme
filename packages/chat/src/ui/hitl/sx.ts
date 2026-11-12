@@ -1,4 +1,4 @@
-import type { Theme } from '@mui/material/styles';
+import type { SxProps, Theme } from '@mui/material/styles';
 
 // Estilos fixos repetidos nos cards de HITL. Constantes do módulo: o MUI recebe sempre o mesmo objeto.
 
@@ -14,7 +14,7 @@ export const monoFont = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospac
  * Selo de risco médio: o `warning.main` não dá 4,5:1 sobre o papel no claro (axe color-contrast);
  * no claro texto e borda vão no `warning.dark`, no escuro no `warning.main`, como o tema faz com o laranja em texto.
  */
-export const warningChipSx = (theme: Theme) => ({
+export const warningChipSx: SxProps<Theme> = (theme) => ({
   color: theme.vars?.palette.warning.dark ?? theme.palette.warning.dark,
   borderColor: theme.vars?.palette.warning.dark ?? theme.palette.warning.dark,
   ...theme.applyStyles('dark', {
