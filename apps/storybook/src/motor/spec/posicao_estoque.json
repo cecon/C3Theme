@@ -1,0 +1,18 @@
+{
+  "$schema": "../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "posicao_estoque",
+  "label": { "singular": "Posição de estoque", "plural": "Posição de estoque", "gender": "f" },
+  "description": "Consulta do sistema: o saldo de cada produto. A linha não abre sozinha; o produto é link para o kardex dele (columns[].href).",
+  "titleField": "produto",
+  "source": "system",
+  "fields": [
+    { "name": "produto", "type": "reference", "entity": "produto", "label": "Produto" },
+    { "name": "saldo", "type": "integer", "label": "Saldo" }
+  ],
+  "views": {
+    "list": {
+      "columns": [{ "field": "produto", "href": "/movimento?f.produto={produto}" }, "saldo"]
+    }
+  }
+}

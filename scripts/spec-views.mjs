@@ -2,6 +2,8 @@
 
 import { checkEditColumn } from './spec-fields.mjs';
 import { checkSource, checkStore } from './spec-source.mjs';
+import { makeCheckCondition } from './spec-conditions.mjs';
+import { hrefFields } from '../packages/engine/src/hrefSlots.mjs';
 
 const DATES = new Set(['date', 'datetime']);
 
@@ -64,8 +66,8 @@ export function checkBoardCalendar(entity, fields, file, errors) {
       if (a && a.type !== 'boolean') errors.push(`${file} views.calendar.allDay: '${a.name}' precisa ser boolean`);
       if (s && s.type !== 'datetime') errors.push(`${file} views.calendar.allDay: só vale com start datetime (date já é dia inteiro)`);
     }
-    if (calendar.color && field(calendar.color, 'views.calendar.color')?.type !== 'enum')
-      errors.push(`${file} views.calendar.color: '${calendar.color}' precisa ser enum`);
+    checkCalendarColor(calendar.color, fields, field, file, errors);
+    for (const name of calendar.open ? hrefFields(calendar.open.href) : []) field(name, 'views.calendar.open.href');
     for (const name of calendar.fields ?? []) field(name, 'views.calendar.fields');
   }
 }
@@ -192,4 +194,14 @@ function checkPrint(entity, entities, file, errors) {
   const picked = (form.print.sections ?? sections.map((_, i) => i)).map((i) => sections[i]?.related).filter(Boolean);
   const columns = new Set(picked.flatMap((r) => r.columns ?? entities.get(r.entity)?.entity.fields.map((f) => f.name) ?? []));
   for (const b of form.print.blank ?? []) if (!columns.has(b)) errors.push(`${where}.blank: '${b}' não é coluna de uma related da folha`);
+}
+
+/** Cor do evento (#65): enum pela cor da opção, ou campo com `map` (sem map, enum) e regras sobre campos que existem. */
+function checkCalendarColor(color, fields, field, file, errors) {
+  if (!color) return;
+  const where = `${file} views.calendar.color`;
+  const spec = typeof color === 'string' ? { field: color } : color;
+  const f = spec.field && field(spec.field, 'views.calendar.color');
+  if (f && !spec.map && f.type !== 'enum') errors.push(`${where}: '${spec.field}' sem map precisa ser enum (a cor vem das options)`);
+  for (const r of spec.rules ?? []) makeCheckCondition(errors)(r.when, fields, `${where}.rules`);
 }

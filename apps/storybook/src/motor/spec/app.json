@@ -21,7 +21,10 @@
     "orcado_realizado",
     "orcamento",
     "demonstrativo",
-    "boleto"
+    "boleto",
+    "entrega",
+    "posicao_estoque",
+    "agenda_entrega"
   ],
   "layout": {
     "orientation": "vertical",

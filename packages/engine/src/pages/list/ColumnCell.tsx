@@ -10,6 +10,7 @@ import { SoftAvatar } from '@c3theme/ui';
 import { displayValue } from '../../format';
 import type { FieldDef, Tone, WireRecord } from '../../types';
 import { Cell } from './Cell';
+import { fillHref } from './columnHref';
 import { avatarSpec, avatarTone, initialsOf, joined } from './richCell';
 import type { ColumnAvatar } from '../../viewTypes';
 
@@ -19,12 +20,14 @@ export interface ColumnExtras {
   join?: FieldDef[];
   avatar?: boolean | string | ColumnAvatar;
   link?: boolean;
+  /** Endereço de outra tela com os campos da linha (`href`, #69); no lugar do registro. */
+  href?: string;
   weight?: 'normal' | 'bold';
   /** Tom da célula pelo valor de outro campo (`tone`): o campo já ligado e o mapa valor → tom. */
   tone?: { field: FieldDef; map?: Record<string, Tone> };
 }
 
-export const hasExtras = (x: ColumnExtras) => Boolean(x.secondary || x.join?.length || x.avatar || x.link);
+export const hasExtras = (x: ColumnExtras) => Boolean(x.secondary || x.join?.length || x.avatar || x.link || x.href);
 
 /**
  * Célula de uma coluna da lista. Sem extras é o `Cell` do tipo. Com extras, o texto do campo (emendado com os
@@ -57,11 +60,13 @@ export function ColumnCell({
   const avatar = avatarSpec(extras.avatar);
   const photo = avatar?.photo ? (row[avatar.photo] as string | null | undefined) : undefined;
   const bold = (extras.weight ?? (second ? 'bold' : 'normal')) === 'bold';
+  // `href` com um campo vazio na linha: o valor fica como texto, sem link pela metade
+  const target = extras.href ? fillHref(extras.href, row) : extras.link ? to : undefined;
 
   const texts = (
     <Box sx={{ minWidth: 0 }}>
-      {extras.link ? (
-        <Link component={RouterLink} to={to} underline="hover" variant="subtitle2" noWrap onClick={(e) => e.stopPropagation()}>
+      {target ? (
+        <Link component={RouterLink} to={target} underline="hover" variant="subtitle2" noWrap onClick={(e) => e.stopPropagation()}>
           {main}
         </Link>
       ) : (

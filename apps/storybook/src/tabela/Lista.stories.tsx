@@ -90,3 +90,10 @@ export const Orcamento: Story = {
  * meses aparecem, na ordem do período e com o ano no cabeçalho; os de fora somem. Mude "De" e "Até" e aplique.
  */
 export const DreGerencial: Story = { name: 'DRE gerencial, colunas pelo período', args: { entity: 'demonstrativo' } };
+
+/**
+ * Prévia de impressão térmica: "Imprimir relação" (ação da lista com `preview: true`) mostra o cupom de 40 colunas que
+ * o sistema montou. A coluna da prévia vem com `format: "pre"`: fonte fixa, espaços preservados e a linha inteira, então
+ * os valores à direita, o pontilhado e o título espaçado ficam alinhados como no papel.
+ */
+export const RelacaoEntregas: Story = { name: 'Relação de entregas, prévia do cupom', args: { entity: 'entrega' } };

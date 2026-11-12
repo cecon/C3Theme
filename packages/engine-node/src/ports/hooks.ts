@@ -148,7 +148,8 @@ export interface PreviewCall {
 export interface Preview {
   message?: string;
   fill?: Rec;
-  table?: { columns: { name: string; label: string }[]; rows: Rec[] };
+  /** `format: "pre"`: texto pré-formatado (cupom da térmica), em fonte fixa e com os espaços preservados. */
+  table?: { columns: { name: string; label: string; format?: 'pre' }[]; rows: Rec[] };
 }
 
 export interface LookupCall {

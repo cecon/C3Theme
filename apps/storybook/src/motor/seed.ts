@@ -4,6 +4,7 @@ import type { MemorySeed, WireRecord } from '@c3theme/engine';
 
 import { BALANCETE, mediaDaConta, ORCADO_REALIZADO, revisar } from './balancete';
 import { BOLETOS, colunasDoPeriodo, DEMONSTRATIVO } from './demonstrativo';
+import { AGENDA, ENTREGAS, relacaoDeEntregas } from './entregas';
 import { OPENAPI } from './openapi';
 import { avisos, eventos, mesas, tarefas } from './operacao';
 import { APP, ENTITIES } from './spec';
@@ -98,6 +99,13 @@ export const SEED: MemorySeed = {
     orcado_realizado: ORCADO_REALIZADO,
     demonstrativo: DEMONSTRATIVO,
     boleto: BOLETOS,
+    entrega: ENTREGAS,
+    agenda_entrega: AGENDA,
+    // o que a consulta do sistema devolveria: o saldo atual de cada produto do kardex
+    posicao_estoque: [
+      { id: '1', produto: '1', saldo: 36 },
+      { id: '2', produto: '2', saldo: 25 }
+    ],
     orcamento: [{ id: '1', conta: '3', ano: 2026, mes_01: '0.00', mes_02: null, mes_03: null }],
     fatura: faturas,
     tarefa: tarefas,
@@ -106,7 +114,7 @@ export const SEED: MemorySeed = {
     vendedor: ['Hugo Martins', 'Íris Campos', 'João Pedro'].map((nome, i) => ({ id: String(i + 1), nome }))
   },
   // quem usa as histórias não cadastra vendedor: o campo que aponta para ele fica sem o "Cadastrar"
-  capabilities: { vendedor: { create: false } },
+  capabilities: { vendedor: { create: false }, agenda_entrega: { create: false, update: false, delete: false } },
   notifications: avisos,
   // o que o backend calcularia: pendente até ter a loja e o caixa; a impressora vira item feito do resumo
   onSave: {
@@ -115,7 +123,9 @@ export const SEED: MemorySeed = {
   // o openapi.json da página `apiDocs` (/apis)
   files: { '/openapi.json': OPENAPI },
   // ações da lista, como o backend: a revisão em etapas do balancete
-  listActions: { conta_contabil: { revisar } },
+  listActions: { conta_contabil: { revisar }, entrega: { imprimir_relacao: () => ({ message: 'Relação enviada para a impressora.' }) } },
+  // a prévia que o backend montaria: o cupom da térmica, em texto pré-formatado (#66)
+  previews: { entrega: { imprimir_relacao: relacaoDeEntregas } },
   // a consulta que o backend faria: a média do realizado da conta no ano do formulário
   lookups: { orcamento: { media: mediaDaConta } },
   // a consulta do sistema que escolhe as colunas pelo período (os meses, na ordem dele, com o ano)

@@ -29,9 +29,19 @@ export interface CalendarView {
   end?: string;
   /** Campo boolean de dia inteiro (só com start datetime): sem hora no evento. */
   allDay?: string;
-  color?: string;
+  /** Enum cuja cor da opção pinta o evento, ou campo + `map` + `rules` (#65). */
+  color?: CalendarColor;
   fields?: string[];
+  /** Visão com que abre (padrão `month`); no celular, sempre a agenda. */
+  range?: 'month' | 'week' | 'day';
+  /** Altura da faixa de hora na semana e no dia (padrão `30min`). */
+  slot?: 'hour' | '30min';
+  /** O clique no evento leva a outra tela, com `{campo}` do registro (`/pedido/{pedido}`), em vez do diálogo. */
+  open?: { href: string };
 }
+
+/** Cor do evento: o nome de um enum, ou o tom pelo valor de um campo (`map`) com regras que vencem o mapa. */
+export type CalendarColor = string | { field?: string; map?: Record<string, Tone>; rules?: { when: Condition; tone: Tone }[] };
 
 /**
  * Relatório (`views.report`): as linhas do filtro, agrupadas por um ou dois campos, com subtotal por grupo e total
@@ -72,6 +82,8 @@ export type ColumnDef =
       label?: Text;
       /** O valor vira link que abre o registro. */
       link?: boolean;
+      /** O valor vira link para outra tela do app, com `{campo}` da linha: `/estoque?f.produto={produto_id}` (#69). */
+      href?: string;
       /** Segunda linha, menor e apagada (e-mail embaixo do nome). */
       secondary?: string;
       /** Emendados com " - " (cidade e UF). */

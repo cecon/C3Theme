@@ -82,5 +82,9 @@ export interface ActionPreview {
   message?: string | null;
   /** Valores para os campos do input ainda vazios. */
   fill?: Record<string, unknown>;
-  table?: { columns: { name: string; label: string }[]; rows: Record<string, unknown>[] } | null;
+  /** `format: "pre"`: fonte fixa, espaços preservados e sem quebrar a linha (cupom da térmica, #66). */
+  table?: { columns: { name: string; label: string; format?: 'pre' }[]; rows: Record<string, unknown>[] } | null;
 }
+
+/** Roda no clique, sem diálogo: sem input, sem confirmação e sem prévia (a prévia é para ver antes de confirmar, #66). */
+export const runsAtOnce = (action: ActionDef): boolean => !action.input && !action.confirm && !action.preview;

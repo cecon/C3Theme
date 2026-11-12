@@ -10,6 +10,7 @@ import Ajv2020 from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
 import { parse as parseYaml } from 'yaml';
 import { conditionFields, evaluate } from '../packages/engine/src/conditions.mjs';
+import { hrefFields } from '../packages/engine/src/hrefSlots.mjs';
 import { WIRE, makeCheckCondition } from './spec-conditions.mjs';
 import {
   checkAccess,
@@ -151,6 +152,9 @@ for (const { entity, file } of entities.values()) {
     const photoName = typeof col === 'object' && (typeof col.avatar === 'string' ? col.avatar : col.avatar?.photo);
     const photo = photoName && readable(photoName, 'views.list.columns avatar');
     if (photo && photo.type !== 'string') errors.push(`${file}: avatar '${photoName}' precisa ser campo string (endereço da foto)`);
+    // `href` (#69): cada {campo} do endereço existe e pode ser lido
+    for (const name of typeof col === 'object' && col.href ? hrefFields(col.href) : [])
+      readable(name, `views.list.columns '${col.field}' href`);
     const toneField = typeof col === 'object' && col.tone && readable(col.tone.field, 'views.list.columns tone');
     if (toneField && !col.tone.map && toneField.type !== 'enum')
       errors.push(`${file}: tone da coluna '${col.field}' sem map precisa de campo enum (a cor vem das options)`);

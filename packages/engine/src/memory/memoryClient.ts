@@ -3,6 +3,7 @@
 // passa em `actions`; sem ele, e em prévias, consultas e arquivos, a resposta é 501, que a shell mostra como erro comum.
 
 import { ApiError, C3Client, type C3Notification } from '../api';
+import type { ActionPreview } from '../actionTypes';
 import type { ActionResult, AppDef, BulkItem, Capabilities, EntityDef, WireRecord } from '../types';
 import { memoryNotifications } from './notifications';
 import { aggregate, list } from './query';
@@ -32,6 +33,8 @@ export interface MemorySeed {
    * Na ação `steps`, devolva `progress` e receba o `cursor` da etapa anterior.
    */
   listActions?: Record<string, Record<string, (input: WireRecord, cursor: unknown) => ActionResult | Promise<ActionResult>>>;
+  /** Prévias (`preview: true`), no lugar do backend: `previews.entrega.imprimir = (input, id) => ({ table })`. */
+  previews?: Record<string, Record<string, (input: WireRecord, id?: string) => ActionPreview>>;
   /** Consultas (`lookups`), no lugar do backend: `lookups.orcamento.media = (valor, with) => ({ mes_01: '150.00' })`. */
   lookups?: Record<string, Record<string, (value: string, withValues: WireRecord) => WireRecord>>;
   /** Consulta do sistema: as colunas pelos parâmetros (`meta.columns`, #60), `sourceColumns.dre = (params) => [...]`. */
@@ -179,7 +182,11 @@ export function createMemoryClient(seed: MemorySeed): C3Client {
         const handler = seed.listActions?.[entity]?.[name];
         return handler ? handler(input, cursor) : unsupported('A ação');
       }).then((r) => r),
-    preview: () => wait(() => unsupported('A prévia')),
+    preview: (entity, name, id, input = {}) =>
+      wait(() => {
+        const handler = seed.previews?.[entity]?.[name];
+        return handler ? { fill: {}, ...handler(input, id) } : unsupported('A prévia');
+      }),
     prefill: () => wait(() => ({})),
     lookup: (entity, name, value, withValues = {}) =>
       wait(() => {

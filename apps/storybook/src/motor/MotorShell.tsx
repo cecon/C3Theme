@@ -4,7 +4,7 @@
 import { useEffect } from 'react';
 import { Route, Routes, useParams } from 'react-router';
 
-import { C3Layout, EngineProvider, EntityForm, EntityHome, useEngine } from '@c3theme/engine';
+import { C3Layout, EngineProvider, EntityCalendar, EntityForm, EntityHome, useEngine } from '@c3theme/engine';
 import { useUiConfig } from '@c3theme/ui';
 
 import { appWith } from './source';
@@ -17,6 +17,11 @@ export interface MotorShellProps {
 function List() {
   const { entity } = useParams();
   return <EntityHome key={entity} entity={entity!} />;
+}
+
+function Calendar() {
+  const { entity } = useParams();
+  return <EntityCalendar key={entity} entity={entity!} />;
 }
 
 function Record() {
@@ -44,6 +49,7 @@ export default function MotorShell({ orientation = 'vertical' }: MotorShellProps
       <Routes>
         <Route element={<C3Layout />}>
           <Route path=":entity" element={<List />} />
+          <Route path=":entity/calendar" element={<Calendar />} />
           <Route path=":entity/:id" element={<Record />} />
         </Route>
       </Routes>
