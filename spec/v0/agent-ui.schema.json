@@ -2,24 +2,37 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://c3theme.dev/spec/v0/agent-ui.schema.json",
   "title": "C3 Agent UI v0",
-  "description": "Parte de interface que o assistente põe numa mensagem do chat (Message.ui). Catálogo fechado do motor: o agente só propõe; a gravação vai pelo CRUD e pelas ações, com a permissão do usuário. Nada de HTML, código ou layout livre. O backend confere com Engine::check_agent_part antes de mandar.",
+  "description": "Parte de interface que o assistente põe numa mensagem do chat (Message.ui). Catálogo fechado do motor e do chat (ADR 0003: kind novo é issue lacuna:, nunca renderizador do sistema): o agente só propõe; a gravação vai pelo CRUD e pelas ações, com a permissão do usuário. Nada de HTML, código ou layout livre. O backend confere com Engine::check_agent_part antes de mandar.",
   "type": "object",
   "required": ["id", "kind", "payload"],
   "properties": {
     "id": { "type": "string", "minLength": 1 },
-    "kind": { "enum": ["c3.form", "c3.record", "c3.action"] },
+    "kind": { "enum": ["c3.form", "c3.record", "c3.action", "c3.tool", "c3.plan", "c3.browser"] },
     "state": { "enum": ["pending", "submitted", "declined", "cancelled", "expired", "undone"], "default": "pending" },
     "result": { "description": "O que foi enviado ou gravado, para o resumo." },
     "expiresAt": { "type": "string", "format": "date-time" },
-    "version": { "type": "integer", "minimum": 0, "description": "Sobe quando o assistente reenvia a parte mudada. A resposta leva a versão vista; versão velha é 409." },
-    "reason": { "enum": ["superseded", "agent", "expired"], "description": "Por que fechou sem resposta: outra parte a substituiu (só uma pendente por conversa), o assistente desistiu (ui.cancel) ou venceu o prazo." },
+    "version": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Sobe quando o assistente reenvia a parte mudada. A resposta leva a versão vista; versão velha é 409."
+    },
+    "reason": {
+      "enum": ["superseded", "agent", "expired"],
+      "description": "Por que fechou sem resposta: outra parte a substituiu (só uma pendente por conversa), o assistente desistiu (ui.cancel) ou venceu o prazo."
+    },
     "payload": { "type": "object" }
   },
   "additionalProperties": false,
   "allOf": [
     { "if": { "properties": { "kind": { "const": "c3.form" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/form" } } } },
     { "if": { "properties": { "kind": { "const": "c3.record" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/record" } } } },
-    { "if": { "properties": { "kind": { "const": "c3.action" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/action" } } } }
+    { "if": { "properties": { "kind": { "const": "c3.action" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/action" } } } },
+    { "if": { "properties": { "kind": { "const": "c3.tool" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/tool" } } } },
+    { "if": { "properties": { "kind": { "const": "c3.plan" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/plan" } } } },
+    {
+      "if": { "properties": { "kind": { "const": "c3.browser" } } },
+      "then": { "properties": { "payload": { "$ref": "#/$defs/browser" } } }
+    }
   ],
   "$defs": {
     "suggested": {
@@ -70,6 +83,120 @@
         "action": { "type": "string" },
         "input": { "$ref": "#/$defs/values" },
         "suggested": { "$ref": "#/$defs/suggested" }
+      }
+    },
+    "risk": { "enum": ["low", "medium", "high"], "description": "high pede o segundo clique e nunca oferece 'sempre permitir'." },
+    "tool": {
+      "type": "object",
+      "description": "Ferramenta que o agente quer rodar, com os argumentos para o humano conferir e editar antes (human-in-the-loop). Resposta: accept com { args, edited, always? } ou decline com { reason? }. O chat não roda nada: quem roda é o agente, com os args que voltaram.",
+      "required": ["tool", "args"],
+      "additionalProperties": false,
+      "properties": {
+        "tool": {
+          "type": "object",
+          "required": ["name"],
+          "additionalProperties": false,
+          "properties": {
+            "name": { "type": "string", "minLength": 1, "maxLength": 128 },
+            "label": { "type": "string", "maxLength": 128 },
+            "description": { "type": "string", "maxLength": 1000 }
+          }
+        },
+        "args": { "type": "object", "description": "Argumentos como o agente vai mandar à ferramenta." },
+        "fields": {
+          "type": "array",
+          "maxItems": 50,
+          "description": "Como editar cada argumento; sem isso, o tipo sai do valor. readOnly mostra sem deixar editar.",
+          "items": {
+            "type": "object",
+            "required": ["name", "type"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "label": { "type": "string" },
+              "type": { "enum": ["string", "text", "number", "boolean", "enum", "json"] },
+              "options": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["value"],
+                  "additionalProperties": false,
+                  "properties": { "value": { "type": "string" }, "label": { "type": "string" } }
+                }
+              },
+              "required": { "type": "boolean" },
+              "readOnly": { "type": "boolean" }
+            }
+          }
+        },
+        "risk": { "$ref": "#/$defs/risk" },
+        "allow": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "edit e respond (padrão true), always (padrão false).",
+          "properties": { "edit": { "type": "boolean" }, "respond": { "type": "boolean" }, "always": { "type": "boolean" } }
+        }
+      }
+    },
+    "plan": {
+      "type": "object",
+      "description": "Plano que o agente propõe antes de começar: o humano desmarca, reordena e reescreve passos. Resposta: accept com { steps: [{ id, text }], removed, edited } ou decline com { reason? }.",
+      "required": ["steps"],
+      "additionalProperties": false,
+      "properties": {
+        "title": { "type": "string", "maxLength": 200 },
+        "steps": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 50,
+          "items": {
+            "type": "object",
+            "required": ["id", "text"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "text": { "type": "string", "minLength": 1, "maxLength": 500 },
+              "detail": { "type": "string", "maxLength": 500 },
+              "required": { "type": "boolean" }
+            }
+          }
+        },
+        "allow": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "edit, reorder e remove (padrão true).",
+          "properties": { "edit": { "type": "boolean" }, "reorder": { "type": "boolean" }, "remove": { "type": "boolean" } }
+        }
+      }
+    },
+    "browser": {
+      "type": "object",
+      "description": "Navegador interno: o agente parou numa página (navegador remoto dele) antes de um passo que pede o humano. Resposta: accept com { decision: 'allow' | 'takeover' } ou decline com { reason? }. Só http(s); a captura é imagem, nunca HTML.",
+      "required": ["url", "intent"],
+      "additionalProperties": false,
+      "properties": {
+        "url": { "type": "string", "pattern": "^https?://" },
+        "title": { "type": "string", "maxLength": 300 },
+        "frame": {
+          "type": "string",
+          "pattern": "^(https?://|/(?![/\\\\])|data:image/(png|jpeg|webp|gif);base64,)",
+          "description": "Captura da página."
+        },
+        "intent": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300,
+          "description": "O que o agente quer fazer ('Pagar o pedido 1234')."
+        },
+        "target": {
+          "type": "object",
+          "required": ["x", "y"],
+          "additionalProperties": false,
+          "description": "Onde vai clicar, em % da página.",
+          "properties": { "x": { "type": "number", "minimum": 0, "maximum": 100 }, "y": { "type": "number", "minimum": 0, "maximum": 100 } }
+        },
+        "risk": { "$ref": "#/$defs/risk" },
+        "allowTakeover": { "type": "boolean", "default": true }
       }
     }
   }

@@ -1,5 +1,6 @@
 //! Partes de interface que o assistente põe no chat (spec/v0/agent-ui.schema.json): `c3.form` (campos avulsos),
-//! `c3.record` (rascunho de registro) e `c3.action` (confirmar uma ação). O agente só propõe: a gravação vai pelo
+//! `c3.record` (rascunho de registro) e `c3.action` (confirmar uma ação); as de human-in-the-loop (`c3.tool`,
+//! `c3.plan`, `c3.browser`) estão em `agent_hitl`. O agente só propõe: a gravação vai pelo
 //! CRUD e pelas ações de sempre, com a permissão do usuário. O backend do sistema confere a parte com
 //! [`Engine::check_agent_part`] antes de mandá-la ao chat (o modelo erra e pode ser induzido por texto de um
 //! registro) e confere a resposta de um `c3.form` com [`Engine::check_agent_answer`].
@@ -56,6 +57,9 @@ impl Engine {
             Some("c3.form") => self.form_input(payload).map(|_| ()),
             Some("c3.record") => self.check_record(payload),
             Some("c3.action") => self.check_action(payload),
+            Some("c3.tool") => crate::agent_hitl::check_tool(payload),
+            Some("c3.plan") => crate::agent_hitl::check_plan(payload),
+            Some("c3.browser") => crate::agent_hitl::check_browser(payload),
             Some(k) => Err(format!("kind '{k}' fora do catálogo do motor")),
             None => Err("a parte precisa de kind".into()),
         }

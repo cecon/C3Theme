@@ -7,13 +7,32 @@
       "payload": {
         "title": "Antes de seguir, preciso de dois dados",
         "fields": [
-          { "name": "periodo_inicio", "type": "date", "label": "De", "required": true },
-          { "name": "periodo_fim", "type": "date", "label": "Até", "required": true },
-          { "name": "cliente", "type": "reference", "entity": "customer", "label": "Cliente" }
+          {
+            "name": "periodo_inicio",
+            "type": "date",
+            "label": "De",
+            "required": true
+          },
+          {
+            "name": "periodo_fim",
+            "type": "date",
+            "label": "Até",
+            "required": true
+          },
+          {
+            "name": "cliente",
+            "type": "reference",
+            "entity": "customer",
+            "label": "Cliente"
+          }
         ],
         "rows": [["periodo_inicio", "periodo_fim"], ["cliente"]],
-        "values": { "periodo_inicio": "2026-10-01" },
-        "suggested": { "periodo_inicio": "início do mês passado" }
+        "values": {
+          "periodo_inicio": "2026-10-01"
+        },
+        "suggested": {
+          "periodo_inicio": "início do mês passado"
+        }
       }
     },
     {
@@ -21,14 +40,99 @@
       "kind": "c3.record",
       "payload": {
         "entity": "customer",
-        "values": { "name": "Padaria Bom Dia", "status": "lead", "credit_limit": "5000.00" },
-        "suggested": { "credit_limit": "média dos clientes do mesmo porte" }
+        "values": {
+          "name": "Padaria Bom Dia",
+          "status": "lead",
+          "credit_limit": "5000.00"
+        },
+        "suggested": {
+          "credit_limit": "média dos clientes do mesmo porte"
+        }
       }
     },
     {
       "id": "cancelar-pedido",
       "kind": "c3.action",
-      "payload": { "entity": "sales_order", "id": "1", "action": "cancel", "input": { "reason": "Cliente desistiu da compra por telefone." } }
+      "payload": {
+        "entity": "sales_order",
+        "id": "1",
+        "action": "cancel",
+        "input": {
+          "reason": "Cliente desistiu da compra por telefone."
+        }
+      }
+    },
+    {
+      "id": "cobrar-por-email",
+      "kind": "c3.tool",
+      "payload": {
+        "tool": {
+          "name": "enviar_email",
+          "label": "Enviar e-mail",
+          "description": "Manda a cobrança da fatura 1026."
+        },
+        "args": {
+          "para": "financeiro@padaria.com",
+          "assunto": "Fatura 1026 vencida",
+          "copias": 1
+        },
+        "fields": [
+          {
+            "name": "para",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "assunto",
+            "type": "string"
+          },
+          {
+            "name": "copias",
+            "type": "number"
+          }
+        ],
+        "risk": "medium",
+        "allow": {
+          "always": true
+        }
+      }
+    },
+    {
+      "id": "fechar-mes",
+      "kind": "c3.plan",
+      "payload": {
+        "title": "Fechar outubro",
+        "steps": [
+          {
+            "id": "ler",
+            "text": "Ler as faturas de outubro",
+            "detail": "120 faturas"
+          },
+          {
+            "id": "cobrar",
+            "text": "Cobrar as vencidas"
+          },
+          {
+            "id": "gravar",
+            "text": "Gravar o fechamento",
+            "required": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "pagar-fornecedor",
+      "kind": "c3.browser",
+      "payload": {
+        "url": "https://banco.example.com/pagamentos",
+        "title": "Pagamentos",
+        "intent": "Pagar o boleto de R$ 1.250,00 do fornecedor",
+        "target": {
+          "x": 72,
+          "y": 64
+        },
+        "risk": "high"
+      }
     }
   ]
 }

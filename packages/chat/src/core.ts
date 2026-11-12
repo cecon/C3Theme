@@ -51,3 +51,42 @@ export { memoryTransport } from './adapters/memoryTransport';
 
 export { AGENT_STATES, isBusy, isPendingRequest, needsAttention, pendingCount, progressPercent, sortRequests } from './core/agents';
 export type { AgentRequest, AgentState, ApprovalRequest, FailureRequest, ProgressRequest, QuestionRequest } from './core/agents';
+export {
+  approveTool,
+  changedArgs,
+  declineTool,
+  inferType,
+  isToolProposal,
+  parseDraft,
+  readDrafts,
+  toDraft,
+  toolAllows,
+  toolFields,
+  toolResult
+} from './core/hitl';
+export type { ArgField, ArgType, Parsed, ToolProposal, ToolResult, ToolRisk } from './core/hitl';
+export {
+  approvePlan,
+  canApprove,
+  isPlanProposal,
+  moveStep,
+  planAllows,
+  planDraft,
+  planResult,
+  renameStep,
+  toggleStep
+} from './core/hitlPlan';
+export type { DraftStep, PlanProposal, PlanResult, PlanStep } from './core/hitlPlan';
+export {
+  addressParts,
+  browserDecision,
+  clampPoint,
+  decideBrowser,
+  isBrowserCheckpoint,
+  normalizeAddress,
+  safeFrame,
+  safeUrl
+} from './core/hitlBrowser';
+export type { BrowserCheckpoint, BrowserDecision, PagePoint } from './core/hitlBrowser';
+export { shouldAnnounce, waitingFor } from './core/waiting';
+export type { Waiting } from './core/waiting';

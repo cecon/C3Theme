@@ -21,6 +21,7 @@ export default defineConfig({
         '**/*.test.{ts,tsx}',
         '**/*.test-util.ts',
         '**/*.test-utils.ts',
+        '**/*.test-utils.tsx',
         // declarações de tipo
         '**/*.d.ts',
         '**/*.d.mts'
