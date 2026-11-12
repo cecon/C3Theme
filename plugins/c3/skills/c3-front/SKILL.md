@@ -33,7 +33,7 @@ Toda tela sai do motor, inclusive chat e assistente ([ADR 0003](../../../../docs
 | App que já existe, trocando uma tela por vez             | `EngineProvider` + `<EntityList entity="x" />` / `<EntityForm entity="x" id={id} />` no layout do app (metadados por `loadEntities`) |
 | Tela que não é cadastro e nenhum degrau resolve (PDV com TEF) | abra a issue `lacuna:` antes; enquanto ela não fecha, página registrada: `pages[].component` + `config` validado pelo `components/<nome>.schema.json`, componente em `components`, citando a issue |
 | Protótipo ou teste de tela sem servidor                  | `createMemoryClient(seed)` no lugar do backend, com `loadEntities` e `EngineProvider` (como a seção "Por JSON" da vitrine) |
-| App sem backend do motor (portal, landing)               | não existe mais (ADR 0003): use o motor; o `--sem-motor` é obsoleto e sai com a issue #74 |
+| App sem backend do motor (portal, landing)               | não existe (ADR 0003): use o motor; o `create-app` não gera app sem ele (issue #74)          |
 
 ```tsx
 import { ptBR } from '@mui/material/locale';

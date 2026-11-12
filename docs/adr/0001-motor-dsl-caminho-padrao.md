@@ -94,7 +94,7 @@ de telas custom, o modelo volta para a mesa**, em vez de seguir escrevendo TS ao
 - **Ainda não está feito** em 09/11/2026: a maioria das telas de negócio da vitrine ainda é TS (lacunas L10–L33); o
   Storybook ainda não monta histórias por JSON. Esses dois são o trabalho que segue este ADR. O `pnpm create-app`
   passou a gerar o sistema pelo motor (front + backend Rust ou Node); o app sem motor ficou atrás de `--sem-motor`,
-  como exceção.
+  como exceção (o ADR 0003 tirou a exceção e o `--sem-motor` saiu com a issue #74).
 
 ## Alternativas consideradas
 
