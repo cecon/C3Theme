@@ -51,6 +51,15 @@
       }
     },
     {
+      "path": "/conversa/:conversation",
+      "title": "Conversa",
+      "chat": {
+        "conversation": "{conversation}",
+        "title": "Conversa",
+        "parts": ["c3.form", "c3.record", "c3.action"]
+      }
+    },
+    {
       "path": "/painel",
       "title": "Painel",
       "dashboard": {

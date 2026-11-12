@@ -562,9 +562,9 @@
         },
         "conversation": {
           "type": "string",
-          "pattern": "^[A-Za-z0-9_-]{1,64}$",
+          "pattern": "^([A-Za-z0-9_-]{1,64}|\\{[a-z][a-z0-9]*\\})$",
           "default": "assistant",
-          "description": "Id da conversa nas rotas (/_chat/{conversation}). O backend separa por usuário: o mesmo id é uma conversa por pessoa."
+          "description": "Id da conversa nas rotas (/_chat/{conversation}). O backend separa por usuário: o mesmo id é uma conversa por pessoa. Em página, '{nome}' lê a conversa do ':nome' da rota (ex.: path '/conversa/:conversation' com '{conversation}'; ADR 0009); ausente com ':conversation' na rota, também vale o parâmetro. O id da rota segue a mesma regra de letras, números, _ ou -, até 64; o pnpm spec:check recusa '{nome}' sem ':nome' na rota e no layout.header.assistant."
         },
         "title": {
           "$ref": "#/$defs/text",

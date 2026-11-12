@@ -4,6 +4,7 @@ import type { MessageDelivery, SendKey } from '@c3theme/chat';
 
 import type { Text } from '../types';
 import type { ChatLanesSpec } from '../agent/lanes';
+import { CONVERSATION_ID, conversationParam } from './chatRoute.mjs';
 
 /** Partes do catálogo fechado (spec/v0/agent-ui.schema.json). */
 export const AGENT_KINDS = ['c3.form', 'c3.record', 'c3.action', 'c3.tool', 'c3.plan', 'c3.browser'] as const;
@@ -11,7 +12,10 @@ export type AgentKind = (typeof AGENT_KINDS)[number];
 
 /** Conversa com o agente do sistema, como no app.json. */
 export interface ChatDef extends ChatLanesSpec {
-  /** Id da conversa nas rotas (/_chat/{conversation}). Padrão: "assistant". */
+  /**
+   * Id da conversa nas rotas (/_chat/{conversation}). Padrão: "assistant". Em página, `{nome}` (ou ausente com
+   * `:conversation` na rota) lê a conversa do parâmetro da rota (ADR 0009).
+   */
   conversation?: string;
   /** Título do painel e do botão do header. Padrão: "Assistente". */
   title?: Text;
@@ -72,4 +76,15 @@ export function chatRenderers<R>(def: ChatDef, engine: Partial<Record<AgentKind,
     else if (engine[kind] !== undefined) out[kind] = engine[kind];
   }
   return out;
+}
+
+/**
+ * A conversa que a página abre: o parâmetro da rota quando a spec pede (`{nome}`, ou ausente com `:conversation`);
+ * senão o id da spec. `null` quando a rota traz um id que as rotas /_chat recusariam.
+ */
+export function pageConversation(def: ChatDef, path: string | undefined, params: Record<string, string | undefined>) {
+  const param = conversationParam(def.conversation, path);
+  if (!param) return def.conversation;
+  const id = params[param] ?? '';
+  return CONVERSATION_ID.test(id) ? id : null;
 }

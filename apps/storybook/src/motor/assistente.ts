@@ -44,6 +44,12 @@ const periodo = (): UiPart => ({
   }
 });
 
+/** Histórico das conversas por pedido (`/conversa/:conversation`, ADR 0009): cada id da rota abre a sua. */
+const HISTORICO: Message[] = [
+  reply('pedido-1042', 'O pedido 1042 saiu para entrega hoje às 9h. A nota já foi emitida.'),
+  reply('pedido-1043', 'O pedido 1043 espera o pagamento do boleto, que vence amanhã.')
+];
+
 /** A resposta do roteiro para o texto do usuário. */
 export function answer(conversationId: string, text: string): Message {
   const t = text.toLowerCase();
@@ -64,7 +70,7 @@ export const PESQUISA =
  */
 export function assistente() {
   const later = (fn: () => void) => window.setTimeout(fn, 300);
-  const mem = memoryTransport([], {
+  const mem = memoryTransport(HISTORICO, {
     latencyMs: 100,
     me: { id: 'me', name: 'Você' },
     onAnswerUi: (conversationId, _m, _p, a) =>

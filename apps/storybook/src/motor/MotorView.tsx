@@ -2,11 +2,13 @@
 // página do app.json. A história só diz qual entidade e qual visão, ou qual página.
 
 import type { ComponentType } from 'react';
+import { Route, Routes } from 'react-router';
 
 import Box from '@mui/material/Box';
 
 import {
   ApiDocs,
+  ChatPage,
   ChatPanel,
   EntityBoard,
   EntityCalendar,
@@ -41,6 +43,13 @@ export default function MotorView({ entity, view = 'board', page }: MotorViewPro
   const def = page ? pageDef(page) : undefined;
   if (def?.apiDocs) return <ApiDocs key={page} def={def.apiDocs} />;
   if (def?.wizard) return <WizardPage key={page} wizard={def.wizard} />;
+  // conversa pelo parâmetro da rota (ADR 0009): a história abre o endereço em `parameters.route`
+  if (def?.chat && page?.includes(':'))
+    return (
+      <Routes>
+        <Route path={page} element={<ChatPage def={def.chat} path={page} />} />
+      </Routes>
+    );
   if (def?.chat)
     return (
       <Box sx={{ height: 640, display: 'flex', flexDirection: 'column', border: 1, borderColor: 'divider', borderRadius: 1 }}>
