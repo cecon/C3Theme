@@ -3,6 +3,8 @@
 //!
 //! Variáveis: DATABASE_URL (padrão sqlite://c3-example.db), PORT (padrão 3000).
 
+mod assistant;
+mod assistant_script;
 mod attachments;
 mod certificates;
 mod discount;
@@ -274,6 +276,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             writer,
         })
         .notifications(notifications::Bells::default())
+        .chat(assistant::Assistant::new(pool.clone()))
         .search(search::Products(pool))
         .build()
         .await?;

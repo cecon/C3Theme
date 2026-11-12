@@ -61,4 +61,11 @@ export const DocumentacaoDaApi: Story = { name: 'Documentação da API', args: {
  * `pages[].wizard`: a primeira configuração da loja em passos sobre o registro único, com Pular no passo opcional e
  * o resumo no fim. No app, a guarda (`pending`) leva toda rota para cá até a loja e o caixa estarem gravados.
  */
+/**
+ * Página de chat (`pages[].chat`, ADR 0005): o painel do assistente montado pela spec, com o título, as sugestões, o
+ * placeholder e só as partes de `parts`. O agente aqui é um roteiro em memória; num sistema, é o backend (porta Chat).
+ * Peça um cadastro: vem o rascunho de cliente, que grava pelo cadastro de sempre.
+ */
+export const Assistente: Story = { args: { page: '/assistente' } };
+
 export const PrimeiraConfiguracao: Story = { name: 'Primeira configuração (assistente)', args: { page: '/primeira-configuracao' } };

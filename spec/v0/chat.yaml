@@ -1,0 +1,217 @@
+# Path items do chat com o agente (`pages[].chat` e `layout.header.assistant`, ADR 0005), referenciados por openapi.yaml.
+# O agente é do sistema, como a autenticação: ele guarda o histórico, chama o modelo e decide o que responder. O motor
+# só expõe as rotas, separa as conversas por usuário e confere cada parte de interface (agent-ui.schema.json) antes de
+# mandar ao navegador. Backend sem a porta Chat responde 404 em todas, e a shell avisa que o sistema não tem assistente.
+# `{conversation}`: o `conversation` da spec (padrão "assistant"), `^[A-Za-z0-9_-]{1,64}$`; fora disso, 400.
+# Mensagem, evento, resposta de pergunta e de parte seguem os tipos do @c3theme/chat (Message, ChatEvent,
+# QuestionAnswer, UiAnswer), em JSON.
+components:
+  schemas:
+    Message:
+      type: object
+      required: [id, conversationId, author, direction, createdAt]
+      description: >-
+        Message do @c3theme/chat. `direction: out` é do usuário, `in` é do agente. `ui` são as partes de
+        agent-ui.schema.json (conferidas pelo motor), `question` é a pergunta com opções.
+      properties:
+        id: { type: string }
+        clientId: { type: string }
+        conversationId: { type: string }
+        author:
+          type: object
+          required: [id, name]
+          properties:
+            id: { type: string }
+            name: { type: string }
+            kind: { type: string, enum: [person, agent] }
+        direction: { type: string, enum: [in, out] }
+        text: { type: string }
+        format: { type: string, enum: [plain, markdown] }
+        streaming: { type: boolean }
+        reasoning: { type: string }
+        tools: { type: array, items: { type: object } }
+        question: { type: object }
+        ui: { type: array, items: { $ref: 'agent-ui.schema.json' } }
+        createdAt: { type: string, format: date-time }
+        status: { type: string, enum: [sent, delivered, read] }
+        replyTo: { type: string }
+        meta: { type: object }
+    Conversation:
+      type: string
+      pattern: '^[A-Za-z0-9_-]{1,64}$'
+  parameters:
+    Conversation:
+      name: conversation
+      in: path
+      required: true
+      schema: { $ref: '#/components/schemas/Conversation' }
+    Message:
+      name: message
+      in: path
+      required: true
+      schema: { type: string, minLength: 1 }
+messages:
+  parameters:
+    - $ref: '#/components/parameters/Conversation'
+  get:
+    summary: Histórico da conversa
+    description: >-
+      Da mais antiga para a mais nova. Sem `before`, as `limit` mais recentes; com `before` (id de mensagem), as
+      anteriores a ela. `limit` padrão 30, de 1 a 100. `hasMore`: há mais antigas. Sem sessão: 401. Sem chat: 404.
+    operationId: chatMessages
+    parameters:
+      - name: before
+        in: query
+        schema: { type: string, minLength: 1 }
+      - name: limit
+        in: query
+        schema: { type: integer, minimum: 1, maximum: 100, default: 30 }
+    responses:
+      '200':
+        description: Página do histórico.
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [messages, hasMore]
+              properties:
+                messages: { type: array, items: { $ref: '#/components/schemas/Message' } }
+                hasMore: { type: boolean }
+      '400': { $ref: 'openapi.yaml#/components/responses/Error' }
+      '401': { $ref: 'openapi.yaml#/components/responses/Error' }
+      '404': { $ref: 'openapi.yaml#/components/responses/Error' }
+  post:
+    summary: Enviar mensagem ao agente
+    description: >-
+      Grava a mensagem do usuário e devolve como ficou (com o mesmo `clientId`, que substitui a otimista). A resposta
+      do agente não vem aqui: chega pelo `_events` (`message` com `streaming`, depois `delta`). `pendingPart` é a
+      parte que esperava resposta quando o usuário digitou: o agente decide se a mantém ou a cancela (`ui.cancel`).
+      `text` de 1 a 20000 caracteres. Arquivos ainda não (fora do v0 do chat).
+    operationId: chatSend
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [clientId, text]
+            additionalProperties: false
+            properties:
+              clientId: { type: string, minLength: 1, maxLength: 100 }
+              text: { type: string, minLength: 1, maxLength: 20000 }
+              replyTo: { type: string }
+              pendingPart:
+                type: object
+                required: [messageId, partId, kind]
+                properties:
+                  messageId: { type: string }
+                  partId: { type: string }
+                  kind: { type: string }
+                  version: { type: integer }
+    responses:
+      '200':
+        description: A mensagem gravada.
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data: { $ref: '#/components/schemas/Message' }
+      '400': { $ref: 'openapi.yaml#/components/responses/Error' }
+      '401': { $ref: 'openapi.yaml#/components/responses/Error' }
+      '404': { $ref: 'openapi.yaml#/components/responses/Error' }
+events:
+  parameters:
+    - $ref: '#/components/parameters/Conversation'
+  get:
+    summary: O que acontece na conversa, na hora (SSE)
+    description: >-
+      Primeiro `event: ready`. Depois um evento por ChatEvent do @c3theme/chat, com o nome do `type` e o evento
+      inteiro em JSON no `data`: `message` (nova ou atualizada; repetir é seguro), `delta` (pedaço de texto da
+      resposta, `done` encerra), `typing`, `removed` e `ui.cancel` (a parte deixou de esperar resposta). Só os eventos
+      deste usuário e desta conversa. Mensagem com parte que o motor recusa (Engine::check_agent_part) não sai: o
+      sistema recebe o erro ao emitir. Quem ficou para trás perde eventos e recebe outro `ready` (relê o histórico).
+    operationId: chatEvents
+    responses:
+      '200':
+        description: Fluxo de eventos (SSE).
+        content:
+          text/event-stream:
+            schema:
+              type: string
+              example: "event: ready\ndata: {}\n\nevent: delta\ndata: {\"type\":\"delta\",\"conversationId\":\"assistant\",\"id\":\"m2\",\"text\":\"Olá\"}\n\n"
+      '400': { $ref: 'openapi.yaml#/components/responses/Error' }
+      '401': { $ref: 'openapi.yaml#/components/responses/Error' }
+      '404': { $ref: 'openapi.yaml#/components/responses/Error' }
+stop:
+  parameters:
+    - $ref: '#/components/parameters/Conversation'
+  post:
+    summary: Parar a resposta em andamento
+    description: O agente para de escrever; a mensagem fecha com o que já tinha (`delta` com `done`). Sem resposta em andamento, não faz nada.
+    operationId: chatStop
+    responses:
+      '204': { description: Pedido aceito. }
+      '400': { $ref: 'openapi.yaml#/components/responses/Error' }
+      '401': { $ref: 'openapi.yaml#/components/responses/Error' }
+      '404': { $ref: 'openapi.yaml#/components/responses/Error' }
+answer:
+  parameters:
+    - $ref: '#/components/parameters/Conversation'
+    - $ref: '#/components/parameters/Message'
+  post:
+    summary: Responder a pergunta do agente
+    description: >-
+      Resposta (ou dispensa) da pergunta (`Message.question`) da mensagem: QuestionAnswer do @c3theme/chat
+      (`{ optionIds?, text?, dismissed? }`). Pergunta já respondida: 409.
+    operationId: chatAnswer
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              optionIds: { type: array, items: { type: string } }
+              text: { type: string }
+              dismissed: { type: boolean }
+    responses:
+      '204': { description: Resposta aceita. }
+      '400': { $ref: 'openapi.yaml#/components/responses/Error' }
+      '401': { $ref: 'openapi.yaml#/components/responses/Error' }
+      '404': { $ref: 'openapi.yaml#/components/responses/Error' }
+      '409': { $ref: 'openapi.yaml#/components/responses/Error' }
+answerUi:
+  parameters:
+    - $ref: '#/components/parameters/Conversation'
+    - $ref: '#/components/parameters/Message'
+    - name: part
+      in: path
+      required: true
+      schema: { type: string, minLength: 1 }
+  post:
+    summary: Responder uma parte de interface
+    description: >-
+      UiAnswer do @c3theme/chat: `action` (`accept`, `decline`, `cancel` ou `undo`), `values`, `version` (a que o
+      usuário viu) e `reason`. A parte que não está pendente, ou de outra versão, devolve 409 e o card fecha como
+      substituído (no c3-engine, `check_agent_reply`). O que foi gravado (rascunho, ação) já passou pelo CRUD.
+    operationId: chatAnswerUi
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [action]
+            properties:
+              action: { type: string, enum: [accept, decline, cancel, undo] }
+              values: { type: object }
+              version: { type: integer }
+              reason: { type: string }
+    responses:
+      '204': { description: Resposta aceita. }
+      '400': { $ref: 'openapi.yaml#/components/responses/Error' }
+      '401': { $ref: 'openapi.yaml#/components/responses/Error' }
+      '404': { $ref: 'openapi.yaml#/components/responses/Error' }
+      '409': { $ref: 'openapi.yaml#/components/responses/Error' }

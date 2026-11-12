@@ -2,6 +2,7 @@
 
 import type { MemorySeed, WireRecord } from '@c3theme/engine';
 
+import { assistente } from './assistente';
 import { BALANCETE, mediaDaConta, ORCADO_REALIZADO, revisar } from './balancete';
 import { BOLETOS, colunasDoPeriodo, DEMONSTRATIVO } from './demonstrativo';
 import { AGENDA, ENTREGAS, relacaoDeEntregas } from './entregas';
@@ -116,6 +117,8 @@ export const SEED: MemorySeed = {
   // quem usa as histórias não cadastra vendedor: o campo que aponta para ele fica sem o "Cadastrar"
   capabilities: { vendedor: { create: false }, agenda_entrega: { create: false, update: false, delete: false } },
   notifications: avisos,
+  // o agente do chat (`pages[].chat` e `layout.header.assistant`), no lugar das rotas /_chat
+  chat: assistente(),
   // o que o backend calcularia: pendente até ter a loja e o caixa; a impressora vira item feito do resumo
   onSave: {
     configuracao_loja: (r) => ({ pendente: !(r.razao_social && r.maquina), tem_certificado: false, tem_impressora: Boolean(r.impressora) })

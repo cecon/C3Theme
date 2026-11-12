@@ -435,6 +435,11 @@ paths:
   /_notifications/_read: { $ref: 'notifications.yaml#/read' }
   /_notifications/_events: { $ref: 'notifications.yaml#/events' }
   /_search: { $ref: 'search.yaml#/search' }
+  /_chat/{conversation}/messages: { $ref: 'chat.yaml#/messages' }
+  /_chat/{conversation}/_events: { $ref: 'chat.yaml#/events' }
+  /_chat/{conversation}/_stop: { $ref: 'chat.yaml#/stop' }
+  /_chat/{conversation}/messages/{message}/_answer: { $ref: 'chat.yaml#/answer' }
+  /_chat/{conversation}/messages/{message}/_ui/{part}: { $ref: 'chat.yaml#/answerUi' }
   /{entity}/_aggregate: { $ref: 'aggregate.yaml' }
   /{entity}/_events: { $ref: 'events.yaml' }
   /{entity}/_lookups/{lookup}: { $ref: 'lookups.yaml' }

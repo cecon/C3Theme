@@ -12,6 +12,7 @@ import Database from 'better-sqlite3';
 import type { Db } from './db';
 import { exampleHooks } from './hooks';
 import { loginRoute } from './login';
+import { exampleAssistant } from './assistant';
 import { exampleNotifications } from './notifications';
 import { exampleSearch } from './search';
 
@@ -91,6 +92,7 @@ export async function exampleServer(file: string, root = REPO_ROOT): Promise<{ s
     entities: ENTITIES.map((e) => spec(root, e)),
     hooks: exampleHooks(db),
     notifications: exampleNotifications(),
+    chat: exampleAssistant(db),
     search: exampleSearch(db)
   });
   const server = createServer(engineListener(engine, { prefix: '/api', routes: loginRoute }));

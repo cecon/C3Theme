@@ -17,7 +17,9 @@ mod agent_hitl;
 mod agent_ui;
 mod agent_ui_state;
 mod boot;
+mod builder;
 mod capabilities;
+mod chat;
 mod children;
 mod children_write;
 mod condition;
@@ -66,6 +68,7 @@ pub use agent_ui_state::{check_agent_reply, supersede_agent_parts};
 /// Para implementar `Hooks::validate` e `Hooks::run_action` (async) sem adicionar a dependência: `#[c3_engine::async_trait]`.
 pub use async_trait::async_trait;
 pub use capabilities::{Capabilities, OrgAccess};
+pub use chat::{Chat, ChatPage, ChatRoom, Outgoing};
 pub use crud::source::{SourceCall, SourceColumn, SourceSql};
 pub use download::{FileCall, FileContent};
 pub use error::{ApiError, FieldErrors};
@@ -98,6 +101,9 @@ pub(crate) struct Inner {
     pub bell: Bell,
     /// Busca do Ctrl K: a porta do sistema (sem ela, GET /_search responde 404).
     pub search: Option<Box<dyn search::Search>>,
+    /// Chat com o agente: a porta do sistema (sem ela, /_chat responde 404) e o canal das abas abertas.
+    pub chat: Option<Box<dyn chat::Chat>>,
+    pub chat_feed: tokio::sync::broadcast::Sender<chat::ChatSignal>,
 }
 
 #[derive(Clone)]
@@ -116,6 +122,7 @@ impl Engine {
             notifications: None,
             bell: Bell::default(),
             search: None,
+            chat: None,
             read_only: false,
         }
     }
@@ -136,6 +143,7 @@ pub struct EngineBuilder {
     notifications: Option<Box<dyn notifications::Notifications>>,
     bell: Bell,
     search: Option<Box<dyn search::Search>>,
+    chat: Option<Box<dyn chat::Chat>>,
     read_only: bool,
 }
 
@@ -164,45 +172,6 @@ impl EngineBuilder {
 
     pub fn hooks(mut self, hooks: impl Hooks) -> Self {
         self.hooks = Box::new(hooks);
-        self
-    }
-
-    /// Canal de tempo real criado antes do motor, para os hooks avisarem o que o sistema grava (`Live::notify`).
-    pub fn live(mut self, live: Live) -> Self {
-        self.live = live;
-        self
-    }
-
-    /// Sino do header (`layout.header.notifications`): onde o sistema guarda os avisos de cada usuário.
-    pub fn notifications(mut self, port: impl Notifications) -> Self {
-        self.notifications = Some(Box::new(port));
-        self
-    }
-
-    /// Busca do Ctrl K (`header.search: { records: true }`): o que o sistema acha para o texto.
-    pub fn search(mut self, port: impl Search) -> Self {
-        self.search = Some(Box::new(port));
-        self
-    }
-
-    /// Canal do sino criado antes do motor, para o sistema avisar quando cria um aviso (`Bell::notify`).
-    pub fn bell(mut self, bell: Bell) -> Self {
-        self.bell = bell;
-        self
-    }
-
-    /// Banco a mais, de onde as entidades com `"store": name` são lidas (só leitura).
-    pub fn store_named(mut self, name: &str, store: impl Store) -> Self {
-        self.stores.insert(name.to_owned(), Box::new(store));
-        self
-    }
-
-    /// O motor só lê: toda gravação é do sistema. O `build()` recusa entidade que não delega a escrita
-    /// (`Hooks::delegates_writes`; filha gravada com o pai vai na escrita dele) e conexão sem `PRAGMA query_only`
-    /// (`c3_engine::sqlx::sqlite_options_read_only`, `c3_engine_rusqlite::prepare_read_only`). Para sistema com
-    /// escritor único e auditoria na transação, em que o motor gravar seria um erro e não uma opção.
-    pub fn read_only(mut self) -> Self {
-        self.read_only = true;
         self
     }
 
@@ -295,6 +264,8 @@ impl EngineBuilder {
             notifications: self.notifications,
             bell: self.bell,
             search: self.search,
+            chat: self.chat,
+            chat_feed: chat::feed(),
         })))
     }
 }

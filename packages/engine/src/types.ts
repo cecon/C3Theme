@@ -8,6 +8,7 @@ import type { BoardView, CalendarView, ColumnDef, GalleryView, ListLook, ListOpe
 import type { ActionDef, ActionPreview, GridFieldDef } from './actionTypes';
 import type { FormView, LookupDef } from './formTypes';
 import type { WizardDef } from './wizard';
+import type { ChatDef } from './chat/chatDef';
 import type { AuthorizationConfig } from './authorization/AuthorizationDialog';
 import type { DesktopDef } from './desktop/frame';
 
@@ -208,6 +209,8 @@ export interface PageDef {
   apiDocs?: { spec: string };
   /** Assistente em passos sobre um registro único, com resumo e a guarda que prende o app até terminar. */
   wizard?: WizardDef;
+  /** Página de chat com o agente do sistema (spec/v0/chat.yaml, ADR 0005). */
+  chat?: ChatDef;
   layout?: 'dashboard' | 'blank';
 }
 
@@ -232,6 +235,8 @@ export interface AppDef {
       fullscreen?: boolean;
       settings?: boolean;
       notifications?: boolean;
+      /** Botão do assistente: abre o chat com o agente numa gaveta. */
+      assistant?: boolean | ChatDef;
       languages?: string[];
       userMenu?: LinkDef[];
       actions?: string[];
@@ -266,33 +271,5 @@ export interface OrgContext {
   defaultBranch: string | null;
 }
 
-export interface ListResult {
-  data: WireRecord[];
-  /** `columns`: consulta do sistema que escolhe as colunas pelos parâmetros (#60). */
-  meta: { page: number; pageSize: number; total: number; columns?: { field: string; label?: string }[] };
-}
-
-export type FieldErrors = Record<string, { code: string; message: string }[]>;
-
-export interface ActionResult {
-  /** Registro depois da ação; null se ela o removeu ou tirou do escopo; ausente quando veio arquivo. */
-  data?: WireRecord | null;
-  message?: string | null;
-  /** Arquivo da ação `returns: "file"`, para baixar. */
-  file?: { name: string; blob: Blob };
-  /** Registro que a shell abre depois (o rascunho criado pela ação). */
-  open?: { entity: string; id: string };
-  /** Endereço que a shell abre (ou baixa) na mesma aba: o arquivo não passa pelo motor. */
-  link?: string;
-  /** Ação `steps`: `done` de `total`; a shell chama de novo com o `cursor` até `done == total`. */
-  progress?: { total: number; done: number; cursor: unknown };
-}
-
-/** Resultado de um id na ação em lote: o mesmo da ação de um registro, ou o erro dele. */
-export type BulkItem =
-  ({ id: string; ok: true } & ActionResult) | { id: string; ok: false; error: { code: string; message: string; fields?: FieldErrors } };
-
-export interface BulkResult {
-  results: BulkItem[];
-  meta: { ok: number; failed: number };
-}
+// resultados de lista, ação e lote: resultTypes.ts
+export type * from './resultTypes';

@@ -3,37 +3,15 @@
 import type { ActionPreview } from './actionTypes';
 import type { AggregateItem, AggregateParams } from './dashboard';
 import { readSse, type LiveMessage } from './live/sse';
+import type { ChatTransport } from '@c3theme/chat';
+
+import { ApiError } from './apiError';
+import type { NotificationList, RawReply, SearchResult } from './apiTypes';
+import { httpChatTransport } from './chat/httpChat';
 import { browserFetch, type C3Fetch } from './transport';
-import type {
-  ActionResult,
-  AppDef,
-  BulkResult,
-  Capabilities,
-  Condition,
-  EntityDef,
-  FieldErrors,
-  ListResult,
-  OrgContext,
-  WireRecord
-} from './types';
+import type { ActionResult, AppDef, BulkResult, Capabilities, Condition, EntityDef, ListResult, OrgContext, WireRecord } from './types';
 
-export interface RefusedRecord {
-  id: string;
-  error: { code: string; message: string; fields?: FieldErrors };
-}
-
-export class ApiError extends Error {
-  constructor(
-    public status: number,
-    public code: string,
-    message: string,
-    public fields?: FieldErrors,
-    /** Ação em conjunto recusada (`refused`): o erro de cada registro barrado. */
-    public records?: RefusedRecord[]
-  ) {
-    super(message);
-  }
-}
+export { ApiError, type RefusedRecord } from './apiError';
 
 /** Parâmetros de uma consulta do sistema (`source: system`), sem o prefixo `p.` da URL. */
 export type SourceParams = Record<string, string>;
@@ -118,40 +96,11 @@ export interface C3Client {
   search?(q: string, limit: number, signal?: AbortSignal): Promise<SearchResult[]>;
   /** Pedido livre à API, com o token da sessão (página `apiDocs`): devolve o status e o corpo como texto. */
   raw?(method: string, path: string, body?: string): Promise<RawReply>;
+  /** Chat com o agente (`pages[].chat`, `layout.header.assistant`): /_chat/{conversation}/... (spec/v0/chat.yaml). */
+  chat?: ChatTransport;
 }
 
-export interface RawReply {
-  status: number;
-  contentType: string;
-  body: string;
-}
-
-/** Um achado de GET /_search (spec/v0/search.yaml). `group` agrupa na paleta; `path` é a rota da shell. */
-export interface SearchResult {
-  kind: string;
-  group: string;
-  title: string;
-  snippet?: string | null;
-  path: string;
-  icon?: string | null;
-  at?: string | null;
-}
-
-/** Aviso do sino (spec/v0/notifications.yaml). `readAt` null: não lido. `to`: rota da shell aberta ao clicar. */
-export interface C3Notification {
-  id: string;
-  title: string;
-  description?: string;
-  tone?: 'neutral' | 'primary' | 'secondary' | 'info' | 'success' | 'warning' | 'danger';
-  createdAt: string;
-  readAt: string | null;
-  to?: string;
-}
-
-export interface NotificationList {
-  items: C3Notification[];
-  unread: number;
-}
+export type { C3Notification, NotificationList, RawReply, SearchResult } from './apiTypes';
 
 /**
  * @param apiUrl base da API, ex.: '/api'
@@ -279,7 +228,12 @@ export function createClient(
       return { status: res.status, contentType: res.headers.get('content-type') ?? '', body: await res.text() };
     },
     lookup: (entity, name, value, withValues) =>
-      call<{ data: WireRecord }>('POST', `/${e(entity)}/_lookups/${e(name)}`, { value, with: withValues }).then((r) => r.data)
+      call<{ data: WireRecord }>('POST', `/${e(entity)}/_lookups/${e(name)}`, { value, with: withValues }).then((r) => r.data),
+    chat: httpChatTransport(async (path, init = {}) => {
+      const res = await fetch(base + path, { ...init, headers: { ...init.headers, ...headers?.() } });
+      if (res.status === 401) onUnauthorized?.();
+      return res;
+    })
   };
 }
 

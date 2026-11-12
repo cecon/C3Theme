@@ -26,6 +26,8 @@ import WizardPage from './pages/wizard/WizardPage';
 // o painel traz a biblioteca de gráficos: só baixa quem abre um
 const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'));
 const ApiDocs = lazy(() => import('./pages/apiDocs/ApiDocs'));
+// o chat traz o @c3theme/chat: só baixa quem abre a página
+const ChatPage = lazy(() => import('./chat/ChatPage'));
 
 export function homePath(app?: AppDef) {
   const first = app?.layout.menu[0]?.items[0];
@@ -84,12 +86,8 @@ function RecordRoute({ entity }: { entity: string }) {
 function pageBody(p: PageDef) {
   if (p.dashboard) return <DashboardPage dashboard={p.dashboard} />;
   if (p.wizard) return <WizardPage wizard={p.wizard} />;
-  if (!p.apiDocs) return <CustomPage page={p} />;
-  return (
-    <Suspense fallback={<PanelSkeleton />}>
-      <ApiDocs def={p.apiDocs} />
-    </Suspense>
-  );
+  if (!p.apiDocs && !p.chat) return <CustomPage page={p} />;
+  return <Suspense fallback={<PanelSkeleton />}>{p.chat ? <ChatPage def={p.chat} /> : <ApiDocs def={p.apiDocs!} />}</Suspense>;
 }
 
 function DashboardPage({ dashboard }: { dashboard: DashboardDef }) {

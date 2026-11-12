@@ -2,7 +2,7 @@
 // das telas. O <C3Shell> usa nas rotas; quem monta o EngineProvider no próprio app (vitrine, Storybook) usa direto,
 // dentro de um roteador, com as telas no <Outlet />.
 
-import { ReactNode } from 'react';
+import { lazy, ReactNode, Suspense } from 'react';
 
 import { AppFooter, AppLayout, ColorModeButton, CommandSearch, DesktopOptions, FullscreenButton, SettingsButton } from '@c3theme/ui';
 import { iconByName, useEngine, useText } from './context';
@@ -13,6 +13,10 @@ import { canOpenPage } from './routes';
 import { buildMenu } from './shellMenu';
 import { useSessionUser } from './auth/sessionUser';
 import useRecordSearch from './hooks/useRecordSearch';
+import { headerChat } from './chat/chatDef';
+
+// o assistente traz o @c3theme/chat: só baixa quem tem `layout.header.assistant`
+const AssistantButton = lazy(() => import('./chat/AssistantButton'));
 
 export interface C3LayoutProps {
   /** Rodapé do drawer (ex.: usuário logado e sair), que é do sistema e não da spec. */
@@ -26,6 +30,7 @@ export default function C3Layout({ drawerFooter, desktop }: C3LayoutProps) {
   const text = useText();
   const header = app.layout.header ?? {};
   const recordSearch = useRecordSearch();
+  const assistant = headerChat(header.assistant);
 
   // página registrada sem permissão some do menu (a rota também bloqueia)
   const menu = buildMenu(app, {
@@ -55,6 +60,11 @@ export default function C3Layout({ drawerFooter, desktop }: C3LayoutProps) {
             const Action = components[name];
             return Action ? <Action key={name} /> : null;
           })}
+          {assistant && (
+            <Suspense fallback={null}>
+              <AssistantButton def={assistant} />
+            </Suspense>
+          )}
           {header.notifications && <NotificationBell />}
           <ColorModeButton />
           {header.fullscreen !== false && <FullscreenButton />}

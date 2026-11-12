@@ -2,6 +2,8 @@
 // estática, protótipo e teste de tela. Não tem regra de negócio do sistema: ação só roda com o handler que quem monta
 // passa em `actions`; sem ele, e em prévias, consultas e arquivos, a resposta é 501, que a shell mostra como erro comum.
 
+import type { ChatTransport } from '@c3theme/chat';
+
 import { ApiError, C3Client, type C3Notification } from '../api';
 import type { ActionPreview } from '../actionTypes';
 import type { ActionResult, AppDef, BulkItem, Capabilities, EntityDef, WireRecord } from '../types';
@@ -46,6 +48,8 @@ export interface MemorySeed {
    * (registro com as filhas) => ({ total: '1250.00' })`. Vale também para campo readOnly.
    */
   onSave?: Record<string, (record: WireRecord) => WireRecord>;
+  /** O agente do chat (`pages[].chat`, `header.assistant`), no lugar das rotas /_chat: ex. o `memoryTransport` do @c3theme/chat. */
+  chat?: ChatTransport;
   /** Respostas de GET por caminho, para o pedido livre (`raw`): `{ '/openapi.json': doc }` na página apiDocs. */
   files?: Record<string, unknown>;
 }
@@ -196,7 +200,8 @@ export function createMemoryClient(seed: MemorySeed): C3Client {
     file: () => wait(() => unsupported('O arquivo')),
     notifications: (limit) => wait(() => bell.list(limit)),
     readNotifications: (ids) => wait(() => bell.read(ids)),
-    search: (q, limit) => wait(() => memorySearch(store, q, limit))
+    search: (q, limit) => wait(() => memorySearch(store, q, limit)),
+    chat: seed.chat
   };
   client.raw = memoryRaw(
     client,

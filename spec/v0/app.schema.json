@@ -252,6 +252,10 @@
             }
           }
         },
+        "chat": {
+          "$ref": "#/$defs/chat",
+          "description": "Página de chat com o agente do sistema: o AssistantPanel na altura da página, pelas rotas de spec/v0/chat.yaml. Use isto, dashboard, wizard, apiDocs ou component."
+        },
         "apiDocs": {
           "type": "object",
           "required": ["spec"],
@@ -289,6 +293,12 @@
         },
         {
           "required": ["apiDocs"],
+          "not": {
+            "required": ["config"]
+          }
+        },
+        {
+          "required": ["chat"],
           "not": {
             "required": ["config"]
           }
@@ -423,12 +433,59 @@
           },
           "description": "Itens extras no menu do usuário (perfil e sair já existem)."
         },
+        "assistant": {
+          "description": "Botão do assistente no header: abre o AssistantPanel numa gaveta à direita, pelas rotas de spec/v0/chat.yaml. true usa o padrão; o objeto ajusta título, sugestões e partes. Backend sem a porta Chat responde 404 e o painel avisa que o sistema não tem assistente.",
+          "oneOf": [{ "type": "boolean" }, { "$ref": "#/$defs/chat" }]
+        },
         "actions": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/component"
           },
           "description": "Componentes custom adicionados à direita do header."
+        }
+      }
+    },
+    "chat": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Conversa com o agente do sistema (ADR 0005). O agente é do sistema, como a autenticação: o motor expõe as rotas de spec/v0/chat.yaml e desenha o AssistantPanel; o que o agente pede ao humano são as partes de agent-ui.schema.json.",
+      "properties": {
+        "conversation": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{1,64}$",
+          "default": "assistant",
+          "description": "Id da conversa nas rotas (/_chat/{conversation}). O backend separa por usuário: o mesmo id é uma conversa por pessoa."
+        },
+        "title": {
+          "$ref": "#/$defs/text",
+          "description": "Título do painel e do botão do header. Padrão: 'Assistente'."
+        },
+        "placeholder": {
+          "$ref": "#/$defs/text",
+          "description": "Texto da caixa vazia."
+        },
+        "suggestions": {
+          "type": "array",
+          "maxItems": 6,
+          "items": {
+            "$ref": "#/$defs/text"
+          },
+          "description": "Perguntas prontas da conversa vazia: clicar envia."
+        },
+        "parts": {
+          "type": "array",
+          "uniqueItems": true,
+          "minItems": 1,
+          "items": {
+            "enum": ["c3.form", "c3.record", "c3.action", "c3.tool", "c3.plan", "c3.browser"]
+          },
+          "description": "Partes de interface que esta conversa desenha (catálogo fechado de agent-ui.schema.json). Ausente: todas. Parte de kind fora da lista aparece como 'não sei mostrar'."
+        },
+        "queue": {
+          "type": "boolean",
+          "default": true,
+          "description": "Fila da próxima mensagem enquanto o agente responde."
         }
       }
     },

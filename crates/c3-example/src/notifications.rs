@@ -34,7 +34,7 @@ fn sample() -> Vec<Notification> {
 }
 
 /// Agora em RFC 3339 (UTC, segundos), sem dependência de data.
-fn now() -> String {
+pub(crate) fn now() -> String {
     let secs = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map(|d| d.as_secs() as i64)
