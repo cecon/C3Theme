@@ -588,7 +588,6 @@ components:
                           required: [name, label]
                           properties:
                             name: { type: string }
-                      status: { $ref: 'app.schema.json#/properties/status' }
                             label: { type: string }
                             format:
                               type: string
