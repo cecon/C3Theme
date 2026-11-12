@@ -7,18 +7,16 @@ describe('parseArgs', () => {
     expect(parseArgs(['portal-clientes'])).toEqual({
       name: 'portal-clientes',
       title: 'Portal Clientes',
-      backend: 'rust',
-      withoutEngine: false
+      backend: 'rust'
     });
   });
 
-  it('lê --title, --backend e --sem-motor em qualquer ordem', () => {
+  it('lê --title e --backend em qualquer ordem', () => {
     expect(parseArgs(['--backend', 'node', 'crm', '--title', ' Meu CRM '])).toMatchObject({
       name: 'crm',
       title: 'Meu CRM',
       backend: 'node'
     });
-    expect(parseArgs(['site', '--sem-motor'])).toMatchObject({ name: 'site', withoutEngine: true });
   });
 
   it.each([
@@ -31,7 +29,7 @@ describe('parseArgs', () => {
     [['crm', '--backend'], 'precisa de um valor'],
     [['crm', '--title', '--backend'], 'precisa de um valor'],
     [['crm', '--xyz'], 'desconhecida'],
-    [['crm', '--sem-motor', '--backend', 'node'], 'não tem backend'],
+    [['crm', '--sem-motor'], '--sem-motor saiu (ADR 0003)'],
     [['crm', '--title', '   '], '--title'],
     [['crm', '--title', 'a{{b}}'], '--title'],
     [['crm', '--title', 'linha\nnova'], '--title'],
