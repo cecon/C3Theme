@@ -47,6 +47,7 @@ export interface RelatedDef {
 }
 
 export interface FormSection {
+  platforms?: ('desktop' | 'web' | 'mobile')[];
   title?: Text;
   description?: Text;
   /** Aba da seção; seções sem aba ficam acima das abas. */

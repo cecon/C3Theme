@@ -23,6 +23,13 @@ const tax = def('product_tax', { fields: [{ name: 'uf', type: 'reference', entit
 const all: Record<string, EntityDef> = { product, product_tax: tax, group: def('group'), uf: def('uf') };
 const caps = { list: true, read: true, create: true, update: true, delete: true };
 
+it('keeps autosave and settings tabs when applying field access', () => {
+  const entity = def('settings', { singleton: true, views: { form: { autosave: true, sections: [{ tab: 'General', rows: [['id']] }] } } });
+  const result = applyAccess(entity, { ...caps, fields: { id: 'readOnly' } });
+  expect(result.views?.form?.autosave).toBe(true);
+  expect(result.views?.form?.sections[0].tab).toBe('General');
+});
+
 describe('referencedEntities', () => {
   it('junta reference, input de ação e filhas, sem a própria entidade', () => {
     expect(referencedEntities(product).sort()).toEqual(['group', 'product_tax', 'stock']);

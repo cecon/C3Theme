@@ -1,5 +1,8 @@
 # Spec do motor C3 (v0, rascunho)
 
+Configurações singleton com autosave: [abas, busca, plataforma, confirmação,
+aviso de reinício e atalhos](../docs/settings-autosave.md).
+
 ## Cores nomeadas em avatar e selo da lista
 
 O app registra os pares de cores em `theme.tokens.accents` da shell (`C3Tokens`); `light.accents` e

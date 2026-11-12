@@ -31,6 +31,10 @@ export interface FieldDef {
   hint?: Text;
   /** Valor preenchido pelo assistente pede conferência: o rascunho só grava depois de o usuário confirmar o campo. */
   aiReview?: boolean;
+  keywords?: Text[];
+  confirmChange?: { question: Text; effect: Text };
+  restartNotice?: Text;
+  component?: 'shortcut';
   required?: boolean;
   readOnly?: boolean;
   /** Só na criação; depois aparece travado. */

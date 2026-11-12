@@ -21,6 +21,7 @@ export interface OrgState {
 }
 
 export interface EngineState {
+  platform?: 'desktop' | 'web' | 'mobile';
   connectivity?: import('./pageStates/types').ConnectivityPort;
   client: C3Client;
   app: AppDef;

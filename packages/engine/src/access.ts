@@ -33,6 +33,7 @@ export function applyAccess(def: EntityDef, capabilities: Capabilities): EntityD
         defaultSort: list.defaultSort?.filter((s) => !hidden(s.field))
       },
       form: form && {
+        ...form,
         sections: form.sections
           .filter((s) => !(s.related && hidden(s.related.entity)))
           .map((s) => ({

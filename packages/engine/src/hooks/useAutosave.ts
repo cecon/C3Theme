@@ -9,7 +9,9 @@ export type SaveState = 'idle' | 'saving' | 'saved' | 'error';
 
 /** Grava na hora o que muda (switch, select, data, reference); texto e número só ao sair do campo. */
 export const commitsOnChange = (f: FieldDef) =>
-  ['boolean', 'flags', 'date', 'datetime', 'reference', 'file'].includes(f.type) || Boolean(f.options?.length);
+  ['boolean', 'flags', 'date', 'datetime', 'reference', 'file'].includes(f.type) ||
+  Boolean(f.options?.length) ||
+  f.component === 'shortcut';
 
 const empty = (v: unknown) => v === null || v === undefined || v === '';
 
@@ -30,6 +32,8 @@ export default function useAutosave(entity: string, id: string, loaded: WireReco
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [state, setState] = useState<SaveState>('idle');
   const [formError, setFormError] = useState<string>();
+  const [pending, setPending] = useState<{ field: FieldDef; value: unknown; required: boolean }>();
+  const [restart, setRestart] = useState<FieldDef>();
   const saved = useRef<WireRecord>(loaded ?? {});
   const queue = useRef<Promise<void>>(Promise.resolve());
 
@@ -47,6 +51,12 @@ export default function useAutosave(entity: string, id: string, loaded: WireReco
         setErrors((e) => ({ ...e, [f.name]: message }));
         setRecord((r) => ({ ...r, [f.name]: before }));
       };
+      if (
+        f.component === 'shortcut' &&
+        value &&
+        def.fields.some((other) => other.name !== f.name && other.component === 'shortcut' && saved.current[other.name] === value)
+      )
+        return revert('Este atalho já está em uso.');
       if (required && empty(value)) return revert('Campo obrigatório.');
       setState('saving');
       setFormError(undefined);
@@ -63,6 +73,7 @@ export default function useAutosave(entity: string, id: string, loaded: WireReco
         });
         mutate(['c3-record', entity, id], next, { revalidate: false });
         setState('saved');
+        if (f.restartNotice) setRestart(f);
       } catch (e) {
         setState('error');
         if (isStale(e)) {
@@ -80,12 +91,16 @@ export default function useAutosave(entity: string, id: string, loaded: WireReco
         }
       }
     },
-    [client, entity, id, mutate]
+    [client, entity, id, mutate, def.fields]
   );
 
   /** Grava o campo (em fila). Sem mudança em relação ao gravado, não faz nada. */
   const commit = useCallback(
     (f: FieldDef, value: unknown, required: boolean) => {
+      if (f.confirmChange && JSON.stringify(value) !== JSON.stringify(saved.current[f.name])) {
+        setPending({ field: f, value, required });
+        return Promise.resolve();
+      }
       queue.current = queue.current.then(() => send(f, value, required));
       return queue.current;
     },
@@ -98,5 +113,15 @@ export default function useAutosave(entity: string, id: string, loaded: WireReco
     if (commitsOnChange(f)) void commit(f, value, required);
   };
 
-  return { def, record, errors, state, formError, change, commit };
+  const confirm = () => {
+    if (!pending) return;
+    const { field, value, required } = pending;
+    setPending(undefined);
+    queue.current = queue.current.then(() => send(field, value, required));
+  };
+  const cancel = () => {
+    if (pending) setRecord((r) => ({ ...r, [pending.field.name]: saved.current[pending.field.name] }));
+    setPending(undefined);
+  };
+  return { def, record, errors, state, formError, change, commit, pending, confirm, cancel, restart };
 }

@@ -1,3 +1,9 @@
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import SettingsSections from './SettingsSections';
 import { useMemo } from 'react';
 import useSWR from 'swr';
 
@@ -28,7 +34,7 @@ export default function AutosaveForm({ entity, id }: { entity: string; id: strin
   const text = useText();
   const { capabilities } = entities[entity];
   const { data: loaded, error } = useSWR(['c3-record', entity, id], () => client.get(entity, id));
-  const { def, record, errors, state, formError, change, commit } = useAutosave(entity, id, loaded);
+  const { def, record, errors, state, formError, change, commit, pending, confirm, cancel, restart } = useAutosave(entity, id, loaded);
   const types = useMemo(() => fieldTypes(def), [def]);
   const gates = useMemo(() => sectionGates(def), [def]);
   const sections = def.views?.form?.sections ?? [{ rows: def.fields.filter((f) => !f.readOnly).map((f) => [f.name]) }];
@@ -49,13 +55,22 @@ export default function AutosaveForm({ entity, id }: { entity: string; id: strin
     const help = f.help ? text(f.help) : undefined;
     if (f.type === 'boolean' && !component)
       return (
-        <SettingsRow key={f.name} label={label} description={errors[f.name] ?? help} disabled={locked(f)}>
-          <SettingsSwitch checked={record[f.name] === true} onChange={(v) => change(f, v, required(f))} />
-        </SettingsRow>
+        <Box key={f.name} data-setting={f.name}>
+          <SettingsRow label={label} description={errors[f.name] ?? help} disabled={locked(f)}>
+            <SettingsSwitch checked={record[f.name] === true} onChange={(v) => change(f, v, required(f))} />
+          </SettingsRow>
+        </Box>
       );
     return (
       // texto e número gravam ao sair do campo (o foco deixa a linha)
-      <Box key={f.name} sx={{ px: 2, py: 1.5 }} onBlur={() => void commit(f, record[f.name], required(f))}>
+      <Box
+        key={f.name}
+        data-setting={f.name}
+        sx={{ px: 2, py: 1.5 }}
+        onBlur={() => {
+          if (!locked(f)) void commit(f, record[f.name], required(f));
+        }}
+      >
         <FieldInput
           field={f}
           component={component}
@@ -96,8 +111,33 @@ export default function AutosaveForm({ entity, id }: { entity: string; id: strin
           {STATE_TEXT[state]}
         </Typography>
       </Stack>
+      {pending && (
+        <Dialog open onClose={cancel} aria-labelledby="setting-confirm-title">
+          <DialogTitle id="setting-confirm-title">{text(pending.field.confirmChange!.question)}</DialogTitle>
+          <DialogContent>{text(pending.field.confirmChange!.effect)}</DialogContent>
+          <DialogActions>
+            <Button onClick={cancel}>Cancelar</Button>
+            <Button onClick={confirm}>Confirmar</Button>
+          </DialogActions>
+        </Dialog>
+      )}
+      {restart && <Alert severity="info">{text(restart.restartNotice)}</Alert>}
       {formError && <Alert severity="error">{formError}</Alert>}
-      {sections.map(group)}
+      <SettingsSections
+        def={def}
+        sections={sections
+          .filter((s) => sectionVisible(s, record, types))
+          .map((s) => ({
+            ...s,
+            rows: s.rows?.map((r) =>
+              r.filter((c) => {
+                const f = def.fields.find((f) => f.name === (typeof c === 'string' ? c : c.field));
+                return f && !f.denied && fieldVisible(f, record, types, gates);
+              })
+            )
+          }))}
+        render={group}
+      />
       {extra.length > 0 && <SettingsGroup>{extra.map((f) => row(f))}</SettingsGroup>}
     </Stack>
   );

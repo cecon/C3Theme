@@ -273,6 +273,35 @@
           "$ref": "#/$defs/text",
           "description": "Ajuda longa (o que é, de onde vem, exemplo), atrás de uma interrogação no rótulo; abre no clique ou toque."
         },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/text"
+          }
+        },
+        "confirmChange": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "question",
+            "effect"
+          ],
+          "properties": {
+            "question": {
+              "$ref": "#/$defs/text"
+            },
+            "effect": {
+              "$ref": "#/$defs/text"
+            }
+          }
+        },
+        "restartNotice": {
+          "$ref": "#/$defs/text"
+        },
+        "component": {
+          "const": "shortcut",
+          "description": "Campo string de atalho; autosave recusa duplica??o no mesmo registro."
+        },
         "aiReview": {
           "type": "boolean",
           "default": false,
@@ -945,6 +974,7 @@
                   "description": {
                     "$ref": "#/$defs/text"
                   },
+                  "platforms": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "enum": ["desktop", "web", "mobile"] } },
                   "tab": {
                     "$ref": "#/$defs/text",
                     "description": "Aba onde a seção aparece. Seções com a mesma aba ficam juntas, na ordem em que aparecem; as abas seguem a ordem da primeira seção de cada uma. Seções sem `tab` vêm antes de todas as com `tab` e ficam sempre visíveis acima das abas (cabeçalho, ex.: código e nome). Usando abas, são pelo menos duas. Formulário sem `tab` não muda. Vale para qualquer tipo de seção, inclusive `related`."

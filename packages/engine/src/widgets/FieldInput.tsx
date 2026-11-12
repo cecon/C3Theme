@@ -26,6 +26,7 @@ import { fromDay, toDay } from '../calendarForm';
 import { datetimeToLocalInput, displayValue, findOption, formatDate, localInputToDatetime, recordOptions } from '../format';
 import DocumentInput from './DocumentInput';
 import FlowFieldLink from '../pages/flow/FlowFieldLink';
+import ShortcutInput from './ShortcutInput';
 import PasswordInput from './PasswordInput';
 import ReferenceInput from './ReferenceInput';
 import { saveFile } from '../export';
@@ -68,6 +69,7 @@ export default function FieldInput(props: FieldInputProps) {
   const hint = field.hint ? text(field.hint) : undefined;
   const helper = error ?? (field.help ? text(field.help) : undefined);
 
+  if ((component ?? field.component) === 'shortcut') return <ShortcutInput {...props} readOnly={readOnly} label={label} />;
   if (component) {
     const Custom = components[component];
     // o custom recebe o travamento já somado ao readOnly: quem só olha readOnly também trava

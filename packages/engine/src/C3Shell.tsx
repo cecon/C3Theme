@@ -28,6 +28,7 @@ import { AppStatus, ShellBoundary, type AppStatusDef } from './status/AppStatus'
 import { LoadErrorScreen } from './status/ErrorScreens';
 
 export interface C3ShellProps {
+  platform?: 'desktop' | 'web' | 'mobile';
   connectivity?: import('./pageStates/types').ConnectivityPort;
   /** Base da API do sistema, ex.: '/api'. */
   apiUrl: string;
@@ -207,11 +208,12 @@ function Shell(props: C3ShellProps) {
         icons: catalog,
         telemetry,
         connectivity: props.connectivity,
+        platform: props.platform,
         reloadApp,
         org: state.org && { ...state.org, setActive },
         ...(frame && { desktop: frame })
       },
-    [state, catalog, telemetry, reloadApp, setActive, frame, props.connectivity]
+    [state, catalog, telemetry, reloadApp, setActive, frame, props.connectivity, props.platform]
   );
   const app = state?.app;
   const routes = app && routesKey(app);
