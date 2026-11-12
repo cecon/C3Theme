@@ -30,6 +30,7 @@ import { checkPages, checkWizards } from './spec-pages.mjs';
 import { checkBoardCalendar, checkListRules, checkMenu } from './spec-views.mjs';
 import { checkReport } from './spec-report.mjs';
 import { checkMap } from './spec-map.mjs';
+import { checkFlow } from './spec-flow.mjs';
 import { checkForm } from './spec-form.mjs';
 
 const specDir = resolve('spec/v0');
@@ -249,6 +250,7 @@ for (const { entity, file } of entities.values()) {
   checkBoardCalendar(entity, fields, file, errors);
   checkReport(entity, fields, file, errors);
   checkMap(entity, fields, file, errors);
+  checkFlow(entity, fields, file, errors);
   checkListRules(entity, fields, entities, file, errors, WIRE);
   const actionNames = new Set();
   for (const a of entity.actions ?? []) {

@@ -24,7 +24,8 @@
     "boleto",
     "entrega",
     "posicao_estoque",
-    "agenda_entrega"
+    "agenda_entrega",
+    "automacao"
   ],
   "layout": {
     "orientation": "vertical",

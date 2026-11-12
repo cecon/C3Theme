@@ -619,6 +619,9 @@ importers:
         specifier: ^0.0.8
         version: 0.0.8(react@19.3.0)
     devDependencies:
+      '@c3theme/flow':
+        specifier: workspace:*
+        version: link:../flow
       '@c3theme/ui':
         specifier: workspace:*
         version: link:../ui

@@ -37,6 +37,7 @@ export { default as EntityCalendar } from './pages/calendar/EntityCalendar';
 export { default as EntityDashboard } from './pages/dashboard/Dashboard';
 export { default as EntityReport } from './pages/report/EntityReport';
 export { default as EntityMap } from './pages/map/EntityMap';
+export { default as EntityFlow } from './pages/flow/EntityFlow';
 export { default as ApiDocs } from './pages/apiDocs/ApiDocs';
 export { default as WizardPage } from './pages/wizard/WizardPage';
 export { default as WizardGuard } from './pages/wizard/WizardGuard';

@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@c3theme/engine": "workspace:*",
+    "@c3theme/flow": "workspace:*",
     "@c3theme/ui": "workspace:*",
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",

@@ -1,0 +1,100 @@
+{
+  "$schema": "../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "automacao",
+  "label": {
+    "singular": "Automação",
+    "plural": "Automações",
+    "gender": "f"
+  },
+  "icon": "Routing2",
+  "titleField": "nome",
+  "fields": [
+    { "name": "nome", "type": "string", "label": "Nome", "required": true, "maxLength": 80 },
+    { "name": "ativa", "type": "boolean", "label": "Ativa", "default": true },
+    { "name": "grafo", "type": "text", "label": "Passos" }
+  ],
+  "views": {
+    "list": { "columns": ["nome", "ativa"] },
+    "flow": {
+      "field": "grafo",
+      "title": "Passos da automação",
+      "kinds": [
+        {
+          "type": "gatilho",
+          "label": "Gatilho",
+          "icon": "Flash",
+          "tone": "warning",
+          "input": false,
+          "max": 1,
+          "removable": false,
+          "fields": [
+            {
+              "key": "evento",
+              "label": "Evento",
+              "kind": "select",
+              "required": true,
+              "options": [
+                { "value": "whatsapp", "label": "Mensagem no WhatsApp" },
+                { "value": "webhook", "label": "Webhook" }
+              ]
+            }
+          ],
+          "defaults": { "evento": "whatsapp" }
+        },
+        {
+          "type": "agente",
+          "label": "Agente",
+          "icon": "Profile2User",
+          "tone": "primary",
+          "fields": [
+            {
+              "key": "agente",
+              "label": "Agente",
+              "kind": "select",
+              "required": true,
+              "options": [
+                { "value": "atendente", "label": "Atendente" },
+                { "value": "cozinha", "label": "Cozinha" },
+                { "value": "entregas", "label": "Entregas" }
+              ]
+            },
+            { "key": "pedido", "label": "O que pedir", "kind": "textarea" }
+          ],
+          "summary": "agente"
+        },
+        {
+          "type": "condicao",
+          "label": "Condição",
+          "icon": "Routing2",
+          "tone": "info",
+          "outputs": [
+            { "id": "sim", "label": "sim" },
+            { "id": "nao", "label": "não" }
+          ],
+          "fields": [
+            { "key": "regra", "label": "Regra", "required": true, "help": "Ex.: pedido.confirmado == true" },
+            { "key": "max_voltas", "label": "Máximo de voltas", "kind": "number", "help": "Obrigatório quando a condição fecha um ciclo" }
+          ],
+          "loopLimit": "max_voltas",
+          "summary": "regra"
+        },
+        {
+          "type": "esperar",
+          "label": "Esperar",
+          "icon": "Timer1",
+          "tone": "secondary",
+          "fields": [{ "key": "minutos", "label": "Minutos", "kind": "number", "required": true }],
+          "summary": "minutos"
+        },
+        {
+          "type": "fim",
+          "label": "Fim",
+          "icon": "TickCircle",
+          "tone": "success",
+          "outputs": []
+        }
+      ]
+    }
+  }
+}

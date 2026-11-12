@@ -52,6 +52,7 @@
     "iconsax-reactjs": "^0.0.8"
   },
   "peerDependencies": {
+    "@c3theme/flow": "^0.3.0",
     "@c3theme/ui": "^0.1.0",
     "@mui/material": "^9.4.0",
     "react": "^19.2.0",
@@ -61,6 +62,7 @@
     "swr": "^2.5.0"
   },
   "devDependencies": {
+    "@c3theme/flow": "workspace:*",
     "@c3theme/ui": "workspace:*",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
