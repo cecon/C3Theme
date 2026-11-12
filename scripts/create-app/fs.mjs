@@ -1,4 +1,4 @@
-// Adaptador de disco do create-app: lê o template, escreve o plano e copia o seed.
+// Adaptador de disco do create-app: lê o template, escreve o plano.
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -28,18 +28,5 @@ export function writeFiles(root, files) {
     const p = path.join(root, f.path);
     fs.mkdirSync(path.dirname(p), { recursive: true });
     fs.writeFileSync(p, f.content);
-  }
-}
-
-const SKIP = new Set(['node_modules', 'dist', '.env']);
-
-export function copySeed(root, plan) {
-  const to = path.join(root, plan.to);
-  const from = path.join(root, plan.from);
-  fs.cpSync(from, to, { recursive: true, filter: (src) => !SKIP.has(path.basename(src)) });
-  fs.copyFileSync(path.join(from, '.env.example'), path.join(to, '.env'));
-  for (const [file, edit] of plan.edits) {
-    const p = path.join(to, file);
-    fs.writeFileSync(p, edit(fs.readFileSync(p, 'utf8')));
   }
 }
