@@ -3,6 +3,7 @@
 import { formatAmount } from './format';
 import type { Condition, EntityDef, FieldDef, Text, Tone } from './types';
 import type { DashboardFilter } from './dashboardFilters';
+import type { SummarySource, SummaryWidget } from './summary';
 import { viewPath } from './views';
 
 export type Measure = 'count' | `sum:${string}`;
@@ -110,8 +111,12 @@ export interface HeatmapWidget extends WidgetBase {
   tone?: Tone;
   empty?: Text;
 }
-export type WidgetDef = KpiWidget | ChartWidget | ListWidget | AlertWidget | RankingWidget | FeedWidget | HeatmapWidget;
+/** Widget que lê entidade (`GET /{entity}/_aggregate` ou a lista). */
+export type EntityWidget = KpiWidget | ChartWidget | ListWidget | AlertWidget | RankingWidget | FeedWidget | HeatmapWidget;
+export type WidgetDef = EntityWidget | SummaryWidget;
 export interface DashboardDef {
+  /** Resumo que o sistema calcula (GET), lido pelos widgets `meter`, `share` e `status` (#108). */
+  source?: SummarySource;
   /** Filtros que valem para os widgets que os ligam (`bind`). */
   filters?: DashboardFilter[];
   /** Botões no topo, à direita (atalhos para a lista e para criar). */
@@ -139,14 +144,14 @@ export interface AggregateParams {
   params?: Record<string, string>;
 }
 
-const DEFAULT_WIDTH = { kpi: 3, chart: 6, list: 6, alert: 12, ranking: 6, feed: 6, heatmap: 12 } as const;
+const DEFAULT_WIDTH = { kpi: 3, chart: 6, list: 6, alert: 12, ranking: 6, feed: 6, heatmap: 12, meter: 6, share: 6, status: 6 } as const;
 
 export function widgetWidth(w: WidgetDef): number {
   return w.width ?? DEFAULT_WIDTH[w.type];
 }
 
 /** Filtro do widget: o do preset somado (e) ao `where`. */
-export function widgetWhere(w: WidgetDef, def: EntityDef): Condition | undefined {
+export function widgetWhere(w: EntityWidget, def: EntityDef): Condition | undefined {
   const preset = def.views?.list?.presets?.find((p) => p.id === w.preset)?.where;
   if (preset && w.where) return { and: [preset, w.where] };
   return preset ?? w.where;
@@ -156,7 +161,7 @@ export function widgetWhere(w: WidgetDef, def: EntityDef): Condition | undefined
  * Lista com o recorte do widget: o preset e, quando há `where` (do widget ou dos filtros do painel), ele em `w` na URL,
  * que a lista soma ao filtro e mostra como "Filtro do painel".
  */
-export function widgetLink(w: WidgetDef): string {
+export function widgetLink(w: EntityWidget): string {
   const base = viewPath(w.entity, 'list', w.preset);
   if (!w.where) return base;
   return `${base}${base.includes('?') ? '&' : '?'}w=${encodeURIComponent(JSON.stringify(w.where))}`;

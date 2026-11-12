@@ -42,6 +42,13 @@ export const Cartoes: Story = { name: 'Cartões', args: { entity: 'cliente', vie
 /** Indicadores, gráficos e ranking por agregação da entidade (`kpi`, `chart`, `ranking`). */
 export const Painel: Story = { args: { page: '/painel' } };
 
+/**
+ * Painel por resumo (#108): `dashboard.source` lê um documento que o sistema calcula, sem entidade. `meter` mostra o uso
+ * por provedor com o limite e a barra, `share` a participação de cada agente e `status` o card de atualização, com o
+ * aviso do canal beta e as ações que o sistema libera (a desabilitada mostra a instrução). Baixar anda a cada 5 s.
+ */
+export const PainelPorResumo: Story = { name: 'Painel por resumo', args: { page: '/uso' } };
+
 /** Filtro de período para a frente (`next7`, `next30`, `nextMonth`) com `options`: o seletor só oferece os de vencimento. */
 export const Vencimentos: Story = { args: { page: '/vencimentos' } };
 

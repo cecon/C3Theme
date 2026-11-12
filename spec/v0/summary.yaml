@@ -1,0 +1,43 @@
+# Resumo do painel (dashboard.source, ADR 0013). A rota é do sistema, não do motor: o caminho é o que a spec declara
+# em `source.path` e nas `actions[].path` do widget status. O motor só fixa o formato da resposta.
+summary:
+  get:
+    summary: Resumo calculado pelo sistema
+    description: >-
+      Um documento (não uma coleção) com o que os widgets meter, share e status leem por caminho com ponto. O formato
+      do documento é do sistema; a spec do painel diz onde está cada coisa. Respeita a sessão e a filial ativa como as
+      outras rotas. Sem sessão: 401; sem permissão: 403 (o widget mostra "Sem acesso a estes dados").
+    operationId: summary
+    responses:
+      '200':
+        description: O resumo.
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data: { type: object }
+summaryAction:
+  post:
+    summary: Ação do widget status
+    description: >-
+      Corpo `{}`. Devolve `{ data }` com o resumo novo (a shell redesenha sem outra leitura) ou 204 (a shell relê o
+      resumo). Erro no formato de sempre (`{ error: { code, message } }`), mostrado como aviso.
+    operationId: summaryAction
+    requestBody:
+      content:
+        application/json:
+          schema: { type: object }
+    responses:
+      '200':
+        description: O resumo depois da ação.
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data: { type: object }
+      '204':
+        description: Feito; a shell relê o resumo.

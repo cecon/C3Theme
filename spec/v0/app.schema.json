@@ -1010,6 +1010,10 @@
       "additionalProperties": false,
       "description": "Painel montado pela shell a partir do contrato (GET /{entity}/_aggregate e GET da lista): indicadores, gráficos e listas curtas em uma grade de 12 colunas, na ordem declarada. Tudo respeita escopo, filial ativa e permissões do usuário; widget de entidade que o usuário não lista não aparece. Filtros do painel (filters) ficam na barra do topo e entram no recorte de cada widget que os liga (bind).",
       "properties": {
+        "source": {
+          "$ref": "#/$defs/summarySource",
+          "description": "Resumo que o sistema calcula (um documento por período, não uma coleção), lido pelos widgets meter, share e status. Os widgets de entidade continuam no _aggregate."
+        },
         "widgets": {
           "type": "array",
           "minItems": 1,
@@ -1057,6 +1061,113 @@
     },
     "widget": {
       "oneOf": [
+        {
+          "type": "object",
+          "description": "Uso com limite, lido do resumo (tokens por provedor): um bloco por item com o nome, o valor, o limite, a barra com o % consumido (amarela a partir de 80%, vermelha acima de 100%) e os detalhes (entrada, saída, janela, custo na moeda).",
+          "required": ["type", "title", "from", "label", "value"],
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "meter" },
+            "title": { "$ref": "#/$defs/text" },
+            "subtitle": { "$ref": "#/$defs/text" },
+            "source": { "$ref": "#/$defs/summarySource", "description": "Outro resumo só para este widget; sem ele, o dashboard.source." },
+            "from": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$", "description": "Caminho no resumo (com pontos): lista, um bloco por item, ou objeto, um bloco." },
+            "width": { "type": "integer", "minimum": 1, "maximum": 12, "default": 6 },
+            "empty": { "$ref": "#/$defs/text", "description": "Texto sem itens no caminho. Padrão: 'Nada por aqui.'" },
+            "label": { "$ref": "#/$defs/summaryPath" },
+            "value": { "$ref": "#/$defs/summaryPath" },
+            "limit": { "$ref": "#/$defs/summaryPath", "description": "Sem limite no item, mostra só o valor, sem barra." },
+            "format": { "$ref": "#/$defs/summaryFormat" },
+            "details": { "type": "array", "maxItems": 8, "items": { "$ref": "#/$defs/summaryDetail" } }
+          }
+        },
+        {
+          "type": "object",
+          "description": "Participação no total, lida do resumo (consumo por agente): ranking com a barra do % ou rosca com a legenda.",
+          "required": ["type", "title", "from", "label", "value"],
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "share" },
+            "title": { "$ref": "#/$defs/text" },
+            "subtitle": { "$ref": "#/$defs/text" },
+            "source": { "$ref": "#/$defs/summarySource", "description": "Outro resumo só para este widget; sem ele, o dashboard.source." },
+            "from": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$", "description": "Caminho no resumo (com pontos): lista, um bloco por item, ou objeto, um bloco." },
+            "width": { "type": "integer", "minimum": 1, "maximum": 12, "default": 6 },
+            "empty": { "$ref": "#/$defs/text", "description": "Texto sem itens no caminho. Padrão: 'Nada por aqui.'" },
+            "label": { "$ref": "#/$defs/summaryPath" },
+            "value": { "$ref": "#/$defs/summaryPath" },
+            "share": { "$ref": "#/$defs/summaryPath", "description": "Participação já calculada (0 a 100); sem ela, o valor sobre a soma dos itens." },
+            "format": { "$ref": "#/$defs/summaryFormat" },
+            "chart": { "enum": ["ranking", "donut"], "default": "ranking" },
+            "limit": { "type": "integer", "minimum": 1, "maximum": 50 }
+          }
+        },
+        {
+          "type": "object",
+          "description": "Objeto único do resumo com estado, textos e ações (o card de atualização do app): chip do estado, campos, avisos condicionais, barra de progresso, a mensagem de erro do sistema e as ações. O sistema diz, no objeto (availability), que ações valem agora e por que a desabilitada não vale.",
+          "required": ["type", "title", "from", "state", "states"],
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "status" },
+            "title": { "$ref": "#/$defs/text" },
+            "subtitle": { "$ref": "#/$defs/text" },
+            "source": { "$ref": "#/$defs/summarySource", "description": "Outro resumo só para este widget; sem ele, o dashboard.source." },
+            "from": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$", "description": "Caminho no resumo (com pontos): lista, um bloco por item, ou objeto, um bloco." },
+            "width": { "type": "integer", "minimum": 1, "maximum": 12, "default": 6 },
+            "empty": { "$ref": "#/$defs/text", "description": "Texto sem itens no caminho. Padrão: 'Nada por aqui.'" },
+            "state": { "$ref": "#/$defs/summaryPath" },
+            "states": {
+              "type": "object",
+              "minProperties": 1,
+              "description": "Valor do estado → rótulo e cor do chip. Estado fora daqui mostra o valor cru.",
+              "additionalProperties": {
+                "type": "object",
+                "required": ["label"],
+                "additionalProperties": false,
+                "properties": {
+                  "label": { "$ref": "#/$defs/text" },
+                  "tone": { "enum": ["neutral", "primary", "info", "success", "warning", "danger"], "default": "neutral" }
+                }
+              }
+            },
+            "fields": { "type": "array", "maxItems": 8, "items": { "$ref": "#/$defs/summaryDetail" } },
+            "progress": { "$ref": "#/$defs/summaryPath", "description": "Número de 0 a 100: a barra aparece quando ele vem (baixando)." },
+            "message": { "$ref": "#/$defs/summaryPath", "description": "Texto de erro do sistema, mostrado quando vem." },
+            "notices": {
+              "type": "array",
+              "maxItems": 4,
+              "items": {
+                "type": "object",
+                "required": ["when", "text"],
+                "additionalProperties": false,
+                "properties": {
+                  "when": { "$ref": "entity.schema.json#/$defs/condition", "description": "Condição sobre os campos do objeto (canal igual a beta)." },
+                  "text": { "$ref": "#/$defs/text" },
+                  "tone": { "enum": ["info", "warning", "error"], "default": "info" }
+                }
+              }
+            },
+            "actions": {
+              "type": "array",
+              "maxItems": 6,
+              "items": {
+                "type": "object",
+                "required": ["id", "label", "path"],
+                "additionalProperties": false,
+                "properties": {
+                  "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$" },
+                  "label": { "$ref": "#/$defs/text" },
+                  "path": { "type": "string", "pattern": "^/", "description": "POST no sistema; a resposta com data é o resumo novo." },
+                  "variant": { "enum": ["contained", "outlined"], "default": "outlined" }
+                }
+              }
+            },
+            "availability": {
+              "$ref": "#/$defs/summaryPath",
+              "description": "Objeto { [id]: { disabled?, instruction? } } no item, padrão 'actions': ação fora dele não aparece; desabilitada mostra a instrução. Sem o objeto no item, todas aparecem."
+            }
+          }
+        },
         {
           "type": "object",
           "description": "Grade de atividade (heatmap): uma coluna por semana e uma linha por dia da semana, mais forte quanto maior o valor do dia. Usa o _aggregate do chart com interval day. Com os dados de um ano só (filtro de período 'year', por exemplo), mostra janeiro a dezembro; senão, do primeiro ao último dia que veio. Clique no dia abre a lista daquele dia.",
@@ -1663,6 +1774,37 @@
           }
         }
       ]
+    },
+    "summarySource": {
+      "type": "object",
+      "required": ["path"],
+      "additionalProperties": false,
+      "description": "Endpoint do resumo no sistema (spec/v0/summary.yaml): GET devolve { data: {...} } com o token da sessão.",
+      "properties": {
+        "path": { "type": "string", "pattern": "^/" },
+        "refresh": { "type": "integer", "minimum": 1, "maximum": 3600, "description": "Relê a cada N segundos (progresso do download)." }
+      }
+    },
+    "summaryPath": {
+      "type": "string",
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$",
+      "description": "Caminho no item do resumo, com pontos (janela.inicio)."
+    },
+    "summaryFormat": {
+      "enum": ["number", "percent", "money", "datetime", "text"],
+      "default": "number",
+      "description": "money usa a moeda ISO 4217 de currency; datetime, data e hora curtas no idioma."
+    },
+    "summaryDetail": {
+      "type": "object",
+      "required": ["label", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "label": { "$ref": "#/$defs/text" },
+        "value": { "$ref": "#/$defs/summaryPath" },
+        "format": { "$ref": "#/$defs/summaryFormat" },
+        "currency": { "$ref": "#/$defs/summaryPath", "description": "Caminho da moeda (ISO 4217) para format money." }
+      }
     },
     "dashboardFilter": {
       "oneOf": [

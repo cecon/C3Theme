@@ -1,6 +1,7 @@
 // Regras do painel (app.json pages[].dashboard) que o JSON Schema não expressa sozinho.
 
 import { checkAlertCompare, checkListTabs } from './spec-dashboard-list.mjs';
+import { checkSummaryWidget, SUMMARY_TYPES } from './spec-dashboard-summary.mjs';
 
 const DATES = new Set(['date', 'datetime']);
 const GROUPABLE = new Set(['enum', 'boolean', 'reference', ...DATES]);
@@ -24,6 +25,10 @@ export function checkDashboards(app, entities, checkCondition, errors) {
     }
     for (const [i, w] of (page.dashboard?.widgets ?? []).entries()) {
       const where = `app.json página '${page.path}' widget ${i + 1} (${w.type})`;
+      if (SUMMARY_TYPES.has(w.type)) {
+        checkSummaryWidget(page.dashboard, w, where, errors);
+        continue;
+      }
       const entity = entities.get(w.entity)?.entity;
       if (!app.entities?.includes(w.entity) || !entity) {
         errors.push(`${where}: entidade '${w.entity}' fora de app.entities`);

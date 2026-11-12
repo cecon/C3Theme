@@ -2,7 +2,7 @@
 // vendedor), e cada widget liga o filtro a um campo dele (`bind`). Sem React: a tela fica em pages/dashboard.
 
 import type { Condition, Text } from './types';
-import type { WidgetDef } from './dashboard';
+import type { EntityWidget } from './dashboard';
 
 /** Períodos do filtro `period`, resolvidos no backend pelo relógio do sistema (datas relativas). */
 export const PERIODS = ['today', 'week', 'month', 'lastMonth', 'last7', 'last30', 'next7', 'next30', 'nextMonth', 'year', 'all'] as const;
@@ -81,7 +81,7 @@ export function initialValues(filters: DashboardFilter[]): FilterValues {
 }
 
 /** O widget com os filtros que ele liga (`bind`) somados (e) ao `where` dele. */
-export function applyFilters<W extends WidgetDef>(widget: W, filters: DashboardFilter[], values: FilterValues): W {
+export function applyFilters<W extends EntityWidget>(widget: W, filters: DashboardFilter[], values: FilterValues): W {
   const parts: Condition[] = [];
   for (const [name, field] of Object.entries(widget.bind ?? {})) {
     const f = filters.find((x) => x.name === name);
