@@ -82,6 +82,10 @@ export const SEED: MemorySeed = {
   app: APP,
   entities: ENTITIES,
   records: {
+    agente: [
+      { id: '1', nome: 'Ana Souza', cargo: 'forge' },
+      { id: '2', nome: 'Bruno Lima', cargo: 'sage' }
+    ],
     cliente: clientes,
     produto: produtos,
     movimento: movimentos,

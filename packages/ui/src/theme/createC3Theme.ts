@@ -285,7 +285,7 @@ function tokenized<S extends { light: { palette: object }; dark: { palette: obje
   if (!tokens) return schemes;
   return {
     ...schemes,
-    light: { ...schemes.light, palette: withTokens(schemes.light.palette, tokens.light) },
-    dark: { ...schemes.dark, palette: withTokens(schemes.dark.palette, tokens.dark) }
+    light: { ...schemes.light, palette: withTokens(schemes.light.palette, tokens.light, [tokens.dark?.accents, tokens.accents]) },
+    dark: { ...schemes.dark, palette: withTokens(schemes.dark.palette, tokens.dark, [tokens.light?.accents, tokens.accents]) }
   };
 }

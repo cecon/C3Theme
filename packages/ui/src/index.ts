@@ -11,6 +11,7 @@ export type { Tone } from './theme/soft';
 export { visuallyHidden } from './theme/visuallyHidden';
 export type { BrandColor, C3ThemeOptions, Look } from './theme/createC3Theme';
 export type { C3SchemeTokens, C3Tokens } from './theme/tokens';
+export type { AccentColor, AccentToken, AccentTokens } from './theme/accents';
 export { ANGLE, ANGLE_FIELD_HEIGHT } from './theme/angle';
 export { C3_FIELD_HEIGHT } from './theme/fieldSize';
 export type { FieldSize, FieldHeights } from './theme/fieldSize';
