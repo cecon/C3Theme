@@ -100,6 +100,11 @@ export const SEED: MemorySeed = {
     demonstrativo: DEMONSTRATIVO,
     boleto: BOLETOS,
     entrega: ENTREGAS,
+    // o que a consulta do sistema devolveria: o saldo atual de cada produto do kardex
+    posicao_estoque: [
+      { id: '1', produto: '1', saldo: 36 },
+      { id: '2', produto: '2', saldo: 25 }
+    ],
     orcamento: [{ id: '1', conta: '3', ano: 2026, mes_01: '0.00', mes_02: null, mes_03: null }],
     fatura: faturas,
     tarefa: tarefas,

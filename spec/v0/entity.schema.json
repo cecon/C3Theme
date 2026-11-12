@@ -536,6 +536,11 @@
                         "type": "boolean",
                         "description": "O valor vira link (cor primária) que abre o registro, como o número da fatura."
                       },
+                      "href": {
+                        "type": "string",
+                        "pattern": "^/(?!/)",
+                        "description": "O valor vira link para outra tela do próprio app (começa com /), montado pelos campos da linha: '/estoque_movimentos?f.produto_id={produto_id}&f.almoxarifado_id={almoxarifado_id}'. Sem ida ao servidor; serve à consulta do sistema, cuja linha não abre sozinha. Campo vazio na linha: o valor fica sem link."
+                      },
                       "secondary": {
                         "$ref": "#/$defs/identifier",
                         "description": "Campo mostrado numa segunda linha, menor e apagada, embaixo do valor (e-mail embaixo do nome)."

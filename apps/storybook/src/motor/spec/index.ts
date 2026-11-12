@@ -7,6 +7,7 @@ import cliente from './cliente.json';
 import contaContabil from './conta_contabil.json';
 import orcadoRealizado from './orcado_realizado.json';
 import orcamento from './orcamento.json';
+import posicaoEstoque from './posicao_estoque.json';
 import demonstrativo from './demonstrativo.json';
 import boleto from './boleto.json';
 import configuracaoLoja from './configuracao_loja.json';
@@ -46,5 +47,6 @@ export const ENTITIES = [
   orcamento,
   demonstrativo,
   boleto,
-  entrega
+  entrega,
+  posicaoEstoque
 ] as unknown as EntityDef[];

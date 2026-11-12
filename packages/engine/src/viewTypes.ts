@@ -72,6 +72,8 @@ export type ColumnDef =
       label?: Text;
       /** O valor vira link que abre o registro. */
       link?: boolean;
+      /** O valor vira link para outra tela do app, com `{campo}` da linha: `/estoque?f.produto={produto_id}` (#69). */
+      href?: string;
       /** Segunda linha, menor e apagada (e-mail embaixo do nome). */
       secondary?: string;
       /** Emendados com " - " (cidade e UF). */

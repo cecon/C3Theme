@@ -62,3 +62,12 @@ test('prévia do cupom em texto pré-formatado: espaços e alinhamento preservad
   await page.getByRole('button', { name: 'Imprimir relação' }).last().click();
   await expect(page.getByText('Relação enviada para a impressora.')).toBeVisible();
 });
+
+test('consulta do sistema com href: o produto leva ao kardex filtrado por ele (#69)', async ({ page }) => {
+  await page.goto(story('layout-shell-pelo-motor--posicao-para-kardex'));
+  await page.getByRole('link', { name: 'Café torrado 500 g' }).click();
+  await expect(page.getByRole('button', { name: 'Adicionar movimento de estoque' })).toBeVisible();
+  await expect(page.getByText('Compra NF 1201')).toBeVisible();
+  // o filtro do produto veio do endereço: o feijão (produto 2) não aparece
+  await expect(page.getByText('Compra NF 1207')).toHaveCount(0);
+});

@@ -22,7 +22,8 @@
     "orcamento",
     "demonstrativo",
     "boleto",
-    "entrega"
+    "entrega",
+    "posicao_estoque"
   ],
   "layout": {
     "orientation": "vertical",
