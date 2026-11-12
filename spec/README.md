@@ -1,5 +1,32 @@
 # Spec do motor C3 (v0, rascunho)
 
+## Estado público do sistema (`app.status`)
+
+O motor monta as telas de manutenção e lançamento pelo `app.json`, sem página registrada:
+
+```json
+{
+  "status": {
+    "mode": "maintenance",
+    "message": "Estamos atualizando o sistema.",
+    "until": "2026-12-01T12:00:00-03:00"
+  }
+}
+```
+
+`mode` aceita `maintenance` (Em manutenção) ou `comingSoon` (Em breve). `title` e `message` aceitam texto literal
+ou `{ "id": "...", "defaultMessage": "..." }`. `until` é opcional, uma data e hora com fuso; a shell a formata no
+idioma do usuário. É previsão, não agenda automática: remova `status` para liberar o sistema.
+
+O estado é público em `GET /_meta/login`, ao lado de `name` e `auth`, nos backends Rust e Node. Com autenticação,
+a shell mostra a tela antes de validar a sessão e preserva o token guardado; sem autenticação, lê `/_meta/app` e
+não carrega as entidades enquanto há `status`. O campo não contém informação privada e **não bloqueia a API**:
+o sistema mantém as regras de autorização e indisponibilidade do seu backend.
+
+Falhas inesperadas de renderização na shell e nas rotas usam a tela padrão 500, em tela cheia, com Tentar de novo.
+A mensagem técnica do erro não é exibida ao usuário. As histórias “Estado do sistema pelo motor” demonstram os dois
+estados usando o mesmo contrato HTTP.
+
 A shell (`@c3theme/ui` + `@c3theme/engine`) não tem telas próprias: ela lê a estrutura do sistema por HTTP e renderiza layout, menu e CRUDs a partir de JSON. Cada sistema (backend) é dono do seu banco e das suas migrations e só precisa cumprir este contrato.
 
 ```
@@ -1050,14 +1077,14 @@ O assistente de IA pode pôr telas dentro da resposta (`Message.ui` do `@c3theme
 }
 ```
 
-| `kind`      | O que é                                                                                                  | Para onde vai                                                                                                                                                                                       |
-| ----------- | -------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `c3.form`   | Campos avulsos (mesmas regras do input de ação, sem `writeOnly` e sem `file`)                            | Os valores voltam ao assistente; o backend confere com `Engine::check_agent_answer`                                                                                                                 |
-| `c3.record` | Rascunho de registro: novo, ou alteração com `id` (só os campos que mudam, com o valor de antes na tela) | `POST`/`PATCH /{entity}`; o assistente recebe `{ id, title }`. "Desfazer" por 30 s apaga o novo ou volta os campos, conferido pela versão no servidor (ver [Versão e Desfazer](#versão-e-desfazer)) |
-| `c3.action` | Rodar uma ação do registro, com o input preenchido. `tone: danger` pede um segundo clique                | `POST /{entity}/{id}/_actions/{action}`; o assistente recebe a mensagem                                                                                                                             |
-| `c3.tool`   | Ferramenta que o agente quer rodar, com os `args` para conferir e editar antes (`fields` diz como editar cada um). `risk: high` pede segundo clique e nunca oferece "sempre permitir" | Volta ao assistente: `accept` com `{ args, edited, always? }` ou `decline` com `{ reason? }`. Quem roda a ferramenta é o agente, com os `args` que voltaram |
-| `c3.plan`   | Plano antes de começar: o usuário desmarca (menos `required`), reordena e reescreve os passos              | Volta ao assistente: `accept` com `{ steps: [{ id, text }], removed, edited }` ou `decline` com `{ reason? }`                                                                                       |
-| `c3.browser`| Navegador interno: a página em que o agente parou (`url` só http(s), `frame` só imagem), o que ele quer fazer (`intent`) e onde vai clicar (`target` em %) | Volta ao assistente: `accept` com `{ decision: "allow" \| "takeover" }` ou `decline` com `{ reason? }`. Com `takeover`, o agente espera o usuário devolver |
+| `kind`       | O que é                                                                                                                                                                               | Para onde vai                                                                                                                                                                                       |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `c3.form`    | Campos avulsos (mesmas regras do input de ação, sem `writeOnly` e sem `file`)                                                                                                         | Os valores voltam ao assistente; o backend confere com `Engine::check_agent_answer`                                                                                                                 |
+| `c3.record`  | Rascunho de registro: novo, ou alteração com `id` (só os campos que mudam, com o valor de antes na tela)                                                                              | `POST`/`PATCH /{entity}`; o assistente recebe `{ id, title }`. "Desfazer" por 30 s apaga o novo ou volta os campos, conferido pela versão no servidor (ver [Versão e Desfazer](#versão-e-desfazer)) |
+| `c3.action`  | Rodar uma ação do registro, com o input preenchido. `tone: danger` pede um segundo clique                                                                                             | `POST /{entity}/{id}/_actions/{action}`; o assistente recebe a mensagem                                                                                                                             |
+| `c3.tool`    | Ferramenta que o agente quer rodar, com os `args` para conferir e editar antes (`fields` diz como editar cada um). `risk: high` pede segundo clique e nunca oferece "sempre permitir" | Volta ao assistente: `accept` com `{ args, edited, always? }` ou `decline` com `{ reason? }`. Quem roda a ferramenta é o agente, com os `args` que voltaram                                         |
+| `c3.plan`    | Plano antes de começar: o usuário desmarca (menos `required`), reordena e reescreve os passos                                                                                         | Volta ao assistente: `accept` com `{ steps: [{ id, text }], removed, edited }` ou `decline` com `{ reason? }`                                                                                       |
+| `c3.browser` | Navegador interno: a página em que o agente parou (`url` só http(s), `frame` só imagem), o que ele quer fazer (`intent`) e onde vai clicar (`target` em %)                            | Volta ao assistente: `accept` com `{ decision: "allow" \| "takeover" }` ou `decline` com `{ reason? }`. Com `takeover`, o agente espera o usuário devolver                                          |
 
 - **Respostas** (`ChatTransport.answerUi`): `accept`, `decline`, `cancel` (as do MCP elicitation e do AG-UI) e `undo`. Estado da parte: `pending`, `submitted`, `declined`, `cancelled`, `expired` (`expiresAt`), `undone`.
 - **Uma pendente por conversa** (docs/chat-agentico.md, 13.1): parte nova fecha a que estava pendente como `cancelled` com `reason: "superseded"`, avisada pelo evento `{ type: 'ui.cancel', partId, reason }` (`superseded`, `agent` quando o assistente desiste, `expired`). A mensagem que o usuário digita leva `pendingPart` (`messageId`, `partId`, `kind`, `version`) para o assistente decidir se mantém a parte (não manda nada) ou a cancela (`ui.cancel`). Responder a parte que não está pendente, ou a uma `version` velha, devolve **409**, e o card diz que foi substituída. No c3-engine: `supersede_agent_parts(&mut parts)` depois de acrescentar a parte nova (devolve os ids para o `ui.cancel`) e `check_agent_reply(&part, action, version)` antes de aceitar a resposta.

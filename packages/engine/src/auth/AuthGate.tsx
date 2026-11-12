@@ -12,6 +12,7 @@ import type { C3Fetch } from '../transport';
 import type { RouterMode } from '../router';
 import type { AuthPort } from './port';
 import { AuthSession, AuthSessionProvider } from './session';
+import { AppStatus, ShellBoundary } from '../status/AppStatus';
 
 interface AuthGateProps {
   port: AuthPort;
@@ -32,7 +33,7 @@ export default function AuthGate({ port, apiUrl, basename, router, transport, th
   const frame = (name: string, body: ReactNode) => (
     <C3ThemeProvider {...theme} loadMessages={loadMessages} branding={{ name, homePath: '/', ...theme?.branding }}>
       {desktopHost && <WindowDragBar desktop={{ platform: desktopHost.platform }} />}
-      {body}
+      <ShellBoundary>{body}</ShellBoundary>
       <Notifier />
     </C3ThemeProvider>
   );
@@ -61,7 +62,13 @@ export default function AuthGate({ port, apiUrl, basename, router, transport, th
         )
       }
     >
-      {(session) => (session.user ? children(session) : frame(session.appName, <AuthScreens basename={basename} router={router} />))}
+      {(session) =>
+        session.status
+          ? frame(session.appName, <AppStatus status={session.status} />)
+          : session.user
+            ? children(session)
+            : frame(session.appName, <AuthScreens basename={basename} router={router} />)
+      }
     </AuthSessionProvider>
   );
 }

@@ -2,6 +2,7 @@ import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, 
 
 import { browserFetch, type C3Fetch } from '../transport';
 import type { AuthConfig, AuthPort, AuthUser } from './port';
+import type { AppStatusDef } from '../status/AppStatus';
 
 const TOKEN_KEY = 'c3.token';
 
@@ -28,6 +29,7 @@ export interface AuthSession {
   config: AuthConfig;
   /** Nome do sistema, de GET /_meta/login (a tela de entrada vem antes do /_meta/app). */
   appName: string;
+  status?: AppStatusDef;
   user: AuthUser | null;
   token: string | null;
   login(identifier: string, password: string): Promise<void>;
@@ -69,7 +71,7 @@ export function AuthSessionProvider({
   failed: (message: string, retry: () => void) => ReactNode;
   children: (session: AuthSession) => ReactNode;
 }) {
-  const [meta, setMeta] = useState<{ name: string; auth: AuthConfig }>();
+  const [meta, setMeta] = useState<{ name: string; auth: AuthConfig; status?: AppStatusDef }>();
   const [user, setUserState] = useState<AuthUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
@@ -85,10 +87,10 @@ export function AuthSessionProvider({
       // backend sem a rota: login com o padrão, já que o sistema passou a porta
       const data = res.ok ? (await res.json()).data : { name: '', auth: null };
       const saved = tokenStore.get();
-      const me = saved ? await port.me(saved).catch(() => null) : null;
-      if (!me) tokenStore.set(null);
+      const me = saved && !data.status ? await port.me(saved).catch(() => null) : null;
+      if (!me && !data.status) tokenStore.set(null);
       if (!active) return;
-      setMeta({ name: data.name ?? '', auth: data.auth ?? {} });
+      setMeta({ name: data.name ?? '', auth: data.auth ?? {}, status: data.status ?? undefined });
       setUserState(me);
       setToken(me ? saved : null);
       setReady(true);
@@ -117,7 +119,7 @@ export function AuthSessionProvider({
   }, [port]);
 
   const session = useMemo<AuthSession | undefined>(
-    () => meta && { port, config: meta.auth, appName: meta.name, user, token, login, logout, setUser: setUserState },
+    () => meta && { port, config: meta.auth, appName: meta.name, status: meta.status, user, token, login, logout, setUser: setUserState },
     [meta, port, user, token, login, logout]
   );
 

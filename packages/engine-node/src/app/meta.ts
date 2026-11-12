@@ -29,7 +29,7 @@ export async function metaApp(engine: Engine, req: EngineRequest): Promise<Rec> 
 /** O que a tela de login precisa antes de haver usuário: o nome do sistema e `auth`. Rota pública. */
 export function metaLogin(engine: Engine): Rec {
   const raw = engine.app.raw;
-  return { name: raw.name ?? null, auth: raw.auth ?? null };
+  return { name: raw.name ?? null, auth: raw.auth ?? null, ...(raw.status !== undefined ? { status: raw.status } : {}) };
 }
 
 /** `{ data, capabilities }`: o JSON da entidade e o que o usuário pode fazer nela. */

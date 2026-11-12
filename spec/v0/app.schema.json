@@ -23,6 +23,22 @@
       "pattern": "^/",
       "description": "Rota aberta após o login. Padrão: primeira rota do menu."
     },
+    "status": {
+      "type": "object",
+      "required": ["mode"],
+      "additionalProperties": false,
+      "description": "Tela pública em vez do login e das páginas. Não bloqueia a API: autorização e manutenção de serviços continuam sendo responsabilidade do sistema. Até a remoção deste objeto, a tela permanece ativa; until é previsão, não agenda automática.",
+      "properties": {
+        "mode": { "enum": ["maintenance", "comingSoon"] },
+        "title": { "$ref": "#/$defs/text" },
+        "message": { "$ref": "#/$defs/text" },
+        "until": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Previsão de retorno ou data de lançamento com fuso, exibida no idioma do usuário."
+        }
+      }
+    },
     "entities": {
       "type": "array",
       "minItems": 1,

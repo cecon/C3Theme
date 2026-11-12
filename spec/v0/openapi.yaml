@@ -37,7 +37,7 @@ paths:
     get:
       summary: Nome do sistema e configuração da tela de login (público, sem token)
       description: >-
-        A shell lê isto antes de haver usuário para montar a tela de entrada. Só traz 'name' e 'auth' do app.json;
+        A shell lê isto antes de haver usuário para montar a tela de entrada. Só traz 'name', 'auth' e o 'status' opcional do app.json;
         o resto do app continua em /_meta/app, que exige token. O sistema precisa deixar esta rota fora da autenticação.
       operationId: getLogin
       security: []
@@ -55,6 +55,7 @@ paths:
                     required: [name, auth]
                     properties:
                       name: { type: string }
+                      status: { $ref: 'app.schema.json#/properties/status' }
                       auth:
                         oneOf:
                           - { $ref: 'app.schema.json#/properties/auth' }
