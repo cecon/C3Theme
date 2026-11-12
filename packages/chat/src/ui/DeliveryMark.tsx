@@ -16,9 +16,9 @@ export default function DeliveryMark({ delivery }: { delivery: MessageDelivery }
       direction="row"
       spacing={0.5}
       role="status"
-      sx={{ alignItems: 'center', color: failed ? 'error.main' : 'text.secondary', minWidth: 0, maxWidth: '100%', px: 0.5 }}
+      sx={{ alignItems: 'flex-start', color: failed ? 'error.main' : 'text.secondary', minWidth: 0, maxWidth: '100%', px: 0.5 }}
     >
-      <Box aria-hidden sx={{ display: 'inline-flex', flexShrink: 0, '& svg + svg': { ml: '-5px' } }}>
+      <Box aria-hidden sx={{ display: 'inline-flex', flexShrink: 0, mt: '3px', '& svg + svg': { ml: '-5px' } }}>
         {failed ? (
           <Warning2 size={14} variant="Bold" />
         ) : (
