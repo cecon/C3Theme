@@ -3,6 +3,7 @@
   "specVersion": "0",
   "name": "Storybook pelo motor",
   "entities": [
+    "agente",
     "produto",
     "fatura",
     "loja",

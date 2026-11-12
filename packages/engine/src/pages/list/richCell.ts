@@ -22,9 +22,11 @@ export function avatarTone(id: string | undefined) {
 export const joined = (parts: string[]) => parts.filter((p) => p !== '').join(' - ');
 
 /** `avatar` da coluna em forma única: campo da foto, letras e cor. */
-export function avatarSpec(avatar: boolean | string | { photo?: string; letters?: 1 | 2; tone?: 'auto' | 'neutral' } | undefined) {
+export function avatarSpec(
+  avatar: boolean | string | import('../../viewTypes').ColumnAvatar | undefined
+): (import('../../viewTypes').ColumnAvatar & { letters: 1 | 2; tone: 'auto' | 'neutral' }) | undefined {
   if (!avatar) return undefined;
   if (avatar === true) return { letters: 2 as const, tone: 'auto' as const };
   if (typeof avatar === 'string') return { photo: avatar, letters: 2 as const, tone: 'auto' as const };
-  return { photo: avatar.photo, letters: avatar.letters ?? 2, tone: avatar.tone ?? 'auto' };
+  return { photo: avatar.photo, letters: avatar.letters ?? 2, tone: avatar.tone ?? 'auto', ...(avatar.color && { color: avatar.color }) };
 }

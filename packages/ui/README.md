@@ -14,6 +14,35 @@ Peers obrigatórios: `react` e `react-dom` 19, `@mui/material` e `@mui/system` 9
 `@emotion/styled` e `@emotion/cache` 11, `react-intl` 12 e `react-router` 8.
 Opcional: `@tanstack/react-table` 8, só para quem importa `@c3theme/ui/table`.
 
+## Cores nomeadas do app
+
+`tokens.accents` declara cores comuns; `tokens.light.accents` e `tokens.dark.accents` sobrescrevem por modo.
+Cada entrada tem `start` e `end` opcional. Aceita sRGB explícito em `#hex`, `rgb()` e `hsl()`, incluindo alpha.
+Nomes ou cores inválidos são ignorados com aviso; um override inválido mantém a entrada válida anterior.
+
+```tsx
+<C3ThemeProvider
+  tokens={{
+    accents: { forge: { start: '#e04815', end: '#9f2db9' } },
+    dark: { accents: { forge: { start: '#f29b59', end: '#f7c5e9' } } }
+  }}
+>
+  <SoftAvatar color="accent:forge">AM</SoftAvatar>
+  <StatusChip color="accent:forge" label="Desenvolvimento" />
+</C3ThemeProvider>
+```
+
+A cor nomeada tem precedência sobre `tone`/`look`. Nome inexistente avisa uma vez e volta ao tom normal.
+Alpha é composto sobre o `paper` do modo; a saída do gradiente é opaca. Texto preto só é escolhido quando
+o limite inferior de todos os canais garante contraste; nos demais casos, os extremos são escurecidos
+apenas o necessário para texto branco. A interpolação é explicitamente sRGB, com margem de 4,55:1 para
+texto normal em todo o gradiente, não apenas nas pontas. Navegador sem essa interpolação usa o início
+opaco como fundo. Isso atende o contraste de texto da [WCAG 2.2, 1.4.3](https://www.w3.org/TR/WCAG22/#contrast-minimum),
+sem substituir a verificação de acessibilidade do aplicativo.
+
+O motor declara a cor no avatar ou selo da lista; veja `spec/README.md`. Atualize `@c3theme/ui` e
+`@c3theme/engine` juntos na mesma revisão do repositório: um dist antigo do UI não conhece essas props.
+
 ## Exemplo mínimo
 
 ```tsx

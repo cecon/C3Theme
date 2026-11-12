@@ -1,0 +1,27 @@
+{
+  "$schema": "../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "agente",
+  "label": { "singular": "Agente", "plural": "Agentes" },
+  "titleField": "nome",
+  "fields": [
+    { "name": "nome", "type": "string", "label": "Nome" },
+    {
+      "name": "cargo",
+      "type": "enum",
+      "label": "Cargo",
+      "options": [
+        { "value": "forge", "label": "Desenvolvimento" },
+        { "value": "sage", "label": "Pesquisa" }
+      ]
+    }
+  ],
+  "views": {
+    "list": {
+      "columns": [
+        { "field": "nome", "avatar": { "color": { "field": "cargo", "map": { "forge": "accent:forge", "sage": "accent:sage" } } } },
+        { "field": "cargo", "color": { "field": "cargo", "map": { "forge": "accent:forge", "sage": "accent:sage" } } }
+      ]
+    }
+  }
+}
