@@ -118,9 +118,13 @@ describe('ChatPanel com states', () => {
     expect(screen.queryByText('Quanto vendi hoje?')).toBeNull();
   });
 
-  it('quando a rede volta, a conversa que abriu sem rede abre de novo sozinha', async () => {
-    mount(<ChatPanel def={def} />, failing(new ApiError(0, 'network', 'x'), [old]));
+  it('quando a rede volta, a conversa que abriu sem rede abre de novo sozinha (uma vez)', async () => {
+    const t = failing(new ApiError(0, 'network', 'x'), [old]);
+    const load = vi.spyOn(t, 'loadMessages');
+    mount(<ChatPanel def={def} />, t);
     expect(await screen.findByText('Você está sem rede.')).toBeTruthy();
+    await new Promise((r) => setTimeout(r, 30));
+    expect(load).toHaveBeenCalledTimes(1);
     act(() => void window.dispatchEvent(new Event('offline')));
     act(() => void window.dispatchEvent(new Event('online')));
     expect(await screen.findByText('Resposta antiga')).toBeTruthy();
@@ -171,6 +175,34 @@ describe('ChatPanel com states', () => {
     fireEvent.click(within(banner).getByRole('button', { name: 'Carregar de novo' }));
     await vi.waitFor(() => expect(loads).toBe(3));
     expect(screen.getByText('Resposta antiga')).toBeTruthy();
+  });
+
+  it('a rede que volta sem falha de rede não reabre a conversa', async () => {
+    const t = memoryTransport([old]).transport;
+    const load = vi.spyOn(t, 'loadMessages');
+    mount(<ChatPanel def={def} />, t);
+    expect(await screen.findByText('Resposta antiga')).toBeTruthy();
+    const before = load.mock.calls.length;
+    act(() => void window.dispatchEvent(new Event('offline')));
+    act(() => void window.dispatchEvent(new Event('online')));
+    await new Promise((r) => setTimeout(r, 30));
+    expect(load.mock.calls.length).toBe(before);
+  });
+
+  it('"Tentar de novo" sem histórico tira o erro e mostra o carregando enquanto abre', async () => {
+    const t = memoryTransport().transport;
+    let calls = 0;
+    const loadMessages: ChatTransport['loadMessages'] = () =>
+      calls++ === 0 ? Promise.reject(new ApiError(503, 'unavailable', 'x')) : new Promise(() => {});
+    mount(<ChatPanel def={def} />, { ...t, loadMessages });
+    fireEvent.click(await screen.findByRole('button', { name: 'Carregar de novo' }));
+    expect(await screen.findByText('Abrindo a conversa…')).toBeTruthy();
+    expect(screen.queryByText('O servidor não respondeu.')).toBeNull();
+  });
+
+  it('com states e sem chat no backend, avisa que o sistema não tem assistente', () => {
+    mount(<ChatPanel def={def} />);
+    expect(screen.getByText('Este sistema não tem assistente.')).toBeTruthy();
   });
 
   it('sem states, 403 ao abrir não cobre o painel', async () => {

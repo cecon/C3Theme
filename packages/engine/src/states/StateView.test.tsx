@@ -56,4 +56,44 @@ describe('StateView', () => {
     view({ states: { offline: { text: 'Sem rede', keeps: ['Ler', 'Copiar'] } }, state: 'offline', dense: true });
     expect(screen.getAllByRole('listitem').map((li) => li.textContent)).toEqual(['Ler', 'Copiar']);
   });
+
+  it('faixa: offline avisa, erro é erro e o resto informa, cada um com o seu ícone', () => {
+    const states = { offline: { text: 'Sem rede' }, error: { text: 'Falhou' }, empty: { text: 'Vazio' } };
+    const severity = (state: 'offline' | 'error' | 'empty') => {
+      view({ states, state, banner: true });
+      const alert = screen.getByRole('alert');
+      const cls = alert.className;
+      const icon = alert.querySelector('.MuiAlert-icon svg');
+      cleanup();
+      return [cls.match(/MuiAlert-color(\w+)/)?.[1], !!icon];
+    };
+    expect(severity('offline')).toEqual(['Warning', true]);
+    expect(severity('error')).toEqual(['Error', true]);
+    expect(severity('empty')[0]).toBe('Info');
+  });
+
+  it('faixa de erro: "Tentar de novo" discreto, com o texto de apoio abaixo do título', () => {
+    const onRetry = vi.fn();
+    view({ states: { offline: { text: 'Sem rede', keeps: ['Ler'] } }, state: 'offline', banner: true });
+    expect(screen.getByRole('alert').textContent).toBe('Sem redeLer');
+    cleanup();
+    view({ states: { error: { text: 'Falhou', retry: 'De novo' } }, state: 'error', banner: true, onRetry });
+    const button = screen.getByRole('button', { name: 'De novo' });
+    expect(button.className).toContain('MuiButton-text');
+    fireEvent.click(button);
+    expect(onRetry).toHaveBeenCalled();
+  });
+
+  it('o que continua sem como conceder fica colado ao título; sem lista, nada de lista', () => {
+    view({ states: { offline: { text: 'Sem rede', keeps: [] } }, state: 'offline' });
+    expect(screen.queryByRole('list')).toBeNull();
+    expect(document.querySelector('svg')).toBeTruthy();
+    cleanup();
+    view({
+      states: { forbidden: { text: 'Negado', howTo: 'Peça', action: { label: 'Pedir', href: 'https://x.dev/' } } },
+      state: 'forbidden'
+    });
+    expect(screen.getByRole('link', { name: 'Pedir' }).getAttribute('href')).toBe('https://x.dev/');
+    expect(screen.queryByRole('list')).toBeNull();
+  });
 });

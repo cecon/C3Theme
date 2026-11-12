@@ -1,9 +1,9 @@
-// Se o navegador diz que há rede (`navigator.onLine` e os eventos online/offline). Fora do navegador, sempre online.
+// Se o navegador diz que há rede (`navigator.onLine` e os eventos online/offline).
 
 import { useEffect, useState } from 'react';
 
 export default function useOnline(): boolean {
-  const [online, setOnline] = useState(() => typeof navigator === 'undefined' || navigator.onLine !== false);
+  const [online, setOnline] = useState(() => navigator.onLine);
   useEffect(() => {
     const on = () => setOnline(true);
     const off = () => setOnline(false);

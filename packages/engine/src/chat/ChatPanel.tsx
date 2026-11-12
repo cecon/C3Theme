@@ -33,6 +33,14 @@ export interface ChatPanelProps {
 }
 
 const GUEST: Author = { id: 'me', name: 'Você' };
+// estilos do cabeçalho de quando o painel é coberto (o mesmo do AssistantPanel) e da conversa vazia declarada
+const FILL_SX = { height: '100%' } as const;
+const HEADER_SX = { alignItems: 'center', px: 2, py: 1.25, minHeight: 56, borderBottom: 1, borderColor: 'divider' } as const;
+const TITLE_SX = { alignItems: 'center', flex: 1, minWidth: 0, color: 'primary.main' } as const;
+const TITLE_TEXT_SX = { color: 'text.primary' } as const;
+const SLOT_SX = { alignItems: 'center', mt: 4 } as const;
+const SUGGESTIONS_SX = { flexWrap: 'wrap', justifyContent: 'center', gap: 1, px: 1 } as const;
+const CHIP_SX = { height: 'auto', py: 0.5, whiteSpace: 'normal' } as const;
 
 /** Avisa quando o backend não tem chat (404 ao abrir a conversa), para o painel dizer isso em vez de ficar vazio. */
 export function watchMissing(transport: ChatTransport, onMissing: () => void): ChatTransport {
@@ -111,13 +119,13 @@ function Conversation({ transport, view, def, onClose, failure, onReload, onClea
   const renderers = useMemo(() => chatRenderers(def, agentUiRenderers) as UiRenderers, [def]);
   const states = def.states;
   const shown = chatStates(states, { loading: chat.loading === 'initial', failure, online, count: chat.messages.length });
-  if (states && shown.cover)
+  if (shown.cover)
     return (
-      <Stack sx={{ height: '100%' }}>
-        <Stack direction="row" sx={{ alignItems: 'center', px: 2, py: 1.25, minHeight: 56, borderBottom: 1, borderColor: 'divider' }}>
-          <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flex: 1, minWidth: 0, color: 'primary.main' }}>
+      <Stack sx={FILL_SX}>
+        <Stack direction="row" sx={HEADER_SX}>
+          <Stack direction="row" spacing={1} sx={TITLE_SX}>
             <Magicpen size={20} variant="Bulk" />
-            <Typography variant="subtitle1" component="h2" noWrap sx={{ color: 'text.primary' }}>
+            <Typography variant="subtitle1" component="h2" noWrap sx={TITLE_TEXT_SX}>
               {view.title}
             </Typography>
           </Stack>
@@ -155,18 +163,17 @@ function Conversation({ transport, view, def, onClose, failure, onReload, onClea
         composer: { sendKey: view.sendKey, ...(view.placeholder !== undefined && { placeholder: view.placeholder }) },
         onTelemetry: telemetry,
         taskOf: agentTaskOf,
-        ...(states && shown.banner && { banner: <StateView states={states} state={shown.banner} onRetry={retry} banner /> }),
-        ...(states &&
-          shown.slot && {
-            empty: (
-              <Slot
-                chat={chat}
-                view={view}
-                empty={shown.slot === 'empty'}
-                slot={<StateView states={states} state={shown.slot} onRetry={onReload} dense />}
-              />
-            )
-          })
+        ...(shown.banner && { banner: <StateView states={states} state={shown.banner} onRetry={retry} banner /> }),
+        ...(shown.slot && {
+          empty: (
+            <Slot
+              chat={chat}
+              view={view}
+              empty={shown.slot === 'empty'}
+              slot={<StateView states={states} state={shown.slot} onRetry={onReload} dense />}
+            />
+          )
+        })
       }}
     />
   );
@@ -175,18 +182,12 @@ function Conversation({ transport, view, def, onClose, failure, onReload, onClea
 /** A conversa vazia declarada: o estado e, só no vazio, as perguntas prontas que enviam. */
 function Slot({ chat, view, slot, empty }: { chat: AssistantChat; view: ChatView; slot: ReactNode; empty: boolean }) {
   return (
-    <Stack sx={{ alignItems: 'center', mt: 4 }}>
+    <Stack sx={SLOT_SX}>
       {slot}
-      {empty && view.suggestions.length > 0 && (
-        <Stack direction="row" sx={{ flexWrap: 'wrap', justifyContent: 'center', gap: 1, px: 1 }}>
+      {empty && (
+        <Stack direction="row" sx={SUGGESTIONS_SX}>
           {view.suggestions.map((s) => (
-            <Chip
-              key={s}
-              label={s}
-              variant="outlined"
-              onClick={() => chat.send(s)}
-              sx={{ height: 'auto', py: 0.5, whiteSpace: 'normal' }}
-            />
+            <Chip key={s} label={s} variant="outlined" onClick={() => chat.send(s)} sx={CHIP_SX} />
           ))}
         </Stack>
       )}

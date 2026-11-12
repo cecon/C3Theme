@@ -86,5 +86,8 @@ describe('watchFailures', () => {
     const t = watchFailures(transport({ loadMessages: () => Promise.reject(abort) }), seen);
     await expect(t.loadMessages('a', { limit: 1 })).rejects.toBe(abort);
     expect(seen).not.toHaveBeenCalled();
+    const odd = watchFailures(transport({ loadMessages: () => Promise.reject(null) }), seen);
+    await expect(odd.loadMessages('a', { limit: 1 })).rejects.toBeNull();
+    expect(seen).toHaveBeenLastCalledWith('error');
   });
 });
