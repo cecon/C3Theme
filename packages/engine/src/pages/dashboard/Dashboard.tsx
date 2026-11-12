@@ -12,6 +12,8 @@ import { applyFilters, readValues, type FilterValues } from '../../dashboardFilt
 import AlertWidget from './AlertWidget';
 import DashboardFilters from './DashboardFilters';
 import WidgetPanel from './WidgetPanel';
+import { isSummary, type SummaryWidget } from '../../summaryDashboard';
+import SummaryPanel from './SummaryPanel';
 
 /**
  * Painel do app.json (pages[].dashboard): widgets numa grade de 12 colunas, na ordem declarada. Os filtros do painel
@@ -35,7 +37,9 @@ export default function Dashboard({ dashboard }: { dashboard: DashboardDef }) {
     setParams(next, { replace: true });
   };
   // widget de entidade que o usuário não lista (ou que o sistema não carregou) não aparece
-  const widgets = dashboard.widgets.filter((w) => entities[w.entity]?.capabilities.list).map((w) => applyFilters(w, filters, values));
+  const widgets = dashboard.widgets
+    .filter((w) => isSummary(w) || entities[w.entity]?.capabilities.list)
+    .map((w) => (isSummary(w) ? w : applyFilters(w, filters, values)));
   return (
     <>
       {filters.length > 0 && <DashboardFilters filters={filters} values={values} onChange={change} />}
@@ -61,7 +65,11 @@ export default function Dashboard({ dashboard }: { dashboard: DashboardDef }) {
           </Grid>
         ) : null}
         {widgets.map((w, i) =>
-          w.type === 'alert' ? (
+          isSummary(w) ? (
+            <Grid key={i} size={size(w)}>
+              <SummaryPanel widget={w} source={w.source ?? dashboard.source} />
+            </Grid>
+          ) : w.type === 'alert' ? (
             <AlertWidget key={i} widget={w} />
           ) : (
             <Grid key={i} size={size(w)}>
@@ -75,7 +83,7 @@ export default function Dashboard({ dashboard }: { dashboard: DashboardDef }) {
 }
 
 /** KPI com ícone ocupa a linha no celular e meia no tablet; o simples, meia linha. O resto: a linha toda até o desktop. */
-function size(w: Exclude<WidgetDef, { type: 'alert' }>) {
+function size(w: Exclude<WidgetDef, { type: 'alert' }> | SummaryWidget) {
   const lg = widgetWidth(w);
   if (w.type === 'kpi') return w.icon ? { xs: 12, sm: 6, lg } : { xs: 6, lg };
   return { xs: 12, lg };

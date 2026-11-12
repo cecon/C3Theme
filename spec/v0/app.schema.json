@@ -146,6 +146,24 @@
     }
   },
   "$defs": {
+    "summarySource": {
+      "type": "object",
+      "required": [
+        "path"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^/(?!/)[^\\\\#]*$"
+        },
+        "refreshInterval": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3600000
+        }
+      }
+    },
     "chatMessageAction": {
       "type": "object",
       "description": "Ação no menu \"Mais ações\" de uma mensagem do chat (issue #10). Com 'opens', abre uma conversa à parte a partir da mensagem (POST /_chat/{conversa}/_lanes, spec/v0/chat-lanes.yaml); sem 'opens', a shell chama POST /_chat/{conversa}/messages/{mensagem}/_actions/{id} e o sistema decide o que fazer. 'when' filtra em quais mensagens aparece (campo ausente: qualquer valor). Mensagem de sistema, passagem de tarefa, resposta chegando e mensagem ainda enviando nunca têm ações.",
@@ -1061,6 +1079,7 @@
       "additionalProperties": false,
       "description": "Painel montado pela shell a partir do contrato (GET /{entity}/_aggregate e GET da lista): indicadores, gráficos e listas curtas em uma grade de 12 colunas, na ordem declarada. Tudo respeita escopo, filial ativa e permissões do usuário; widget de entidade que o usuário não lista não aparece. Filtros do painel (filters) ficam na barra do topo e entram no recorte de cada widget que os liga (bind).",
       "properties": {
+        "source": { "$ref": "#/$defs/summarySource" },
         "widgets": {
           "type": "array",
           "minItems": 1,
@@ -1108,6 +1127,304 @@
     },
     "widget": {
       "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "title",
+            "value"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "title": {
+              "$ref": "#/$defs/text"
+            },
+            "source": {
+              "$ref": "#/$defs/summarySource"
+            },
+            "width": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12
+            },
+            "type": {
+              "const": "summary-kpi"
+            },
+            "value": {
+              "type": "string",
+              "minLength": 1
+            },
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1
+            },
+            "progress": {
+              "type": "object",
+              "required": [
+                "label",
+                "limit"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "label": {
+                  "$ref": "#/$defs/text"
+                },
+                "limit": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "fields": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "label",
+                  "field"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "label": {
+                    "$ref": "#/$defs/text"
+                  },
+                  "field": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "format": {
+                    "enum": [
+                      "number",
+                      "date",
+                      "datetime",
+                      "currency",
+                      "text"
+                    ]
+                  },
+                  "currencyField": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "title",
+            "items",
+            "label",
+            "value"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "title": {
+              "$ref": "#/$defs/text"
+            },
+            "source": {
+              "$ref": "#/$defs/summarySource"
+            },
+            "width": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12
+            },
+            "type": {
+              "const": "summary-ranking"
+            },
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1
+            },
+            "value": {
+              "type": "string",
+              "minLength": 1
+            },
+            "share": {
+              "type": "string",
+              "minLength": 1
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "title",
+            "fields",
+            "state",
+            "states"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "title": {
+              "$ref": "#/$defs/text"
+            },
+            "source": {
+              "$ref": "#/$defs/summarySource"
+            },
+            "width": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12
+            },
+            "type": {
+              "const": "summary-object"
+            },
+            "fields": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "label",
+                  "field"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "label": {
+                    "$ref": "#/$defs/text"
+                  },
+                  "field": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "format": {
+                    "enum": [
+                      "number",
+                      "date",
+                      "datetime",
+                      "currency",
+                      "text"
+                    ]
+                  },
+                  "currencyField": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            },
+            "state": {
+              "type": "string",
+              "minLength": 1
+            },
+            "states": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "required": [
+                  "label"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "label": {
+                    "$ref": "#/$defs/text"
+                  },
+                  "warning": {
+                    "$ref": "#/$defs/text"
+                  }
+                }
+              }
+            },
+            "message": {
+              "type": "string",
+              "minLength": 1
+            },
+            "warnings": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "field",
+                  "equals",
+                  "message"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "field": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "equals": {
+                    "type": [
+                      "string",
+                      "boolean"
+                    ]
+                  },
+                  "message": {
+                    "$ref": "#/$defs/text"
+                  }
+                }
+              }
+            },
+            "progress": {
+              "type": "object",
+              "required": [
+                "label",
+                "value",
+                "limit"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "label": {
+                  "$ref": "#/$defs/text"
+                },
+                "value": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "limit": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "actions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "label",
+                  "path"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "label": {
+                    "$ref": "#/$defs/text"
+                  },
+                  "path": {
+                    "type": "string",
+                    "pattern": "^/(?!/)[^\\\\#]*$"
+                  },
+                  "disabled": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "instruction": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          }
+        },
         {
           "type": "object",
           "description": "Grade de atividade (heatmap): uma coluna por semana e uma linha por dia da semana, mais forte quanto maior o valor do dia. Usa o _aggregate do chart com interval day. Com os dados de um ano só (filtro de período 'year', por exemplo), mostra janeiro a dezembro; senão, do primeiro ao último dia que veio. Clique no dia abre a lista daquele dia.",

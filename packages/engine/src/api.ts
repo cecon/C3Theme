@@ -46,6 +46,8 @@ export interface WriteOptions {
 export const isStale = (e: unknown) => e instanceof ApiError && e.status === 412;
 
 export interface C3Client {
+  /** Documento de resumo (GET) e ações declaradas (POST), relativos à API autenticada. */
+  summary?(path: string, method?: 'GET' | 'POST'): Promise<unknown>;
   app(): Promise<AppDef>;
   /** GET /_meta/app inteiro: a spec e, para cada página com `permission`, se o usuário abre na filial do cabeçalho. */
   meta(): Promise<{ app: AppDef; pageAccess: Record<string, boolean> }>;
@@ -160,6 +162,10 @@ export function createClient(
   const e = encodeURIComponent;
 
   return {
+    summary: (path, method = 'GET') => {
+      if (!/^\/(?!\/)/.test(path) || path.includes('\\') || path.includes('#')) throw new Error('Caminho de resumo inválido.');
+      return call(method, path);
+    },
     app: () => call<{ data: AppDef }>('GET', '/_meta/app').then((r) => r.data),
     meta: () =>
       call<{ data: AppDef; pages?: Record<string, boolean> }>('GET', '/_meta/app').then((r) => ({

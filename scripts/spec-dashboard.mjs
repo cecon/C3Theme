@@ -24,6 +24,10 @@ export function checkDashboards(app, entities, checkCondition, errors) {
     }
     for (const [i, w] of (page.dashboard?.widgets ?? []).entries()) {
       const where = `app.json página '${page.path}' widget ${i + 1} (${w.type})`;
+      if (w.type.startsWith('summary-')) {
+        if (!w.source && !page.dashboard.source) errors.push(`${where}: source é obrigatório no widget ou no painel`);
+        continue;
+      }
       const entity = entities.get(w.entity)?.entity;
       if (!app.entities?.includes(w.entity) || !entity) {
         errors.push(`${where}: entidade '${w.entity}' fora de app.entities`);

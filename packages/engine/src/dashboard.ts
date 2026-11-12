@@ -4,6 +4,7 @@ import { formatAmount } from './format';
 import type { Condition, EntityDef, FieldDef, Text, Tone } from './types';
 import type { DashboardFilter } from './dashboardFilters';
 import { viewPath } from './views';
+import type { SummarySource, SummaryWidget } from './summaryDashboard';
 
 export type Measure = 'count' | `sum:${string}`;
 export type Interval = 'day' | 'month' | 'year';
@@ -112,11 +113,13 @@ export interface HeatmapWidget extends WidgetBase {
 }
 export type WidgetDef = KpiWidget | ChartWidget | ListWidget | AlertWidget | RankingWidget | FeedWidget | HeatmapWidget;
 export interface DashboardDef {
+  /** Fonte padrão para widgets summary-*. Widgets de entidade continuam independentes. */
+  source?: SummarySource;
   /** Filtros que valem para os widgets que os ligam (`bind`). */
   filters?: DashboardFilter[];
   /** Botões no topo, à direita (atalhos para a lista e para criar). */
   actions?: { label: Text; path: string; icon?: string; variant?: 'contained' | 'outlined' }[];
-  widgets: WidgetDef[];
+  widgets: (WidgetDef | SummaryWidget)[];
 }
 
 /** Um grupo de GET /{entity}/_aggregate. `value` de soma de decimal vem em string, como o campo. */
@@ -141,8 +144,8 @@ export interface AggregateParams {
 
 const DEFAULT_WIDTH = { kpi: 3, chart: 6, list: 6, alert: 12, ranking: 6, feed: 6, heatmap: 12 } as const;
 
-export function widgetWidth(w: WidgetDef): number {
-  return w.width ?? DEFAULT_WIDTH[w.type];
+export function widgetWidth(w: WidgetDef | SummaryWidget): number {
+  return w.width ?? (w.type.startsWith('summary-') ? 6 : DEFAULT_WIDTH[w.type as WidgetDef['type']]);
 }
 
 /** Filtro do widget: o do preset somado (e) ao `where`. */

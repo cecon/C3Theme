@@ -64,6 +64,7 @@ export type { CustomPageProps } from './routes';
 export type * from './types';
 export type { FlowKindDef, FlowKindField, FlowView } from './viewTypes';
 export type { AggregateItem, AggregateParams, DashboardDef, WidgetDef } from './dashboard';
+export type { SummarySource, SummaryWidget, SummaryKpi, SummaryRanking, SummaryObject, SummaryField } from './summaryDashboard';
 // partes de interface do assistente no chat (o agente propõe, o motor grava): `agentUiRenderers` no AssistantPanel
 export { agentUiRenderers, FormPart, RecordPart, ActionPart, checkAction, checkForm, checkRecord } from './agent';
 // telemetria do assistente: `taskOf` do <AssistantPanel> (mesmos entity/op/action da tela, com channel 'chat')
