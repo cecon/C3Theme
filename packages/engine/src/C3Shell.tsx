@@ -28,6 +28,7 @@ import { useAuthSession } from './auth/session';
 import { sessionRoutes } from './auth/sessionUser';
 import type { AppDef } from './types';
 import type { TelemetryPort } from './telemetry';
+import { AppStatus, ShellBoundary } from './status/AppStatus';
 
 export interface C3ShellProps {
   /** Base da API do sistema, ex.: '/api'. */
@@ -151,6 +152,10 @@ function Shell(props: C3ShellProps) {
       // a primeira resposta já traz a permissão das páginas, na filial que foi no cabeçalho
       const sent = branch.current;
       const { app, pageAccess: first } = await client.meta();
+      if (app.status) {
+        if (active) setState({ client, app, entities: {}, components });
+        return;
+      }
       let org: EngineState['org'];
       if (app.organization) {
         // a filial guardada pode ter deixado de valer: pergunta sem cabeçalho e escolhe de novo
@@ -225,27 +230,31 @@ function Shell(props: C3ShellProps) {
       }}
       branding={{ name: state?.app.name ?? '', homePath: state?.app.homePath ?? homePath(state?.app), ...theme?.branding }}
     >
-      {error ? (
-        <Box sx={{ p: 4, maxWidth: 560, mx: 'auto', mt: 8 }}>
-          <Alert
-            severity="error"
-            action={
-              <Button color="inherit" size="small" onClick={() => setAttempt((n) => n + 1)}>
-                Tentar de novo
-              </Button>
-            }
-          >
-            Não foi possível carregar o sistema: {error}
-          </Alert>
-        </Box>
-      ) : router ? (
-        <EngineProvider value={engine!}>
-          <RouterProvider router={router} />
-          {authz.dialog}
-        </EngineProvider>
-      ) : (
-        <AppSkeleton />
-      )}
+      <ShellBoundary>
+        {state?.app.status ? (
+          <AppStatus status={state.app.status} />
+        ) : error ? (
+          <Box sx={{ p: 4, maxWidth: 560, mx: 'auto', mt: 8 }}>
+            <Alert
+              severity="error"
+              action={
+                <Button color="inherit" size="small" onClick={() => setAttempt((n) => n + 1)}>
+                  Tentar de novo
+                </Button>
+              }
+            >
+              Não foi possível carregar o sistema: {error}
+            </Alert>
+          </Box>
+        ) : router ? (
+          <EngineProvider value={engine!}>
+            <RouterProvider router={router} />
+            {authz.dialog}
+          </EngineProvider>
+        ) : (
+          <AppSkeleton />
+        )}
+      </ShellBoundary>
       <Notifier />
     </C3ThemeProvider>
   );

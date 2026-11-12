@@ -22,6 +22,7 @@ import type { AppDef, MenuItemDef, PageDef } from './types';
 import { viewPath } from './views';
 import WizardGuard from './pages/wizard/WizardGuard';
 import WizardPage from './pages/wizard/WizardPage';
+import { ServerError } from './status/AppStatus';
 
 // o painel traz a biblioteca de gráficos: só baixa quem abre um
 const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'));
@@ -47,12 +48,14 @@ export function buildRoutes(app: AppDef, layout: ReactNode, extra: RouteObject[]
   const pages = app.pages ?? [];
   const pageRoute = (p: (typeof pages)[number]): RouteObject => ({
     path: p.path,
+    errorElement: <ServerError />,
     element: <PageGate path={p.path}>{p.layout === 'blank' ? <WizardGuard>{pageBody(p)}</WizardGuard> : pageBody(p)}</PageGate>
   });
 
   return [
     {
       path: '/',
+      errorElement: <ServerError />,
       element: <WizardGuard>{layout}</WizardGuard>,
       children: [
         { index: true, element: <Navigate to={app.homePath ?? homePath(app)} replace /> },

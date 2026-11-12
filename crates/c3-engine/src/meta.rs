@@ -41,7 +41,11 @@ pub(crate) async fn app(engine: &Engine, req: &Parts) -> Result<Value> {
 /// O que a tela de login precisa antes de haver usuário: o nome do sistema e `auth`. Rota pública.
 pub(crate) fn login(engine: &Engine) -> Value {
     let raw = &engine.0.app.raw;
-    json!({ "name": raw["name"], "auth": raw.get("auth").cloned().unwrap_or(Value::Null) })
+    let mut public = json!({ "name": raw["name"], "auth": raw.get("auth").cloned().unwrap_or(Value::Null) });
+    if let Some(status) = raw.get("status") {
+        public["status"] = status.clone();
+    }
+    public
 }
 
 /// `{ data, capabilities }`: o JSON da entidade e o que o usuário pode fazer nela.

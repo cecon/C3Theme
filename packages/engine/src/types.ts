@@ -213,6 +213,8 @@ export interface PageDef {
 
 export interface AppDef {
   name: string;
+  /** Tela pública de manutenção ou lançamento, antes do login e das páginas. */
+  status?: import('./status/AppStatus').AppStatusDef;
   homePath?: string;
   /** Telas de entrada montadas pela shell (com a porta `auth` do <C3Shell>). */
   auth?: AuthConfig;
