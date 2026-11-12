@@ -28,7 +28,7 @@ function HomeButton() {
 export function RouteErrorScreen({ fullScreen = false }: { fullScreen?: boolean }) {
   const error = useRouteError();
   useEffect(() => {
-    if (error) console.error(error);
+    console.error(error);
   }, [error]);
   return <ServerError fullScreen={fullScreen} extra={<HomeButton />} />;
 }
@@ -47,7 +47,7 @@ export function LoadErrorScreen({ message, httpStatus, onRetry }: LoadErrorScree
   return (
     <MessagePage
       fullScreen
-      code={httpStatus !== undefined && httpStatus >= 500 ? String(httpStatus) : undefined}
+      code={(httpStatus ?? 0) >= 500 ? String(httpStatus) : undefined}
       title={intl.formatMessage({ id: 'c3.status.loadError', defaultMessage: 'Não foi possível abrir o sistema' })}
       description={message}
       action={

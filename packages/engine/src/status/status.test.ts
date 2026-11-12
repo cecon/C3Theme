@@ -20,6 +20,9 @@ describe('status do app (#81)', () => {
     expect(retryAfterUntil(null, NOW)).toBeUndefined();
     expect(retryAfterUntil('  ', NOW)).toBeUndefined();
     expect(retryAfterUntil('logo', NOW)).toBeUndefined();
+    // só número inteiro é segundos: data que começa ou termina com dígitos continua data
+    expect(retryAfterUntil('12 Nov 2026 15:00:00 GMT', NOW)).toBe('2026-11-12T15:00:00.000Z');
+    expect(retryAfterUntil('Thu, 12 Nov 2026 15:00:00 +0000', NOW)).toBe('2026-11-12T15:00:00.000Z');
   });
 
   it('readStatus guarda só o que é válido', () => {
@@ -28,6 +31,8 @@ describe('status do app (#81)', () => {
       readStatus({ mode: 'comingSoon', title: 'Lançamento', message: { id: 'x' }, until: '2026-12-01T09:00:00-03:00', extra: 1 })
     ).toEqual({ mode: 'comingSoon', title: 'Lançamento', message: { id: 'x' }, until: '2026-12-01T09:00:00-03:00' });
     expect(readStatus({ mode: 'maintenance', title: '', message: 3, until: 'logo' })).toEqual({ mode: 'maintenance' });
+    // número não é data, mesmo que o Date.parse aceite
+    expect(readStatus({ mode: 'maintenance', until: 123 })).toStrictEqual({ mode: 'maintenance' });
     expect(readStatus({ mode: 'maintenance', title: null })).toEqual({ mode: 'maintenance' });
     expect(readStatus({ mode: 'off' })).toBeUndefined();
     expect(readStatus({ mode: 1 })).toBeUndefined();

@@ -8,7 +8,7 @@ import { createMemoryRouter, RouterProvider } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { LoadErrorScreen, NotFoundScreen, RouteErrorScreen } from './ErrorScreens';
-import { AppStatus } from './AppStatus';
+import { AppStatus, ServerError } from './AppStatus';
 
 afterEach(() => {
   cleanup();
@@ -100,6 +100,14 @@ describe('AppStatus', () => {
     expect(onRetry).toHaveBeenCalledTimes(1);
   });
 
+  it('manutenção com a previsão agora mesmo não pergunta sozinha', () => {
+    vi.useFakeTimers({ now: Date.parse('2026-11-12T12:00:00Z'), toFake: ['setTimeout', 'clearTimeout', 'Date'] });
+    const onRetry = vi.fn();
+    render(intl(<AppStatus status={{ mode: 'maintenance', until: '2026-11-12T12:00:00Z' }} onRetry={onRetry} />));
+    act(() => void vi.advanceTimersByTime(1000));
+    expect(onRetry).not.toHaveBeenCalled();
+  });
+
   it('manutenção sem previsão não marca nada', () => {
     vi.useFakeTimers({ now: 0, toFake: ['setTimeout', 'clearTimeout', 'Date'] });
     const onRetry = vi.fn();
@@ -126,8 +134,10 @@ describe('telas de erro', () => {
 
   it('erro numa rota: 500 com "Tentar de novo" (recarrega) e "Voltar ao início"; o erro vai ao console', async () => {
     const log = vi.spyOn(console, 'error').mockImplementation(() => {});
-    routed(<Boom />, <RouteErrorScreen />);
+    const { container } = routed(<Boom />, <RouteErrorScreen />);
     expect(await screen.findByText('500')).toBeTruthy();
+    // por padrão, dentro do layout
+    expect(minHeight(container.firstElementChild)).toMatch(/^(auto)?$/);
     expect(screen.getByRole('heading', { name: 'Algo deu errado' })).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Voltar ao início' }).getAttribute('href')).toBe('/');
     expect(log.mock.calls.some(([e]) => e instanceof Error && e.message === 'quebrou')).toBe(true);
@@ -136,6 +146,11 @@ describe('telas de erro', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Tentar de novo' }));
     expect(reload).toHaveBeenCalledTimes(1);
     vi.unstubAllGlobals();
+  });
+
+  it('500 fora do roteador: tela cheia por padrão', () => {
+    const { container } = render(intl(<ServerError />));
+    expect(minHeight(container.firstElementChild)).not.toMatch(/^(auto)?$/);
   });
 
   it('a moldura quebrou: o 500 ocupa a tela toda', async () => {
@@ -171,6 +186,7 @@ describe('telas de erro', () => {
     routed(<NotFoundScreen />);
     expect(await screen.findByText('404')).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Página não encontrada' })).toBeTruthy();
+    expect(screen.getByText('O endereço não existe ou mudou. Confira o link ou volte ao início.')).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Voltar ao início' })).toBeTruthy();
   });
 });

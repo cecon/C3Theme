@@ -1,4 +1,4 @@
-import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { RouterProvider } from 'react-router/dom';
 import { mutate } from 'swr';
 
@@ -118,8 +118,8 @@ function Shell(props: C3ShellProps) {
   const [error, setError] = useState<Error>();
   // 503 de /_meta/* (proxy na frente do backend, sem app.json): a mesma tela do `status`
   const [offline, setOffline] = useState<AppStatusDef>();
-  const [attempt, setAttempt] = useState(0);
-  const retry = useCallback(() => setAttempt((n) => n + 1), []);
+  // cada pedido de nova tentativa é um objeto novo: o efeito roda de novo
+  const [attempt, retry] = useReducer(() => ({}), {});
   const catalog = useIconCatalog(icons);
   // função nova a cada render do app não recria o contexto: a shell chama sempre a última recebida
   const sink = useRef(onTelemetry);
@@ -225,6 +225,8 @@ function Shell(props: C3ShellProps) {
     [routes, basename, drawerFooter, props.router]
   );
 
+  const shown = offline ?? state?.app.status;
+
   return (
     <C3ThemeProvider
       {...theme}
@@ -237,8 +239,8 @@ function Shell(props: C3ShellProps) {
       branding={{ name: state?.app.name ?? '', homePath: state?.app.homePath ?? homePath(state?.app), ...theme?.branding }}
     >
       <ShellBoundary>
-        {(offline ?? state?.app.status) ? (
-          <AppStatus status={(offline ?? state?.app.status)!} onRetry={retry} />
+        {shown ? (
+          <AppStatus status={shown} onRetry={retry} />
         ) : error ? (
           <LoadErrorScreen message={error.message} httpStatus={error instanceof ApiError ? error.status : undefined} onRetry={retry} />
         ) : router ? (

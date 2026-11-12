@@ -43,6 +43,9 @@ function Boom(): never {
   throw new Error('quebrou');
 }
 
+/** A tela (MessagePage, pai do título) ocupa a altura toda? */
+const fullPage = (heading: HTMLElement) => !/^(auto)?$/.test(getComputedStyle(heading.parentElement!).minHeight);
+
 beforeEach(() => window.history.pushState({}, '', '/'));
 afterEach(() => {
   cleanup();
@@ -68,7 +71,7 @@ describe('C3Shell fora do ar', () => {
     expect(screen.getByText(/^Previsão de retorno: /)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Tentar de novo' }));
     // a página `comingSoon` do início: "Em breve" no meio do layout
-    expect(await screen.findByRole('heading', { name: 'Em breve' })).toBeTruthy();
+    expect(fullPage(await screen.findByRole('heading', { name: 'Em breve' }))).toBe(false);
     expect(screen.getByText('Chega em dezembro.')).toBeTruthy();
     expect(screen.queryByText('Em manutenção')).toBeNull();
   });
@@ -91,7 +94,7 @@ describe('C3Shell fora do ar', () => {
     window.history.pushState({}, '', '/quebra');
     const { transport } = fakeTransport({ '/_meta/app': [{ body: { data: app() } }] });
     render(<C3Shell apiUrl="/api" transport={transport} components={{ Boom }} />);
-    expect(await screen.findByRole('heading', { name: 'Algo deu errado' })).toBeTruthy();
+    expect(fullPage(await screen.findByRole('heading', { name: 'Algo deu errado' }))).toBe(false);
     expect(screen.getAllByText('Relatórios').length).toBeGreaterThan(0);
   });
 
@@ -100,7 +103,7 @@ describe('C3Shell fora do ar', () => {
     window.history.pushState({}, '', '/quiosque');
     const { transport } = fakeTransport({ '/_meta/app': [{ body: { data: app() } }] });
     render(<C3Shell apiUrl="/api" transport={transport} components={{ Boom }} />);
-    expect(await screen.findByRole('heading', { name: 'Algo deu errado' })).toBeTruthy();
+    expect(fullPage(await screen.findByRole('heading', { name: 'Algo deu errado' }))).toBe(true);
     expect(screen.queryByText('Relatórios')).toBeNull();
   });
 

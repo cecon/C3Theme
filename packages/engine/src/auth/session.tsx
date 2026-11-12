@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useReducer, useState } from 'react';
 
 import { browserFetch, type C3Fetch } from '../transport';
 import type { AuthConfig, AuthPort, AuthUser } from './port';
@@ -79,7 +79,8 @@ export function AuthSessionProvider({
   const [token, setToken] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string>();
-  const [attempt, setAttempt] = useState(0);
+  // cada pedido de nova tentativa é um objeto novo: o efeito roda de novo
+  const [attempt, retry] = useReducer(() => ({}), {});
 
   useEffect(() => {
     let active = true;
@@ -90,7 +91,7 @@ export function AuthSessionProvider({
       const me = saved && !data.status ? await port.me(saved).catch(() => null) : null;
       if (!me && !data.status) tokenStore.set(null);
       if (!active) return;
-      setMeta(data.status ? { name: '', auth: {}, status: data.status } : data);
+      setMeta(data);
       setUserState(me);
       setToken(me ? saved : null);
       setReady(true);
@@ -117,8 +118,6 @@ export function AuthSessionProvider({
     setToken(null);
     setUserState(null);
   }, [port]);
-
-  const retry = useCallback(() => setAttempt((n) => n + 1), []);
 
   const session = useMemo<AuthSession | undefined>(
     () =>

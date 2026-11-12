@@ -39,9 +39,8 @@ const MAX_TIMEOUT = 2 ** 31 - 1;
 export function AppStatus({ status, onRetry, fullScreen = true }: AppStatusProps) {
   const intl = useIntl();
   const text = useText();
-  const maintenance = status.mode === 'maintenance';
+  const maintenance = status.mode !== 'comingSoon';
   const until = untilTime(status.until);
-  const left = until === undefined ? 0 : until - Date.now();
 
   // manutenção com previsão: quando chega a hora, pergunta de novo sozinha (a contagem do "Em breve" já faz isso)
   useEffect(() => {
@@ -75,7 +74,7 @@ export function AppStatus({ status, onRetry, fullScreen = true }: AppStatusProps
         )
       }
     >
-      {!maintenance && left > 0 && <Countdown until={until!} onDone={onRetry} />}
+      {!maintenance && (until ?? 0) > Date.now() && <Countdown until={until!} onDone={onRetry} />}
       {until !== undefined && (
         <Typography color="text.secondary">
           {intl.formatMessage(

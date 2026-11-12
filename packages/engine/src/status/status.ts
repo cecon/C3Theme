@@ -7,15 +7,13 @@ export const PAGE_SOON_MESSAGE = 'Esta tela está quase pronta.';
 
 /** Instante (ms) de `until`; data inválida ou ausente vira `undefined`. */
 export function untilTime(until: string | undefined): number | undefined {
-  if (!until) return undefined;
-  const t = Date.parse(until);
+  const t = Date.parse(until ?? '');
   return Number.isNaN(t) ? undefined : t;
 }
 
 /** `Retry-After` em segundos ou data HTTP, como ISO; ausente ou ilegível vira `undefined`. */
 export function retryAfterUntil(header: string | null, now: number): string | undefined {
-  const value = header?.trim();
-  if (!value) return undefined;
+  const value = header?.trim() ?? '';
   const at = /^\d+$/.test(value) ? now + Number(value) * 1000 : Date.parse(value);
   return Number.isNaN(at) ? undefined : new Date(at).toISOString();
 }
@@ -29,7 +27,7 @@ const isText = (t: unknown): t is NonNullable<AppStatusDef['title']> =>
 export function readStatus(raw: unknown): AppStatusDef | undefined {
   if (typeof raw !== 'object' || raw === null) return undefined;
   const s = raw as Record<string, unknown>;
-  if (typeof s.mode !== 'string' || !MODES.has(s.mode)) return undefined;
+  if (!MODES.has(s.mode as string)) return undefined;
   return {
     mode: s.mode as AppStatusDef['mode'],
     ...(isText(s.title) && { title: s.title }),
@@ -39,7 +37,7 @@ export function readStatus(raw: unknown): AppStatusDef | undefined {
 }
 
 /**
- * O status de uma resposta 503 de /_meta/*: o do corpo (`{ status }`, como o backend do motor ou um proxy mandam) ou
+ * O status de uma resposta 503 de /_meta/*: o do corpo (`{ status }`, se o proxy mandar JSON) ou
  * manutenção com a previsão do `Retry-After`.
  */
 export function statusFromReply(body: unknown, retryAfter: string | null, now: number): AppStatusDef {
