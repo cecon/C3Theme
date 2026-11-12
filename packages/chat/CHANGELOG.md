@@ -2,6 +2,13 @@
 
 Instale fixando o commit (`github:cecon/C3Theme#<sha>&path:packages/chat`). Cada entrada diz o que muda para quem usa; **Quebra** marca o que exige mudar o app.
 
+## 0.11.0 (2026-11-12)
+
+- Human-in-the-loop (#70): partes novas do catálogo, declaradas em `spec/v0/agent-ui.schema.json` e conferidas pelo `Engine::check_agent_part`. `c3.tool` (`ToolPart`): a ferramenta e os argumentos, editáveis antes de aprovar (`fields` com `string`, `text`, `number`, `boolean`, `enum`, `json`, `readOnly`), recusa com motivo, "sempre permitir" só se oferecido e nunca com `risk: high`, que pede segundo clique. `c3.plan` (`PlanPart`): desmarcar, reordenar e reescrever passos. `c3.browser` (`BrowserPart`): a página em que o agente parou, onde vai clicar, permitir, assumir o controle ou recusar.
+- `BrowserView` e `BrowserBar`: o navegador interno sozinho (voltar, avançar, recarregar, endereço com cadeado, captura, carregando, erro, quem está no controle, "Assumir controle" e "Devolver ao assistente"). A captura só aceita http(s), caminho do próprio app ou `data:image` (png, jpeg, webp, gif); nunca HTML.
+- `AssistantPanel` já traz `hitlUiRenderers`; o `uiRenderers` do app soma ou troca. Com pergunta ou parte pendente fora da vista, mostra `WaitingBanner` ("O assistente espera você") acima da caixa, e "Ver" rola até ela (`MessageList.jumpTo`).
+- Núcleo puro em `@c3theme/chat/core`: `approveTool`, `declineTool`, `readDrafts`, `toolAllows`, `approvePlan`, `moveStep`, `decideBrowser`, `safeFrame`, `normalizeAddress`, `waitingFor`. Textos novos `c3.chat.tool.*`, `c3.chat.plan.*`, `c3.chat.browser.*`, `c3.chat.arg.*`, `c3.chat.hitl.*`, `c3.chat.waiting*`. Nada quebra.
+
 ## 0.10.0 (2026-11-10)
 
 - `AgentComposer` ganha `variant="inline"` (#25): uma linha só (46 px vazia), com o + à esquerda, o texto no meio e as ações e o botão principal à direita; com várias linhas a caixa cresce para cima e os botões ficam embaixo. Cantos de 14 px, botões redondos de 28 px, botão principal em círculo cheio em contraste, foco que só clareia a borda (sem anel) e sem linha de ajuda. `idleAction` (`{ label, icon, onClick }`) ocupa o botão principal com a caixa vazia e o assistente parado (conversa por voz); com texto vira enviar, respondendo vira parar. `ComposerIconButton` é o botão redondo de 28 px para as ações da direita. Sem `variant`, nada muda.

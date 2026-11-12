@@ -1,6 +1,6 @@
 {
   "name": "@c3theme/chat",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "license": "MIT",
   "description": "C3 Chat: contrato de mensagens, porta de transporte e hooks headless; os componentes visuais vêm sobre o @c3theme/ui",
   "author": "cecon (https://github.com/cecon)",
@@ -38,7 +38,8 @@
     "dist",
     "src",
     "!src/**/*.test.ts",
-    "!src/**/*.test.tsx"
+    "!src/**/*.test.tsx",
+    "!src/**/*.test-utils.tsx"
   ],
   "scripts": {
     "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.build.json && node ../../scripts/fix-dist-imports.mjs dist",

@@ -8,6 +8,7 @@ const SOURCE = (pkg) => [
   '!**/*.test.{ts,tsx}',
   '!**/*.test-util.ts',
   '!**/*.test-utils.ts',
+  '!**/*.test-utils.tsx',
   '!**/*.d.ts',
   '!**/*.d.mts'
 ];

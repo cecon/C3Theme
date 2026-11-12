@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 
 // material-ui
 import Button from '@mui/material/Button';
@@ -27,6 +27,8 @@ import VoiceConversation, { type VoiceConversationProps } from './voice/VoiceCon
 import ConversationPicker from './ConversationPicker';
 import MessageList from './MessageList';
 import type { UiRenderers } from './UiParts';
+import { shouldAnnounce, waitingFor } from '../core/waiting';
+import { hitlUiRenderers, WaitingBanner } from './hitl';
 import { useChatText } from './text';
 
 /** O que o painel usa do `useMessageWindow`: passe o retorno inteiro. */
@@ -64,7 +66,8 @@ export interface AssistantPanelProps {
   composer?: Partial<Omit<AgentComposerProps, 'value' | 'onChange' | 'onSend' | 'busy' | 'onStop' | 'queue'>>;
   /**
    * Catálogo das partes de interface que o assistente pode pôr nas respostas (`kind` → componente), ex.: os
-   * renderizadores do @c3theme/engine. Sem isso, a parte aparece como "não sei mostrar".
+   * renderizadores do @c3theme/engine. As de human-in-the-loop (`c3.tool`, `c3.plan`, `c3.browser`) já vêm; as daqui
+   * somam ou trocam. Sem renderizador, a parte aparece como "não sei mostrar".
    */
   uiRenderers?: UiRenderers;
   /**
@@ -93,6 +96,9 @@ export default function AssistantPanel(props: AssistantPanelProps) {
   const draft = useDraft(chat.conversationId);
   useChatTelemetry(chat.conversationId, chat.messages, props.onTelemetry, props.taskOf);
   const [confirm, setConfirm] = useState<Conversation | null>(null);
+  const renderers = useMemo(() => ({ ...hitlUiRenderers, ...props.uiRenderers }), [props.uiRenderers]);
+  const waiting = waitingFor(chat.messages);
+  const [jumpTo, setJumpTo] = useState<{ messageId: string; seq: number }>();
   const queue = useMessageQueue({
     generating: chat.generating,
     send: (text, files) => chat.send(text, { files }),
@@ -168,11 +174,15 @@ export default function AssistantPanel(props: AssistantPanelProps) {
               onRegenerate={props.onRegenerate}
               onOpenWorkspace={props.onOpenWorkspace}
               onAnswer={chat.answer && ((m, a) => void chat.answer!(m.id, a))}
-              uiRenderers={props.uiRenderers}
+              uiRenderers={renderers}
+              jumpTo={jumpTo}
               onAnswerUi={chat.answerUi && ((m, partId, a) => chat.answerUi!(m.id, partId, a))}
               empty={empty}
             />
           </Stack>
+          {shouldAnnounce(chat.messages, waiting) && (
+            <WaitingBanner waiting={waiting} onGo={(id) => setJumpTo((j) => ({ messageId: id, seq: (j?.seq ?? 0) + 1 }))} />
+          )}
           <AgentComposer
             hint={t('c3.chat.hint')}
             {...composer}

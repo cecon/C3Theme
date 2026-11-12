@@ -79,3 +79,4 @@ export type { ApprovalInputsProps } from './team/ApprovalInputs';
 export { default as VoiceConversation, type VoiceConversationProps } from './voice/VoiceConversation';
 export { default as VoiceOrb } from './voice/VoiceOrb';
 export type { VoiceCaption, VoiceState } from './voice/types';
+export * from './hitl';

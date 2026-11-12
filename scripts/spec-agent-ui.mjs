@@ -6,7 +6,11 @@ import { join } from 'node:path';
 
 const forbidden = (f) => f.writeOnly || f.type === 'file';
 
+// c3.tool, c3.plan e c3.browser não citam entidade: o schema basta
+const ENTITY_KINDS = new Set(['c3.form', 'c3.record', 'c3.action']);
+
 function checkPayload(part, entities, where, errors) {
+  if (!ENTITY_KINDS.has(part.kind)) return;
   const p = part.payload;
   if (part.kind === 'c3.form') {
     for (const f of p.fields) if (forbidden(f)) errors.push(`${where}: campo '${f.name}' é senha ou arquivo`);

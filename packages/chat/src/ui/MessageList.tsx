@@ -1,4 +1,4 @@
-import { useMemo, useRef, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, type ReactNode } from 'react';
 
 // material-ui
 import Box from '@mui/material/Box';
@@ -66,6 +66,8 @@ export interface MessageListProps extends Pick<MessageBubbleProps, 'renderText' 
   onOpenTask?: MessageRowProps['onOpenTask'];
   /** Conversa sem mensagens. */
   empty?: ReactNode;
+  /** Rola até a mensagem (aviso "esperando você"). `seq` novo rola de novo, mesmo para a mesma mensagem. */
+  jumpTo?: { messageId: string; seq: number };
 }
 
 /**
@@ -97,6 +99,15 @@ export default function MessageList(props: MessageListProps) {
     onLoadOlder,
     typingCount: typing.length
   });
+
+  const jump = props.jumpTo;
+  useEffect(() => {
+    if (!jump) return;
+    const index = rows.findIndex((r) => r.type === 'message' && r.message.id === jump.messageId);
+    if (index >= 0) virtualizer.scrollToIndex(index, { align: 'center' });
+    // só quando pedem de novo (seq), não a cada linha nova
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jump?.seq]);
 
   // o avatar vai no último balão do bloco: o seguinte não continua o bloco
   const lastOfBlock = (i: number) => {

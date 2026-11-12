@@ -13,6 +13,7 @@ mod action_prefill;
 mod action_preview;
 mod action_reply;
 mod action_together;
+mod agent_hitl;
 mod agent_ui;
 mod agent_ui_state;
 mod boot;

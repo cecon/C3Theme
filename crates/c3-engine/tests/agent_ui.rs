@@ -122,6 +122,19 @@ async fn action_do_registro_com_input_conhecido() {
 }
 
 #[tokio::test]
+async fn partes_de_hitl_entram_pelo_mesmo_check() {
+    let e = engine().await;
+    let tool = json!({ "tool": { "name": "enviar" }, "args": { "para": "a@b.com" } });
+    assert_eq!(e.check_agent_part(&part("c3.tool", tool)), Ok(()));
+    let plan = json!({ "steps": [ { "id": "a", "text": "Ler" } ] });
+    assert_eq!(e.check_agent_part(&part("c3.plan", plan)), Ok(()));
+    let page = json!({ "url": "https://a.com", "intent": "Pagar" });
+    assert_eq!(e.check_agent_part(&part("c3.browser", page)), Ok(()));
+    assert!(err(&e, part("c3.browser", json!({ "url": "javascript:1", "intent": "x" }))).contains("url"));
+    assert!(err(&e, part("c3.view", json!({}))).contains("fora do catálogo"));
+}
+
+#[tokio::test]
 async fn resposta_do_form_valida_como_input_de_acao() {
     let e = engine().await;
     let payload = json!({ "fields": [ { "name": "reason", "type": "text", "required": true },
