@@ -57,6 +57,20 @@ export default function App() {
 }
 ```
 
+## Modo inicial
+
+`defaultMode="light"`, `"dark"` ou `"system"` escolhe o modo na primeira abertura. O padrão continua `"system"`.
+A escolha salva da pessoa tem prioridade nas próximas aberturas; o app não precisa escrever em chaves internas do armazenamento.
+
+```tsx
+<C3ThemeProvider defaultMode="dark" storageKey="meu-app">
+  <App />
+</C3ThemeProvider>
+```
+
+Na shell do motor, use `<C3Shell theme={{ defaultMode: 'dark', storageKey: 'meu-app' }} ... />`.
+Isso também configura o tema das telas de entrada antes do login.
+
 O catálogo de componentes, com todas as variações, está no Storybook do repositório.
 
 ## Licença
