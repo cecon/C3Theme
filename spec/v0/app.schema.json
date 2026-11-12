@@ -868,10 +868,65 @@
           "default": "enter",
           "description": "Como a pessoa envia: 'enter' (Shift+Enter quebra a linha) ou 'modEnter' (Ctrl+Enter, ⌘+Enter no Mac; Enter quebra a linha)."
         },
+        "states": {
+          "$ref": "#/$defs/states",
+          "description": "Estados da conversa com os textos da spec (ADR 0011): carregando o histórico, conversa vazia (com as sugestões abaixo), erro com 'Tentar de novo' (5xx ou outro erro nas rotas /_chat), sem permissão (403 em /_chat cobre o painel) e offline (falha de rede ou navegador sem rede; o histórico já carregado fica visível). Estado não declarado fica como o painel já mostra; sem states, nada muda."
+        },
         "steer": {
           "type": "boolean",
           "default": false,
           "description": "Orientar o turno em andamento (ADR 0008): com o agente ocupado, Ctrl+Enter (⌘+Enter) manda o texto para dentro do turno sem interromper (POST messages com steer: true); com a caixa vazia, orienta com a primeira da fila. A fila ganha Orientar em cada mensagem, a orientação espera como 'Orientando' com Remover (DELETE messages/{m}) e o rótulo do atalho aparece junto da caixa. Avisos do sistema (evento notice) aparecem como aviso passageiro."
+        }
+      }
+    },
+    "states": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "description": "O que a pessoa vê em cada estado de uma tela que busca dado (issues #99 e #101): texto e, quando cabe, a ação do próximo passo.",
+      "properties": {
+        "loading": {
+          "type": "object",
+          "required": ["text"],
+          "additionalProperties": false,
+          "properties": { "text": { "$ref": "#/$defs/text", "description": "O que está sendo carregado." } }
+        },
+        "empty": {
+          "type": "object",
+          "required": ["text"],
+          "additionalProperties": false,
+          "properties": {
+            "text": { "$ref": "#/$defs/text" },
+            "action": { "$ref": "#/$defs/link", "description": "O próximo passo (ex.: abrir a tela de agentes)." }
+          }
+        },
+        "error": {
+          "type": "object",
+          "required": ["text"],
+          "additionalProperties": false,
+          "properties": {
+            "text": { "$ref": "#/$defs/text" },
+            "retry": { "$ref": "#/$defs/text", "description": "Rótulo do botão que carrega de novo. Padrão: 'Tentar de novo'." }
+          }
+        },
+        "forbidden": {
+          "type": "object",
+          "required": ["text"],
+          "additionalProperties": false,
+          "properties": {
+            "text": { "$ref": "#/$defs/text" },
+            "howTo": { "$ref": "#/$defs/text", "description": "Como conseguir a permissão." },
+            "action": { "$ref": "#/$defs/link", "description": "Onde pedir ou conceder a permissão." }
+          }
+        },
+        "offline": {
+          "type": "object",
+          "required": ["text"],
+          "additionalProperties": false,
+          "properties": {
+            "text": { "$ref": "#/$defs/text" },
+            "keeps": { "type": "array", "items": { "$ref": "#/$defs/text" }, "description": "O que continua funcionando sem rede." }
+          }
         }
       }
     },

@@ -140,7 +140,7 @@ function LaneConversation(props: {
 
 function SelectedLane(props: Parameters<typeof LaneConversation>[0] & { selected: string }) {
   const chat = useMessageWindow(props.transport, props.selected, { me: props.me });
-  const { onClose: _close, title: _title, entregaDaUltimaMensagem: _delivery, ...panel } = props.panel;
+  const { onClose: _close, title: _title, entregaDaUltimaMensagem: _delivery, empty: _empty, ...panel } = props.panel;
   return (
     <LanePanel
       lanes={props.lanes}

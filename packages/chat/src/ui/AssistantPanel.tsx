@@ -37,7 +37,7 @@ export type AssistantChat = Pick<
   ReturnType<typeof useMessageWindow>,
   'conversationId' | 'messages' | 'hasMore' | 'loading' | 'loadOlder' | 'send' | 'retry' | 'stop' | 'generating' | 'answer'
 > &
-  Partial<Pick<ReturnType<typeof useMessageWindow>, 'answerUi' | 'remove' | 'notice' | 'dismissNotice'>>;
+  Partial<Pick<ReturnType<typeof useMessageWindow>, 'answerUi' | 'remove' | 'notice' | 'dismissNotice' | 'error'>>;
 
 export interface AssistantPanelProps {
   chat: AssistantChat;
@@ -65,6 +65,8 @@ export interface AssistantPanelProps {
   suggestions?: string[];
   /** Conversa vazia, no lugar do padrão ("Como posso ajudar?" e as sugestões). */
   empty?: ReactNode;
+  /** Faixa logo abaixo do cabeçalho, sobre a conversa (ex.: sem rede, com o histórico visível). */
+  banner?: ReactNode;
   /** Ajustes da caixa de mensagem: anexo, itens do +, seletores de modo e modelo, linha de status, placeholder. */
   composer?: Partial<Omit<AgentComposerProps, 'value' | 'onChange' | 'onSend' | 'busy' | 'onStop' | 'queue'>>;
   /**
@@ -189,6 +191,7 @@ export default function AssistantPanel(props: AssistantPanelProps) {
         )}
       </Stack>
       <Divider />
+      {props.banner}
       {conversations && props.onSelectConversation && (
         <Stack sx={{ px: 2, pt: 2, pb: 0.5 }}>
           <ConversationPicker
@@ -212,7 +215,7 @@ export default function AssistantPanel(props: AssistantPanelProps) {
               entregaDaUltimaMensagem={props.entregaDaUltimaMensagem}
               hasMore={chat.hasMore}
               loadingOlder={chat.loading === 'older'}
-              onLoadOlder={chat.loadOlder}
+              onLoadOlder={chat.error ? undefined : chat.loadOlder}
               onRetry={chat.retry}
               onRegenerate={props.onRegenerate}
               onOpenWorkspace={props.onOpenWorkspace}

@@ -13,6 +13,8 @@ export interface ShellJsonProps {
   route?: string;
   /** Simula um proxy fora do ar: 503 em /_meta/* com este Retry-After (segundos), sem corpo JSON. */
   proxy503?: string;
+  /** Responde as outras rotas da API (ex.: /_chat); sem resposta, 404. Pode rejeitar para simular falta de rede. */
+  api?: (url: string, init?: RequestInit) => Promise<Response> | undefined;
 }
 
 const json = (body: unknown, status = 200, headers: Record<string, string> = {}) =>
@@ -23,12 +25,14 @@ function Quebra(): never {
   throw new Error('Tela de exemplo que quebra de propósito.');
 }
 
-export default function ShellJson({ app, route = '/', proxy503 }: ShellJsonProps) {
+export default function ShellJson({ app, route = '/', proxy503, api }: ShellJsonProps) {
   // a rota vai no hash antes de a shell criar o roteador
   useState(() => window.history.replaceState(null, '', `#${route}`));
-  const transport: C3Fetch = async (url) => {
+  const transport: C3Fetch = async (url, init) => {
     if (proxy503 !== undefined) return new Response('<h1>Fora do ar</h1>', { status: 503, headers: { 'retry-after': proxy503 } });
     if (url.endsWith('/_meta/app')) return json({ data: app, pages: {} });
+    const answer = api?.(url, init);
+    if (answer) return answer;
     return json({ error: { code: 'not_found', message: 'Sem backend na história.' } }, 404);
   };
   return (
