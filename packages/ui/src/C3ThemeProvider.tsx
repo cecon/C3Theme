@@ -24,11 +24,12 @@ import {
 import { uiMessagesFor } from './i18n';
 import { createC3Theme } from './theme/createC3Theme';
 import type { C3Tokens } from './theme/tokens';
+import ModeBridge, { ModeBridgeProps } from './theme/ModeBridge';
 import type { ColorModePreference } from './theme/useColorMode';
 
 export type LocaleMessages = Record<string, string>;
 
-export interface C3ThemeProviderProps {
+export interface C3ThemeProviderProps extends ModeBridgeProps {
   children: ReactNode;
   branding?: Partial<Branding>;
   /** Valores iniciais das preferências; o que o usuário mudar fica salvo em `storageKey`. */
@@ -62,6 +63,8 @@ export default function C3ThemeProvider({
   branding,
   defaultConfig,
   defaultMode = 'system',
+  mode,
+  onModeChange,
   storageKey = 'c3-ui',
   tokens,
   themeOverrides,
@@ -76,6 +79,8 @@ export default function C3ThemeProvider({
       <ThemedApp
         storageKey={storageKey}
         defaultMode={defaultMode}
+        mode={mode}
+        onModeChange={onModeChange}
         tokens={tokens}
         themeOverrides={themeOverrides}
         loadMessages={loadMessages}
@@ -92,6 +97,8 @@ function ThemedApp({
   children,
   storageKey,
   defaultMode,
+  mode,
+  onModeChange,
   tokens,
   themeOverrides,
   loadMessages
@@ -132,6 +139,7 @@ function ThemedApp({
     <CacheProvider value={config.direction === 'rtl' ? rtlCache : ltrCache}>
       <ThemeProvider theme={theme} modeStorageKey={`${storageKey}-mode`} defaultMode={defaultMode}>
         <CssBaseline />
+        <ModeBridge mode={mode} onModeChange={onModeChange} />
         {/* texto sem tradução cai no defaultMessage; não vale poluir o console com isso */}
         <IntlProvider locale={config.locale} messages={allMessages} onError={() => {}}>
           {children}
