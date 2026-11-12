@@ -85,3 +85,55 @@ test('navegador interno: assumir o controle libera a barra e navegar troca o end
   await expect(page.getByRole('status')).toHaveText('O assistente está no controle');
   await expect(page.getByRole('button', { name: /^Endereço:/ })).toBeDisabled();
 });
+
+test('prévia do cupom em texto pré-formatado: espaços e alinhamento preservados (#66)', async ({ page }) => {
+  await page.goto(story('tabela-lista-pelo-motor--relacao-entregas'));
+  await page.getByRole('button', { name: 'Imprimir relação' }).click();
+  const cells = page.getByRole('dialog').getByRole('table', { name: 'Prévia' }).getByRole('cell');
+  await expect(cells.first()).toBeVisible();
+  await expect(cells.first()).toHaveCSS('white-space', 'pre');
+  // textContent cru, sem a normalização de espaços: o título espaçado e as linhas de 40 colunas chegam como vieram
+  const lines = await cells.evaluateAll((tds) => tds.map((td) => td.textContent ?? ''));
+  expect(lines).toContain(`${'R E L .   E N T R E G A S'.padStart(32)}`.padEnd(40));
+  expect(lines.filter((l) => l.startsWith('#')).every((l) => l.length === 40)).toBe(true);
+  await page.getByRole('button', { name: 'Imprimir relação' }).last().click();
+  await expect(page.getByText('Relação enviada para a impressora.')).toBeVisible();
+});
+
+test('consulta do sistema com href: o produto leva ao kardex filtrado por ele (#69)', async ({ page }) => {
+  await page.goto(story('layout-shell-pelo-motor--posicao-para-kardex'));
+  await page.getByRole('link', { name: 'Café torrado 500 g' }).click();
+  await expect(page.getByRole('button', { name: 'Adicionar movimento de estoque' })).toBeVisible();
+  await expect(page.getByText('Compra NF 1201')).toBeVisible();
+  // o filtro do produto veio do endereço: o feijão (produto 2) não aparece
+  await expect(page.getByText('Compra NF 1207')).toHaveCount(0);
+});
+
+test('agenda da semana: pedidos na hora, atrasado em vermelho e o clique leva à entrega (#65)', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto(story('layout-shell-pelo-motor--agenda-semana'));
+  await expect(page.locator('.fc-timeGridWeek-view')).toBeVisible();
+  const late = page.locator('.fc-event.ev-danger', { hasText: 'Pedido 1041' });
+  await expect(late).toBeVisible();
+  await expect(page.locator('.fc-event.ev-info', { hasText: 'Pedido 1042' })).toBeVisible();
+  // a semana seguinte não tem pedidos; Hoje volta
+  await page.getByRole('button', { name: /próximo|seguinte/i }).click();
+  await expect(page.locator('.fc-event')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Hoje' }).click();
+  await late.click();
+  await expect(page.getByRole('textbox', { name: 'Cliente' })).toHaveValue('Ana Souza');
+});
+
+test('painel financeiro: variação no KPI, soma no aviso, abas e filtro na lista (#64)', async ({ page }) => {
+  await page.goto(story('telas-pelo-motor--financeiro'));
+  await expect(page.getByLabel(/em relação a setembro/).first()).toBeVisible();
+  await expect(page.getByText(/^\d+ faturas atrasadas somando R\$/)).toBeVisible();
+  await page.getByRole('tab', { name: 'Boletos' }).click();
+  await expect(page.getByRole('link', { name: 'BL-001' })).toBeVisible();
+  const todas = page.getByLabel(/Todas as faturas: \d+ linhas, role para ver todas/);
+  await expect(todas).toBeVisible();
+  await page.getByRole('combobox', { name: 'Status' }).click();
+  await page.getByRole('option', { name: 'Paga' }).click();
+  await expect(page.getByLabel(/Todas as faturas: \d+ linhas/)).toBeVisible();
+  await expect(todas.getByText('Atrasada')).toHaveCount(0);
+});

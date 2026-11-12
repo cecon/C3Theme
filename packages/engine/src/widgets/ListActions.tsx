@@ -15,6 +15,7 @@ import ActionBody from './ActionBody';
 import StepsDialog from './StepsDialog';
 import { loadPrefill } from './prefill';
 import type { ActionDef } from '../types';
+import { runsAtOnce } from '../actionTypes';
 
 /**
  * Botões das ações da lista (`target: list`: importar, aplicar modelo) que o usuário pode rodar, ao lado do
@@ -58,7 +59,7 @@ export default function ListActions({ entity }: { entity: string }) {
 
   async function start(action: ActionDef) {
     task.start({ entity, op: 'action', action: action.name });
-    if (!action.input && !action.confirm) {
+    if (runsAtOnce(action)) {
       if (await execute(action, {})) task.done();
       else setOpen(action); // mostra o erro no diálogo
       return;

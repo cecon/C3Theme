@@ -29,6 +29,7 @@ import { plain, refusedLine, rowTitle, scopeText } from './bulkText';
 import useOpensForm from './useOpensForm';
 import type { RefusedRecord } from '../api';
 import type { ActionDef, BulkItem, FieldType, WireRecord } from '../types';
+import { runsAtOnce } from '../actionTypes';
 import { paletteOf } from '../tone';
 
 /** Quantas ações aparecem como botão; as demais vão para o menu "Mais". */
@@ -163,7 +164,7 @@ export default function RecordActions({ entity, id, record, rows, onBulkDone }: 
     task.start({ entity, op: 'action', action: action.name });
     if (opensForm.start(action)) return task.done();
     // em lote sempre confirma: o diálogo diz em quantos registros vai rodar
-    if (!bulk && !action.input && !action.confirm) {
+    if (!bulk && runsAtOnce(action)) {
       const ok = await execute(action, {});
       if (ok) task.done();
       else setOpen(action); // mostra o erro no diálogo, em vez de um aviso que some

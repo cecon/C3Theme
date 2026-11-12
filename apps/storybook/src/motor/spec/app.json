@@ -21,7 +21,10 @@
     "orcado_realizado",
     "orcamento",
     "demonstrativo",
-    "boleto"
+    "boleto",
+    "entrega",
+    "posicao_estoque",
+    "agenda_entrega"
   ],
   "layout": {
     "orientation": "vertical",
@@ -251,7 +254,9 @@
             "icon": "Calendar",
             "tone": "warning",
             "count": true,
-            "bind": { "venc": "vencimento" }
+            "bind": {
+              "venc": "vencimento"
+            }
           },
           {
             "type": "ranking",
@@ -260,8 +265,155 @@
             "groupBy": "cliente",
             "measure": "sum:valor",
             "caption": "{count} {label}",
-            "bind": { "venc": "vencimento" },
+            "bind": {
+              "venc": "vencimento"
+            },
             "width": 8
+          }
+        ]
+      }
+    },
+    {
+      "path": "/financeiro",
+      "title": "Financeiro",
+      "dashboard": {
+        "widgets": [
+          {
+            "type": "kpi",
+            "title": "Faturado em outubro",
+            "entity": "fatura",
+            "measure": "sum:total",
+            "icon": "ReceiptText",
+            "tone": "primary",
+            "where": {
+              "and": [
+                {
+                  "field": "emissao",
+                  "op": "gte",
+                  "value": "2026-10-01"
+                },
+                {
+                  "field": "emissao",
+                  "op": "lte",
+                  "value": "2026-10-31"
+                }
+              ]
+            },
+            "compare": {
+              "label": "setembro",
+              "where": {
+                "and": [
+                  {
+                    "field": "emissao",
+                    "op": "gte",
+                    "value": "2026-09-01"
+                  },
+                  {
+                    "field": "emissao",
+                    "op": "lte",
+                    "value": "2026-09-30"
+                  }
+                ]
+              }
+            },
+            "width": 4
+          },
+          {
+            "type": "kpi",
+            "title": "Atrasado em outubro",
+            "entity": "fatura",
+            "measure": "sum:total",
+            "icon": "Warning2",
+            "tone": "danger",
+            "where": {
+              "and": [
+                {
+                  "field": "status",
+                  "op": "eq",
+                  "value": "atrasada"
+                },
+                {
+                  "field": "emissao",
+                  "op": "gte",
+                  "value": "2026-10-01"
+                },
+                {
+                  "field": "emissao",
+                  "op": "lte",
+                  "value": "2026-10-31"
+                }
+              ]
+            },
+            "compare": {
+              "label": "setembro",
+              "invert": true,
+              "where": {
+                "and": [
+                  {
+                    "field": "status",
+                    "op": "eq",
+                    "value": "atrasada"
+                  },
+                  {
+                    "field": "emissao",
+                    "op": "gte",
+                    "value": "2026-09-01"
+                  },
+                  {
+                    "field": "emissao",
+                    "op": "lte",
+                    "value": "2026-09-30"
+                  }
+                ]
+              }
+            },
+            "width": 4
+          },
+          {
+            "type": "alert",
+            "entity": "fatura",
+            "preset": "atrasadas",
+            "measure": "sum:total",
+            "text": "{count} faturas atrasadas somando {value}",
+            "tone": "error"
+          },
+          {
+            "type": "list",
+            "title": "Títulos",
+            "entity": "fatura",
+            "columns": ["numero", "cliente", "vencimento", "total"],
+            "sort": "vencimento",
+            "limit": 20,
+            "tabs": [
+              {
+                "label": "Em aberto",
+                "where": {
+                  "field": "status",
+                  "op": "eq",
+                  "value": "aberta"
+                }
+              },
+              {
+                "label": "Atrasadas",
+                "preset": "atrasadas"
+              },
+              {
+                "label": "Boletos",
+                "entity": "boleto",
+                "columns": ["numero", "cliente", "vencimento", "valor"]
+              }
+            ],
+            "width": 6
+          },
+          {
+            "type": "list",
+            "title": "Todas as faturas",
+            "entity": "fatura",
+            "columns": ["numero", "cliente", "status", "total"],
+            "sort": "-emissao",
+            "limit": 42,
+            "filter": "status",
+            "width": 6
           }
         ]
       }

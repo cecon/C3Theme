@@ -55,6 +55,17 @@ pub struct PreviewTable {
 pub struct PreviewColumn {
     pub name: String,
     pub label: String,
+    /// `"pre"`: texto pré-formatado (cupom da térmica): fonte fixa, espaços preservados, sem quebrar a linha.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub format: Option<PreviewFormat>,
+}
+
+/// Formato da coluna da prévia.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum PreviewFormat {
+    /// Fonte fixa e espaços preservados, sem quebrar a linha.
+    Pre,
 }
 
 impl PreviewColumn {
@@ -62,7 +73,14 @@ impl PreviewColumn {
         PreviewColumn {
             name: name.into(),
             label: label.into(),
+            format: None,
         }
+    }
+
+    /// A coluna em texto pré-formatado (`format: "pre"`): o cupom de 40/48 colunas fica alinhado.
+    pub fn pre(mut self) -> Self {
+        self.format = Some(PreviewFormat::Pre);
+        self
     }
 }
 
@@ -150,4 +168,17 @@ pub(crate) async fn preview(
         t
     });
     Ok(json!({ "message": message, "fill": fill, "table": table }))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn coluna_pre_vai_com_format_e_a_comum_sem() {
+        let plain = serde_json::to_value(PreviewColumn::new("item", "Item")).unwrap();
+        assert_eq!(plain, json!({ "name": "item", "label": "Item" }));
+        let pre = serde_json::to_value(PreviewColumn::new("linha", "Relação").pre()).unwrap();
+        assert_eq!(pre, json!({ "name": "linha", "label": "Relação", "format": "pre" }));
+    }
 }

@@ -45,6 +45,13 @@ export const Painel: Story = { args: { page: '/painel' } };
 export const Vencimentos: Story = { args: { page: '/vencimentos' } };
 
 /**
+ * O início do financeiro: KPI com a variação sobre setembro (`compare`; no atrasado, `invert`: subir é ruim), o aviso
+ * com a soma (`measure` e `{value}`), a lista com abas por entidade e filtro (`tabs`) e a lista de 42 faturas com o
+ * seletor da situação (`filter`), que rola por dentro do cartão acima de 10 linhas.
+ */
+export const Financeiro: Story = { args: { page: '/financeiro' } };
+
+/**
  * `pages[].apiDocs`: o openapi.json do app por tag, com busca e "Experimentar" em cada rota. Aqui o documento e as
  * respostas vêm do adaptador em memória (GET roda; POST responde 501, como servidor sem a rota).
  */

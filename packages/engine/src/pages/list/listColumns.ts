@@ -7,12 +7,13 @@ import type { ListColumn } from './ListTable';
 export function listColumns(def: EntityDef): ListColumn[] {
   const field = (name: string) => def.fields.find((f) => f.name === name)!;
   return (def.views?.list?.columns ?? defaultColumns(def)).map((c: ColumnDef) => {
-    const { secondary, join, avatar, link, weight, tone, ...col } = typeof c === 'string' ? { field: c } : c;
+    const { secondary, join, avatar, link, href, weight, tone, ...col } = typeof c === 'string' ? { field: c } : c;
     const extras = {
       secondary: secondary ? field(secondary) : undefined,
       join: join?.map(field),
       avatar,
       link,
+      href,
       weight,
       tone: tone && { field: field(tone.field), map: tone.map }
     };

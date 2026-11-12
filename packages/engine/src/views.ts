@@ -59,7 +59,10 @@ export function defaultSortParam(def: EntityDef): string | undefined {
   return sort || undefined;
 }
 
-/** Até `limit` registros, em páginas de 100 (o máximo do contrato), e o total que existe. */
+/** Tamanhos de página do GET da lista (spec/v0/openapi.yaml). */
+const PAGE_SIZES = [10, 25, 50, 100] as const;
+
+/** Até `limit` registros, em páginas de até 100 (o máximo do contrato), e o total que existe. */
 export async function listUpTo(
   client: C3Client,
   entity: string,
@@ -67,8 +70,9 @@ export async function listUpTo(
   limit: number
 ): Promise<{ rows: WireRecord[]; total: number }> {
   const rows: WireRecord[] = [];
+  // o contrato só aceita 10, 25, 50 ou 100 por página (422 fora disso): a menor que cobre o limite
+  const pageSize = PAGE_SIZES.find((s) => s >= limit) ?? 100;
   for (let page = 1; ; page++) {
-    const pageSize = Math.min(100, limit);
     const res = await client.list(entity, { ...params, page, pageSize });
     rows.push(...res.data);
     if (rows.length >= Math.min(limit, res.meta.total) || res.data.length < pageSize)

@@ -1,105 +1,71 @@
-import { useIntl } from 'react-intl';
-import { Link, useNavigate } from 'react-router';
-import useSWR from 'swr';
+import { useState } from 'react';
 
 // material-ui
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Skeleton from '@mui/material/Skeleton';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Typography from '@mui/material/Typography';
+import MenuItem from '@mui/material/MenuItem';
+import Stack from '@mui/material/Stack';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import TextField from '@mui/material/TextField';
 
 import { fieldLabel, useEngine, useText } from '../../context';
-import { ListWidget as List, widgetLink, widgetWhere } from '../../dashboard';
-import { findOption, isNumeric as numeric } from '../../format';
-import type { FieldDef } from '../../types';
-import { Cell } from '../list/Cell';
-import WidgetError from './WidgetError';
+import { bothWhere, ListWidget as List } from '../../dashboard';
+import { listTabs, localWhere } from '../../dashboardList';
+import { findOption } from '../../format';
+import ListWidgetTable from './ListWidgetTable';
 
-/** Lista curta: os primeiros registros do recorte, cada um leva ao registro; o rodapé leva à lista inteira. */
+/**
+ * Lista do painel: com `tabs`, uma aba por entidade e filtro ("A receber" / "A pagar"); com `filter`, um seletor do
+ * campo enum ou boolean filtra sem sair do painel. A tabela em si é a `ListWidgetTable`.
+ */
 export default function ListWidget({ widget }: { widget: List }) {
-  const { client, entities, org } = useEngine();
+  const { entities } = useEngine();
   const text = useText();
-  const navigate = useNavigate();
-  const { locale } = useIntl();
-  const { def, capabilities } = entities[widget.entity];
-  const limit = widget.limit ?? 5;
-  const where = widgetWhere(widget, def);
-  const { data, error } = useSWR(['c3-list', widget.entity, 'widget', where, widget.sort, limit, org?.active], () =>
-    client.list(widget.entity, { pageSize: 10, sort: widget.sort, where })
-  );
-  const names = widget.columns ?? (def.titleField ? [def.titleField] : []);
-  const fields = names.map((n) => def.fields.find((f) => f.name === n)).filter((f): f is FieldDef => !!f);
-  const optionLabel = (f: FieldDef) => (v: string) => text(findOption(f, v)?.label, v);
-
-  if (error)
-    return (
-      <Box sx={{ p: 2.5 }}>
-        <WidgetError error={error} />
-      </Box>
-    );
-  if (!data)
-    return (
-      <Box sx={{ p: 2.5 }}>
-        {[0, 1, 2].map((i) => (
-          <Skeleton key={i} height={32} />
-        ))}
-      </Box>
-    );
-  const rows = data.data.slice(0, limit);
-  if (!rows.length)
-    return (
-      <Typography color="text.secondary" sx={{ p: 4, textAlign: 'center' }}>
-        Nenhum registro.
-      </Typography>
-    );
+  // aba de entidade que o usuário não lista não aparece
+  const tabs = listTabs(widget).filter((t) => entities[t.entity]?.capabilities.list);
+  const [tab, setTab] = useState(0);
+  const [value, setValue] = useState('');
+  const current = tabs[Math.min(tab, tabs.length - 1)];
+  if (!current) return null;
+  const def = entities[current.entity].def;
+  const field = widget.filter ? def.fields.find((f) => f.name === widget.filter) : undefined;
+  const shown = { ...current, where: bothWhere(current.where, localWhere(def, field?.name, value)) };
+  const options = field?.type === 'boolean' ? [true, false] : (field?.options ?? []).map((o) => o.value);
+  const optionText = (v: (typeof options)[number]) =>
+    typeof v === 'boolean' ? (v ? 'Sim' : 'Não') : text(findOption(field!, v)?.label, String(v));
 
   return (
     <>
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            {fields.map((f) => (
-              <TableCell key={f.name} align={numeric(f) ? 'right' : 'left'}>
-                {fieldLabel(f, text)}
-              </TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {rows.map((row) => (
-            <TableRow
-              key={row.id}
-              hover={capabilities.read}
-              onClick={capabilities.read ? () => navigate(`/${widget.entity}/${row.id}`) : undefined}
-              sx={{ cursor: capabilities.read ? 'pointer' : undefined }}
-            >
-              {fields.map((f, i) => (
-                <TableCell key={f.name} align={numeric(f) ? 'right' : 'left'}>
-                  {i === 0 && capabilities.read ? (
-                    <Link to={`/${widget.entity}/${row.id}`} style={{ color: 'inherit' }} onClick={(e) => e.stopPropagation()}>
-                      <Cell field={f} row={row} locale={locale} optionLabel={optionLabel(f)} />
-                    </Link>
-                  ) : (
-                    <Cell field={f} row={row} locale={locale} optionLabel={optionLabel(f)} />
-                  )}
-                </TableCell>
+      {(tabs.length > 1 || field) && (
+        <Stack direction="row" sx={{ px: 1.5, gap: 1, alignItems: 'center', borderBottom: 1, borderColor: 'divider' }}>
+          {tabs.length > 1 && (
+            <Tabs value={tab} onChange={(_, i: number) => setTab(i)} variant="scrollable" sx={{ flex: 1, minHeight: 44 }}>
+              {tabs.map((t, i) => (
+                <Tab key={i} value={i} label={text(t.label ?? '')} sx={{ minHeight: 44 }} />
               ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      {data.meta.total > rows.length && (
-        <Box sx={{ px: 1.5, py: 1 }}>
-          <Button component={Link} to={widgetLink(widget)} size="small">
-            {`Ver todos (${data.meta.total.toLocaleString(locale)})`}
-          </Button>
-        </Box>
+            </Tabs>
+          )}
+          {field && (
+            <TextField
+              select
+              size="small"
+              label={fieldLabel(field, text)}
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              sx={{ my: 1, ml: 'auto', minWidth: 160 }}
+              // "Todos" é o valor vazio: aparece escrito, com o rótulo na borda
+              slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}
+            >
+              <MenuItem value="">Todos</MenuItem>
+              {options.map((o) => (
+                <MenuItem key={String(o)} value={String(o)}>
+                  {optionText(o)}
+                </MenuItem>
+              ))}
+            </TextField>
+          )}
+        </Stack>
       )}
+      <ListWidgetTable key={`${tab}:${value}`} widget={shown} />
     </>
   );
 }

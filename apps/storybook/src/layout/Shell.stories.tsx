@@ -35,3 +35,16 @@ export const RegistroAberto: Story = { name: 'Registro aberto', parameters: { ro
 
 /** `layout.header.search: { records: true }`: o Ctrl K acha telas e também registros pelo GET /_search, agrupados. */
 export const BuscaCtrlK: Story = { name: 'Busca do Ctrl K', play: searchFor('ana') };
+
+/**
+ * Consulta do sistema com `columns[].href`: a linha não abre sozinha, mas o produto é link para o kardex dele,
+ * montado pelos campos da linha (`/movimento?f.produto={produto}`), sem ida ao servidor.
+ */
+export const PosicaoParaKardex: Story = { name: 'Posição de estoque, link para o kardex', parameters: { route: '/posicao_estoque' } };
+
+/**
+ * Agenda da semana (`views.calendar` com `range: "week"` e `slot: "hour"`): uma coluna por dia, uma linha por hora, cada
+ * pedido na hora da entrega. A cor vem da situação (`map`) e a regra do atrasado vence o mapa (vermelho). É uma visão só
+ * de leitura: não arrasta nem cria. O clique leva à entrega (`open.href`).
+ */
+export const AgendaSemana: Story = { name: 'Controle semanal, agenda da semana', parameters: { route: '/agenda_entrega/calendar' } };

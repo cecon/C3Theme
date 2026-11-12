@@ -703,6 +703,18 @@
                   "description": "Todo, no lugar do filtro do widget (o preset e o where não entram). Ausente: o filtro do widget."
                 }
               }
+            },
+            "compare": {
+              "type": "object",
+              "required": ["label"],
+              "additionalProperties": false,
+              "description": "Variação da medida sobre outro recorte, com a seta e a cor (ex.: saldo projetado de hoje x o de 30 dias). O recorte é o preset e o where daqui, no lugar dos do widget. Base zero: sem variação.",
+              "properties": {
+                "label": { "$ref": "#/$defs/text", "description": "O outro recorte, depois de 'vs.' (ex.: 'em 30 dias')." },
+                "preset": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+                "where": { "$ref": "entity.schema.json#/$defs/condition" },
+                "invert": { "type": "boolean", "default": false, "description": "Subir é ruim (despesa, atraso): a alta fica vermelha e a queda verde." }
+              }
             }
           }
         },
@@ -873,8 +885,39 @@
             "limit": {
               "type": "integer",
               "minimum": 1,
-              "maximum": 10,
-              "default": 5
+              "maximum": 200,
+              "default": 5,
+              "description": "Linhas mostradas, até 200. Acima de 10, o cartão rola por dentro com o cabeçalho fixo; o resto fica no 'Ver todos'."
+            },
+            "tabs": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 6,
+              "description": "Abas no cartão, cada uma com a sua entidade e filtro (ex.: 'A receber' sobre titulo_receber e 'A pagar' sobre titulo_pagar). Colunas, ordem e limite vêm do widget quando a aba não diz; o preset e o where do widget não entram (cada aba tem o seu). O bind do widget vale em todas as abas.",
+              "items": {
+                "type": "object",
+                "required": ["label"],
+                "additionalProperties": false,
+                "properties": {
+                  "label": { "$ref": "#/$defs/text" },
+                  "entity": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$", "description": "Padrão: a entidade do widget." },
+                  "preset": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+                  "where": { "$ref": "entity.schema.json#/$defs/condition" },
+                  "columns": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 4,
+                    "uniqueItems": true,
+                    "items": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$" }
+                  },
+                  "sort": { "type": "string" }
+                }
+              }
+            },
+            "filter": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,62}$",
+              "description": "Campo enum ou boolean (em cada aba, quando há abas): um seletor no cartão filtra a lista sem sair do painel, com 'Todos' para tirar o filtro."
             },
             "bind": {
               "type": "object",
@@ -931,7 +974,12 @@
             },
             "text": {
               "$ref": "#/$defs/text",
-              "description": "Texto do aviso; {count} vira a contagem."
+              "description": "Texto do aviso; {count} vira a contagem e, com measure, {value} a soma no formato do campo (ex.: '{count} títulos sem autorização vencendo, {value}')."
+            },
+            "measure": {
+              "type": "string",
+              "pattern": "^sum:[a-z][a-z0-9_]{0,62}$",
+              "description": "Soma mostrada em {value} ('sum:<campo>' integer ou decimal), na mesma chamada da contagem."
             },
             "tone": {
               "enum": ["info", "warning", "error"],

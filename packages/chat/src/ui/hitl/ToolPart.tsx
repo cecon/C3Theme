@@ -29,7 +29,7 @@ import ArgsSummary from './ArgsSummary';
 import ClosedLine from './ClosedLine';
 import DeclineBox from './DeclineBox';
 import useDecision from './useDecision';
-import { actionsSx, headerSx, secondarySx, spacerSx } from './sx';
+import { actionsSx, headerSx, secondarySx, spacerSx, warningChipSx } from './sx';
 
 /**
  * `c3.tool`: o assistente quer rodar uma ferramenta. O humano vê o quê e com quais argumentos, pode editar antes,
@@ -71,7 +71,9 @@ function ToolBody({ part, open, onAnswer, proposal: p }: UiPartProps & { proposa
           {t('c3.chat.tool.wants', { tool: name })}
         </Typography>
         {p.risk === 'high' && <Chip size="small" color="error" variant="outlined" label={t('c3.chat.tool.risk.high')} />}
-        {p.risk === 'medium' && <Chip size="small" color="warning" variant="outlined" label={t('c3.chat.tool.risk.medium')} />}
+        {p.risk === 'medium' && (
+          <Chip size="small" color="warning" variant="outlined" sx={warningChipSx} label={t('c3.chat.tool.risk.medium')} />
+        )}
       </Stack>
       {p.tool.description && (
         <Typography variant="body2" sx={secondarySx}>

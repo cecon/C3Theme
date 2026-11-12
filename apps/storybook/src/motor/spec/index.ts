@@ -2,14 +2,17 @@
 
 import type { AppDef, EntityDef } from '@c3theme/engine';
 
+import agendaEntrega from './agenda_entrega.json';
 import app from './app.json';
 import cliente from './cliente.json';
 import contaContabil from './conta_contabil.json';
 import orcadoRealizado from './orcado_realizado.json';
 import orcamento from './orcamento.json';
+import posicaoEstoque from './posicao_estoque.json';
 import demonstrativo from './demonstrativo.json';
 import boleto from './boleto.json';
 import configuracaoLoja from './configuracao_loja.json';
+import entrega from './entrega.json';
 import evento from './evento.json';
 import fatura from './fatura.json';
 import fornecedor from './fornecedor.json';
@@ -44,5 +47,8 @@ export const ENTITIES = [
   orcadoRealizado,
   orcamento,
   demonstrativo,
-  boleto
+  boleto,
+  entrega,
+  posicaoEstoque,
+  agendaEntrega
 ] as unknown as EntityDef[];
