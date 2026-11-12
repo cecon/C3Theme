@@ -26,7 +26,12 @@ export default function AssistantButton({ def }: { def: ChatDef }) {
           <Magicpen size={20} variant="Bulk" />
         </IconButton>
       </Tooltip>
-      <Drawer anchor="right" open={open} onClose={() => setOpen(false)} slotProps={{ paper: { sx: { width: { xs: '100%', sm: 460 } } } }}>
+      <Drawer
+        anchor="right"
+        open={open}
+        onClose={() => setOpen(false)}
+        slotProps={{ paper: { 'aria-label': title, sx: { width: { xs: '100%', sm: 460 } } } }}
+      >
         {open && <ChatPanel def={def} onClose={() => setOpen(false)} />}
       </Drawer>
     </>
