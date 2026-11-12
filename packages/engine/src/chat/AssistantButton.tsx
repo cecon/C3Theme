@@ -1,4 +1,4 @@
-// Botão do assistente no header (`layout.header.assistant`, ADR 0005): abre o ChatPanel numa gaveta à direita. A
+// Botão do assistente no header (`layout.header.assistant`, ADR 0006): abre o ChatPanel numa gaveta à direita. A
 // conversa só abre (e o SSE só conecta) quando o usuário abre a gaveta.
 
 import { useState } from 'react';

@@ -16,7 +16,7 @@ Duas camadas:
 
 ## Num sistema com o motor: declare no app.json, não monte em TS
 
-[ADR 0005](../../../../docs/adr/0005-chat-no-app-json.md): o assistente é JSON. A shell monta o `AssistantPanel`, o transporte HTTP e as partes do motor.
+[ADR 0006](../../../../docs/adr/0006-chat-no-app-json.md): o assistente é JSON. A shell monta o `AssistantPanel`, o transporte HTTP e as partes do motor.
 
 ```json
 { "layout": { "header": { "assistant": { "title": "Assistente", "suggestions": ["Cancelar o último pedido"] } } },

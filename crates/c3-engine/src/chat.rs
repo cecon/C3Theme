@@ -1,4 +1,4 @@
-//! Chat com o agente (`pages[].chat`, `layout.header.assistant`; spec/v0/chat.yaml, ADR 0005). O agente é do
+//! Chat com o agente (`pages[].chat`, `layout.header.assistant`; spec/v0/chat.yaml, ADR 0006). O agente é do
 //! sistema, como a autenticação: ele guarda o histórico, chama o modelo e decide a resposta. O motor só expõe as
 //! rotas, separa as conversas por usuário e confere cada parte de interface antes de mandar ao navegador.
 //!

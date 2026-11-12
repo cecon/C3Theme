@@ -1,4 +1,4 @@
-// Página de chat (`pages[].chat`, ADR 0005): o ChatPanel na altura útil da tela, abaixo do cabeçalho da shell.
+// Página de chat (`pages[].chat`, ADR 0006): o ChatPanel na altura útil da tela, abaixo do cabeçalho da shell.
 
 import Paper from '@mui/material/Paper';
 

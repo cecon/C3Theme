@@ -504,7 +504,7 @@
     "chat": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Conversa com o agente do sistema (ADR 0005). O agente é do sistema, como a autenticação: o motor expõe as rotas de spec/v0/chat.yaml e desenha o AssistantPanel; o que o agente pede ao humano são as partes de agent-ui.schema.json.",
+      "description": "Conversa com o agente do sistema (ADR 0006). O agente é do sistema, como a autenticação: o motor expõe as rotas de spec/v0/chat.yaml e desenha o AssistantPanel; o que o agente pede ao humano são as partes de agent-ui.schema.json.",
       "properties": {
         "messageActions": { "type": "array", "items": { "$ref": "#/$defs/chatMessageAction" } },
         "lanes": { "$ref": "#/$defs/chatLanes" },

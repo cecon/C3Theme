@@ -1,4 +1,4 @@
-// O assistente montado pela spec (`$defs/chat`, ADR 0005): o AssistantPanel do @c3theme/chat sobre o transporte do
+// O assistente montado pela spec (`$defs/chat`, ADR 0006): o AssistantPanel do @c3theme/chat sobre o transporte do
 // cliente do motor (`client.chat`), com as partes do motor e a telemetria da shell. Nenhum TS do sistema.
 
 import { useMemo, useState } from 'react';

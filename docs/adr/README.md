@@ -9,7 +9,7 @@ trocada ganha um ADR novo, e o antigo passa a `Substituída por NNNN`.
 | [0002](0002-padroes-de-qualidade.md)           | Padrões de qualidade e como cada um é medido             | Aceita                                  |
 | [0003](0003-motor-sem-excecoes.md)             | Tudo pelo motor, sem exceções; o que falta vira issue    | Aceita                                  |
 | [0004](0004-moldura-do-desktop-no-app-json.md) | Moldura do desktop no app.json, plataforma por porta     | Aceita                                  |
-| [0005](0005-chat-no-app-json.md)               | Chat e assistente declarados no app.json, agente é porta | Aceita                                  |
+| [0005](0006-chat-no-app-json.md)               | Chat e assistente declarados no app.json, agente é porta | Aceita                                  |
 | [0005](0005-conversas-a-parte.md)              | Conversas à parte e ações por mensagem no chat           | Aceita                                  |
 
 ## Formato

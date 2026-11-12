@@ -1,4 +1,4 @@
-// `$defs/chat` do app.json (`pages[].chat`, `layout.header.assistant`; ADR 0005) em props do AssistantPanel. Puro.
+// `$defs/chat` do app.json (`pages[].chat`, `layout.header.assistant`; ADR 0006) em props do AssistantPanel. Puro.
 
 import type { Text } from '../types';
 import type { ChatLanesSpec } from '../agent/lanes';

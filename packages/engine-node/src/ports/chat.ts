@@ -1,4 +1,4 @@
-// Porta do chat com o agente (`pages[].chat`, `layout.header.assistant`; spec/v0/chat.yaml, ADR 0005): o agente é do
+// Porta do chat com o agente (`pages[].chat`, `layout.header.assistant`; spec/v0/chat.yaml, ADR 0006): o agente é do
 // sistema, que guarda as conversas e fala com o modelo. Sem ela, as rotas /_chat respondem 404. A resposta sai pela
 // `ChatRoom` que cada chamada recebe (guarde e responda depois).
 
