@@ -12,7 +12,21 @@ Duas camadas:
 - Caixa do agente numa linha só, como nos apps de agente: `AgentComposer variant="inline"` com `idleAction` (voz) e `ComposerIconButton` nas `endActions`. No `AssistantPanel`, passe em `composer`. Não monte composer próprio para isso.
 - Caixa com barra embaixo (texto numa linha com o enviar dentro; +, voz, modelo, esforço e `ContextRing` embaixo): `variant="split"`. Voz ao vivo: `AssistantPanel voice={...}` (`VoiceConversation`), ligada pelo `idleAction`; o áudio e o provedor são do app, `useAudioLevel` dá o volume.
 
-**Regra ([ADR 0003](../../../../docs/adr/0003-motor-sem-excecoes.md)): o chat não é exceção ao motor.** Toda interação que o agente pede ao humano é uma parte do catálogo (`spec/v0/agent-ui.schema.json`); kind que não existe vira issue `lacuna:` no `cecon/C3Theme`, nunca renderizador próprio do sistema. A tela do chat em si ainda se monta em TS até a issue #71 (chat no `app.json`) fechar: enquanto isso, cite `// lacuna: cecon/C3Theme#71` onde montar o `AssistantPanel`.
+**Regra ([ADR 0003](../../../../docs/adr/0003-motor-sem-excecoes.md)): o chat não é exceção ao motor.** Toda interação que o agente pede ao humano é uma parte do catálogo (`spec/v0/agent-ui.schema.json`); kind que não existe vira issue `lacuna:` no `cecon/C3Theme`, nunca renderizador próprio do sistema.
+
+## Num sistema com o motor: declare no app.json, não monte em TS
+
+[ADR 0006](../../../../docs/adr/0006-chat-no-app-json.md): o assistente é JSON. A shell monta o `AssistantPanel`, o transporte HTTP e as partes do motor.
+
+```json
+{ "layout": { "header": { "assistant": { "title": "Assistente", "suggestions": ["Cancelar o último pedido"] } } },
+  "pages": [{ "path": "/assistente", "title": "Assistente",
+              "chat": { "conversation": "assistant", "parts": ["c3.form", "c3.record", "c3.action"] } }] }
+```
+
+- `layout.header.assistant` (`true` ou o objeto) põe o botão que abre a gaveta; `pages[].chat` é a página inteira. Mesmo `conversation` nos dois é a mesma conversa (uma por usuário).
+- O agente é do backend do sistema, pela porta `Chat` (c3-engine: `Engine::builder(..).chat(port)`; engine-node: `buildEngine({ chat })`), nas rotas `/_chat/{conversation}/...` de `spec/v0/chat.yaml`. A resposta sai pelo `ChatRoom` (`message`, `delta`, `emit`); no Rust, parte recusada pelo `check_agent_part` não sai. Exemplo completo: `crates/c3-example/src/assistant.rs` e `apps/c3-example-node/src/assistant.ts`.
+- Montar o `AssistantPanel` à mão (abaixo) é para quem não usa o motor ou para o catálogo do Storybook.
 
 Instale preso a um commit (`github:cecon/C3Theme#<sha>&path:packages/chat`) e **leia o `packages/chat/CHANGELOG.md`** ao atualizar: as entradas marcadas **Quebra** exigem mudar o app (ex.: na 0.6.0, `switch` exaustivo em `ChatEvent` precisa tratar `ui.cancel`).
 
@@ -34,7 +48,7 @@ const chat = useMessageWindow(transport, conversationId, { me });
 - **Eventos** (`subscribe`): `message` (nova ou atualizada; repetir é seguro), `removed`, `delta` (pedaço de texto; `channel: 'reasoning'` vai para o raciocínio; `done` encerra), `typing`, `ui.cancel`.
 - Streaming: mande primeiro a `message` com `streaming: true` e depois os `delta`. Sem texto ainda, a tela mostra "Pensando…".
 - `Message.format: 'markdown'` aceita negrito, listas, tabelas e código, **sem HTML**. `tools` mostra as ferramentas usadas; `reasoning`, o raciocínio recolhível; `question`, o card de pergunta com opções.
-- Para protótipo e teste: `memoryTransport(seed, { latencyMs, me, onAnswerUi })`. Exemplo completo de agente falso: `apps/engine-demo/src/assistant/` no C3Theme.
+- Para protótipo e teste: `memoryTransport(seed, { latencyMs, me, onAnswerUi })`; com o motor em memória, passe-o em `createMemoryClient({ ..., chat })`.
 
 ## Telas do motor dentro da resposta
 
@@ -56,7 +70,7 @@ O agente **propõe** e o motor **grava**. A ferramenta do agente nunca grava soz
     "suggested": { "credit_limit": "média dos clientes do mesmo porte" } } }
 ```
 
-- No front: `agentUiRenderers` do `@c3theme/engine` no `uiRenderers` do `AssistantPanel`, dentro do `<C3Shell>` (ex.: um botão em `layout.header.actions`) ou de um `EngineProvider`. Fora disso, os cards não acham o cliente da API.
+- No front, com o motor, a shell já passa `agentUiRenderers` (filtrados por `parts`). Montando à mão: `agentUiRenderers` do `@c3theme/engine` no `uiRenderers` do `AssistantPanel`, dentro de um `EngineProvider`. Fora disso, os cards não acham o cliente da API.
 - `values` vai no formato trafegado: decimal em string, reference como `{ id, title }` para a tela mostrar o nome.
 - `suggested` diz de onde veio cada valor, e a tela marca o campo. Campo com `aiReview: true` (preço, CFOP, conta) só grava depois de o usuário conferir.
 - **Nunca no catálogo**: campo `writeOnly` (senha, PIN) e `file`; no rascunho, campo `readOnly`; na alteração, `createOnly`. A recusa é do motor, não do prompt, porque o texto de um registro pode tentar induzir o modelo a pedir a senha.

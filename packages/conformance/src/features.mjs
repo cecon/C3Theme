@@ -28,6 +28,7 @@ import { togetherTests } from './suite-together.mjs';
 import { pagesTests } from './suite-pages.mjs';
 import { sourceTests } from './suite-source.mjs';
 import { liveTests } from './suite-live.mjs';
+import { chatTests } from './suite-chat.mjs';
 import { notificationsTests } from './suite-notifications.mjs';
 import { searchTests } from './suite-search.mjs';
 import { storeTests } from './suite-store.mjs';
@@ -62,5 +63,6 @@ export function featureTests(ctx) {
   storeTests(ctx);
   liveTests(ctx);
   notificationsTests(ctx);
+  chatTests(ctx);
   searchTests(ctx);
 }

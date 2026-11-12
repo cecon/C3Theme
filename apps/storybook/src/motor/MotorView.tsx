@@ -3,7 +3,19 @@
 
 import type { ComponentType } from 'react';
 
-import { ApiDocs, EntityBoard, EntityCalendar, EntityDashboard, EntityList, EntityMap, EntityReport, WizardPage } from '@c3theme/engine';
+import Box from '@mui/material/Box';
+
+import {
+  ApiDocs,
+  ChatPanel,
+  EntityBoard,
+  EntityCalendar,
+  EntityDashboard,
+  EntityList,
+  EntityMap,
+  EntityReport,
+  WizardPage
+} from '@c3theme/engine';
 
 import { pageDef } from './source';
 
@@ -12,7 +24,7 @@ export interface MotorViewProps {
   entity?: string;
   /** Visão da entidade (`views.board`, `.calendar`, `.report`, `.map`, `.gallery`). */
   view?: 'board' | 'calendar' | 'report' | 'map' | 'gallery';
-  /** Caminho da página do app.json com `dashboard`, `apiDocs` ou `wizard`. */
+  /** Caminho da página do app.json com `dashboard`, `apiDocs`, `wizard` ou `chat`. */
   page?: string;
 }
 
@@ -29,6 +41,12 @@ export default function MotorView({ entity, view = 'board', page }: MotorViewPro
   const def = page ? pageDef(page) : undefined;
   if (def?.apiDocs) return <ApiDocs key={page} def={def.apiDocs} />;
   if (def?.wizard) return <WizardPage key={page} wizard={def.wizard} />;
+  if (def?.chat)
+    return (
+      <Box sx={{ height: 640, display: 'flex', flexDirection: 'column', border: 1, borderColor: 'divider', borderRadius: 1 }}>
+        <ChatPanel key={page} def={def.chat} />
+      </Box>
+    );
   if (def) return <EntityDashboard key={page} dashboard={def.dashboard!} />;
   const View = VIEWS[view];
   return <View key={`${entity}-${view}`} entity={entity!} />;

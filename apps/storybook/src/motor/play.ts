@@ -30,3 +30,9 @@ export const searchFor =
     await userEvent.type(await screen.findByRole('textbox', { name: 'Ir para…' }), text);
     await screen.findByText('Clientes', { selector: '.MuiListSubheader-root' });
   };
+
+/** Abre o assistente pelo botão do cabeçalho (`layout.header.assistant`): a gaveta com a conversa e as sugestões. */
+export const openAssistant: Play = async ({ canvasElement }) => {
+  await userEvent.click(await within(canvasElement).findByRole('button', { name: 'Assistente' }));
+  await screen.findByText('Cadastrar o cliente Padaria Bom Dia');
+};

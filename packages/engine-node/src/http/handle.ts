@@ -4,6 +4,8 @@
 import { aggregate } from '../app/aggregate';
 import { listNotifications, notificationEvents, readNotifications } from '../app/bell';
 import { runAction, runBulk } from '../app/action';
+import { chatAnswer, chatAnswerUi, chatEvents, chatHistory, chatSend, chatStop } from '../app/chat';
+import { chatLanes, chatOpenLane, chatMessageAction } from '../app/chat-lanes';
 import { prefill } from '../app/action-prefill';
 import { preview } from '../app/action-preview';
 import type { ActionReply } from '../app/action-reply';
@@ -73,6 +75,7 @@ function route(method: string, p: string[]): Route | 'method' | undefined {
     return undefined;
   }
   if (p.length === 1 && fixed(0, '_search')) return pick({ GET: async (e, r) => json(await search(e, r)) });
+  if (p[0] === '_chat') return chatRoute(p, pick);
   if (p[0] === '_notifications') {
     if (p.length === 1) return pick({ GET: async (e, r) => json(await listNotifications(e, r)) });
     if (p.length === 2 && fixed(1, '_read'))
@@ -134,6 +137,39 @@ function route(method: string, p: string[]): Route | 'method' | undefined {
     return pick({ GET: async (e, r, x) => json(await prefill(e, r, x[0], x[1], x[3])) });
   if (p.length === 5 && fixed(2, '_actions') && fixed(4, '_preview'))
     return pick({ POST: async (e, r, x) => json(await preview(e, r, x[0], x[1], x[3], objectOrEmpty(r.body))) });
+  return undefined;
+}
+
+const noContent = (): EngineResponse => ({ status: 204, headers: {} });
+const sseResponse = (stream: AsyncIterable<string>): EngineResponse => ({
+  status: 200,
+  headers: { 'content-type': 'text/event-stream', 'cache-control': 'no-cache' },
+  stream
+});
+
+/** Rotas de spec/v0/chat.yaml: `/_chat/{conversation}/...`. */
+function chatRoute(p: string[], pick: (table: Record<string, Route>) => Route | 'method'): Route | 'method' | undefined {
+  const [, c, a, m, b, part] = p;
+  if (p.length === 3 && a === '_lanes')
+    return pick({
+      GET: async (e, r) => json(await chatLanes(e, r, c)),
+      POST: async (e, r) => ({ ...json(await chatOpenLane(e, r, c, objectOrEmpty(r.body))), status: 201 })
+    });
+  if (p.length === 6 && a === 'messages' && b === '_actions')
+    return pick({ POST: async (e, r) => json(await chatMessageAction(e, r, c, m, part)) });
+  if (p.length === 3 && a === 'messages')
+    return pick({
+      GET: async (e, r) => json(await chatHistory(e, r, c)),
+      POST: async (e, r) => json(await chatSend(e, r, c, objectOrEmpty(r.body)))
+    });
+  if (p.length === 3 && a === '_events') return pick({ GET: async (e, r) => sseResponse(chatEvents(e, r, c)) });
+  if (p.length === 3 && a === '_stop') return pick({ POST: async (e, r) => (await chatStop(e, r, c), noContent()) });
+  if (p.length === 5 && a === 'messages' && b === '_answer')
+    return pick({ POST: async (e, r) => (await chatAnswer(e, r, c, m, objectOrEmpty(r.body)), noContent()) });
+  if (p.length === 6 && a === 'messages' && b === '_ui')
+    return pick({
+      POST: async (e, r) => (await chatAnswerUi(e, r, { conversation: c, message: m, part }, objectOrEmpty(r.body)), noContent())
+    });
   return undefined;
 }
 

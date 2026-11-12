@@ -69,6 +69,10 @@ export { agentUiRenderers, FormPart, RecordPart, ActionPart, checkAction, checkF
 // telemetria do assistente: `taskOf` do <AssistantPanel> (mesmos entity/op/action da tela, com channel 'chat')
 export { agentTaskOf } from './agent';
 export type { AgentTask } from './agent';
+// chat com o agente pela spec (`pages[].chat`, `layout.header.assistant`): o painel e o transporte HTTP de /_chat
+export { default as ChatPanel } from './chat/ChatPanel';
+export { httpChatTransport } from './chat/httpChat';
+export type { AgentKind, ChatDef } from './chat/chatDef';
 // conversas à parte e ações por mensagem do chat declarado (issue #10)
 export { BRANCH_ACTION, hasAside, laneActions, lanesApi, runLaneAction } from './agent';
 export type { ChatLanesDef, ChatLanesSpec, ChatMessageActionDef, LaneAction, LanesApi, MessageActionReply, WireLane } from './agent';

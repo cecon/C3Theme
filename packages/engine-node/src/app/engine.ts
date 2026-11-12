@@ -4,10 +4,12 @@ import { ApiError } from '../domain/errors';
 import type { Children } from '../domain/children-spec';
 import type { App, Entity } from '../domain/entity';
 import type { RowRule } from '../domain/row-access';
+import type { Chat } from '../ports/chat';
 import type { Notifications } from '../ports/notifications';
 import type { Search } from '../ports/search';
 import type { Store } from '../ports/store';
 import type { Bell } from './bell';
+import { ChatFeed } from './chat';
 import type { Change, Live } from './live';
 import type { System } from './system';
 
@@ -26,7 +28,11 @@ export class Engine {
     /** Porta da busca do Ctrl K; sem ela, /_search responde 404. */
     readonly search?: Search,
     /** Bancos a mais, das entidades com `store` (só leitura). */
-    readonly stores: Map<string, Store> = new Map()
+    readonly stores: Map<string, Store> = new Map(),
+    /** Porta do chat com o agente; sem ela, /_chat responde 404. */
+    readonly chat?: Chat,
+    /** Canal das conversas abertas (SSE de /_chat/{conversation}/_events). */
+    readonly chatFeed: ChatFeed = new ChatFeed()
   ) {}
 
   /** O banco de onde a entidade é lida: o dela (`store`) ou o do app. */

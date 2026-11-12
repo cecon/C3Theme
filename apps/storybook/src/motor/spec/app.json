@@ -30,6 +30,10 @@
   "layout": {
     "orientation": "vertical",
     "header": {
+      "assistant": {
+        "title": "Assistente",
+        "suggestions": ["Cadastrar o cliente Padaria Bom Dia", "Relatório de faturas do mês"]
+      },
       "search": {
         "records": true
       },
@@ -128,6 +132,16 @@
     }
   },
   "pages": [
+    {
+      "path": "/assistente",
+      "title": "Assistente",
+      "chat": {
+        "title": "Assistente",
+        "placeholder": "Peça um cadastro ou um relatório",
+        "suggestions": ["Cadastrar o cliente Padaria Bom Dia", "Relatório de faturas do mês"],
+        "parts": ["c3.form", "c3.record", "c3.action"]
+      }
+    },
     {
       "path": "/painel",
       "title": "Painel de faturas",

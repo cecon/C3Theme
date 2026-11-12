@@ -3,15 +3,14 @@
 
 import { C3Shell, httpAuth } from '@c3theme/engine';
 
-import AssistantButton from './assistant/AssistantButton';
 import Balcao from './balcao/Balcao';
 
 // login pela shell: telas pelo `auth` do app.json, autenticação pelo /auth/* do c3-example
 const auth = httpAuth('/api');
 
-// `layout.header.actions` do app.json cita "assistente" (o botão que abre o chat com as telas do motor) e a página
-// registrada /balcao cita "balcao"
-const components = { assistente: AssistantButton, balcao: Balcao };
+// a página registrada /balcao cita "balcao"; o assistente (`layout.header.assistant` e a página /assistente) vem do
+// app.json e fala com o /_chat do c3-example
+const components = { balcao: Balcao };
 
 export default function App() {
   return <C3Shell apiUrl="/api" auth={auth} components={components} theme={{ storageKey: 'c3-engine-demo' }} />;

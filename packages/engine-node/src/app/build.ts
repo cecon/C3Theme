@@ -10,6 +10,7 @@ import { parseRowRules } from '../domain/row-access';
 import { applySections } from '../domain/section';
 import { type Rec, isTextual } from '../domain/types';
 import type { Hooks } from '../ports/hooks';
+import type { Chat } from '../ports/chat';
 import type { Notifications } from '../ports/notifications';
 import type { Search } from '../ports/search';
 import type { Store } from '../ports/store';
@@ -34,6 +35,8 @@ export interface EngineOptions {
   bell?: Bell;
   /** Busca do Ctrl K (`header.search: { records: true }`): o que o sistema acha para o texto (sem ela, /_search é 404). */
   search?: Search;
+  /** Chat com o agente (`pages[].chat`, `layout.header.assistant`): quem guarda as conversas e responde (sem ela, /_chat é 404). */
+  chat?: Chat;
   /** Bancos a mais, por nome, das entidades com `store` (só leitura). */
   stores?: Record<string, Store>;
   /** O motor só lê: toda gravação é do sistema (conexão com `PRAGMA query_only`). */
@@ -72,7 +75,8 @@ export async function buildEngine(o: EngineOptions): Promise<Engine> {
       o.bell ?? new Bell(),
       o.notifications,
       o.search,
-      stores
+      stores,
+      o.chat
     );
   } catch (e) {
     if (e instanceof BuildError) throw e;

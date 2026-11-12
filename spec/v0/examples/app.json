@@ -40,6 +40,16 @@
   },
   "pages": [
     {
+      "path": "/assistente",
+      "title": "Assistente",
+      "chat": {
+        "lanes": {},
+        "title": "Assistente",
+        "suggestions": ["Cadastrar a Padaria Bom Dia", "Cancelar o último pedido", "Relatório de vendas do mês"],
+        "parts": ["c3.form", "c3.record", "c3.action"]
+      }
+    },
+    {
       "path": "/painel",
       "title": "Painel",
       "dashboard": {
@@ -128,7 +138,11 @@
     "desktop": { "translucent": 0.6 },
     "header": {
       "search": true,
-      "actions": ["assistente"],
+      "assistant": {
+        "title": "Assistente",
+        "placeholder": "Peça um cadastro, um relatório ou para cancelar um pedido",
+        "suggestions": ["Cadastrar a Padaria Bom Dia", "Cancelar o último pedido", "Relatório de vendas do mês"]
+      },
       "languages": ["pt-BR", "en"],
       "userMenu": [
         {
@@ -143,6 +157,10 @@
           {
             "path": "/painel",
             "icon": "Home2"
+          },
+          {
+            "path": "/assistente",
+            "icon": "Magicpen"
           }
         ]
       },

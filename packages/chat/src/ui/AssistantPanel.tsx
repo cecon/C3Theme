@@ -93,7 +93,7 @@ export interface AssistantPanelProps {
    * Botão "À parte" na caixa: abre uma conversa à parte sem interromper esta. Recebe o texto escrito (que vira a
    * primeira pergunta da conversa à parte, e sai da caixa); vazio abre a conversa à parte sem pergunta.
    */
-  onAside?: (text: string) => void;
+  onAside?: (text: string) => void | boolean | Promise<void | boolean>;
 }
 
 /**
@@ -132,8 +132,14 @@ export default function AssistantPanel(props: AssistantPanelProps) {
         {start}
         <AsideButton
           onClick={() => {
-            onAside(draft.text.trim());
-            draft.clear();
+            const result = onAside(draft.text.trim());
+            if (result instanceof Promise)
+              void result
+                .then((ok) => {
+                  if (ok !== false) draft.clear();
+                })
+                .catch(() => {});
+            else if (result !== false) draft.clear();
           }}
         />
       </>

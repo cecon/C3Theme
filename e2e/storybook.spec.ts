@@ -158,6 +158,27 @@ test('janela de desktop pelo app.json: cabeçalho arrasta a janela, botões cont
   await expect(page.getByText('FT-0020')).toHaveCount(0);
 });
 
+test('assistente pela spec (pages[].chat): a sugestão traz o rascunho, gravar cadastra e o assistente responde', async ({ page }) => {
+  await page.goto(story('telas-pelo-motor--assistente'));
+  await expect(page.getByPlaceholder('Peça um cadastro ou um relatório')).toBeVisible();
+  await page.getByText('Cadastrar o cliente Padaria Bom Dia').click();
+  await expect(page.getByText('Montei o cadastro com o que você me passou.')).toBeVisible();
+  await expect(page.getByText('Pedido pelo assistente')).toBeVisible();
+  await page.getByRole('button', { name: 'Gravar', exact: true }).click();
+  await expect(page.getByText('Gravado: Padaria Bom Dia')).toBeVisible();
+  await expect(page.getByText('Feito. Gravei pelo cadastro de sempre.')).toBeVisible();
+});
+
+test('assistente no cabeçalho (layout.header.assistant): o botão abre a gaveta e o relatório pede o período', async ({ page }) => {
+  await page.goto(story('layout-shell-pelo-motor--menu-vertical'));
+  await page.getByRole('button', { name: 'Assistente' }).click();
+  const drawer = page.getByRole('presentation');
+  await drawer.getByText('Relatório de faturas do mês').click();
+  await expect(drawer.getByText('Para montar o relatório, preciso do período')).toBeVisible();
+  await drawer.getByRole('button', { name: 'Agora não' }).click();
+  await expect(drawer.getByText('Tudo bem, fica para depois.')).toBeVisible();
+});
+
 test('conversas à parte: ramificar uma resposta, voltar e perguntar à parte com o texto da caixa (#10)', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto(story('chat-conversas-à-parte--padrao'));

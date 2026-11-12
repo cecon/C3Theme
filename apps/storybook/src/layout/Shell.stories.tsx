@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { desktopFrame, type DesktopDef } from '@c3theme/engine';
 
 import MotorShell from '../motor/MotorShell';
-import { searchFor } from '../motor/play';
+import { openAssistant, searchFor } from '../motor/play';
 import { appSource } from '../motor/source';
 import { withMotor } from '../motor/withMotor';
 
@@ -34,6 +34,9 @@ export const MenuHorizontal: Story = { name: 'Menu horizontal', args: { orientat
 
 /** Ícones dos grupos numa faixa e o painel com os itens do grupo aberto. */
 export const DoisNiveis: Story = { name: 'Dois níveis', args: { orientation: 'rail' } };
+
+/** `layout.header.assistant`: o botão do assistente no cabeçalho abre a conversa numa gaveta, sem TS do sistema. */
+export const AssistenteNoCabecalho: Story = { name: 'Assistente no cabeçalho', play: openAssistant };
 
 export const RegistroAberto: Story = { name: 'Registro aberto', parameters: { route: '/cliente/2' } };
 

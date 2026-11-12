@@ -9,7 +9,9 @@ import type { Conversation, Message } from './types';
 export type LaneKind = 'aside' | 'branch';
 
 /** Uma conversa à parte: é uma conversa como as outras, com o pai e de onde saiu. */
-export interface Lane extends Conversation {
+export interface Lane extends Omit<Conversation, 'lastMessage'> {
+  /** O resumo do contrato de lanes não precisa carregar o autor completo. */
+  lastMessage?: Pick<Message, 'text' | 'direction' | 'createdAt'> & Partial<Pick<Message, 'author' | 'attachments'>>;
   kind: LaneKind;
   /** A conversa principal. */
   parentId: string;

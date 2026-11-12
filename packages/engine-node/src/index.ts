@@ -12,6 +12,7 @@ export { handle } from './http/handle';
 export { type ListenerOptions, MAX_BODY, engineListener } from './http/node-http';
 export * from './ports/hooks';
 export { authorizationOf } from './ports/authorization';
+export type { Chat, ChatPage, ChatRoom, Outgoing } from './ports/chat';
 export type { Notification, NotificationList, Notifications } from './ports/notifications';
 export type { EngineRequest, EngineResponse } from './ports/request';
 export type { Search, SearchHit } from './ports/search';

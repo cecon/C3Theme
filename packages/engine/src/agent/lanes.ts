@@ -91,7 +91,8 @@ export function lanesApi(client: Pick<C3Client, 'raw'>): LanesApi | undefined {
     const reply = await raw(method, path, JSON.stringify(body) as string | undefined);
     const json = reply.body ? JSON.parse(reply.body) : {};
     if (reply.status < 200 || reply.status > 299) {
-      throw new ApiError(reply.status, json?.code ?? 'internal', json?.message ?? `Erro ${reply.status}.`);
+      const error = json?.error ?? json;
+      throw new ApiError(reply.status, error?.code ?? 'internal', error?.message ?? `Erro ${reply.status}.`);
     }
     return json as T;
   };
