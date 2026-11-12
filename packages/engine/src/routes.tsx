@@ -1,11 +1,13 @@
 // Rotas da shell: cada entidade tem lista (ou o formulário do registro único, em singleton), quadro, calendário, novo e registro; as páginas custom vêm de app.pages.
 
 import { lazy, ReactNode, Suspense } from 'react';
-import { Navigate, RouteObject, useParams } from 'react-router';
+import { Navigate, RouteObject, useLocation, useParams } from 'react-router';
 
 // material-ui
 import Alert from '@mui/material/Alert';
 
+import PageStatesFrame from './pageStates/PageStatesFrame';
+import { PageStateView } from './pageStates/PageStateView';
 import { PanelSkeleton } from '@c3theme/ui';
 import { useEngine } from './context';
 import type { DashboardDef } from './dashboard';
@@ -53,7 +55,11 @@ export function buildRoutes(app: AppDef, layout: ReactNode, extra: RouteObject[]
   const pageRoute = (p: (typeof pages)[number]): RouteObject => ({
     path: p.path,
     errorElement: <RouteErrorScreen fullScreen={p.layout === 'blank'} />,
-    element: <PageGate path={p.path}>{p.layout === 'blank' ? <WizardGuard>{pageBody(p)}</WizardGuard> : pageBody(p)}</PageGate>
+    element: (
+      <PageGate path={p.path} states={p.states}>
+        {p.layout === 'blank' ? <WizardGuard>{pageBody(p)}</WizardGuard> : pageBody(p)}
+      </PageGate>
+    )
   });
 
   return [
@@ -103,7 +109,7 @@ function FlowRoute({ entity }: { entity: string }) {
 
 function pageBody(p: PageDef) {
   if (p.comingSoon) return <SoonPage soon={p.comingSoon} />;
-  if (p.dashboard) return <DashboardPage dashboard={p.dashboard} />;
+  if (p.dashboard) return <DashboardPage dashboard={p.dashboard} states={p.states} />;
   if (p.wizard) return <WizardPage wizard={p.wizard} />;
   if (!p.apiDocs && !p.chat) return <CustomPage page={p} />;
   return (
@@ -116,9 +122,9 @@ function SoonPage({ soon }: { soon: NonNullable<PageDef['comingSoon']> }) {
   return <AppStatus fullScreen={false} status={{ mode: 'comingSoon', message: soon.message ?? PAGE_SOON_MESSAGE, until: soon.until }} />;
 }
 
-function DashboardPage({ dashboard }: { dashboard: DashboardDef }) {
+function DashboardPage({ dashboard, states }: { dashboard: DashboardDef; states?: PageDef['states'] }) {
   return (
-    <Suspense fallback={<PanelSkeleton />}>
+    <Suspense fallback={states ? <PageStateView kind="loading" state={states.loading} retry={() => {}} /> : <PanelSkeleton />}>
       <Dashboard dashboard={dashboard} />
     </Suspense>
   );
@@ -128,10 +134,19 @@ function DashboardPage({ dashboard }: { dashboard: DashboardDef }) {
 export const canOpenPage = (access: Record<string, boolean> | undefined, path: string | undefined) => !path || access?.[path] !== false;
 
 /** Bloqueia a rota da página (registrada ou painel) sem permissão na filial ativa; o menu já a esconde. */
-function PageGate({ path, children }: { path: string; children: ReactNode }) {
+function PageGate({ path, states, children }: { path: string; states?: PageDef['states']; children: ReactNode }) {
   const { pageAccess } = useEngine();
+  const location = useLocation();
+  if (!canOpenPage(pageAccess, path) && states?.forbidden)
+    return <PageStateView kind="forbidden" state={states.forbidden} retry={() => {}} />;
   if (!canOpenPage(pageAccess, path)) return <Alert severity="info">Você não tem permissão para abrir esta página.</Alert>;
-  return children;
+  return states ? (
+    <PageStatesFrame key={location.pathname} states={states}>
+      {children}
+    </PageStatesFrame>
+  ) : (
+    children
+  );
 }
 
 /** Props da página registrada: o `config` do app.json (já validado pelo schema do componente) e a própria página. */

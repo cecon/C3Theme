@@ -26,6 +26,8 @@ import { checkAgentParts } from './spec-agent-ui.mjs';
 import { checkDashboards } from './spec-dashboard.mjs';
 import { checkActionInput, checkInverse, checkOpensForm, checkSummary } from './spec-actions.mjs';
 import { checkLookups } from './spec-lookups.mjs';
+import { checkPageStates } from './spec-page-states.mjs';
+import { checkPages, checkWizards } from './spec-pages.mjs';
 import { checkChatConversations, checkPages, checkWizards } from './spec-pages.mjs';
 import { checkBoardCalendar, checkListRules, checkMenu } from './spec-views.mjs';
 import { checkReport } from './spec-report.mjs';
@@ -106,6 +108,8 @@ if (app.organization) {
   for (const { entity, file } of entities.values())
     if ((entity.scope ?? 'group') !== 'group') errors.push(`${file}: scope '${entity.scope}' exige app.organization`);
 }
+
+checkPageStates(app, entities, errors);
 
 // ---- entidades ----
 

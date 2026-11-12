@@ -199,6 +199,7 @@ export interface MenuItemDef {
 }
 
 export interface PageDef {
+  states?: import('./pageStates/types').PageStates;
   path: string;
   title?: Text;
   component?: string;
