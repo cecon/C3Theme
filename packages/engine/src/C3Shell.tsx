@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RouterProvider } from 'react-router/dom';
 import { mutate } from 'swr';
 
@@ -15,6 +15,8 @@ import { createShellRouter, type RouterMode } from './router';
 import { browserFetch, type C3Fetch } from './transport';
 import { C3Components, C3Icons, EngineProvider, EngineState } from './context';
 import C3Layout from './C3Layout';
+import { desktopFrame, frameFromOptions, frameTokens } from './desktop/frame';
+import type { DesktopHost } from './desktop/port';
 import useIconCatalog from './hooks/useIconCatalog';
 import { readStoredBranch, storeBranch } from './branchStorage';
 import { loadEntities } from './access';
@@ -55,10 +57,12 @@ export interface C3ShellProps {
   /** Rodapé do drawer (ex.: usuário logado e sair), que é do sistema e não da spec. */
   drawerFooter?: ReactNode;
   /**
-   * App de desktop sem barra de título (Electron, Tauri): repassado ao `AppLayout` (espaço para os botões da janela,
-   * arrastar pelo cabeçalho, menu translúcido, menu fixo em janela estreita). Fica na prop e não na spec porque a
-   * plataforma é de quem roda. Fonte e densidade vão em `theme.tokens` (`desktopTokens('mac')`).
+   * Porta da janela de desktop (Electron, Tauri): a plataforma e o entalhe. Com ela, a shell monta a moldura que o
+   * `layout.desktop` do app.json declara (barra de título, botões da janela, menu translúcido, fonte e densidade).
+   * No Electron, `electronDesktop()` de @c3theme/electron/renderer.
    */
+  desktopHost?: DesktopHost;
+  /** @deprecated Declare `layout.desktop` no app.json e passe `desktopHost`. Se vier, vence a declaração (só o layout). */
   desktop?: DesktopOptions;
   /**
    * Mude o valor (número ou texto) para a shell ler o GET /_meta/app de novo sem remontar: o menu que vem dos dados
@@ -84,11 +88,15 @@ export interface C3ShellProps {
 export default function C3Shell(props: C3ShellProps) {
   const { auth, apiUrl, basename, router, transport, theme, loadMessages } = props;
   if (!auth) return <Shell {...props} />;
-  return <AuthGate {...{ port: auth, apiUrl, basename, router, transport, theme, loadMessages }}>{() => <Shell {...props} />}</AuthGate>;
+  return (
+    <AuthGate {...{ port: auth, apiUrl, basename, router, transport, theme, loadMessages, desktopHost: props.desktopHost }}>
+      {() => <Shell {...props} />}
+    </AuthGate>
+  );
 }
 
 function Shell(props: C3ShellProps) {
-  const { apiUrl, components = {}, icons, headers, loadMessages, theme, basename, drawerFooter, onTelemetry, transport, desktop } = props;
+  const { apiUrl, components = {}, icons, headers, loadMessages, theme, basename, drawerFooter, onTelemetry, transport } = props;
   const session = useAuthSession();
   const token = session?.token;
   const logout = session?.logout;
@@ -172,9 +180,25 @@ function Shell(props: C3ShellProps) {
   }, [client, attempt]);
 
   const reloadApp = useAppReload(client, setState, props.appVersion);
+  // a prop antiga vence a declaração; sem nenhuma das duas (ou sem a porta), o app roda como site. Pelo conteúdo: um
+  // objeto literal novo a cada render do sistema não recria o contexto do motor
+  const { desktop, desktopHost } = props;
+  const declared = state?.app.layout.desktop;
+  const frameKey = JSON.stringify([desktop, declared, desktopHost]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const frame = useMemo(() => (desktop ? frameFromOptions(desktop) : desktopFrame(declared, desktopHost)), [frameKey]);
+  const tokens = useMemo(() => frameTokens(frame, theme?.tokens), [frame, theme?.tokens]);
   const engine = useMemo(
-    () => state && { ...state, icons: catalog, telemetry, reloadApp, org: state.org && { ...state.org, setActive } },
-    [state, catalog, telemetry, reloadApp, setActive]
+    () =>
+      state && {
+        ...state,
+        icons: catalog,
+        telemetry,
+        reloadApp,
+        org: state.org && { ...state.org, setActive },
+        ...(frame && { desktop: frame })
+      },
+    [state, catalog, telemetry, reloadApp, setActive, frame]
   );
   const app = state?.app;
   const routes = app && routesKey(app);
@@ -183,7 +207,7 @@ function Shell(props: C3ShellProps) {
       app &&
       createShellRouter(
         props.router ?? 'browser',
-        buildRoutes(app, <ShellLayout drawerFooter={drawerFooter} />, sessionRoutes(session)),
+        buildRoutes(app, <C3Layout drawerFooter={drawerFooter} />, sessionRoutes(session)),
         basename
       ),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- a sessão só muda ao sair, e aí a shell desmonta
@@ -193,6 +217,7 @@ function Shell(props: C3ShellProps) {
   return (
     <C3ThemeProvider
       {...theme}
+      tokens={tokens}
       loadMessages={loadMessages}
       defaultConfig={{
         ...(state?.app.layout.orientation && { menuOrientation: state.app.layout.orientation }),
@@ -215,10 +240,7 @@ function Shell(props: C3ShellProps) {
         </Box>
       ) : router ? (
         <EngineProvider value={engine!}>
-          {/* por contexto e não pela rota: um objeto novo a cada render recriaria o roteador */}
-          <DesktopContext.Provider value={desktop}>
-            <RouterProvider router={router} />
-          </DesktopContext.Provider>
+          <RouterProvider router={router} />
           {authz.dialog}
         </EngineProvider>
       ) : (
@@ -227,13 +249,6 @@ function Shell(props: C3ShellProps) {
       <Notifier />
     </C3ThemeProvider>
   );
-}
-
-const DesktopContext = createContext<DesktopOptions | undefined>(undefined);
-
-/** A moldura nas rotas da shell, com o desktop da prop (por contexto, para não recriar o roteador). */
-function ShellLayout({ drawerFooter }: { drawerFooter?: ReactNode }) {
-  return <C3Layout drawerFooter={drawerFooter} desktop={useContext(DesktopContext)} />;
 }
 
 /** Só pergunta quando alguma página declara `permission`. */

@@ -52,7 +52,8 @@ function Shell({ userPlacement, desktop }: ShellProps) {
  * No celular o menu vira gaveta: troque o tamanho no botão de viewport.
  *
  * Num sistema C3 o menu vem do app.json: veja "Layout/Shell pelo motor". Aqui o menu é montado em código (uso direto);
- * as histórias de desktop são a moldura da janela, peça a peça; declarar a moldura no app.json é a lacuna cecon/C3Theme#73 (ADR 0003).
+ * as histórias de desktop são a moldura da janela, peça a peça. Num sistema, a moldura vem do `layout.desktop` do app.json:
+ * veja "Layout/Shell pelo motor", histórias "Janela de desktop".
  */
 const meta = {
   title: 'Layout/AppLayout',

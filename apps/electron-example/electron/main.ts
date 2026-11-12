@@ -6,7 +6,9 @@ import { pathToFileURL } from 'node:url';
 
 import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron';
 
-import { forwardTo, fromPage, serveC3 } from '@c3theme/electron/main';
+import { forwardTo, fromPage, serveC3, windowFrame } from '@c3theme/electron/main';
+// a mesma declaração que o backend local serve em GET /_meta/app: a janela abre com a moldura que a shell desenha
+import appJson from '../../../spec/v0/examples/app.json';
 import { chooseBackend, type Backend } from './backend';
 
 let backend: Backend | undefined;
@@ -21,6 +23,7 @@ function openWindow(label: string) {
     width: 1280,
     height: 820,
     title: `C3 no Electron (${label})`,
+    ...windowFrame(appJson.layout.desktop, process.platform),
     webPreferences: { preload: join(__dirname, 'preload.cjs'), contextIsolation: true, sandbox: true, nodeIntegration: false }
   });
   // link externo (menu com `href`) abre no navegador do sistema, não numa janela do app

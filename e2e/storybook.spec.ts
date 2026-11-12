@@ -138,6 +138,26 @@ test('painel financeiro: variação no KPI, soma no aviso, abas e filtro na list
   await expect(todas.getByText('Atrasada')).toHaveCount(0);
 });
 
+test('janela de desktop pelo app.json: cabeçalho arrasta a janela, botões continuam clicáveis e a fonte é a do sistema (#73)', async ({
+  page
+}) => {
+  await page.goto(story('layout-shell-pelo-motor--janela-mac'));
+  const header = page.locator('header').first();
+  await expect(header).toBeVisible();
+  const region = (el: Element) =>
+    getComputedStyle(el).getPropertyValue('-webkit-app-region') || getComputedStyle(el).getPropertyValue('app-region');
+  await expect.poll(() => header.evaluate(region)).toBe('drag');
+  const settings = page.getByRole('button', { name: 'Aparência' });
+  await expect.poll(() => settings.evaluate(region)).toBe('no-drag');
+  // fonte do sistema e densidade compacta vieram do `layout.desktop`, pelo tema
+  const clientes = page.getByRole('link', { name: 'Clientes' }).first();
+  await expect.poll(() => clientes.evaluate((el) => getComputedStyle(el).fontFamily)).toMatch(/^-apple-system/);
+  // a navegação continua funcionando dentro da faixa de arrastar (o menu é no-drag)
+  await expect(page.getByText('FT-0020')).toBeVisible();
+  await clientes.click();
+  await expect(page.getByText('FT-0020')).toHaveCount(0);
+});
+
 test('conversas à parte: ramificar uma resposta, voltar e perguntar à parte com o texto da caixa (#10)', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto(story('chat-conversas-à-parte--padrao'));

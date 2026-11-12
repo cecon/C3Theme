@@ -17,12 +17,12 @@ import useRecordSearch from './hooks/useRecordSearch';
 export interface C3LayoutProps {
   /** Rodapé do drawer (ex.: usuário logado e sair), que é do sistema e não da spec. */
   drawerFooter?: ReactNode;
-  /** App de desktop sem barra de título: repassado ao `AppLayout`. */
+  /** App de desktop sem barra de título. Sem isso, a moldura de `layout.desktop` (com a porta `desktopHost`). */
   desktop?: DesktopOptions;
 }
 
 export default function C3Layout({ drawerFooter, desktop }: C3LayoutProps) {
-  const { app, entities, components, icons, pageAccess } = useEngine();
+  const { app, entities, components, icons, pageAccess, desktop: frame } = useEngine();
   const text = useText();
   const header = app.layout.header ?? {};
   const recordSearch = useRecordSearch();
@@ -44,7 +44,7 @@ export default function C3Layout({ drawerFooter, desktop }: C3LayoutProps) {
       menu={menu}
       breadcrumbs={false}
       drawerFooter={drawerFooter}
-      desktop={desktop}
+      desktop={desktop ?? frame?.options}
       user={user}
       userPlacement={app.layout.user}
       header={

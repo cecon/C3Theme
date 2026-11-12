@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import ConversasAParte, { DECLARADO } from './conversas-a-parte';
 
 /**
- * Conversas à parte (issue #10, ADR 0004): "À parte" na caixa pergunta sem interromper a conversa principal, e
+ * Conversas à parte (issue #10, ADR 0005): "À parte" na caixa pergunta sem interromper a conversa principal, e
  * "Ramificar daqui" no menu de uma resposta abre um ramo com o histórico até ela. O painel Code mostra o que o sistema
  * declara no chat do `app.json`; o motor traduz com `laneActions`/`hasAside` e a shell (issue #71) monta o
  * `AssistantPanel` e o `LanePanel`. O agente desta página é de mentira: responde na hora.
