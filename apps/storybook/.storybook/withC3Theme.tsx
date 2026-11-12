@@ -3,7 +3,6 @@ import type { Decorator } from '@storybook/react-vite';
 import { MemoryRouter } from 'react-router';
 
 import Box from '@mui/material/Box';
-import { useColorScheme } from '@mui/material/styles';
 
 import { C3ThemeProvider, Notifier, useUiConfig, type BrandColor, type C3Tokens, type Direction, type Look } from '@c3theme/ui';
 
@@ -20,12 +19,13 @@ interface Globals {
   locale: string;
 }
 
-/** Leva o que está na barra do Storybook para o tema; vence o que o painel de preferências tiver salvo. */
-function SyncGlobals({ look, brand, mode, direction, locale, children }: Globals & { children: ReactNode }) {
+/**
+ * Leva o que está na barra do Storybook para o tema; vence o que o painel de preferências tiver salvo. O modo vai pelo
+ * `mode` do C3ThemeProvider, o mesmo caminho que um app usa para trocar o modo de fora da casca (#112).
+ */
+function SyncGlobals({ look, brand, direction, locale, children }: Omit<Globals, 'mode'> & { children: ReactNode }) {
   const { setConfig } = useUiConfig();
-  const { setMode } = useColorScheme();
   useEffect(() => setConfig({ look, brand, direction, locale }), [look, brand, direction, locale, setConfig]);
-  useEffect(() => setMode(mode), [mode, setMode]);
   return children;
 }
 
@@ -65,6 +65,7 @@ function ThemeFrame({ globals, bare, fill, route, router, tokens, children }: Fr
       locales={LOCALES}
       branding={{ name: 'C3 Storybook' }}
       tokens={tokens}
+      mode={globals.mode}
     >
       <SyncGlobals {...globals}>{router ? <MemoryRouter initialEntries={[route ?? '/']}>{body}</MemoryRouter> : body}</SyncGlobals>
     </C3ThemeProvider>

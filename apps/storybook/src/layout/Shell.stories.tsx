@@ -11,6 +11,9 @@ import { withMotor } from '../motor/withMotor';
  * A shell pelo `app.json`: grupos e itens do menu (`layout.menu`, com ícone, filhos e contador do preset), botões do
  * cabeçalho (`layout.header`), rodapé e a tela da entidade da rota. A aba Code mostra o app.json.
  *
+ * O modo claro/escuro da barra do Storybook chega pelo `theme.mode` (o mesmo `mode` do `C3ThemeProvider`): é como um app
+ * troca o modo de uma casca montada sem remontá-la (#112).
+ *
  * Com `layout.desktop` e a porta `desktopHost`, a mesma shell vira janela de app de desktop (histórias "Janela de desktop").
  *
  * Lacunas (uso direto em "Layout/AppLayout" e "Layout/Cabeçalho"): o menu do usuário só aparece com a sessão do `auth`,

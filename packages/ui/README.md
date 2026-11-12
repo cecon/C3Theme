@@ -71,6 +71,23 @@ A escolha salva da pessoa tem prioridade nas próximas aberturas; o app não pre
 Na shell do motor, use `<C3Shell theme={{ defaultMode: 'dark', storageKey: 'meu-app' }} ... />`.
 Isso também configura o tema das telas de entrada antes do login.
 
+## Trocar o modo de fora da casca
+
+Atalho do sistema, menu nativo da janela ou preferência do processo principal trocam o modo pela prop `mode`, sem
+remontar a casca (a tela, o rascunho e a rolagem continuam). `onModeChange` avisa cada troca depois da abertura, inclusive
+a que a pessoa faz pelo botão ou pelo painel. A escolha continua salva para a próxima abertura e o app não conhece a chave
+de armazenamento.
+
+```tsx
+const [mode, setMode] = useState<ColorModePreference>();
+window.desktop.onThemeShortcut((next) => setMode(next));
+
+<C3Shell theme={{ storageKey: 'meu-app', mode, onModeChange: ({ preference }) => window.desktop.saveMode(preference) }} ... />
+```
+
+`mode` vale quando muda: se a pessoa trocar pela casca depois, a troca dela fica até o app mandar outro valor. Para só
+escolher o modo da primeira abertura, use `defaultMode`. Decisão no [ADR 0012](../../docs/adr/0012-modo-controlado-de-fora.md).
+
 O catálogo de componentes, com todas as variações, está no Storybook do repositório.
 
 ## Licença

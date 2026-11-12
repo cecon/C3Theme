@@ -5,6 +5,8 @@ import './theme/vars';
 // tema e preferências
 export { default as C3ThemeProvider } from './C3ThemeProvider';
 export type { C3ThemeProviderProps, LocaleMessages } from './C3ThemeProvider';
+export type { ModeChange } from './theme/ModeBridge';
+export type { ColorMode, ColorModePreference } from './theme/useColorMode';
 export { createC3Theme, BRAND_COLORS, DEFAULT_FONT, FONT_OPTIONS } from './theme/createC3Theme';
 export { softColors, toneMain, toneText } from './theme/soft';
 export type { Tone } from './theme/soft';
