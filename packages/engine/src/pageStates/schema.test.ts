@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import Ajv from 'ajv/dist/2020';
 import addFormats from 'ajv-formats';
 import { expect, it } from 'vitest';
+import { checkPageStates } from '../../../../scripts/spec-page-states.mjs';
 
 const schema = JSON.parse(readFileSync('spec/v0/app.schema.json', 'utf8'));
 const ajv = new Ajv({ strict: false });
@@ -35,4 +36,24 @@ it('states opt-in exige contrato completo, textos e detalhes dos cinco estados',
   expect(validate({ ...states, error: { message: 'Erro', action: { label: 'Ir', path: '/' } } })).toBe(false);
   expect(validate({ ...states, forbidden: { message: 'Não' } })).toBe(false);
   expect(validate({ ...states, offline: { message: 'Offline', works: [] } })).toBe(false);
+});
+
+it('validador cruza entidade e ação de registro do destino', () => {
+  const errors: string[] = [];
+  const record = { entity: 'pedido', id: '1', action: 'enviar' };
+  const app = { entities: ['pedido'], pages: [{ path: '/dados', states: { empty: { action: { record } } } }] };
+  const entities = new Map([['pedido', { entity: { actions: [{ name: 'enviar' }, { name: 'lote', target: 'list' }] } }]]);
+  checkPageStates(app, entities, errors);
+  expect(errors).toEqual([]);
+  record.action = 'lote';
+  checkPageStates(app, entities, errors);
+  expect(errors.join()).toContain('lote');
+  record.action = 'ausente';
+  checkPageStates(app, entities, errors);
+  expect(errors.join()).toContain('ausente');
+  record.entity = 'ausente';
+  checkPageStates(app, entities, errors);
+  expect(errors.join()).toContain('ausente');
+  checkPageStates({}, entities, errors);
+  checkPageStates({ pages: [{ path: '/sem-estados' }] }, entities, errors);
 });

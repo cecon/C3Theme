@@ -6,6 +6,23 @@ import { usePageState } from './context';
 import { mount, states } from './pageStateFixture.test-utils';
 afterEach(cleanup);
 describe('page state record action', () => {
+  it('sem capacidade o botão fica desabilitado e o alvo não é consultado', async () => {
+    const client = { get: vi.fn() } as unknown as EngineState['client'];
+    function Page() {
+      usePageState({ empty: true });
+      return <p />;
+    }
+    mount(Page, {
+      states: {
+        ...states,
+        empty: { message: 'Sem pedidos', action: { label: 'Preparar', record: { entity: 'pedido', id: '1', action: 'enviar' } } }
+      },
+      client
+    });
+    expect(await screen.findByText('Sem pedidos')).toBeTruthy();
+    expect((screen.getByRole('button', { name: 'Preparar' }) as HTMLButtonElement).disabled).toBe(true);
+    expect(client.get).not.toHaveBeenCalled();
+  });
   it('ação de registro usa RecordActions, capacidade e registro carregado', async () => {
     const client = {
       get: vi.fn(async () => ({ id: '1', _version: 'v1', nome: 'Pedido' })),

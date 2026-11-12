@@ -2,7 +2,6 @@ import { Component, Suspense, useCallback, useMemo, useState, type ReactNode } f
 import { SWRConfig } from 'swr';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
-import { PanelSkeleton } from '@c3theme/ui';
 import { ApiError } from '../apiError';
 import { useEngine } from '../context';
 import { PageStateContext } from './context';
@@ -46,15 +45,15 @@ export default function PageStatesFrame({ states, children }: { states: PageStat
             : undefined;
   const state = kind && states[kind];
   const replace = !!state && (!data.hasData || kind === 'forbidden');
-  const fallback = states.loading ? <PageStateView kind="loading" state={states.loading} retry={retry} /> : <PanelSkeleton />;
+  const fallback = <PageStateView kind="loading" state={states.loading} retry={retry} />;
   return (
     <PageStateContext.Provider value={context}>
       <SWRConfig value={swrConfig}>
         <Stack spacing={2}>
-          {!online && states.offline && <PageStateView kind="offline" state={states.offline} retry={retry} />}
+          {!online && <PageStateView kind="offline" state={states.offline} retry={retry} />}
           {state && <PageStateView kind={kind!} state={state} retry={retry} />}
           <Box sx={replace ? { display: 'none' } : undefined}>
-            <PageBoundary resetKey={attempt} fallback={states.error && <PageStateView kind="error" state={states.error} retry={retry} />}>
+            <PageBoundary resetKey={attempt} fallback={<PageStateView kind="error" state={states.error} retry={retry} />}>
               <Suspense fallback={fallback}>{children}</Suspense>
             </PageBoundary>
           </Box>
@@ -64,17 +63,16 @@ export default function PageStatesFrame({ states, children }: { states: PageStat
   );
 }
 
-class PageBoundary extends Component<{ children: ReactNode; fallback: ReactNode; resetKey: number }, { error?: unknown }> {
-  state: { error?: unknown } = {};
-  static getDerivedStateFromError(error: unknown) {
-    return { error };
+class PageBoundary extends Component<{ children: ReactNode; fallback: ReactNode; resetKey: number }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
   }
   componentDidUpdate(prev: { resetKey: number }) {
-    if (prev.resetKey !== this.props.resetKey && this.state.error) this.setState({ error: undefined });
+    if (prev.resetKey !== this.props.resetKey && this.state.failed) this.setState({ failed: false });
   }
   render() {
-    if (this.state.error) {
-      if (!this.props.fallback) throw this.state.error;
+    if (this.state.failed) {
       return this.props.fallback;
     }
     return this.props.children;

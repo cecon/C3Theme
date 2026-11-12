@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useLocation } from 'react-router';
 import useSWR from 'swr';
 import type { EngineState } from '../context';
+import { ApiError } from '../apiError';
 import { usePageState } from './context';
 import { emptyData, pageDataState } from './state';
 import type { ConnectivityPort } from './types';
@@ -12,7 +13,10 @@ import { mount, states } from './pageStateFixture.test-utils';
 afterEach(cleanup);
 describe('estados da página declarados', () => {
   it('sem states mantém a página e o aviso de acesso existentes', () => {
-    const view = mount(() => <p>Conteúdo</p>);
+    const view = mount(() => {
+      usePageState({ loading: true });
+      return <p>Conteúdo</p>;
+    });
     expect(screen.getByText('Conteúdo')).toBeTruthy();
     view.unmount();
     mount(() => <p>Segredo</p>, { access: false });
@@ -63,14 +67,47 @@ describe('estados da página declarados', () => {
     function Page() {
       useState(() => ++mounts);
       usePageState({ error: new Error('rede'), hasData: true, retry: () => retry() });
-      return <p>Pedido já carregado</p>;
+      return (
+        <>
+          <p>Pedido já carregado</p>
+          <input aria-label="Cache" defaultValue="Pedido" />
+        </>
+      );
     }
     mount(Page, { states });
     expect(await screen.findByText('Falha da página')).toBeTruthy();
     expect(screen.getByText('Pedido já carregado').closest('[style*="display: none"]')).toBeNull();
+    expect(screen.getByRole('textbox', { name: 'Cache' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Repetir' }));
     expect(retry).toHaveBeenCalledOnce();
     expect(mounts).toBe(1);
+  });
+
+  it('403 dos dados mostra a instrução e não exibe o conteúdo em cache', async () => {
+    function Page() {
+      usePageState({ error: new ApiError(403, 'forbidden', 'recusado'), hasData: true });
+      return <input aria-label="Dados restritos" />;
+    }
+    mount(Page, { states });
+    expect(await screen.findByText('Peça acesso à administração')).toBeTruthy();
+    expect(screen.queryByRole('textbox', { name: 'Dados restritos' })).toBeNull();
+  });
+
+  it('erro SWR com cache preserva o widget real e repetir não causa rejeição solta', async () => {
+    const fetcher = vi.fn(async (): Promise<{ data: { id: string }[] }> => {
+      throw new Error('rede');
+    });
+    function Page() {
+      const { data, error } = useSWR(['c3-list', 'pedidos'], fetcher, { fallbackData: { data: [{ id: '1' }] }, shouldRetryOnError: false });
+      return <p>{error ? 'Erro antigo do widget' : data?.data.length ? 'Pedido em cache' : 'Vazio'}</p>;
+    }
+    mount(Page, { states });
+    expect(await screen.findByText('Falha da página')).toBeTruthy();
+    expect(screen.getByText('Pedido em cache')).toBeTruthy();
+    expect(screen.queryByText('Erro antigo do widget')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Repetir' }));
+    await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(2));
+    expect(screen.getByText('Pedido em cache')).toBeTruthy();
   });
 
   it('porta IPC vence navegador, preserva conteúdo e remove assinatura', async () => {
@@ -141,6 +178,37 @@ describe('estados da página declarados', () => {
       await act(() => router.navigate('/b'));
       expect(await screen.findByText('Página B')).toBeTruthy();
       expect(screen.queryByText('Falha da página')).toBeNull();
+    } finally {
+      log.mockRestore();
+    }
+  });
+
+  it('tentar de novo recupera um erro de renderização na mesma rota', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    let broken = true;
+    function Page() {
+      if (broken) throw new Error('indisponível');
+      return <p>Recuperado</p>;
+    }
+    try {
+      mount(Page, { states });
+      expect(await screen.findByText('Falha da página')).toBeTruthy();
+      broken = false;
+      fireEvent.click(screen.getByRole('button', { name: 'Repetir' }));
+      expect(await screen.findByText('Recuperado')).toBeTruthy();
+    } finally {
+      log.mockRestore();
+    }
+  });
+
+  it('boundary também trata um throw falsy', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    function Page(): never {
+      throw 0;
+    }
+    try {
+      mount(Page, { states });
+      expect(await screen.findByText('Falha da página')).toBeTruthy();
     } finally {
       log.mockRestore();
     }

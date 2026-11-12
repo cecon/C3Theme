@@ -1195,3 +1195,7 @@ Os exemplos Node/Rust guardam essas conversas em memória por usuário e pai. A 
 - Remover a pendente: DELETE `/_chat/{c}/messages/{m}` → porta `remove` (opcional; já lida, 409; sem a porta, 404), que emite `removed`.
 - Agente que não recebe mensagem no meio do trabalho, ou orientação sem turno: evento `notice` com texto pronto (`ChatRoom::notice` / `room.notice`) e a mensagem segue como comum. A shell mostra o aviso acima da caixa, e ele some sozinho.
 - Os exemplos Node/Rust leem as orientações a cada pedaço da resposta e as respondem no fim; a conformidade confere nos dois.
+
+## Estados da pagina
+
+`pages[].states` declara carregando, vazio, erro, sem permissao e offline, com textos traduziveis e acoes. Veja o contrato, a porta de conectividade e exemplos em [Estados da pagina](../docs/page-states.md).
