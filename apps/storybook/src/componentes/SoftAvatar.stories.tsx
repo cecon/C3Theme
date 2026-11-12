@@ -6,7 +6,7 @@ import Stack from '@mui/material/Stack';
 import { SoftAvatar } from '@c3theme/ui';
 import { TONES } from '../support/tones';
 
-/** Primitiva do catálogo (exceção 2 do ADR 0001). No motor ela é a coluna com `avatar` da lista e o responsável do quadro: veja "Tabela/Lista pelo motor". */
+/** Primitiva do vocabulário do motor (não é tela, ADR 0003). No motor ela é a coluna com `avatar` da lista e o responsável do quadro: veja "Tabela/Lista pelo motor". */
 const meta = {
   title: 'Componentes/SoftAvatar',
   component: SoftAvatar,

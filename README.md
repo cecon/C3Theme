@@ -18,14 +18,14 @@ apps (React)                                   backend de cada sistema (Rust)
                   ▲ @c3theme/conformance testa qualquer backend contra ele
 ```
 
-Cada sistema é dono do banco, das migrations, da autenticação e das regras de negócio (hooks). O motor entrega a parte repetida: metadados, listagem com filtro e paginação, formulário, validação, escopo de empresa/filial, ações de registro e em lote, formato de erro. **Toda tela de negócio nasce em JSON no motor** ([ADR 0001](docs/adr/0001-motor-dsl-caminho-padrao.md)); o `@c3theme/ui` sozinho fica para as exceções (página registrada, catálogo de primitivas, chat, flow, moldura do desktop).
+Cada sistema é dono do banco, das migrations, da autenticação e das regras de negócio (hooks). O motor entrega a parte repetida: metadados, listagem com filtro e paginação, formulário, validação, escopo de empresa/filial, ações de registro e em lote, formato de erro. **Toda tela nasce em JSON no motor, sem exceção** ([ADR 0001](docs/adr/0001-motor-dsl-caminho-padrao.md) e [ADR 0003](docs/adr/0003-motor-sem-excecoes.md)), inclusive o chat do assistente. O que o motor não alcança vira issue `lacuna:` neste repositório, não tela em TS no sistema.
 
 | Pasta                       | Pacote                      | O que é                                                                                                                                                                                                                                                       |
 | --------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `packages/ui`               | `@c3theme/ui`               | Tema (claro/escuro, 9 cores de marca, visual `angle`, contraste, RTL), `C3ThemeProvider`, `AppLayout` (header, menu lateral ou em barra, breadcrumbs, rodapé), painel de aparência, busca de telas, notificações, menu do usuário, `AuthLayout` e componentes |
 | `packages/engine`           | `@c3theme/engine`           | Renderer da spec: `<C3Shell apiUrl>` lê `/_meta` e monta header, menu, rodapé, rotas, listas, formulários, mestre-detalhe, seletor de filial, ações e fila de pendências                                                                                      |
 | `packages/conformance`      | `@c3theme/conformance`      | Suíte de conformidade do contrato (43 testes HTTP caixa-preta) e o avaliador de referência das condições                                                                                                                                                      |
-| `apps/seed`                 | `@c3theme/seed`             | Ponto de partida para app sem backend do motor (exceção, ver ADR 0001): login, cadastro, recuperação de senha com código, perfil, páginas de erro e manutenção, pt-BR/en                                                                                      |
+| `apps/seed`                 | `@c3theme/seed`             | Ponto de partida para app sem backend do motor (obsoleto pelo ADR 0003, sai com a issue #74): login, cadastro, recuperação de senha com código, perfil, páginas de erro e manutenção, pt-BR/en                                                                                      |
 | `apps/showcase`             | `@c3theme/showcase`         | Vitrine: painéis, widgets, componentes, formulários, tabelas, gráficos, mapa, calendário, chat, kanban, clientes, loja, faturas, perfis, login, landing                                                                                                       |
 | `apps/storybook`            | `@c3theme/storybook`        | Storybook: catálogo isolado dos componentes do `@c3theme/ui`, do `@c3theme/chat` e do `@c3theme/flow`, com visual, marca, claro/escuro, RTL e idioma na barra de cima. Publicado em `/storybook/` junto da vitrine                                            |
 | `apps/engine-demo`          | `@c3theme/engine-demo`      | Shell do CRM de exemplo rodando sobre o `c3-example`                                                                                                                                                                                                          |
@@ -53,7 +53,7 @@ Uma entidade em JSON já é lista, busca, formulário, validação e gravação,
 }
 ```
 
-Antes de escrever TS, suba a escada do [`c3-spec`](plugins/c3/skills/c3-spec/SKILL.md#a-escada-json-primeiro-código-por-último): convenção, view, recurso declarado, widget de campo, seção custom e, por último, página registrada. O que o motor não alcança vira lacuna registrada e trabalho no motor, nunca tela em TS escondida ([ADR 0001](docs/adr/0001-motor-dsl-caminho-padrao.md)). Exemplos completos em [`spec/v0/examples`](spec/v0/examples); para protótipo sem servidor, `createMemoryClient` do `@c3theme/engine` faz o papel do backend.
+Antes de escrever TS, suba a escada do [`c3-spec`](plugins/c3/skills/c3-spec/SKILL.md#a-escada-json-primeiro-código-por-último): convenção, view, recurso declarado, widget de campo, seção custom e, por último, página registrada. O que o motor não alcança vira issue `lacuna:` no C3Theme e trabalho no motor, nunca tela em TS escondida ([ADR 0003](docs/adr/0003-motor-sem-excecoes.md)). Exemplos completos em [`spec/v0/examples`](spec/v0/examples); para protótipo sem servidor, `createMemoryClient` do `@c3theme/engine` faz o papel do backend.
 
 ## Estado
 
@@ -168,9 +168,9 @@ No assistente, o `<AssistantPanel onTelemetry taskOf={agentTaskOf}>` emite os me
 
 Para trocar uma tela por vez num app que já existe, use `<EntityList>` e `<EntityForm>` direto. Convenções de tabela, hooks, adaptador rusqlite e escrita delegada: [`crates/c3-engine/README.md`](crates/c3-engine/README.md). Contrato completo: [`spec/README.md`](spec/README.md).
 
-## App sem o motor (exceção)
+## App sem o motor (obsoleto)
 
-Só para app sem tela de negócio, como um portal ou uma landing (exceção do [ADR 0001](docs/adr/0001-motor-dsl-caminho-padrao.md)); o script avisa isso ao rodar:
+Obsoleto pelo [ADR 0003](docs/adr/0003-motor-sem-excecoes.md): sai quando o motor cobrir o que o seed tem (issue #74). Não use em sistema novo; o script avisa isso ao rodar:
 
 ```bash
 pnpm create-app portal-institucional --sem-motor --title "Portal"
@@ -191,7 +191,7 @@ O script copia `apps/seed` para `apps/<nome>` e ajusta o nome do pacote, `APP_NA
 
 ## Usando o `@c3theme/ui`
 
-É o que o motor usa por dentro e o que se usa nas exceções do [ADR 0001](docs/adr/0001-motor-dsl-caminho-padrao.md) e nos componentes registrados. Tela de negócio não se monta com ele direto.
+É o vocabulário que o motor monta por dentro ([ADR 0003](docs/adr/0003-motor-sem-excecoes.md)). Nenhuma tela se monta com ele direto; componente registrado que o usa cita a issue `lacuna:` que o motivou.
 
 ```tsx
 import { AppFooter, AppLayout, C3ThemeProvider, ColorModeButton, CommandSearch, Notifier } from '@c3theme/ui';

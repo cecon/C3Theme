@@ -13,13 +13,14 @@ mostra o JSON, não o código React. A vitrine completa fica em [cecon.github.io
 - **Pelo motor**: a spec fica em `apps/storybook/src/motor/spec` (validada pelo `pnpm spec:check`) e os registros num
   adaptador em memória (`createMemoryClient`), no lugar do backend.
 - **Uso direto** (tag `uso-direto`, nome da história termina em "(uso direto)"): o motor ainda não alcança a variação,
-  ou a peça é de baixo nível (tema, chat, fluxo, molduras). É lacuna anotada, não exemplo a seguir num sistema.
+  ou a peça é de baixo nível (tema, primitivas). É lacuna anotada, não exemplo a seguir num sistema.
 
-## Exceções do ADR 0001
+## Não há exceção (ADR 0003)
 
-Ficam em código por decisão, não por lacuna: as primitivas do `@c3theme/ui` (Tema, chip, avatar, botão, painel,
-progresso, entradas, catálogo, peças das páginas registradas como ligar aparelho e pedidos de acesso), o Chat, o
-Fluxo e a moldura do app de desktop.
+Toda tela sai do motor, inclusive o chat. As primitivas do `@c3theme/ui` e do `@c3theme/chat` (tema, chip, avatar,
+botão, painel, entradas, cards de aprovação, navegador interno) não são tela: são o vocabulário que o motor monta, e
+aqui aparecem peça a peça. Chat, fluxo e moldura do desktop montados em TS são lacuna, com issue: chat no `app.json`
+(#71), fluxo (#72) e moldura do desktop (#73).
 
 ## Lacunas do motor
 

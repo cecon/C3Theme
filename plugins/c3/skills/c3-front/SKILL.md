@@ -1,6 +1,6 @@
 ---
 name: c3-front
-description: Monta o front React de um sistema com o C3 - C3Shell lendo a spec do backend, EngineProvider com EntityList/EntityForm dentro de um app que já existe, componentes custom registrados por nome (campo, coluna, seção, página registrada, header) e o @c3theme/ui nas exceções (tema, AppLayout, campos, DataTable, avisos). Toda tela de negócio é JSON no motor (ADR 0001). Use ao instalar ou atualizar @c3theme/ui ou @c3theme/engine, escrever um componente custom para a spec, decidir se algo pode ficar fora do motor ou corrigir visual que destoa do C3.
+description: Monta o front React de um sistema com o C3 - C3Shell lendo a spec do backend, EngineProvider com EntityList/EntityForm dentro de um app que já existe, componentes custom registrados por nome (campo, coluna, seção, página registrada, header) e o @c3theme/ui como vocabulário do motor (tema, AppLayout, campos, DataTable, avisos). Toda tela é JSON no motor, sem exceção (ADR 0003); o que falta vira issue lacuna: no C3Theme. Use ao instalar ou atualizar @c3theme/ui ou @c3theme/engine, escrever um componente custom para a spec, decidir se algo pode ficar fora do motor ou corrigir visual que destoa do C3.
 ---
 
 # Front com @c3theme/ui e @c3theme/engine
@@ -21,9 +21,9 @@ Os pacotes são privados e entram por git, **presos a um commit**:
 - Peers: `react` 19, `@mui/material` e `@mui/system` 9, `@emotion/react`, `@emotion/styled`, `@emotion/cache`, `react-router` 8, `react-intl` 12, `swr` 2 (engine). `@tanstack/react-table` só para `@c3theme/ui/table`. Ícones vêm do `iconsax-reactjs`.
 - Para saber o que mudou entre dois commits, leia o `CHANGELOG.md` do pacote (o chat tem) e o `git log -- packages/<pacote>`.
 
-## Regra: tela de negócio é JSON
+## Regra: toda tela é JSON, sem exceção
 
-Toda tela de negócio sai do motor ([ADR 0001](../../../../docs/adr/0001-motor-dsl-caminho-padrao.md)). Antes de escrever TS, escreva o JSON (skill `c3-spec`) e suba a escada dela. TS de tela só nas exceções: página registrada (com `config` validado), catálogo de primitivas, chat, flow e moldura do desktop. Se o motor não alcança o resultado, registre a lacuna e diga ao usuário que é trabalho no motor; não esconda uma tela em TS nem crie um custom genérico para contornar a spec.
+Toda tela sai do motor, inclusive chat e assistente ([ADR 0003](../../../../docs/adr/0003-motor-sem-excecoes.md), que substitui as exceções do [ADR 0001](../../../../docs/adr/0001-motor-dsl-caminho-padrao.md)). Antes de escrever TS, escreva o JSON (skill `c3-spec`) e suba a escada dela. Se o motor não alcança o resultado, **abra uma issue `lacuna: <o que falta>` no `cecon/C3Theme`** com o caso real e diga ao usuário que é trabalho no motor. Página registrada ou componente custom só com a issue aberta antes, citada no código (`// lacuna: cecon/C3Theme#N`). Não esconda uma tela em TS nem crie um custom genérico para contornar a spec.
 
 ## Escolha o modo
 
@@ -31,9 +31,9 @@ Toda tela de negócio sai do motor ([ADR 0001](../../../../docs/adr/0001-motor-d
 | -------------------------------------------------------- | -------------------------------------------------------------------------------------- |
 | Sistema novo, ou retaguarda inteira descrita na spec     | `<C3Shell apiUrl="/api" ...>`: o app inteiro vem do backend; no C3Theme, `pnpm create-app <nome> [--backend node]` gera front + backend pelo motor |
 | App que já existe, trocando uma tela por vez             | `EngineProvider` + `<EntityList entity="x" />` / `<EntityForm entity="x" id={id} />` no layout do app (metadados por `loadEntities`) |
-| Tela que não é cadastro e nenhum degrau resolve (PDV com TEF) | página registrada: `pages[].component` + `config` validado pelo `components/<nome>.schema.json`, componente em `components` |
+| Tela que não é cadastro e nenhum degrau resolve (PDV com TEF) | abra a issue `lacuna:` antes; enquanto ela não fecha, página registrada: `pages[].component` + `config` validado pelo `components/<nome>.schema.json`, componente em `components`, citando a issue |
 | Protótipo ou teste de tela sem servidor                  | `createMemoryClient(seed)` no lugar do backend, com `loadEntities` e `EngineProvider` (como a seção "Por JSON" da vitrine) |
-| App sem backend do motor (portal, landing): exceção      | só `@c3theme/ui`: `C3ThemeProvider` + `AppLayout`; ponto de partida: `pnpm create-app <nome> --sem-motor` no C3Theme (copia o seed) |
+| App sem backend do motor (portal, landing)               | não existe mais (ADR 0003): use o motor; o `--sem-motor` é obsoleto e sai com a issue #74 |
 
 ```tsx
 import { ptBR } from '@mui/material/locale';

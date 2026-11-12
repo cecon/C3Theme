@@ -7,7 +7,7 @@ import { TONES } from '../support/tones';
 
 const STATUS: StatusTone[] = TONES.filter((t): t is StatusTone => t !== 'secondary');
 
-/** Primitiva do catálogo (exceção 2 do ADR 0001). No motor ela é o chip do `enum` com `color` na lista e no formulário: veja "Tabela/Lista pelo motor". */
+/** Primitiva do vocabulário do motor (não é tela, ADR 0003). No motor ela é o chip do `enum` com `color` na lista e no formulário: veja "Tabela/Lista pelo motor". */
 const meta = {
   title: 'Componentes/StatusChip',
   component: StatusChip,

@@ -1,8 +1,8 @@
-// Exceção do ADR 0001: app sem backend do motor (portal, landing), copiado do apps/seed. Puro: diz o que copiar e
+// Obsoleto pelo ADR 0003 (sai com cecon/C3Theme#74): app sem backend do motor, copiado do apps/seed. Puro: diz o que copiar e
 // o que trocar; o adaptador de disco faz.
 
-export const WITHOUT_ENGINE_WARNING = `⚠ --sem-motor é exceção (docs/adr/0001-motor-dsl-caminho-padrao.md): só para app sem tela de negócio,
-  como portal ou landing. Cadastro, lista, formulário e painel saem do motor: rode sem --sem-motor.`;
+export const WITHOUT_ENGINE_WARNING = `⚠ --sem-motor é obsoleto, não é exceção (docs/adr/0003-motor-sem-excecoes.md): toda tela sai do motor.
+  Ele sai com a issue cecon/C3Theme#74; rode sem --sem-motor.`;
 
 /**
  * @param {{ name: string, title: string }} opts

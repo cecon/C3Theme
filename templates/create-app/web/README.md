@@ -1,6 +1,6 @@
 # {{title}}
 
-App gerado por `pnpm create-app` e montado **inteiro pelo motor C3** ([ADR 0001](../../docs/adr/0001-motor-dsl-caminho-padrao.md)):
+App gerado por `pnpm create-app` e montado **inteiro pelo motor C3** ([ADR 0003](../../docs/adr/0003-motor-sem-excecoes.md)):
 este front não tem tela em TS; menu, rotas, lista, formulário e painel vêm do backend em `GET /api/_meta`.
 
 | Parte  | Pasta                       | O que tem                                                                   |

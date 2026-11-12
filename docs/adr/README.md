@@ -3,10 +3,11 @@
 Cada decisão que muda o jeito de trabalhar no C3 fica num arquivo próprio, numerado e que não se apaga: decisão
 trocada ganha um ADR novo, e o antigo passa a `Substituída por NNNN`.
 
-| ADR                                      | Decisão                                                  | Status |
-| ---------------------------------------- | -------------------------------------------------------- | ------ |
-| [0001](0001-motor-dsl-caminho-padrao.md) | Toda tela de negócio é JSON no motor; TS só nas exceções | Aceita |
-| [0002](0002-padroes-de-qualidade.md)     | Padrões de qualidade e como cada um é medido             | Aceita |
+| ADR                                      | Decisão                                                  | Status                                  |
+| ---------------------------------------- | -------------------------------------------------------- | --------------------------------------- |
+| [0001](0001-motor-dsl-caminho-padrao.md) | Toda tela de negócio é JSON no motor; TS só nas exceções | Aceita; exceções substituídas pela 0003 |
+| [0002](0002-padroes-de-qualidade.md)     | Padrões de qualidade e como cada um é medido             | Aceita                                  |
+| [0003](0003-motor-sem-excecoes.md)       | Tudo pelo motor, sem exceções; o que falta vira issue    | Aceita                                  |
 
 ## Formato
 

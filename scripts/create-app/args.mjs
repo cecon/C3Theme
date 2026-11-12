@@ -1,7 +1,7 @@
 // Lê a linha de comando do create-app. Puro: devolve as opções ou o erro, quem chama decide o que fazer.
 
 export const USAGE = `uso: pnpm create-app <nome> [--title "Nome de Exibição"] [--backend rust|node]
-     pnpm create-app <nome> --sem-motor [--title "..."]   (exceção do ADR 0001: app sem backend do motor)
+     pnpm create-app <nome> --sem-motor [--title "..."]   (obsoleto pelo ADR 0003: sai com a issue #74)
 
   <nome> em kebab-case, ex.: portal-clientes. Padrão do backend: rust.`;
 
