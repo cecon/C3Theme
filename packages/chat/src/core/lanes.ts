@@ -58,8 +58,8 @@ export function actionsFor(message: Message, actions: readonly MessageAction[] =
 
 /** Ramo: o histórico da principal até a mensagem (inclusive). Mensagem que não está na lista: vazio. */
 export function messagesUntil(messages: readonly Message[], messageId: string): Message[] {
-  const index = messages.findIndex((m) => m.id === messageId);
-  return index < 0 ? [] : messages.slice(0, index + 1);
+  // fora da lista, findIndex dá -1 e o corte fica vazio
+  return messages.slice(0, messages.findIndex((m) => m.id === messageId) + 1);
 }
 
 /** Ordem da lista: as que trabalham em cima; depois a mais recente. */

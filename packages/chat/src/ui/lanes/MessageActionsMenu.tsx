@@ -22,6 +22,10 @@ export interface MessageActionsMenuProps {
   onAction?: (message: Message, actionId: string) => void;
 }
 
+// no balão, centrado na altura dele e em cor secundária, como os botões do rodapé da resposta
+const OPENS_ICON = { branch: <Hierarchy size={18} />, aside: <MessageQuestion size={18} /> };
+const BUTTON = { alignSelf: 'center', color: 'text.secondary' };
+
 /** Botão "Mais ações" de uma mensagem, com o menu das ações que valem para ela ("Ramificar daqui"). */
 export default function MessageActionsMenu({ message, actions, onAction }: MessageActionsMenuProps) {
   const t = useChatText();
@@ -47,6 +51,7 @@ export default function MessageActionsMenu({ message, actions, onAction }: Messa
           aria-expanded={anchor ? true : undefined}
           onClick={(e) => setAnchor(e.currentTarget)}
           className="c3-message-actions"
+          sx={BUTTON}
         >
           <More size={16} />
         </IconButton>

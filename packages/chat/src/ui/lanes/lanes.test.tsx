@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import type { Lane, MessageAction } from '../../core/lanes';
@@ -69,6 +69,25 @@ describe('MessageActionsMenu', () => {
     expect(onAction).toHaveBeenCalledWith(expect.objectContaining({ id: 'm1' }), 'c3.branch');
   });
 
+  it('fecha ao escolher e com Esc; ícone só nas que abrem conversa, um para cada tipo', async () => {
+    const aside: MessageAction = { id: 'perguntar', label: 'Perguntar à parte', opens: 'aside' };
+    wrap(<MessageActionsMenu message={reply()} actions={[branch, aside, pin]} onAction={vi.fn()} />);
+    const button = screen.getByRole('button', { name: 'Mais ações' });
+    fireEvent.click(button);
+    const items = within(screen.getByRole('menu')).getAllByRole('menuitem');
+    const icon = (i: number) => items[i].querySelector('.MuiListItemIcon-root svg')?.innerHTML;
+    expect(icon(0)).toBeTruthy();
+    expect(icon(1)).toBeTruthy();
+    expect(icon(0)).not.toBe(icon(1));
+    expect(items[2].querySelector('.MuiListItemIcon-root')).toBeNull();
+    fireEvent.click(items[2]);
+    await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
+    expect(button.getAttribute('aria-expanded')).toBeNull();
+    fireEvent.click(button);
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
+  });
+
   it('sem ação que valha, ou sem onAction: nada', () => {
     const { container } = wrap(
       <>
@@ -102,6 +121,14 @@ describe('MessageList com ações por mensagem', () => {
     fireEvent.click(buttons[0]);
     fireEvent.click(screen.getByRole('menuitem', { name: 'Fixar' }));
     expect(onAction).toHaveBeenCalledWith(expect.objectContaining({ id: 'm2' }), 'fixar');
+  });
+
+  it('balão: o botão fica do lado de dentro (antes da minha, depois da recebida)', () => {
+    wrap(<MessageList title="Ana" messages={[mine, reply()]} messageActions={[pin]} onMessageAction={vi.fn()} />);
+    const [first, second] = screen.getAllByRole('button', { name: 'Mais ações' });
+    const before = (a: Node, b: Node) => !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(before(first, screen.getByText('pergunta'))).toBe(true);
+    expect(before(screen.getByText('resposta'), second)).toBe(true);
   });
 
   it('balão sem ação que valha: sem botão', () => {

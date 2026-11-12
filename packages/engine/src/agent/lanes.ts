@@ -87,7 +87,8 @@ export function lanesApi(client: Pick<C3Client, 'raw'>): LanesApi | undefined {
   if (!raw) return undefined;
   const e = encodeURIComponent;
   const call = async <T>(method: string, path: string, body?: unknown): Promise<T> => {
-    const reply = await raw(method, path, body === undefined ? undefined : JSON.stringify(body));
+    // sem corpo, o stringify devolve undefined e o pedido sai sem corpo
+    const reply = await raw(method, path, JSON.stringify(body) as string | undefined);
     const json = reply.body ? JSON.parse(reply.body) : {};
     if (reply.status < 200 || reply.status > 299) {
       throw new ApiError(reply.status, json?.code ?? 'internal', json?.message ?? `Erro ${reply.status}.`);

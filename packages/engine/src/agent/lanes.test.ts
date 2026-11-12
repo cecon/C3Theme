@@ -68,6 +68,7 @@ describe('lanesApi', () => {
       .fn()
       .mockResolvedValueOnce(reply(404, { code: 'not_found', message: 'Sem conversa' }))
       .mockResolvedValueOnce(reply(500, undefined))
+      .mockResolvedValueOnce({ status: 502, contentType: 'application/json', body: 'null' })
       .mockResolvedValueOnce(reply(199, {}))
       .mockResolvedValueOnce(reply(300, {}));
     const api = lanesApi({ raw })!;
@@ -75,6 +76,7 @@ describe('lanesApi', () => {
     expect(first).toBeInstanceOf(ApiError);
     expect(first).toMatchObject({ status: 404, code: 'not_found', message: 'Sem conversa' });
     await expect(api.list('c1')).rejects.toMatchObject({ status: 500, code: 'internal', message: 'Erro 500.' });
+    await expect(api.list('c1')).rejects.toMatchObject({ status: 502, code: 'internal', message: 'Erro 502.' });
     await expect(api.list('c1')).rejects.toMatchObject({ status: 199 });
     await expect(api.list('c1')).rejects.toMatchObject({ status: 300 });
   });

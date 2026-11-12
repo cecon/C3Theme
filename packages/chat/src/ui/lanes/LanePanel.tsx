@@ -13,6 +13,14 @@ import AssistantPanel, { type AssistantChat, type AssistantPanelProps } from '..
 import { useChatText } from '../text';
 import LaneList from './LaneList';
 
+// mesmo cabeçalho do AssistantPanel, para a lista e a conversa aberta não pularem ao trocar
+const SX = {
+  root: { height: '100%', minHeight: 0, bgcolor: 'background.paper' },
+  header: { alignItems: 'center', px: 2, py: 1.25, minHeight: 56 },
+  titleRow: { alignItems: 'center', flex: 1, minWidth: 0, color: 'primary.main' },
+  title: { color: 'text.primary' }
+} as const;
+
 export interface LanePanelProps {
   /** As conversas à parte da conversa principal. */
   lanes: Lane[];
@@ -68,11 +76,11 @@ export default function LanePanel(props: LanePanelProps) {
   }
 
   return (
-    <Stack sx={{ height: '100%', minHeight: 0, bgcolor: 'background.paper' }}>
-      <Stack direction="row" spacing={1} sx={{ alignItems: 'center', px: 2, py: 1.25, minHeight: 56 }}>
-        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flex: 1, minWidth: 0, color: 'primary.main' }}>
+    <Stack sx={SX.root}>
+      <Stack direction="row" spacing={1} sx={SX.header}>
+        <Stack direction="row" spacing={1} sx={SX.titleRow}>
           <Messages2 size={20} variant="Bulk" />
-          <Typography variant="subtitle1" component="h2" noWrap sx={{ color: 'text.primary' }}>
+          <Typography variant="subtitle1" component="h2" noWrap sx={SX.title}>
             {title}
           </Typography>
         </Stack>

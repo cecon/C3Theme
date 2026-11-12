@@ -14,6 +14,17 @@ import { sortLanes, type Lane } from '../../core/lanes';
 import { useDayFormat } from '../format';
 import { useChatText } from '../text';
 
+const SX = {
+  empty: { px: 3, py: 6, textAlign: 'center' },
+  list: { overflowY: 'auto', flex: 1, minHeight: 0, py: 0.5 },
+  item: { alignItems: 'flex-start', py: 1 },
+  icon: { minWidth: 36, mt: 0.5, color: 'text.secondary' },
+  line: { alignItems: 'center', minWidth: 0 },
+  title: { flex: 1, minWidth: 0 }
+} as const;
+const SLOTS = { secondary: { noWrap: true } };
+const KIND_ICON = { branch: <Hierarchy size={20} />, aside: <MessageQuestion size={20} /> };
+
 export interface LaneListProps {
   lanes: readonly Lane[];
   onSelect: (id: string) => void;
@@ -25,7 +36,7 @@ export default function LaneList({ lanes, onSelect }: LaneListProps) {
   const day = useDayFormat();
   if (lanes.length === 0) {
     return (
-      <Stack spacing={1} sx={{ px: 3, py: 6, textAlign: 'center' }}>
+      <Stack spacing={1} sx={SX.empty}>
         <Typography variant="subtitle1">{t('c3.chat.lanes.empty')}</Typography>
         <Typography variant="body2" color="text.secondary">
           {t('c3.chat.lanes.emptyHint')}
@@ -34,16 +45,14 @@ export default function LaneList({ lanes, onSelect }: LaneListProps) {
     );
   }
   return (
-    <List aria-label={t('c3.chat.lanes')} sx={{ overflowY: 'auto', flex: 1, minHeight: 0, py: 0.5 }}>
+    <List aria-label={t('c3.chat.lanes')} sx={SX.list}>
       {sortLanes(lanes).map((lane) => (
-        <ListItemButton key={lane.id} onClick={() => onSelect(lane.id)} sx={{ alignItems: 'flex-start', py: 1 }}>
-          <ListItemIcon sx={{ minWidth: 36, mt: 0.5, color: 'text.secondary' }}>
-            {lane.kind === 'branch' ? <Hierarchy size={20} /> : <MessageQuestion size={20} />}
-          </ListItemIcon>
+        <ListItemButton key={lane.id} onClick={() => onSelect(lane.id)} sx={SX.item}>
+          <ListItemIcon sx={SX.icon}>{KIND_ICON[lane.kind]}</ListItemIcon>
           <ListItemText
             primary={
-              <Stack direction="row" spacing={1} sx={{ alignItems: 'center', minWidth: 0 }}>
-                <Typography variant="subtitle2" noWrap sx={{ flex: 1, minWidth: 0 }}>
+              <Stack direction="row" spacing={1} sx={SX.line}>
+                <Typography variant="subtitle2" noWrap sx={SX.title}>
                   {lane.title}
                 </Typography>
                 {lane.working ? (
@@ -61,7 +70,7 @@ export default function LaneList({ lanes, onSelect }: LaneListProps) {
                 {lane.lastMessage?.text && ` · ${lane.lastMessage.text}`}
               </>
             }
-            slotProps={{ secondary: { noWrap: true } }}
+            slotProps={SLOTS}
           />
         </ListItemButton>
       ))}

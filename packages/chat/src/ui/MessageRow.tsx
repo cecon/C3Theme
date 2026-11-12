@@ -6,7 +6,6 @@ import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 
 import type { AgentState } from '../core/agents';
-import { actionsFor } from '../core/lanes';
 import type { Handoff } from '../core/team';
 import type { Author, Message } from '../core/types';
 import AssistantMessage, { type AssistantMessageProps } from './AssistantMessage';
@@ -39,6 +38,14 @@ export interface MessageRowProps extends Pick<MessageBubbleProps, 'renderText' |
   onRegenerate?: AssistantMessageProps['onRegenerate'];
   onOpenTask?: (handoff: Handoff, message: Message) => void;
 }
+
+// o botão de ações do balão só aparece ao passar o mouse ou focar (no toque, fica sempre)
+const HOVER_ACTIONS = {
+  '@media (hover: hover)': {
+    '& .c3-message-actions': { opacity: 0 },
+    '&:hover .c3-message-actions, & .c3-message-actions:focus-visible': { opacity: 1 }
+  }
+};
 
 /** Uma linha do histórico: separador de dia, passagem de tarefa, resposta de agente ou balão. */
 export default function MessageRow(props: MessageRowProps) {
@@ -91,11 +98,7 @@ export default function MessageRow(props: MessageRowProps) {
       </Box>
     );
   }
-  const actions = props.onMessageAction && actionsFor(m, props.messageActions).length > 0 && (
-    <Box sx={{ color: 'text.secondary', alignSelf: 'center' }}>
-      <MessageActionsMenu message={m} actions={props.messageActions} onAction={props.onMessageAction} />
-    </Box>
-  );
+  const actions = <MessageActionsMenu message={m} actions={props.messageActions} onAction={props.onMessageAction} />;
   const withAvatar = (renderAvatar || (assistant && showAuthors)) && !mine && m.kind !== 'system';
   return (
     <Box
@@ -105,11 +108,7 @@ export default function MessageRow(props: MessageRowProps) {
         alignItems: 'flex-end',
         gap: 1,
         pt: row.grouped ? 0.25 : 1,
-        // o botão de ações do balão só aparece ao passar o mouse ou focar (no toque, fica sempre)
-        '@media (hover: hover)': {
-          '& .c3-message-actions': { opacity: 0 },
-          '&:hover .c3-message-actions, & .c3-message-actions:focus-visible': { opacity: 1 }
-        }
+        ...HOVER_ACTIONS
       }}
     >
       {withAvatar && <Box sx={{ width: 32, flexShrink: 0, display: { xs: 'none', sm: 'block' } }}>{props.lastOfBlock && avatar(32)}</Box>}
