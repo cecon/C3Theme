@@ -29,6 +29,12 @@ export interface FieldDef {
   help?: Text;
   /** Ajuda longa atrás de uma interrogação no rótulo; o `help` é a frase curta sempre visível. */
   hint?: Text;
+  /** Sinônimos que a busca das configurações também acha (`views.form.search`). */
+  keywords?: Text[];
+  /** Gravação na hora: pergunta antes do PATCH; cancelar volta o valor. `when` sobre o valor novo. */
+  confirmChange?: { message: Text; effect?: Text; confirmLabel?: Text; when?: Condition };
+  /** Gravação na hora: a mudança só vale depois de reiniciar; o texto (ou o padrão) aparece depois do Salvo. */
+  restart?: true | Text;
   /** Valor preenchido pelo assistente pede conferência: o rascunho só grava depois de o usuário confirmar o campo. */
   aiReview?: boolean;
   required?: boolean;
@@ -99,7 +105,17 @@ export type {
   RowAction,
   RowStyle
 } from './viewTypes';
-export type { ComputedValue, FormFieldDef, FormSection, FormView, PairingDef, PairingState, RelatedDef, SummaryLine } from './formTypes';
+export type {
+  ClientPlatform,
+  ComputedValue,
+  FormFieldDef,
+  FormSection,
+  FormView,
+  PairingDef,
+  PairingState,
+  RelatedDef,
+  SummaryLine
+} from './formTypes';
 export type { LookupDef } from './formTypes';
 
 export interface Preset {

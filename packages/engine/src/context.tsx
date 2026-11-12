@@ -22,6 +22,8 @@ export interface OrgState {
 
 export interface EngineState {
   connectivity?: import('./pageStates/types').ConnectivityPort;
+  /** Plataforma declarada pelo app (ou desktop pela porta desktopHost); sem ela, `useClientPlatform` detecta. */
+  platform?: import('./types').ClientPlatform;
   client: C3Client;
   app: AppDef;
   entities: Record<string, { def: EntityDef; capabilities: Capabilities }>;

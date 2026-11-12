@@ -22,7 +22,7 @@ const wireValue = (f: FieldDef, v: unknown) =>
  * em fila, cada um com a versão que o anterior devolveu. Erro de validação fica no campo e o valor volta ao gravado;
  * 412 relê o registro.
  */
-export default function useAutosave(entity: string, id: string, loaded: WireRecord | undefined) {
+export default function useAutosave(entity: string, id: string, loaded: WireRecord | undefined, onSaved?: (f: FieldDef) => void) {
   const { client, entities } = useEngine();
   const { mutate } = useSWRConfig();
   const def = entities[entity].def;
@@ -32,6 +32,8 @@ export default function useAutosave(entity: string, id: string, loaded: WireReco
   const [formError, setFormError] = useState<string>();
   const saved = useRef<WireRecord>(loaded ?? {});
   const queue = useRef<Promise<void>>(Promise.resolve());
+  const saidSaved = useRef(onSaved);
+  saidSaved.current = onSaved;
 
   useEffect(() => {
     if (!loaded) return;
@@ -63,6 +65,7 @@ export default function useAutosave(entity: string, id: string, loaded: WireReco
         });
         mutate(['c3-record', entity, id], next, { revalidate: false });
         setState('saved');
+        saidSaved.current?.(f);
       } catch (e) {
         setState('error');
         if (isStale(e)) {
@@ -98,5 +101,11 @@ export default function useAutosave(entity: string, id: string, loaded: WireReco
     if (commitsOnChange(f)) void commit(f, value, required);
   };
 
-  return { def, record, errors, state, formError, change, commit };
+  /** O valor é outro que o gravado (o que vai num PATCH). */
+  const differs = (f: FieldDef, value: unknown) =>
+    JSON.stringify(wireValue(f, value)) !== JSON.stringify(wireValue(f, saved.current[f.name]));
+  /** Volta o campo ao gravado (confirmação cancelada). */
+  const revert = (f: FieldDef) => setRecord((r) => ({ ...r, [f.name]: saved.current[f.name] }));
+
+  return { def, record, errors, state, formError, change, commit, differs, revert };
 }

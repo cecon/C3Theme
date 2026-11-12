@@ -10,6 +10,7 @@ import Tabs from '@mui/material/Tabs';
 
 import { useEngine, useText } from '../context';
 import { errorCount, groupSections } from '../formTabs';
+import useClientPlatform, { onPlatform } from '../hooks/useClientPlatform';
 import useLookups from '../hooks/useLookups';
 import FormSection, { sectionShown, type SectionContext } from './FormSection';
 import type { FormSection as Section } from '../types';
@@ -30,8 +31,10 @@ export function sideBySide(list: Section[]): Section[][] {
  * Seções do formulário. As sem `tab` ficam em cima, sempre visíveis; as com `tab` viram abas, cada uma com a
  * contagem de erros. No celular a barra de abas rola na horizontal.
  */
-export default function FormSections({ sections, ctx: form }: { sections: Section[]; ctx: SectionContext }) {
+export default function FormSections({ sections: declared, ctx: form }: { sections: Section[]; ctx: SectionContext }) {
   const { components } = useEngine();
+  const platform = useClientPlatform();
+  const sections = declared.filter((s) => onPlatform(s, platform));
   const ctx = {
     ...form,
     lookup: useLookups(form.def, form.record, form.editing, (values) => Object.entries(values).forEach(([k, v]) => form.change(k, v)))

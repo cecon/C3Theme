@@ -1,0 +1,60 @@
+{
+  "$schema": "../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "preferencias",
+  "label": { "singular": "Configurações", "plural": "Configurações", "gender": "f" },
+  "singleton": true,
+  "fields": [
+    {
+      "name": "tema",
+      "type": "enum",
+      "label": "Aparência",
+      "help": "Claro, escuro ou como o sistema",
+      "keywords": ["modo escuro", "cores", "tema"],
+      "options": [
+        { "value": "sistema", "label": "Como o sistema" },
+        { "value": "claro", "label": "Claro" },
+        { "value": "escuro", "label": "Escuro" }
+      ]
+    },
+    { "name": "idioma", "type": "enum", "label": "Idioma", "keywords": ["língua"], "options": [{ "value": "pt-BR", "label": "Português" }, { "value": "en-US", "label": "English" }] },
+    { "name": "som", "type": "boolean", "label": "Tocar som nos avisos", "keywords": ["notificação", "barulho"] },
+    {
+      "name": "backup",
+      "type": "boolean",
+      "label": "Cópia de segurança diária",
+      "help": "Copia os dados toda noite",
+      "confirmChange": {
+        "message": "Desligar a cópia de segurança?",
+        "effect": "Os dados deixam de ser copiados toda noite. A última cópia continua guardada.",
+        "confirmLabel": "Desligar",
+        "when": { "field": "backup", "op": "eq", "value": false }
+      }
+    },
+    {
+      "name": "pasta",
+      "type": "string",
+      "label": "Pasta dos dados",
+      "maxLength": 200,
+      "keywords": ["diretório", "local"],
+      "restart": true,
+      "confirmChange": { "message": "Trocar a pasta dos dados?", "effect": "O app passa a ler e gravar na pasta nova depois de reiniciar." }
+    },
+    { "name": "aceleracao", "type": "boolean", "label": "Aceleração por hardware", "keywords": ["gpu", "placa de vídeo"], "restart": "Feche e abra o app para ligar ou desligar a aceleração." },
+    { "name": "atalho_busca", "type": "string", "format": "shortcut", "label": "Abrir a busca", "keywords": ["teclado"] },
+    { "name": "atalho_novo", "type": "string", "format": "shortcut", "label": "Novo registro", "keywords": ["teclado"] },
+    { "name": "atalho_assistente", "type": "string", "format": "shortcut", "label": "Abrir o assistente", "keywords": ["teclado", "chat"] }
+  ],
+  "views": {
+    "form": {
+      "autosave": true,
+      "search": true,
+      "sections": [
+        { "title": "Aparência", "tab": "Geral", "rows": [["tema"], ["idioma"], ["som"]] },
+        { "title": "Dados", "tab": "Geral", "rows": [["backup"], ["pasta"]] },
+        { "title": "Desempenho", "tab": "Avançado", "platforms": ["desktop", "web"], "rows": [["aceleracao"]] },
+        { "title": "Teclado", "tab": "Atalhos", "platforms": ["desktop", "web"], "rows": [["atalho_busca"], ["atalho_novo"], ["atalho_assistente"]] }
+      ]
+    }
+  }
+}

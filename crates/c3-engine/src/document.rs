@@ -14,6 +14,51 @@ pub enum Format {
     CpfCnpj,
     /// Telefone com DDD: 10 ou 11 dígitos, sem dígito verificador.
     Phone,
+    /// Atalho de teclado na forma canônica ("Ctrl+Shift+K", "F5"), #110.
+    Shortcut,
+}
+
+const MODIFIERS: [&str; 4] = ["Ctrl", "Alt", "Shift", "Meta"];
+const NAMED: [&str; 19] = [
+    "Space",
+    "Enter",
+    "Tab",
+    "Backspace",
+    "Delete",
+    "Insert",
+    "Home",
+    "End",
+    "PageUp",
+    "PageDown",
+    "Up",
+    "Down",
+    "Left",
+    "Right",
+    "Plus",
+    "Minus",
+    "Comma",
+    "Period",
+    "Slash",
+];
+
+/// Atalho: modificadores na ordem de `MODIFIERS`, sem repetir, e a tecla no fim; sem modificador, só F1 a F24.
+fn shortcut_ok(value: &str) -> bool {
+    let mut parts: Vec<&str> = value.split('+').collect();
+    let key = parts.pop().unwrap_or_default();
+    let mut last: Option<usize> = None;
+    for m in &parts {
+        match MODIFIERS.iter().position(|x| x == m) {
+            Some(i) if last.is_none_or(|l| i > l) => last = Some(i),
+            _ => return false,
+        }
+    }
+    let function = key
+        .strip_prefix('F')
+        .and_then(|n| n.parse::<u8>().ok())
+        .is_some_and(|n| (1..=24).contains(&n))
+        && !key[1..].starts_with('0');
+    let single = key.len() == 1 && key.bytes().all(|c| c.is_ascii_uppercase() || c.is_ascii_digit());
+    (function || single || NAMED.contains(&key)) && (!parts.is_empty() || function)
 }
 
 /// Dígito verificador módulo 11: pesos de 2 a `max`, da direita para a esquerda.
@@ -32,6 +77,9 @@ fn mod11(values: &[u32], max: u32) -> u32 {
 
 /// `None` = válido; `pattern` = forma errada (máscara, minúscula, tamanho); `check_digit` = dígito errado.
 pub fn error(format: Format, value: &str) -> Option<&'static str> {
+    if format == Format::Shortcut {
+        return (!shortcut_ok(value)).then_some("pattern");
+    }
     if format == Format::Phone {
         let ok = (10..=11).contains(&value.len()) && value.bytes().all(|c| c.is_ascii_digit());
         return (!ok).then_some("pattern");

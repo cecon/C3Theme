@@ -122,7 +122,27 @@ pub(crate) async fn check_fields(
             }
         }
     }
+    check_shortcuts(entity, record, errors);
     Ok(values)
+}
+
+/// Atalho de teclado (`format: "shortcut"`, #110) não repete dentro do registro: o segundo campo leva `unique`.
+fn check_shortcuts(entity: &Entity, record: &Map<String, Value>, errors: &mut FieldErrors) {
+    let mut seen: Vec<&str> = Vec::new();
+    for f in entity
+        .fields
+        .iter()
+        .filter(|f| f.format == Some(document::Format::Shortcut) && is_visible(entity, f, record))
+    {
+        let Some(v) = record.get(&f.name).and_then(Value::as_str).filter(|v| !v.is_empty()) else {
+            continue;
+        };
+        if seen.contains(&v) {
+            errors.add(&f.name, "unique", "Este atalho já está em uso neste registro.");
+        } else {
+            seen.push(v);
+        }
+    }
 }
 
 /// O registro apontado precisa existir dentro do que o usuário enxerga e ser compatível com o dono:

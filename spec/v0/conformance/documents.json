@@ -1,5 +1,5 @@
 {
-  "description": "Formato de documento e telefone (format em string): o valor trafega sem máscara, só dígitos (CPF) ou 12 caracteres [0-9A-Z] e 2 dígitos (CNPJ). error null = válido; 'pattern' = forma errada; 'check_digit' = dígito verificador errado. 'phone' trafega só os 10 ou 11 dígitos (DDD + número), sem dígito verificador.",
+  "description": "Formato de documento e telefone (format em string): o valor trafega sem máscara, só dígitos (CPF) ou 12 caracteres [0-9A-Z] e 2 dígitos (CNPJ). error null = válido; 'pattern' = forma errada; 'check_digit' = dígito verificador errado. 'phone' trafega só os 10 ou 11 dígitos (DDD + número), sem dígito verificador. 'shortcut' (atalho de teclado) trafega na forma canônica: modificadores na ordem Ctrl, Alt, Shift, Meta e a tecla no fim, unidos por '+'; sem modificador, só F1 a F24.",
   "cases": [
     {
       "format": "cpf",
@@ -156,6 +156,96 @@
       "value": "11a81234567",
       "error": "pattern",
       "note": "com letra no meio"
+    },
+    {
+      "format": "shortcut",
+      "value": "Ctrl+Shift+K",
+      "error": null,
+      "note": "letra com dois modificadores"
+    },
+    {
+      "format": "shortcut",
+      "value": "F5",
+      "error": null,
+      "note": "tecla de função sozinha"
+    },
+    {
+      "format": "shortcut",
+      "value": "Alt+F24",
+      "error": null,
+      "note": "função com modificador"
+    },
+    {
+      "format": "shortcut",
+      "value": "Ctrl+Alt+Shift+Meta+Space",
+      "error": null,
+      "note": "todos os modificadores, na ordem"
+    },
+    {
+      "format": "shortcut",
+      "value": "Meta+1",
+      "error": null,
+      "note": "número"
+    },
+    {
+      "format": "shortcut",
+      "value": "Ctrl+PageDown",
+      "error": null,
+      "note": "tecla com nome"
+    },
+    {
+      "format": "shortcut",
+      "value": "K",
+      "error": "pattern",
+      "note": "letra sem modificador"
+    },
+    {
+      "format": "shortcut",
+      "value": "Shift+Ctrl+K",
+      "error": "pattern",
+      "note": "modificadores fora da ordem"
+    },
+    {
+      "format": "shortcut",
+      "value": "Ctrl+Ctrl+K",
+      "error": "pattern",
+      "note": "modificador repetido"
+    },
+    {
+      "format": "shortcut",
+      "value": "Ctrl+k",
+      "error": "pattern",
+      "note": "letra minúscula"
+    },
+    {
+      "format": "shortcut",
+      "value": "Ctrl+",
+      "error": "pattern",
+      "note": "sem tecla"
+    },
+    {
+      "format": "shortcut",
+      "value": "Ctrl+Shift",
+      "error": "pattern",
+      "note": "só modificadores"
+    },
+    {
+      "format": "shortcut",
+      "value": "F25",
+      "error": "pattern",
+      "note": "função que não existe"
+    },
+    {
+      "format": "shortcut",
+      "value": "Cmd+K",
+      "error": "pattern",
+      "note": "modificador com outro nome"
+    },
+    {
+      "format": "shortcut",
+      "value": "Ctrl+Escape",
+      "error": "pattern",
+      "note": "Esc fica para cancelar a captura"
     }
   ]
 }

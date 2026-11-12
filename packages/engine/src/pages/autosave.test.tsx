@@ -3,6 +3,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { IntlProvider } from 'react-intl';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { MemoryRouter } from 'react-router';
 import { SWRConfig } from 'swr';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -39,7 +40,9 @@ function setup(client: Partial<C3Client>) {
       <IntlProvider locale="pt-BR" onError={() => {}}>
         <SWRConfig value={{ provider: () => new Map() }}>
           <EngineProvider value={value}>
-            <AutosaveForm entity="avisos_ajustes" id="1" />
+            <MemoryRouter>
+              <AutosaveForm entity="avisos_ajustes" id="1" />
+            </MemoryRouter>
           </EngineProvider>
         </SWRConfig>
       </IntlProvider>

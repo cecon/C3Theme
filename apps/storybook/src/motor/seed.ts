@@ -91,6 +91,20 @@ export const SEED: MemorySeed = {
     produto: produtos,
     movimento: movimentos,
     inventario: [{ id: '1', descricao: 'Inventário de março', data: '2026-03-31' }],
+    // configurações em abas (#110): busca, confirmação, aviso de reinício e atalhos
+    preferencias: [
+      {
+        id: '1',
+        tema: 'sistema',
+        idioma: 'pt-BR',
+        som: true,
+        backup: true,
+        pasta: '/home/ana/dados',
+        aceleracao: true,
+        atalho_busca: 'Ctrl+K',
+        atalho_novo: 'Ctrl+N'
+      }
+    ],
     // o café e o feijão já foram contados; o resto falta
     inventario_item: produtos.map((p, i) => ({
       id: String(i + 1),

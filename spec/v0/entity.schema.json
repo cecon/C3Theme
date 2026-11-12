@@ -273,6 +273,28 @@
           "$ref": "#/$defs/text",
           "description": "Ajuda longa (o que é, de onde vem, exemplo), atrás de uma interrogação no rótulo; abre no clique ou toque."
         },
+        "keywords": {
+          "type": "array",
+          "maxItems": 12,
+          "items": { "$ref": "#/$defs/text" },
+          "description": "Sinônimos que a busca das configurações (views.form.search) também acha, além do rótulo e do help (\"tema\", \"escuro\" no campo de aparência)."
+        },
+        "confirmChange": {
+          "type": "object",
+          "required": ["message"],
+          "additionalProperties": false,
+          "description": "Alteração sensível no formulário de gravação na hora (autosave): a shell pergunta antes do PATCH; cancelar volta o valor. Com `when`, só pergunta quando a condição vale para o valor novo (desligar a cópia de segurança, não ligar).",
+          "properties": {
+            "message": { "$ref": "#/$defs/text", "description": "A pergunta." },
+            "effect": { "$ref": "#/$defs/text", "description": "O que acontece ao confirmar." },
+            "confirmLabel": { "$ref": "#/$defs/text", "description": "Texto do botão. Padrão: Confirmar." },
+            "when": { "$ref": "#/$defs/condition" }
+          }
+        },
+        "restart": {
+          "oneOf": [{ "const": true }, { "$ref": "#/$defs/text" }],
+          "description": "A mudança só vale depois de reiniciar o app: no formulário de gravação na hora, depois do Salvo, a shell mostra o aviso (o texto, ou o padrão) até a tela fechar."
+        },
         "aiReview": {
           "type": "boolean",
           "default": false,
@@ -341,8 +363,8 @@
                 "description": "Regex no subconjunto comum de ECMAScript e do crate regex do Rust (sem lookaround nem backreference)."
               },
               "format": {
-                "enum": ["cpf", "cnpj", "cpf_cnpj", "phone"],
-                "description": "Só em string. 'phone': telefone brasileiro com DDD, trafega só os 10 ou 11 dígitos (erro 'pattern' fora disso), a shell mostra e digita como (11) 98123-4567. Os outros: documento brasileiro com dígito verificador. Trafega sem máscara: CPF com 11 dígitos; CNPJ com 12 caracteres [0-9A-Z] e 2 dígitos (alfanumérico desde jul/2026). 'cpf_cnpj' aceita os dois pelo tamanho. Erro: 'pattern' (forma) ou 'check_digit'. A shell mostra e digita com máscara."
+                "enum": ["cpf", "cnpj", "cpf_cnpj", "phone", "shortcut"],
+                "description": "Só em string. 'shortcut': atalho de teclado na forma canônica (modificadores na ordem Ctrl, Alt, Shift, Meta e a tecla no fim: \"Ctrl+Shift+K\"; sem modificador, só F1 a F24); a shell captura as teclas e o motor recusa a forma errada ('pattern') e o mesmo atalho em outro campo shortcut do registro ('unique'). 'phone': telefone brasileiro com DDD, trafega só os 10 ou 11 dígitos (erro 'pattern' fora disso), a shell mostra e digita como (11) 98123-4567. Os outros: documento brasileiro com dígito verificador. Trafega sem máscara: CPF com 11 dígitos; CNPJ com 12 caracteres [0-9A-Z] e 2 dígitos (alfanumérico desde jul/2026). 'cpf_cnpj' aceita os dois pelo tamanho. Erro: 'pattern' (forma) ou 'check_digit'. A shell mostra e digita com máscara."
               },
               "optionsFrom": {
                 "type": "string",
@@ -906,7 +928,12 @@
             "autosave": {
               "type": "boolean",
               "default": false,
-              "description": "Só em entidade `singleton` (configuração): o formulário abre editável, sem Editar nem Salvar, e cada campo grava sozinho (PATCH só dele, com `_version`) ao mudar (switch, select, data, reference) ou ao sair (texto, número). Booleano vira linha de ajuste (rótulo e `help` à esquerda, switch à direita). Erro de validação fica no campo e o valor volta ao gravado. `visibleWhen` vale na hora; campo que some não é apagado. Seções `related` e `component` não aparecem nesse modo."
+              "description": "Só em entidade `singleton` (configuração): o formulário abre editável, sem Editar nem Salvar, e cada campo grava sozinho (PATCH só dele, com `_version`) ao mudar (switch, select, data, reference) ou ao sair (texto, número). Booleano vira linha de ajuste (rótulo e `help` à esquerda, switch à direita). Erro de validação fica no campo e o valor volta ao gravado. `visibleWhen` vale na hora; campo que some não é apagado. Seções com `tab` viram abas (a aberta fica na URL, `?tab=`). Seções `related` e `component` não aparecem nesse modo."
+            },
+            "search": {
+              "type": "boolean",
+              "default": false,
+              "description": "Só com autosave: campo de busca no topo que acha o ajuste pelo rótulo, pelo `help` e pelos `keywords` do campo (sem acento nem maiúscula). Escolher o resultado abre a aba do ajuste, rola até ele e destaca a linha."
             },
             "afterCreate": {
               "type": "string",
@@ -948,6 +975,13 @@
                   "tab": {
                     "$ref": "#/$defs/text",
                     "description": "Aba onde a seção aparece. Seções com a mesma aba ficam juntas, na ordem em que aparecem; as abas seguem a ordem da primeira seção de cada uma. Seções sem `tab` vêm antes de todas as com `tab` e ficam sempre visíveis acima das abas (cabeçalho, ex.: código e nome). Usando abas, são pelo menos duas. Formulário sem `tab` não muda. Vale para qualquer tipo de seção, inclusive `related`."
+                  },
+                  "platforms": {
+                    "type": "array",
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "items": { "enum": ["desktop", "web", "mobile"] },
+                    "description": "Clientes em que a seção aparece (a mesma spec serve ao app de desktop, ao site e ao celular). Só muda a tela: campo de seção fora da plataforma não é apagado nem validado de outro jeito. A shell sabe a plataforma pela prop `platform` do C3Shell; sem ela, `desktop` com a porta desktopHost, `mobile` em tela estreita e `web` no resto. Sem `platforms`, aparece em todas."
                   },
                   "access": {
                     "$ref": "#/$defs/access",
