@@ -34,6 +34,8 @@ components:
         ui: { type: array, items: { $ref: 'agent-ui.schema.json' } }
         createdAt: { type: string, format: date-time }
         status: { type: string, enum: [sent, delivered, read] }
+        entrega:
+          $ref: 'app.schema.json#/$defs/chatDelivery'
         replyTo: { type: string }
         steer:
           type: string

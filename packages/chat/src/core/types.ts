@@ -6,6 +6,7 @@ import type { AgentQuestion } from './question';
 import type { Handoff } from './team';
 import type { UiPart } from './ui';
 import type { PendingPart } from './uiPending';
+import type { MessageDelivery } from './delivery';
 
 /** Quem escreveu. */
 export interface Author {
@@ -100,6 +101,8 @@ export interface Message {
   attachments?: Attachment[];
   createdAt: string;
   status?: MessageStatus;
+  /** Entrega da resposta do agente em um canal externo, sem alterar o envio da pergunta no chat. */
+  entrega?: MessageDelivery;
   /** Id da mensagem respondida. */
   replyTo?: string;
   /**

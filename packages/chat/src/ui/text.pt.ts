@@ -1,6 +1,10 @@
 // Textos do chat em português (o padrão). O inglês fica em text.en.ts; o hook, em text.ts.
 
 export const CHAT_MESSAGES_PT = {
+  'c3.chat.delivery.enviada': 'Enviada',
+  'c3.chat.delivery.entregue': 'Entregue',
+  'c3.chat.delivery.lida': 'Lida',
+  'c3.chat.delivery.falhou': 'Falhou',
   'c3.chat.log': 'Mensagens de {title}',
   'c3.chat.today': 'Hoje',
   'c3.chat.yesterday': 'Ontem',

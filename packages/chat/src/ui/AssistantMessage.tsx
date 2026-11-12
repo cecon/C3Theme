@@ -24,6 +24,7 @@ import QuestionCard from './QuestionCard';
 import UiParts, { type UiPartsProps, type UiRenderers } from './UiParts';
 import { useChatText } from './text';
 import useWorkTime from './useWorkTime';
+import DeliveryMark from './DeliveryMark';
 
 const blink = keyframes`50% { opacity: 0; }`;
 
@@ -119,7 +120,12 @@ export default function AssistantMessage(props: AssistantMessageProps) {
         <AttachmentView key={a.id} attachment={a} />
       ))}
       {!m.streaming && (
-        <Stack direction="row" spacing={0.25} sx={{ alignItems: 'center', color: 'text.secondary', ml: -0.75 }}>
+        <Stack
+          direction="row"
+          spacing={0.25}
+          useFlexGap
+          sx={{ alignItems: 'center', color: 'text.secondary', ml: -0.75, flexWrap: 'wrap', rowGap: 0.5, maxWidth: '100%' }}
+        >
           {m.text && (
             <Tooltip title={copied ? t('c3.chat.copied') : t('c3.chat.copy')}>
               <IconButton size="small" color="inherit" aria-label={t('c3.chat.copy')} onClick={copy}>
@@ -138,6 +144,7 @@ export default function AssistantMessage(props: AssistantMessageProps) {
           <Typography variant="caption" component="time" dateTime={m.createdAt} sx={{ pl: 0.5, color: 'inherit' }}>
             {time(m.createdAt)}
           </Typography>
+          {m.entrega && <DeliveryMark delivery={m.entrega} />}
         </Stack>
       )}
     </Stack>

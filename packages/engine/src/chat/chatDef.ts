@@ -1,6 +1,6 @@
 // `$defs/chat` do app.json (`pages[].chat`, `layout.header.assistant`; ADR 0006) em props do AssistantPanel. Puro.
 
-import type { SendKey } from '@c3theme/chat';
+import type { MessageDelivery, SendKey } from '@c3theme/chat';
 
 import type { Text } from '../types';
 import type { ChatLanesSpec } from '../agent/lanes';
@@ -26,6 +26,8 @@ export interface ChatDef extends ChatLanesSpec {
   sendKey?: SendKey;
   /** Orientar o turno em andamento (ADR 0008): Ctrl+Enter com o agente ocupado e Orientar na fila. Padrão: desligado. */
   steer?: boolean;
+  /** Resumo opcional de entrega externa, usado apenas na última resposta sem entrega própria. */
+  entregaDaUltimaMensagem?: MessageDelivery;
 }
 
 /** `layout.header.assistant`: `true` vale o padrão; `false`, ausente ou outra coisa, sem botão. */

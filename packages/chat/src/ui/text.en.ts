@@ -3,6 +3,10 @@
 import type { ChatMessageId } from './text.pt';
 
 export const CHAT_MESSAGES_EN: Record<ChatMessageId, string> = {
+  'c3.chat.delivery.enviada': 'Sent',
+  'c3.chat.delivery.entregue': 'Delivered',
+  'c3.chat.delivery.lida': 'Read',
+  'c3.chat.delivery.falhou': 'Failed',
   'c3.chat.log': 'Messages from {title}',
   'c3.chat.today': 'Today',
   'c3.chat.yesterday': 'Yesterday',

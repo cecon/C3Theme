@@ -13,6 +13,7 @@ import { ArrowDown } from 'iconsax-reactjs';
 import { isPending } from '../core/question';
 import type { Author, Message } from '../core/types';
 import type { AgentState } from '../core/agents';
+import { withLastDelivery } from '../core/delivery';
 import { latestBlocks, stateFor } from '../core/team';
 import type { AssistantMessageProps } from './AssistantMessage';
 import type { MessageBubbleProps } from './MessageBubble';
@@ -24,6 +25,8 @@ import useChatScroll from './useChatScroll';
 
 export interface MessageListProps extends Pick<MessageBubbleProps, 'renderText' | 'onRetry' | 'onEditFailed' | 'onDiscard'> {
   messages: Message[];
+  /** Resumo opcional da entrega externa da última resposta do agente. A entrega do turno prevalece. */
+  entregaDaUltimaMensagem?: Message['entrega'];
   /**
    * `people` (padrão): conversa entre pessoas, tudo em balão. `assistant`: as respostas recebidas saem sem balão,
    * na largura toda, com ferramentas, "Pensando…", cursor de escrita, copiar e gerar de novo.
@@ -78,7 +81,18 @@ export interface MessageListProps extends Pick<MessageBubbleProps, 'renderText' 
  * altura do pai (que precisa ter altura definida).
  */
 export default function MessageList(props: MessageListProps) {
-  const { messages, title, hasMore = false, loadingOlder = false, onLoadOlder, typing = [], showAuthors, renderAvatar, empty } = props;
+  const {
+    messages: source,
+    title,
+    hasMore = false,
+    loadingOlder = false,
+    onLoadOlder,
+    typing = [],
+    showAuthors,
+    renderAvatar,
+    empty
+  } = props;
+  const messages = useMemo(() => withLastDelivery(source, props.entregaDaUltimaMensagem), [source, props.entregaDaUltimaMensagem]);
   const assistant = props.variant === 'assistant';
   // só a última pergunta em aberto atende o Ctrl+Enter de qualquer lugar
   const activeQuestionId = useMemo(() => messages.findLast((m) => isPending(m.question))?.id, [messages]);

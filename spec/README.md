@@ -1073,6 +1073,23 @@ POST /api/company/_lookups/cep   { "value": "01310100" }
 - **`overwrite: true`**: a resposta troca também o que o usuário já digitou (o botão foi pedido de propósito); o aviso tem Desfazer, que volta o que estava.
 - **No c3-engine**: `Hooks::lookup` recebe entidade, consulta, valor conferido, `with` conferido e contexto da requisição, e devolve o mapa de campos (no Node, `call.with`). Timeout e cache são do sistema.
 
+## Entrega de mensagens do agente
+
+A entrega externa é opcional e separada de `Message.status` (envio da pergunta no chat). Uma resposta do agente pode declarar `entrega: { situacao, motivo? }`: `situacao` é `enviada`, `entregue`, `lida` ou `falhou`; `motivo` aceita texto ou `null`. A marca aparece no rodapé da resposta com tiques e texto; uma falha mostra o motivo por extenso, inclusive em uma coluna estreita. Sem `entrega`, o turno mantém a apresentação anterior.
+
+`pages[].chat` e `layout.header.assistant` aceitam um resumo opcional:
+
+```json
+{
+  "conversation": "assistant",
+  "entregaDaUltimaMensagem": { "situacao": "falhou", "motivo": "Canal desconectado" }
+}
+```
+
+O resumo vale apenas para a última resposta recebida de um agente (não pergunta, pessoa, aviso de sistema ou passagem de tarefa). Se esse turno já declara `entrega`, a declaração do turno prevalece. O resumo da conversa principal não é aplicado às conversas à parte. Os mesmos campos estão disponíveis em `AssistantPanel` e `MessageList` para quem monta as primitivas.
+
+O sistema associa cada recibo externo à mensagem pelo identificador explícito do seu domínio e entrega os dados prontos ao C3. Não inferir a associação pela data ou pela posição da mensagem. Para atualizar a tela, mudar a prop do resumo ou emitir o evento `message` do `ChatTransport` com a mesma mensagem e sua `entrega` atualizada; o histórico faz upsert pelo id, sem duplicar o turno. A porta de IPC, o evento do WhatsApp e a busca dos recibos pertencem ao sistema; o motor não se conecta ao canal externo.
+
 ## Assistente no chat
 
 O assistente de IA pode pôr telas dentro da resposta (`Message.ui` do `@c3theme/chat`) para pedir dados ou propor uma gravação. **O agente propõe, o motor grava**: nada é gravado pela ferramenta do agente; quem grava é o usuário, pelo CRUD e pelas ações de sempre, com a permissão dele. O catálogo é fechado (`spec/v0/agent-ui.schema.json`), sem HTML, código ou layout livre.

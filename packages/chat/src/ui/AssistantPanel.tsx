@@ -41,6 +41,8 @@ export type AssistantChat = Pick<
 
 export interface AssistantPanelProps {
   chat: AssistantChat;
+  /** Entrega externa da última resposta; opcional, não altera a situação de envio da pergunta. */
+  entregaDaUltimaMensagem?: Message['entrega'];
   /** Padrão: "Assistente". */
   title?: ReactNode;
   /** Ícone ao lado do título. Padrão: varinha. */
@@ -207,6 +209,7 @@ export default function AssistantPanel(props: AssistantPanelProps) {
               variant="assistant"
               title={typeof title === 'string' ? title : t('c3.chat.assistant')}
               messages={shown}
+              entregaDaUltimaMensagem={props.entregaDaUltimaMensagem}
               hasMore={chat.hasMore}
               loadingOlder={chat.loading === 'older'}
               onLoadOlder={chat.loadOlder}
