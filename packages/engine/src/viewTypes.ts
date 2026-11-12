@@ -76,6 +76,8 @@ export type ColumnDef =
   | string
   | {
       field: string;
+      /** Cor nomeada do selo enum, fixa ou escolhida por um campo da linha. */
+      color?: import('./accent').AccentSpec;
       width?: number;
       component?: string;
       /** Título no lugar do rótulo do campo. */
@@ -172,6 +174,7 @@ export interface ListOpening {
 
 /** Avatar da coluna em objeto: campo da foto, uma ou duas iniciais e cor por registro ou cinza. */
 export interface ColumnAvatar {
+  color?: import('./accent').AccentSpec;
   photo?: string;
   letters?: 1 | 2;
   tone?: 'auto' | 'neutral';

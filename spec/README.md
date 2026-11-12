@@ -1,5 +1,33 @@
 # Spec do motor C3 (v0, rascunho)
 
+## Cores nomeadas em avatar e selo da lista
+
+O app registra os pares de cores em `theme.tokens.accents` da shell (`C3Tokens`); `light.accents` e
+`dark.accents` podem sobrescrever cada nome. A spec referencia apenas o nome, sem repetir a cor CSS:
+
+```json
+{
+  "columns": [
+    { "field": "nome", "avatar": { "color": { "field": "cargo", "map": { "forge": "accent:forge", "sage": "accent:sage" } } } },
+    { "field": "cargo", "color": { "field": "cargo", "map": { "forge": "accent:forge", "sage": "accent:sage" } } }
+  ]
+}
+```
+
+`avatar.color` e `columns[].color` aceitam uma referência constante (`"accent:forge"`) ou `{ field, map? }`.
+Sem `map`, o campo da linha contém a referência completa. O campo precisa ser string/enum legível;
+`spec:check` aponta campo inexistente ou writeOnly. Sem correspondência no mapa, usa o tom normal.
+Nome não registrado nos tokens avisa e também volta ao tom normal.
+
+`columns[].color` pinta o selo da coluna enum; `options[].color` continua sendo um tom semântico e não
+passa a aceitar `accent:` em gráficos, calendário e outras views. No avatar, color tem precedência
+sobre tone, com ou sem foto. Cores são comuns aos modos ou específicas; uma entrada só em um modo
+serve de fallback para o outro. O texto tem contraste mínimo de 4,5:1 em todo o gradiente sRGB,
+incluindo alpha composto sobre o paper do modo, e o motor pode escurecer o par para manter a leitura.
+
+Exemplo executável: Storybook **Telas/Cores nomeadas pelo motor**, entidade `agente.json`. Suporte
+requer UI e engine atualizados juntos na mesma revisão do repositório.
+
 ## Estado público do sistema (`app.status`)
 
 O motor monta as telas de manutenção e lançamento pelo `app.json`, sem página registrada:

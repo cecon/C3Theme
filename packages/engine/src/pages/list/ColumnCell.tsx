@@ -13,9 +13,11 @@ import { Cell } from './Cell';
 import { fillHref } from './columnHref';
 import { avatarSpec, avatarTone, initialsOf, joined } from './richCell';
 import type { ColumnAvatar } from '../../viewTypes';
+import { resolveAccent, type AccentSpec } from '../../accent';
 
 /** O que a coluna junta ao campo dela: segunda linha, emendados e avatar. */
 export interface ColumnExtras {
+  color?: AccentSpec;
   secondary?: FieldDef;
   join?: FieldDef[];
   avatar?: boolean | string | ColumnAvatar;
@@ -52,7 +54,7 @@ export function ColumnCell({
   optionLabel: (f: FieldDef) => (v: string) => string;
 }) {
   if (component || !hasExtras(extras)) {
-    return <Cell field={field} row={row} component={component} locale={locale} optionLabel={optionLabel(field)} />;
+    return <Cell field={field} row={row} color={extras.color} component={component} locale={locale} optionLabel={optionLabel(field)} />;
   }
   const show = (f: FieldDef) => displayValue(f, row[f.name], locale, optionLabel(f));
   const main = joined([show(field), ...(extras.join ?? []).map(show)]);
@@ -69,6 +71,8 @@ export function ColumnCell({
         <Link component={RouterLink} to={target} underline="hover" variant="subtitle2" noWrap onClick={(e) => e.stopPropagation()}>
           {main}
         </Link>
+      ) : field.type === 'enum' && extras.color && !extras.join?.length ? (
+        <Cell field={field} row={row} color={extras.color} locale={locale} optionLabel={optionLabel(field)} />
       ) : (
         <Typography variant={bold ? 'subtitle2' : 'body2'} noWrap>
           {main}
@@ -84,7 +88,13 @@ export function ColumnCell({
   if (!avatar) return texts;
   return (
     <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center', minWidth: 220 }}>
-      <SoftAvatar size="sm" src={photo || undefined} alt={main} tone={avatar.tone === 'neutral' ? 'neutral' : avatarTone(row.id)}>
+      <SoftAvatar
+        size="sm"
+        src={photo || undefined}
+        alt={main}
+        color={resolveAccent(avatar.color, row)}
+        tone={avatar.tone === 'neutral' ? 'neutral' : avatarTone(row.id)}
+      >
         {initialsOf(main, avatar.letters)}
       </SoftAvatar>
       {texts}

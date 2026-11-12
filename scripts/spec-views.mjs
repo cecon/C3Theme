@@ -4,6 +4,7 @@ import { checkEditColumn } from './spec-fields.mjs';
 import { checkSource, checkStore } from './spec-source.mjs';
 import { makeCheckCondition } from './spec-conditions.mjs';
 import { hrefFields } from '../packages/engine/src/hrefSlots.mjs';
+import { checkAccentColumns } from './spec-accents.mjs';
 
 const DATES = new Set(['date', 'datetime']);
 
@@ -74,6 +75,7 @@ export function checkBoardCalendar(entity, fields, file, errors) {
 
 /** Totais, singleton e consulta do sistema: regras da lista que o JSON Schema não expressa. */
 export function checkListRules(entity, fields, entities, file, errors, wire) {
+  checkAccentColumns(entity, fields, file, errors);
   checkTotals(entity, fields, file, errors);
   checkOpening(entity, fields, file, errors);
   checkRelatedEdit(entity, entities, file, errors);

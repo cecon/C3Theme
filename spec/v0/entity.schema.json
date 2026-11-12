@@ -155,6 +155,22 @@
     }
   },
   "$defs": {
+    "accentRef": { "type": "string", "pattern": "^accent:[A-Za-z][A-Za-z0-9_-]*$" },
+    "accentColor": {
+      "description": "Cor nomeada dos tokens do app (avatar/selo da lista): fixa, ou pelo campo da linha com mapa opcional. Sem mapa, o campo contém accent:<nome>.",
+      "oneOf": [
+        { "$ref": "#/$defs/accentRef" },
+        {
+          "type": "object",
+          "required": ["field"],
+          "additionalProperties": false,
+          "properties": {
+            "field": { "$ref": "#/$defs/identifier" },
+            "map": { "type": "object", "additionalProperties": { "$ref": "#/$defs/accentRef" } }
+          }
+        }
+      ]
+    },
     "rowStyles": {
       "type": "array",
       "minItems": 1,
@@ -566,6 +582,7 @@
                             "type": "object",
                             "additionalProperties": false,
                             "properties": {
+                              "color": { "$ref": "#/$defs/accentColor" },
                               "photo": { "$ref": "#/$defs/identifier", "description": "Campo string com o endereço da foto." },
                               "letters": { "enum": [1, 2], "default": 2, "description": "Quantas iniciais." },
                               "tone": {
@@ -576,7 +593,11 @@
                             }
                           }
                         ],
-                        "description": "Avatar antes do valor. true: duas iniciais do valor, uma cor por registro. Nome de campo string: endereço da foto, com as iniciais quando vazio. Objeto: { photo, letters, tone }."
+                        "description": "Avatar antes do valor. true: duas iniciais do valor, uma cor por registro. Nome de campo string: endereço da foto, com as iniciais quando vazio. Objeto: { photo, letters, tone, color }; color tem precedência sobre tone."
+                      },
+                      "color": {
+                        "$ref": "#/$defs/accentColor",
+                        "description": "Cor nomeada do selo enum desta coluna; não altera a color das opções usada por outras views."
                       },
                       "weight": {
                         "enum": ["normal", "bold"],
@@ -1521,8 +1542,14 @@
             }
           }
         },
-        "summary": { "$ref": "#/$defs/identifier", "description": "Chave de fields mostrada numa linha no cartão do passo (em select, o rótulo da opção)." },
-        "loopLimit": { "$ref": "#/$defs/identifier", "description": "Chave de fields (number) com o limite de voltas: ciclo que passa por este passo com o limite preenchido é aceito." },
+        "summary": {
+          "$ref": "#/$defs/identifier",
+          "description": "Chave de fields mostrada numa linha no cartão do passo (em select, o rótulo da opção)."
+        },
+        "loopLimit": {
+          "$ref": "#/$defs/identifier",
+          "description": "Chave de fields (number) com o limite de voltas: ciclo que passa por este passo com o limite preenchido é aceito."
+        },
         "max": { "type": "integer", "minimum": 1, "description": "Quantos passos deste tipo o fluxo aceita (ex.: 1 gatilho)." },
         "removable": { "type": "boolean", "default": true, "description": "false: o passo não sai do fluxo (ex.: o gatilho único)." },
         "defaults": { "type": "object", "description": "config inicial do passo novo, para ele já entrar válido." }

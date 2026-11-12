@@ -3,6 +3,7 @@
 import type { AppDef, EntityDef } from '@c3theme/engine';
 
 import agendaEntrega from './agenda_entrega.json';
+import agente from './agente.json';
 import app from './app.json';
 import automacao from './automacao.json';
 import cliente from './cliente.json';
@@ -30,6 +31,7 @@ import vendedor from './vendedor.json';
 export const APP = app as unknown as AppDef;
 
 export const ENTITIES = [
+  agente,
   produto,
   fatura,
   loja,
