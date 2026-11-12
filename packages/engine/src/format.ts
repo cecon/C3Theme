@@ -112,8 +112,11 @@ export function localInputToDatetime(v: string) {
 
 /** Colunas da lista sem `views.list.columns`: os 5 primeiros campos, menos os só de escrita (senha). */
 export function defaultColumns(def: EntityDef): string[] {
-  return def.fields
-    .filter((f) => !f.writeOnly)
-    .slice(0, 5)
-    .map((f) => f.name);
+  return (
+    def.fields
+      // o grafo do fluxo (views.flow) é JSON: na lista, só atrapalha
+      .filter((f) => !f.writeOnly && f.name !== def.views?.flow?.field)
+      .slice(0, 5)
+      .map((f) => f.name)
+  );
 }

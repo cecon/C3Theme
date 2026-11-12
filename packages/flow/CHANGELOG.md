@@ -2,6 +2,10 @@
 
 Instale fixando o commit (`github:cecon/C3Theme#<sha>&path:packages/flow`). Cada entrada diz o que muda para quem usa; **Quebra** marca o que exige mudar o app.
 
+## Sem versão nova (2026-11-12)
+
+- O editor agora também sai da spec: `views.flow` da entidade no `@c3theme/engine` (issue #72) monta o `FlowEditor` com os tipos de passo em JSON. O pacote não muda; o motor passa a pedir `@c3theme/flow` como peer.
+
 ## 0.3.0 (2026-11-09)
 
 - Saída que pode ficar sem ligação (issue #3): `FlowPort.optional` não gera `unlinkedOutput`; e a prop `validate` no `FlowEditor` troca a validação do editor pela do app. Sem quebra.

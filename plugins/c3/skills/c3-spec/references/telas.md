@@ -121,6 +121,7 @@ Resumo. Quem decide são o `spec/v0/app.schema.json` e o `entity.schema.json` do
 - Botão de ação na linha e no cartão: `"rowActions": ["view", { "action": "instalar" }]`, só para ação sem input, confirm ou returns.
 - Relatório: `"report": { "groupBy": ["seller_id"], "columns": ["number", "customer_id", "total"], "subtotals": ["total"] }` em `/{entity}/report`, com subtotal, total geral e Imprimir. Até 10 mil linhas do filtro; árvore com `"tree": { "parent": "mae_id" }` só exibe (totais por nível vêm da consulta do sistema).
 - Planta: `"map": { "color": "status", "position": { "x": "x", "y": "y" } }` (mesas; campos integer) ou `"groupBy": ["ilha_id", "bomba_id"]` (pista, setor do KDS) em `/{entity}/map`. Bloco colorido pelo enum, ações do registro no clique. Junte com `live` para acompanhar na hora.
+- Fluxo de trabalho: `"flow": { "field": "grafo", "kinds": [{ "type": "gatilho", "label": "Gatilho", "input": false, "max": 1 }, { "type": "fim", "label": "Fim", "outputs": [] }] }` em `/{entity}/:id/flow`. O grafo mora num campo `text` do registro (JSON `{ nodes, edges }`) e grava pelo PATCH; no formulário o campo vira o botão "Abrir o fluxo". Cada tipo de passo declara saídas, `fields` do passo, `summary`, `loopLimit`, `max`, `removable` e `defaults`. Fluxo com problema não grava. Não monte o `FlowEditor` em TS.
 
 ```json
 {
