@@ -35,7 +35,7 @@ td{padding:9px 14px;border-top:1px solid #E2E6EC;vertical-align:top;line-height:
       <span class="cap">21 · @c3theme/chat × motor</span>
       <h1 style="margin: 4px 0 0; font-size: 26px; font-weight: 600">O agente propõe, o motor executa</h1>
     </div>
-    <span class="chip" style="background: rgb(199 119 0 / .12); color: #8B5300; height: 28px; font-size: 13px">Contrato em rascunho, para discutir</span>
+    <span class="chip" style="background: rgb(199 119 0 / .12); color: #8B5300; height: 28px; font-size: 13px">Referência: c3.view é futuro; consulte core/ui.ts</span>
   </div>
 
   <div style="display: flex; align-items: stretch; gap: 10px">
@@ -58,14 +58,14 @@ td{padding:9px 14px;border-top:1px solid #E2E6EC;vertical-align:top;line-height:
   kind: <span class="s">'c3.form'</span> | <span class="s">'c3.record'</span> | <span class="s">'c3.action'</span> | <span class="s">'c3.view'</span>;
   payload: <span class="k">unknown</span>;   <span class="c">// validado pelo renderizador do kind</span>
   state: <span class="s">'pending'</span> | <span class="s">'submitted'</span> | <span class="s">'declined'</span>
-       | <span class="s">'cancelled'</span> | <span class="s">'expired'</span>;
+       | <span class="s">'cancelled'</span> | <span class="s">'expired'</span> | <span class="s">'undone'</span>;
   result?: <span class="k">unknown</span>;   <span class="c">// resumo do que foi gravado</span>
   expiresAt?: <span class="k">string</span>;
 }
 
 <span class="c">// &lt;AssistantPanel uiRenderers={{ 'c3.form': C3FormPart }} /&gt;</span>
 ChatTransport.answerUi(messageId, partId, {
-  action: <span class="s">'accept'</span> | <span class="s">'decline'</span> | <span class="s">'cancel'</span>, values?
+  action: <span class="s">'accept'</span> | <span class="s">'decline'</span> | <span class="s">'cancel'</span> | <span class="s">'undo'</span>, values?
 })</pre>
     </section>
     <section class="card">
@@ -87,7 +87,7 @@ ChatTransport.answerUi(messageId, partId, {
     <div class="ch">Fases<span class="cap">piloto no Nati entre F2 e F3</span></div>
     <div style="padding: 14px 16px; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px">
       <div class="ph" style="border-color: #2563EB"><span class="chip" style="background: #2563EB; color: #fff; align-self: flex-start">F1</span><b>c3.form</b>UiPart, 1 pendente por vez, answerUi com 409; eventos no chat e no motor</div>
-      <div class="ph" style="border-color: #2563EB"><span class="chip" style="background: #2563EB; color: #fff; align-self: flex-start">F2</span><b>c3.record + c3.action</b>antes: PR da spec com critical, inverse, undoable</div>
+      <div class="ph" style="border-color: #2563EB"><span class="chip" style="background: #2563EB; color: #fff; align-self: flex-start">F2</span><b>c3.record + c3.action</b>antes: PR da spec com aiReview (já existe), inverse, undoable</div>
       <div class="ph" style="border-color: #C77700; background: rgb(199 119 0 / .05)"><span class="chip" style="background: #C77700; color: #fff; align-self: flex-start">Piloto</span><b>2 ou 3 fluxos reais</b>medir os 4 números; decide se segue</div>
       <div class="ph"><span class="chip" style="background: rgba(20,26,36,.08); color: #404651; align-self: flex-start">F3</span><b>c3.view</b>de onde veio, chat ancorado no registro</div>
       <div class="ph"><span class="chip" style="background: rgba(20,26,36,.08); color: #404651; align-self: flex-start">F4</span><b>Plano editável</b>Feito nesta conversa, segundo plano</div>

@@ -1,1 +1,284 @@
-{"v": 3, "createdOnFiles": {"v": 1, "at": "2026-10-27T11:03:37Z"}, "title": "C3Theme — Componentes", "launch": {"view": "canvas"}, "pages": [], "boards": {"Main.dc.html": {"x": 0, "y": 0, "w": 1200, "h": 1180, "title": "01 · Fundamentos"}, "Botoes.dc.html": {"x": 1280, "y": 0, "w": 1200, "h": 1180, "title": "02 · Botões"}, "Selos.dc.html": {"x": 2560, "y": 0, "w": 1200, "h": 1180, "title": "03 · Chips, selos e avatares"}, "Formularios.dc.html": {"x": 3840, "y": 0, "w": 1200, "h": 1180, "title": "04 · Formulários"}, "Feedback.dc.html": {"x": 0, "y": 1300, "w": 1200, "h": 1120, "title": "05 · Feedback"}, "Navegacao.dc.html": {"x": 1280, "y": 1300, "w": 1200, "h": 1120, "title": "06 · Navegação"}, "Superficies.dc.html": {"x": 2560, "y": 1300, "w": 1200, "h": 1120, "title": "07 · Superfícies"}, "Layout.dc.html": {"x": 3840, "y": 1300, "w": 1200, "h": 1120, "title": "08 · AppLayout"}, "Tabela.dc.html": {"x": 0, "y": 2860, "w": 1200, "h": 1120, "title": "09 · DataTable"}, "CrudLista.dc.html": {"x": 1280, "y": 2860, "w": 1200, "h": 1120, "title": "10 · CRUD · Listagem", "is_interactive": true}, "CrudEditar.dc.html": {"x": 2560, "y": 2860, "w": 1200, "h": 1120, "title": "11 · CRUD · Edição", "is_interactive": true}, "CrudExcluir.dc.html": {"x": 3840, "y": 2860, "w": 1200, "h": 1120, "title": "12 · CRUD · Exclusão", "is_interactive": true}, "PaiFilhos.dc.html": {"x": 0, "y": 4400, "w": 1680, "h": 1120, "title": "13 · Pai + filhos (save: with_parent)"}, "FormAbas.dc.html": {"x": 1760, "y": 4400, "w": 1200, "h": 1120, "title": "14 · Formulário com abas (tab)", "is_interactive": true}, "CadPergunta.dc.html": {"x": 3040, "y": 4400, "w": 1200, "h": 1120, "title": "15 · Cadastro · Pergunta (Guarnições)"}, "CadProdutoPerguntas.dc.html": {"x": 4320, "y": 4400, "w": 1200, "h": 1120, "title": "16 · Cadastro · Produto, aba Perguntas"}, "CadPromocao.dc.html": {"x": 5600, "y": 4400, "w": 1200, "h": 1120, "title": "17 · Cadastro · Promoção leve 2 pague 1"}, "ChatForm.dc.html": {"x": 0, "y": 5940, "w": 1200, "h": 1120, "title": "18 · Chat · c3.form inline", "is_interactive": true}, "ChatRecord.dc.html": {"x": 1280, "y": 5940, "w": 1440, "h": 1120, "title": "19 · Chat · c3.record na área de trabalho"}, "ChatAction.dc.html": {"x": 2800, "y": 5940, "w": 1200, "h": 1120, "title": "20 · Chat · c3.action, desfazer e c3.view"}, "ChatContrato.dc.html": {"x": 4080, "y": 5940, "w": 1440, "h": 1120, "title": "21 · Contrato UiPart, fases e métricas"}, "ChatDecisoes.dc.html": {"x": 5600, "y": 5940, "w": 1680, "h": 1120, "title": "22 · Pontos frágeis resolvidos"}, "ChatComposer.dc.html": {"x": 7360, "y": 5940, "w": 1200, "h": 1120, "title": "23 · Chat · caixa de mensagem", "is_interactive": true}}, "order": ["Main.dc.html", "Botoes.dc.html", "Selos.dc.html", "Formularios.dc.html", "Feedback.dc.html", "Navegacao.dc.html", "Superficies.dc.html", "Layout.dc.html", "Tabela.dc.html", "CrudLista.dc.html", "CrudEditar.dc.html", "CrudExcluir.dc.html", "PaiFilhos.dc.html", "FormAbas.dc.html", "CadPergunta.dc.html", "CadProdutoPerguntas.dc.html", "CadPromocao.dc.html", "ChatForm.dc.html", "ChatRecord.dc.html", "ChatAction.dc.html", "ChatContrato.dc.html", "ChatDecisoes.dc.html", "ChatComposer.dc.html"], "notes": {"titulo": {"x": 0, "y": -300, "text": "C3Theme · @c3theme/ui — visual c3, marca blue, modo claro", "kind": "title1", "maxW": 5040}, "tabelaCrud": {"x": 0, "y": 2560, "text": "DataTable e CRUD de Clientes (seed)", "kind": "title1", "maxW": 5040}, "lote3": {"x": 0, "y": 4100, "text": "Lote 3 · pai e filhos numa transação, abas por seção", "kind": "title1", "maxW": 6880}, "chat": {"x": 0, "y": 5640, "text": "Chat agêntico · o agente propõe, o motor executa", "kind": "title1", "maxW": 8560}}, "designSystems": []}
+{
+ "v": 3,
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-10-27T11:03:37Z"
+ },
+ "title": "C3Theme — Componentes",
+ "launch": {
+  "view": "canvas"
+ },
+ "pages": [],
+ "boards": {
+  "Main.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1200,
+   "h": 1180,
+   "title": "01 · Fundamentos"
+  },
+  "Botoes.dc.html": {
+   "x": 1280,
+   "y": 0,
+   "w": 1200,
+   "h": 1180,
+   "title": "02 · Botões"
+  },
+  "Selos.dc.html": {
+   "x": 2560,
+   "y": 0,
+   "w": 1200,
+   "h": 1180,
+   "title": "03 · Chips, selos e avatares"
+  },
+  "Formularios.dc.html": {
+   "x": 3840,
+   "y": 0,
+   "w": 1200,
+   "h": 1180,
+   "title": "04 · Formulários"
+  },
+  "Feedback.dc.html": {
+   "x": 0,
+   "y": 1300,
+   "w": 1200,
+   "h": 1120,
+   "title": "05 · Feedback"
+  },
+  "Navegacao.dc.html": {
+   "x": 1280,
+   "y": 1300,
+   "w": 1200,
+   "h": 1120,
+   "title": "06 · Navegação"
+  },
+  "Superficies.dc.html": {
+   "x": 2560,
+   "y": 1300,
+   "w": 1200,
+   "h": 1120,
+   "title": "07 · Superfícies"
+  },
+  "Layout.dc.html": {
+   "x": 3840,
+   "y": 1300,
+   "w": 1200,
+   "h": 1120,
+   "title": "08 · AppLayout"
+  },
+  "Tabela.dc.html": {
+   "x": 0,
+   "y": 2860,
+   "w": 1200,
+   "h": 1120,
+   "title": "09 · DataTable"
+  },
+  "CrudLista.dc.html": {
+   "x": 1280,
+   "y": 2860,
+   "w": 1200,
+   "h": 1120,
+   "title": "10 · CRUD · Listagem",
+   "is_interactive": true
+  },
+  "CrudEditar.dc.html": {
+   "x": 2560,
+   "y": 2860,
+   "w": 1200,
+   "h": 1120,
+   "title": "11 · CRUD · Edição",
+   "is_interactive": true
+  },
+  "CrudExcluir.dc.html": {
+   "x": 3840,
+   "y": 2860,
+   "w": 1200,
+   "h": 1120,
+   "title": "12 · CRUD · Exclusão",
+   "is_interactive": true
+  },
+  "PaiFilhos.dc.html": {
+   "x": 0,
+   "y": 4400,
+   "w": 1680,
+   "h": 1120,
+   "title": "13 · Pai + filhos (save: with_parent)"
+  },
+  "FormAbas.dc.html": {
+   "x": 1760,
+   "y": 4400,
+   "w": 1200,
+   "h": 1120,
+   "title": "14 · Formulário com abas (tab)",
+   "is_interactive": true
+  },
+  "CadPergunta.dc.html": {
+   "x": 3040,
+   "y": 4400,
+   "w": 1200,
+   "h": 1120,
+   "title": "15 · Cadastro · Pergunta (Guarnições)"
+  },
+  "CadProdutoPerguntas.dc.html": {
+   "x": 4320,
+   "y": 4400,
+   "w": 1200,
+   "h": 1120,
+   "title": "16 · Cadastro · Produto, aba Perguntas"
+  },
+  "CadPromocao.dc.html": {
+   "x": 5600,
+   "y": 4400,
+   "w": 1200,
+   "h": 1120,
+   "title": "17 · Cadastro · Promoção leve 2 pague 1"
+  },
+  "ChatForm.dc.html": {
+   "x": 0,
+   "y": 5940,
+   "w": 1200,
+   "h": 1120,
+   "title": "18 · Chat · c3.form inline",
+   "is_interactive": true
+  },
+  "ChatRecord.dc.html": {
+   "x": 1280,
+   "y": 5940,
+   "w": 1440,
+   "h": 1120,
+   "title": "19 · Chat · c3.record na área de trabalho"
+  },
+  "ChatAction.dc.html": {
+   "x": 2800,
+   "y": 5940,
+   "w": 1200,
+   "h": 1120,
+   "title": "20 · Chat · c3.action, desfazer e c3.view"
+  },
+  "ChatContrato.dc.html": {
+   "x": 4080,
+   "y": 5940,
+   "w": 1440,
+   "h": 1120,
+   "title": "21 · Contrato UiPart, fases e métricas"
+  },
+  "ChatDecisoes.dc.html": {
+   "x": 5600,
+   "y": 5940,
+   "w": 1680,
+   "h": 1120,
+   "title": "22 · Pontos frágeis resolvidos"
+  },
+  "ChatComposer.dc.html": {
+   "x": 7360,
+   "y": 5940,
+   "w": 1200,
+   "h": 1120,
+   "title": "23 · Chat · caixa de mensagem",
+   "is_interactive": true
+  },
+  "ChatConfirmacao.dc.html": {
+   "x": 2560,
+   "y": 11300,
+   "w": 1200,
+   "h": 1100,
+   "title": "28 · Proposta · Confirmar sabendo o que muda"
+  },
+  "ChatContexto.dc.html": {
+   "x": 0,
+   "y": 11300,
+   "w": 1200,
+   "h": 1100,
+   "title": "26 · Proposta · Uma conversa com contexto"
+  },
+  "ChatEstados.dc.html": {
+   "x": 0,
+   "y": 12810,
+   "w": 1200,
+   "h": 1500,
+   "title": "29 · Proposta · A conversa continua depois do clique"
+  },
+  "ChatMobile.dc.html": {
+   "x": 1280,
+   "y": 12810,
+   "w": 1200,
+   "h": 1250,
+   "title": "30 · Proposta · No celular, uma tarefa por vez"
+  },
+  "ChatRevisao.dc.html": {
+   "x": 1280,
+   "y": 11300,
+   "w": 1200,
+   "h": 1100,
+   "title": "27 · Proposta · Revisar sem adivinhar"
+  }
+ },
+ "order": [
+  "Main.dc.html",
+  "Botoes.dc.html",
+  "Selos.dc.html",
+  "Formularios.dc.html",
+  "Feedback.dc.html",
+  "Navegacao.dc.html",
+  "Superficies.dc.html",
+  "Layout.dc.html",
+  "Tabela.dc.html",
+  "CrudLista.dc.html",
+  "CrudEditar.dc.html",
+  "CrudExcluir.dc.html",
+  "PaiFilhos.dc.html",
+  "FormAbas.dc.html",
+  "CadPergunta.dc.html",
+  "CadProdutoPerguntas.dc.html",
+  "CadPromocao.dc.html",
+  "ChatForm.dc.html",
+  "ChatRecord.dc.html",
+  "ChatAction.dc.html",
+  "ChatContrato.dc.html",
+  "ChatDecisoes.dc.html",
+  "ChatComposer.dc.html",
+  "ChatConfirmacao.dc.html",
+  "ChatContexto.dc.html",
+  "ChatEstados.dc.html",
+  "ChatMobile.dc.html",
+  "ChatRevisao.dc.html"
+ ],
+ "notes": {
+  "titulo": {
+   "x": 0,
+   "y": -300,
+   "text": "C3Theme · @c3theme/ui — visual c3, marca blue, modo claro",
+   "kind": "title1",
+   "maxW": 5040
+  },
+  "tabelaCrud": {
+   "x": 0,
+   "y": 2560,
+   "text": "DataTable e CRUD de Clientes (seed)",
+   "kind": "title1",
+   "maxW": 5040
+  },
+  "lote3": {
+   "x": 0,
+   "y": 4100,
+   "text": "Lote 3 · pai e filhos numa transação, abas por seção",
+   "kind": "title1",
+   "maxW": 6880
+  },
+  "chat": {
+   "x": 0,
+   "y": 5640,
+   "text": "Chat agêntico · o agente propõe, o motor executa",
+   "kind": "title1",
+   "maxW": 8560
+  },
+  "chatProposta": {
+   "x": 0,
+   "y": 11000,
+   "text": "Chat agêntico · proposta visual revisada (26–30) · dados fictícios, sem execução",
+   "kind": "title1",
+   "maxW": 3840
+  }
+ },
+ "designSystems": []
+}

@@ -13,7 +13,7 @@ primitivas, chat, flow e moldura do desktop. Na prática a exceção virou porta
 
 - o chat inteiro (assistente, aprovação, pergunta) só se monta em TS, e cada sistema que tem agente escreve a própria
   ponte em React (o Piecework fez uma para a sub-conversa, issue #10);
-- o `pnpm create-app --sem-motor` ainda gera um app sem o motor;
+- o `pnpm create-app --sem-motor` ainda gerava um app sem o motor (saiu com a issue #74);
 - quando o motor não alcança algo, a saída mais curta é a página registrada, e ela não deixa rastro de que falta
   recurso.
 
@@ -43,8 +43,8 @@ Storybook, exemplos, `create-app`).
 | Componente custom               | Mesma regra da página registrada: cita a issue.                                                                                                                                       |
 | Chat                            | Declarado no `app.json` e nas partes do `agent-ui.schema.json` (issues #70 e #71).                                                                                                    |
 | Flow                            | `views.flow` na entidade (issue #72, feito em 12/11/2026): grafo num campo text do registro, tipos de passo em JSON, rota `/{entity}/:id/flow`.                                       |
-| Moldura do desktop              | Lacuna: moldura declarada no `app.json` (issue #73).                                                                                                                                  |
-| App sem o motor (`--sem-motor`) | Obsoleto; sai quando as lacunas do seed fecharem (issue #74).                                                                                                                         |
+| Moldura do desktop              | `layout.desktop` no `app.json` e a porta `desktopHost` ([ADR 0004](0004-moldura-do-desktop-no-app-json.md), issue #73).                                                               |
+| App sem o motor (`--sem-motor`) | Saiu do `create-app` (issue #74). O que o seed tinha e a shell não: páginas de manutenção e erro 500 (issue #81).                                                                     |
 | Catálogo de primitivas          | Não é tela, então não é exceção: veja abaixo.                                                                                                                                         |
 
 ### O que não é tela
@@ -70,8 +70,8 @@ argumentos editáveis (`c3.tool`), plano editável (`c3.plan`) e navegador inter
   baixo que funciona, citando a issue.
 - **Custo**: cada lacuna é contrato para dois backends (Rust e Node) e para a conformidade; a regra do 0001 continua (só
   vira chave da spec com uso real).
-- **Ainda não está feito** em 12/11/2026: chat no `app.json` (#71), moldura do desktop (#73), saída do
-  `--sem-motor` (#74), telas da vitrine L10–L33 e Storybook por JSON.
+- **Ainda não está feito** em 12/11/2026: chat no `app.json` (#71), páginas de manutenção e erro 500
+  (#81), telas da vitrine L10–L33 e Storybook por JSON.
 
 ## Alternativas consideradas
 

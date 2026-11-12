@@ -25,6 +25,7 @@ Resumo. Quem decide são o `spec/v0/app.schema.json` e o `entity.schema.json` do
 - `entities` lista todas as entidades, inclusive as filhas.
 - `layout.header.search: { "records": true }` faz o Ctrl K achar registros e mensagens pelo `GET /_search` do backend (o sistema implementa a porta `Search`); sem isso, só telas do menu. Não escreva paleta de busca própria.
 - `layout.user`: `header` (avatar à direita, o padrão) ou `drawer` (cartão no pé do menu lateral). Use isso em vez de montar um cartão de usuário no `drawerFooter`, porque dois cartões já saíram duplicados num sistema.
+- `layout.desktop`: moldura do app de desktop (Electron, Tauri): `titleBar` (`hidden` ou `system`), `translucent`, `drawerFrom`, `density`, `systemFont`. Vale só com a porta `desktopHost` do `<C3Shell>` (`electronDesktop()`), e o main abre a janela com `windowFrame` da mesma declaração; no navegador é ignorada. Não passe `desktop` nem `desktopTokens` em TS.
 - `auth` liga as telas de entrada da shell (login, esqueci a senha, cadastro, perfil). Quem autentica é o sistema, pela `AuthPort` do front. Sem `auth`, o sistema faz o login e passa o token em `headers`.
 - Rotas são derivadas e ninguém as declara: `/{entity}`, `/{entity}/board`, `/{entity}/calendar`, `/{entity}/gallery`, `/{entity}/new?f.campo=valor`, `/{entity}/:id`.
 - `pages[]`: `component` (React registrado) ou `dashboard`. `layout: "blank"` ocupa a tela toda (impressão, quiosque).

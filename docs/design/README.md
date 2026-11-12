@@ -36,3 +36,18 @@ Cópia das pranchas do canvas de design "C3Theme — Componentes" (Claude Design
 - **Já existe no código:** 01 a 08 (tema e componentes do `@c3theme/ui`), 09 a 12 (`DataTable`, `PageHeader` e o CRUD do seed), 13 e 14 (spec v0).
 - **15 a 17, pela DSL:** `product`, `question` (+ `question_option`), `product_question` e `promotion` (+ `promotion_product`) em `spec/v0/examples`, servidos pelo `c3-example` (migration `0018_menu.sql`, regras em `src/menu.rs`) no menu Cardápio do engine-demo. Ficaram de fora o que a DSL não tem: arrastar para ordenar (é o campo Ordem), o segmentado do tipo de escolha (é um select), as prévias "Como fica na venda" e "Simulação", e as lojas da promoção.
 - **18 a 23:** o chat está em `packages/chat` e as partes `c3.form`, `c3.record` e `c3.action` em `packages/engine/src/agent`; confira cada prancha contra o código antes de tratá-la como feita.
+
+
+## Revisão do chat agêntico (12/11/2026)
+
+[Storyboard navegável](./chat-storyboard.html) · [Revisão portátil em um único HTML](./chat-storyboard-review.html). Propostas estáticas com dados fictícios, sem operações no sistema. As referências anteriores foram preservadas; estas páginas não afirmam que o comportamento já existe no aplicativo.
+
+| Prancha | Arquivo | Conteúdo |
+|---|---|---|
+| 26 | [ChatContexto.dc.html](./ChatContexto.dc.html) | Uma conversa com contexto |
+| 27 | [ChatRevisao.dc.html](./ChatRevisao.dc.html) | Revisar sem adivinhar |
+| 28 | [ChatConfirmacao.dc.html](./ChatConfirmacao.dc.html) | Confirmar sabendo o que muda |
+| 29 | [ChatEstados.dc.html](./ChatEstados.dc.html) | A conversa continua depois do clique |
+| 30 | [ChatMobile.dc.html](./ChatMobile.dc.html) | No celular, uma tarefa por vez |
+
+As novas pranchas usam `chat-storyboard.css`, sem depender de `support.js`, e estão no canvas. Acessibilidade, teclado virtual e integração com o servidor precisam ser validados no aplicativo.

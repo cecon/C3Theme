@@ -50,34 +50,14 @@ describe('run', () => {
     expect(fs.existsSync(path.join(root, 'apps/crm'))).toBe(false);
   });
 
+  it('--sem-motor saiu: recusa sem criar nada', () => {
+    expect(run(['site', '--sem-motor'], io())).toBe(1);
+    expect(out[0]).toContain('ADR 0003');
+    expect(fs.existsSync(path.join(root, 'apps/site'))).toBe(false);
+  });
+
   it('argumento inválido mostra o erro e o uso', () => {
     expect(run(['Crm'], io())).toBe(1);
     expect(out[0]).toContain('uso: pnpm create-app');
-  });
-
-  describe('--sem-motor', () => {
-    beforeEach(() => {
-      const seed = path.join(root, 'apps/seed');
-      fs.mkdirSync(path.join(seed, 'src'), { recursive: true });
-      fs.mkdirSync(path.join(seed, 'node_modules'));
-      fs.writeFileSync(path.join(seed, 'package.json'), '{ "name": "@c3theme/seed" }');
-      fs.writeFileSync(path.join(seed, 'src/config.ts'), "export const APP_NAME = 'C3Theme'; 'c3theme-seed-config'");
-      fs.writeFileSync(path.join(seed, 'index.html'), '<title>C3Theme</title>');
-      fs.writeFileSync(path.join(seed, '.env.example'), 'X=1');
-    });
-
-    it('copia o seed com aviso de obsoleto', () => {
-      expect(run(['site', '--sem-motor'], io())).toBe(0);
-      expect(out[0]).toContain('obsoleto');
-      expect(read('apps/site/package.json')).toContain('@c3theme/site');
-      expect(read('apps/site/src/config.ts')).toContain("APP_NAME = 'Site'");
-      expect(read('apps/site/.env')).toBe('X=1');
-      expect(fs.existsSync(path.join(root, 'apps/site/node_modules'))).toBe(false);
-    });
-
-    it('recusa se já existe', () => {
-      expect(run(['seed', '--sem-motor'], io())).toBe(1);
-      expect(out).toEqual(['apps/seed já existe']);
-    });
   });
 });

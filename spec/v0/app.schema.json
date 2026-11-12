@@ -331,6 +331,49 @@
               "$ref": "#/$defs/footer"
             }
           ]
+        },
+        "desktop": {
+          "$ref": "#/$defs/desktop"
+        }
+      }
+    },
+    "desktop": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Moldura do app quando ele roda como janela de desktop (Electron, Tauri). Só vale com a porta `desktopHost` do <C3Shell>, que diz a plataforma e o entalhe do Mac: no navegador a chave é ignorada. O processo main abre a janela pela mesma declaração (`windowFrame` de @c3theme/electron/main).",
+      "properties": {
+        "titleBar": {
+          "enum": ["hidden", "system"],
+          "default": "hidden",
+          "description": "`hidden`: janela sem a barra de título do sistema; o cabeçalho e o topo do menu arrastam a janela e os botões da janela ganham espaço (Mac à esquerda, Windows à direita). `system`: fica a barra do sistema, sem recuo."
+        },
+        "translucent": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          ],
+          "description": "Menu lateral translúcido, para a vibrancy do Mac ou o mica do Windows aparecer por trás: `true` transparente; número de 0 a 1 é a opacidade do fundo do menu."
+        },
+        "drawerFrom": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 720,
+          "description": "Largura da janela (px) a partir da qual o menu lateral fica fixo; abaixo dela vira gaveta com o botão de menu."
+        },
+        "density": {
+          "enum": ["compact", "comfortable"],
+          "default": "compact",
+          "description": "`compact`: densidade de app de desktop (fonte de 13 px, campos e cabeçalho menores), também em menus e diálogos. `comfortable`: a do site."
+        },
+        "systemFont": {
+          "type": "boolean",
+          "description": "Fonte do sistema (SF no Mac, Segoe UI no Windows). Padrão: só no Mac."
         }
       }
     },

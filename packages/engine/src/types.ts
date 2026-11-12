@@ -9,6 +9,7 @@ import type { ActionDef, ActionPreview, GridFieldDef } from './actionTypes';
 import type { FormView, LookupDef } from './formTypes';
 import type { WizardDef } from './wizard';
 import type { AuthorizationConfig } from './authorization/AuthorizationDialog';
+import type { DesktopDef } from './desktop/frame';
 
 export type { Condition, FieldType };
 export type { BoardView, CalendarView, ReportView };
@@ -95,10 +96,7 @@ export type {
   ListOpening,
   RecordImageDef,
   RowAction,
-  RowStyle,
-  FlowKindDef,
-  FlowKindField,
-  FlowView
+  RowStyle
 } from './viewTypes';
 export type { ComputedValue, FormFieldDef, FormSection, FormView, PairingDef, PairingState, RelatedDef, SummaryLine } from './formTypes';
 export type { LookupDef } from './formTypes';
@@ -241,6 +239,8 @@ export interface AppDef {
     };
     menu: { title?: Text; items: MenuItemDef[] }[];
     footer?: { text?: Text; links?: LinkDef[] } | null;
+    /** Moldura da janela de desktop; só vale com a porta `desktopHost` do <C3Shell>. */
+    desktop?: DesktopDef;
   };
 }
 

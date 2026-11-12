@@ -292,7 +292,7 @@ Entra na F1 (chat e motor). Feito: `onTelemetry` no `C3Shell` (tela) e no `Assis
 
 ### 13.5 Caixa de mensagem
 
-Desenho: prancha 23 do canvas. Inspirado nas caixas dos agentes de código (uma caixa, uma barra embaixo), adaptado para ERP.
+Desenho proposto: pranchas 26–30 do canvas; [índice navegável](./design/chat-storyboard.html). A prancha 23 preserva a referência anterior. Inspirado nas caixas dos agentes de código (uma caixa, uma barra embaixo), adaptado para ERP.
 
 - **Uma caixa, uma barra.** Texto em cima (cresce até 8 linhas e rola); embaixo: anexar, chip de contexto, modo do agente, áudio e enviar.
 - **Contexto visível e removível.** O registro aberto vira o chip `@ Pedido 1234`. `@` busca outros registros; `/` abre as ações da entidade.
@@ -311,3 +311,15 @@ Lido em 2026-11-03 contra `spec/README.md`, `entity.schema.json`, `crates/c3-eng
 - **Abas já existem:** `tab` por seção, seções sem `tab` como cabeçalho fixo, contagem de erros por aba e abertura da primeira aba com erro. Um `c3.record` grande abre na área de trabalho com as mesmas abas.
 - **Ação de cancelar já tem `input`** (motivo com `minLength: 15`). Isso é `c3.action`, não `c3.form`: o agente pré-preenche o motivo e o usuário confirma.
 - **Netos `with_parent` não existem.** Um rascunho com filho de filho (pedido → item → lote) não cabe no `c3.record` até a spec aceitar.
+
+
+### 13.7 Storyboard revisado (12/11/2026)
+
+As pranchas 26–30 representam a proposta visual, não novas funcionalidades do motor. O fluxo cobre contexto, revisão, identificação do alvo, segundo clique destrutivo, resultado recolhido, reversão, espera e erros.
+
+- Formulário completo vira link; o card mantém no máximo duas ações principais. Valores sugeridos usam texto de origem neutro; revisão pendente é explicada junto do Gravar.
+- Cancelamento mostra número, cliente, valor e data; a segunda confirmação repete o registro. Não usar justificativa fiscal em cancelamento de pedido.
+- Rótulo Cliente permanece visível; Todos os clientes é a opção vazia. Período tem uma única indicação de origem e datas em dd/mm/aaaa.
+- Pranchas anteriores são preservadas como referência; o índice liga o estado anterior à proposta. Prancha 29 diferencia estados do contrato de fases transitórias da interface (salvando e erro).
+- Parar não desfaz operações já enviadas. Sem confirmação do servidor, não mostrar sucesso nem oferecer reenvio cego.
+- A versão móvel é referência de layout. Teclado, foco, leitor de tela, contraste e teclado virtual exigem validação no aplicativo.

@@ -25,7 +25,7 @@ Cada sistema é dono do banco, das migrations, da autenticação e das regras de
 | `packages/ui`               | `@c3theme/ui`               | Tema (claro/escuro, 9 cores de marca, visual `angle`, contraste, RTL), `C3ThemeProvider`, `AppLayout` (header, menu lateral ou em barra, breadcrumbs, rodapé), painel de aparência, busca de telas, notificações, menu do usuário, `AuthLayout` e componentes |
 | `packages/engine`           | `@c3theme/engine`           | Renderer da spec: `<C3Shell apiUrl>` lê `/_meta` e monta header, menu, rodapé, rotas, listas, formulários, mestre-detalhe, seletor de filial, ações e fila de pendências                                                                                      |
 | `packages/conformance`      | `@c3theme/conformance`      | Suíte de conformidade do contrato (43 testes HTTP caixa-preta) e o avaliador de referência das condições                                                                                                                                                      |
-| `apps/seed`                 | `@c3theme/seed`             | Ponto de partida para app sem backend do motor (obsoleto pelo ADR 0003, sai com a issue #74): login, cadastro, recuperação de senha com código, perfil, páginas de erro e manutenção, pt-BR/en                                                                                      |
+| `apps/seed`                 | `@c3theme/seed`             | Exemplo do `@c3theme/ui` sem o motor (não é ponto de partida desde o ADR 0003; o `create-app` não o copia mais): login, cadastro, recuperação de senha com código, perfil, páginas de erro e manutenção, pt-BR/en                                                                                      |
 | `apps/showcase`             | `@c3theme/showcase`         | Vitrine: painéis, widgets, componentes, formulários, tabelas, gráficos, mapa, calendário, chat, kanban, clientes, loja, faturas, perfis, login, landing                                                                                                       |
 | `apps/storybook`            | `@c3theme/storybook`        | Storybook: catálogo isolado dos componentes do `@c3theme/ui`, do `@c3theme/chat` e do `@c3theme/flow`, com visual, marca, claro/escuro, RTL e idioma na barra de cima. Publicado em `/storybook/` junto da vitrine                                            |
 | `apps/engine-demo`          | `@c3theme/engine-demo`      | Shell do CRM de exemplo rodando sobre o `c3-example`                                                                                                                                                                                                          |
@@ -168,26 +168,9 @@ No assistente, o `<AssistantPanel onTelemetry taskOf={agentTaskOf}>` emite os me
 
 Para trocar uma tela por vez num app que já existe, use `<EntityList>` e `<EntityForm>` direto. Convenções de tabela, hooks, adaptador rusqlite e escrita delegada: [`crates/c3-engine/README.md`](crates/c3-engine/README.md). Contrato completo: [`spec/README.md`](spec/README.md).
 
-## App sem o motor (obsoleto)
+## App sem o motor
 
-Obsoleto pelo [ADR 0003](docs/adr/0003-motor-sem-excecoes.md): sai quando o motor cobrir o que o seed tem (issue #74). Não use em sistema novo; o script avisa isso ao rodar:
-
-```bash
-pnpm create-app portal-institucional --sem-motor --title "Portal"
-pnpm install
-pnpm --filter @c3theme/portal-institucional dev
-```
-
-O script copia `apps/seed` para `apps/<nome>` e ajusta o nome do pacote, `APP_NAME`, o título da página e a chave das preferências no `localStorage`.
-
-| Quero...               | Onde                                                                                                                   |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Criar uma página       | `src/pages/...` e a rota em `src/App.tsx`                                                                              |
-| Adicionar item no menu | `src/menu.ts` (grupos com itens; ícones de `iconsax-reactjs`)                                                          |
-| Login de verdade       | defina `VITE_API_URL`; o contrato HTTP está em `httpAuth` (`src/auth.tsx`). Sem ela, roda o mock de `src/auth-mock.ts` |
-| Traduções              | `src/locales/*.json` e a lista `LOCALES`                                                                               |
-| Nome e página inicial  | `src/config.ts`                                                                                                        |
-| Botões do header       | `header` do `AppLayout` em `src/App.tsx`                                                                               |
+Não existe ([ADR 0003](docs/adr/0003-motor-sem-excecoes.md)): o `pnpm create-app` só gera pelo motor, e o `--sem-motor` saiu (issue #74). Login, cadastro, esqueci a senha e perfil vêm da shell pelo `app.auth`; páginas de manutenção e erro 500 são a lacuna #81. O `apps/seed` fica como exemplo do `@c3theme/ui` solto, não como ponto de partida.
 
 ## Usando o `@c3theme/ui`
 

@@ -36,7 +36,7 @@
     "!src/**/*.test.tsx"
   ],
   "scripts": {
-    "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.build.json && node -e \"for (const f of ['conditions.mjs','conditions.d.mts','documents.mjs','documents.d.mts','formulas.mjs','formulas.d.mts']) require('fs').copyFileSync('src/'+f,'dist/'+f)\" && node ../../scripts/fix-dist-imports.mjs dist",
+    "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.build.json && node ../../scripts/copy-src-modules.mjs src dist && node ../../scripts/fix-dist-imports.mjs dist",
     "prepare": "pnpm run build",
     "typecheck": "tsc --noEmit -p ."
   },
