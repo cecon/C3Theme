@@ -33,7 +33,7 @@ export interface ChatDef extends ChatLanesSpec {
   steer?: boolean;
   /** Resumo opcional de entrega externa, usado apenas na última resposta sem entrega própria. */
   entregaDaUltimaMensagem?: MessageDelivery;
-  /** Carregando, vazio, erro, sem permissão e offline com os textos da spec (ADR 0010). Ausente: o painel de sempre. */
+  /** Carregando, vazio, erro, sem permissão e offline com os textos da spec (ADR 0011). Ausente: o painel de sempre. */
   states?: PageStates;
 }
 

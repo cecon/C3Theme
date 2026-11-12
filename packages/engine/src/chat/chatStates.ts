@@ -1,4 +1,4 @@
-// Estados declarados do chat (`$defs/chat.states`, ADR 0010) sobre a janela de mensagens. Puro: diz o que cobre o
+// Estados declarados do chat (`$defs/chat.states`, ADR 0011) sobre a janela de mensagens. Puro: diz o que cobre o
 // painel, o que vai na faixa acima da conversa e o que ocupa o lugar da conversa vazia.
 
 import type { ChatTransport } from '@c3theme/chat';

@@ -57,7 +57,7 @@ const app: AppDef = {
 } as AppDef;
 
 /**
- * Os cinco estados da página de chat declarados na spec (`chat.states`, issue #101, ADR 0010): cada um com o texto e a
+ * Os cinco estados da página de chat declarados na spec (`chat.states`, issue #101, ADR 0011): cada um com o texto e a
  * ação que a pessoa vê. O app.json é o mesmo nas cinco; muda só o que o /_chat responde. "Mostrar código" traz o JSON.
  */
 const meta = {

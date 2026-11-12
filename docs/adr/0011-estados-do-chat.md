@@ -2,7 +2,7 @@
 
 ## Status
 
-Aceita em 12/11/2026 (issue #101, pedido do Piecework; usa o `$defs/pageStates` dos estados da página (#99, PR #104) e o
+Aceita em 12/11/2026 (issue #101, pedido do Piecework; usa o `$defs/pageStates` do [ADR 0010](0010-estados-da-pagina.md) e o
 chat do [ADR 0006](0006-chat-no-app-json.md)).
 
 ## Contexto
@@ -15,7 +15,7 @@ essas telas em TS.
 
 ## Decisão
 
-1. **`$defs/chat.states` é o `$defs/pageStates`** de `pages[].states` (#99): os cinco blocos com `message`, `empty` com
+1. **`$defs/chat.states` é o `$defs/pageStates`** de `pages[].states` ([ADR 0010](0010-estados-da-pagina.md)): os cinco blocos com `message`, `empty` com
    ação, `error` com a ação `retry`, `forbidden` com `instruction` e `offline` com `works`. O painel desenha cada um com o
    mesmo `PageStateView` das páginas. Sem `states`, o painel continua igual.
 2. **A classificação do chat** (`failureOf`): `ApiError` 403 é `forbidden`, status 0 (o pedido não chegou) é `offline` e
@@ -47,7 +47,7 @@ essas telas em TS.
 
 ## Alternativas consideradas
 
-- **Estados próprios do chat** (`chat.texts.loading` etc.): mais curto, mas duplicaria o formato das páginas (#99) e o
+- **Estados próprios do chat** (`chat.texts.loading` etc.): mais curto, mas duplicaria o formato das páginas (ADR 0010) e o
   sistema aprenderia dois jeitos de dizer a mesma coisa.
 - **Estados no `@c3theme/chat`** (o `AssistantPanel` recebendo os cinco): o pacote de chat não conhece `ApiError` nem as
   rotas; a classificação é do motor. O painel já aceita `empty`, que basta para o lugar da conversa.
