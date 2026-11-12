@@ -23,7 +23,7 @@ export default function ChatPage({ def, path }: { def: ChatDef; path?: string })
           <Alert severity="warning">Conversa não encontrada: o endereço não traz uma conversa válida.</Alert>
         </Box>
       ) : (
-        <ChatPanel key={conversation ?? ''} def={{ ...def, conversation }} />
+        <ChatPanel key={conversation} def={{ ...def, conversation }} />
       )}
     </Paper>
   );

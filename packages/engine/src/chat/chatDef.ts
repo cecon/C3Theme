@@ -85,6 +85,6 @@ export function chatRenderers<R>(def: ChatDef, engine: Partial<Record<AgentKind,
 export function pageConversation(def: ChatDef, path: string | undefined, params: Record<string, string | undefined>) {
   const param = conversationParam(def.conversation, path);
   if (!param) return def.conversation;
-  const id = params[param] ?? '';
-  return CONVERSATION_ID.test(id) ? id : null;
+  const id = params[param];
+  return id !== undefined && CONVERSATION_ID.test(id) ? id : null;
 }
