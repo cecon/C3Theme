@@ -29,7 +29,7 @@ export function applyAccess(def: EntityDef, capabilities: Capabilities): EntityD
         columns: list.columns?.filter((c) => !hidden(typeof c === 'string' ? c : c.field)),
         search: list.search?.filter((s) => !hidden(s)),
         filters: list.filters?.filter((f) => !hidden(typeof f === 'string' ? f : f.field)),
-        presets: list.presets?.filter((p) => !cites(p.where) && !Object.keys(p.defaults ?? {}).some(hidden)),
+        presets: list.presets?.filter((p) => !(p.where && cites(p.where)) && !Object.keys(p.defaults ?? {}).some(hidden)),
         defaultSort: list.defaultSort?.filter((s) => !hidden(s.field))
       },
       form: form && {

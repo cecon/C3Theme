@@ -13,7 +13,10 @@
   "views": {
     "list": {
       "search": ["codigo"],
-      "presets": [{ "id": "nao-contados", "label": "Só não contados", "where": { "field": "contado", "op": "null", "value": true } }]
+      "presets": [
+        { "id": "todos", "label": "Todos", "default": true },
+        { "id": "nao-contados", "label": "Só não contados", "where": { "field": "contado", "op": "null", "value": true } }
+      ]
     }
   }
 }

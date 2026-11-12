@@ -30,6 +30,8 @@ import { availableViews, listUpTo, recordTitle } from '../../views';
 import EntityDialog from '../EntityDialog';
 import { PresetChips, ViewSwitcher } from '../views/ViewBar';
 import { useViewPreset } from '../views/useViewPreset';
+import { joinAnd } from '../list/useListQuery';
+import { withPreset } from '../../presetTabs';
 import { useLive } from '../../live/useLive';
 
 /** Mais que isso no período é sinal de que falta um filtro; a tela avisa em vez de pedir tudo. */
@@ -67,7 +69,7 @@ export default function CalendarBoard({ entity }: { entity: string }) {
   const where = useMemo(() => {
     if (!view || !range) return undefined;
     const period = rangeWhere(view, type, range.from, range.to);
-    return preset ? { and: [preset.where, period] } : period;
+    return joinAnd(withPreset(preset, [period]));
   }, [view, type, range, preset]);
   const { data, error, isLoading, mutate } = useSWR(
     where ? ['c3-list', entity, 'calendar', JSON.stringify(where), org?.active] : null,

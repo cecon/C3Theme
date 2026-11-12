@@ -630,7 +630,7 @@
               "description": "Filtros nomeados que aparecem como atalhos na barra da lista (ex.: 'Ativos', 'VIPs sem empresa').",
               "items": {
                 "type": "object",
-                "required": ["id", "label", "where"],
+                "required": ["id", "label"],
                 "additionalProperties": false,
                 "properties": {
                   "id": {
@@ -641,7 +641,8 @@
                     "$ref": "#/$defs/text"
                   },
                   "where": {
-                    "$ref": "#/$defs/condition"
+                    "$ref": "#/$defs/condition",
+                    "description": "Sem `where`, o preset é o \"Todos\": não filtra além do recorte da tela e ocupa o lugar da aba \"Todos\" própria das abas (presetTabs e a seção related)."
                   },
                   "default": {
                     "type": "boolean",

@@ -48,6 +48,7 @@ Resumo. Quem decide são o `spec/v0/app.schema.json` e o `entity.schema.json` do
 
 - `search` cobre só `string`, `text` e `email`. `filters` são os filtros livres da barra.
 - `presets[].defaults` preenche o registro novo criado com aquele preset ativo.
+- Preset sem `where` (`{ "id": "todos", "label": "Todos", "default": true }`) é o "Todos": não filtra além do recorte da tela e, nas abas (`presetTabs` e `related` com `presets: true`), ocupa o lugar da aba "Todos" própria.
 - Coluna como objeto: `{ "field": "nome", "label": "Cliente", "avatar": true, "secondary": "email" }` (iniciais + e-mail embaixo) e `{ "field": "cidade", "join": ["uf"] }` ("Recife - PE"). `avatar: { "letters": 1, "tone": "neutral" }` dá uma letra cinza; `weight: "normal"` tira o negrito. Não escreva componente de célula para isso.
 - `expand: { "fields": [{ "field": "email", "icon": "Sms" }], "stats": ["pedidos"], "notes": ["sobre"] }` abre a prévia do registro embaixo da linha.
 - `presetTabs: { "all": "Todas" }` (presets como abas com contagem), `dateRange: { "field": "emissao", "label": "Emitidas" }` (período de/até), `searchHint`, `export: false` e `link: true` na coluna.

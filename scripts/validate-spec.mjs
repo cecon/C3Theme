@@ -171,7 +171,8 @@ for (const { entity, file } of entities.values()) {
       errors.push(`${file}: filtro na barra ainda não existe para flags ('${name}')`);
   for (const s of list.defaultSort ?? []) readable(s.field, 'views.list.defaultSort');
   for (const p of list.presets ?? []) {
-    checkCondition(p.where, fields, `${file} preset '${p.id}'`, true);
+    // sem `where` é o "Todos" (#67): não há condição a conferir
+    if (p.where) checkCondition(p.where, fields, `${file} preset '${p.id}'`, true);
     for (const [name, v] of Object.entries(p.defaults ?? {})) {
       const f = fields.get(name);
       const where = `${file} preset '${p.id}' defaults.${name}`;

@@ -5,6 +5,7 @@ import type { OrgState } from '../../context';
 import type { Condition, EntityDef } from '../../types';
 import { readDateRange, readFilters, readWidgetWhere } from './readFilters';
 import { readSourceParams } from './sourceParams';
+import { withPreset } from '../../presetTabs';
 
 /**
  * Estado da lista na URL (página, tamanho, ordem, busca, preset, filtros, filiais e parâmetros da consulta): voltar e compartilhar
@@ -50,7 +51,7 @@ export function useListQuery(def: EntityDef, scoped: OrgState | undefined) {
 
   // sem o preset: as abas de preset contam cada uma sobre os mesmos filtros
   const baseParts = useMemo(() => [...filters, ...range, ...(widgetWhere ? [widgetWhere] : [])], [filters, range, widgetWhere]);
-  const where = useMemo(() => joinAnd([...(preset ? [preset.where] : []), ...baseParts]), [preset, baseParts]);
+  const where = useMemo(() => joinAnd(withPreset(preset, baseParts)), [preset, baseParts]);
 
   const refreshSeconds = list.refreshSeconds;
   return {
