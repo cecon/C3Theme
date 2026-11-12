@@ -13,6 +13,7 @@ import { iconByName, useEngine, useText } from '../../context';
 import { bothWhere, formatMeasure, KpiWidget as Kpi, measureField, measureNumber, share, widgetLink, widgetWhere } from '../../dashboard';
 import { paletteOf } from '../../tone';
 import { useAggregate } from './useAggregate';
+import KpiCompare from './KpiCompare';
 import WidgetError from './WidgetError';
 
 /**
@@ -51,6 +52,7 @@ export default function KpiWidget({ widget }: { widget: Kpi }) {
             </Typography>
           </Link>
         )}
+        {widget.compare && data && <KpiCompare widget={widget} value={data[0]?.value ?? 0} />}
       </>
     );
 
@@ -72,6 +74,7 @@ export default function KpiWidget({ widget }: { widget: Kpi }) {
           <Typography variant="h4" component="p" noWrap sx={{ fontVariantNumeric: 'tabular-nums' }}>
             {value ?? <Skeleton width={120} />}
           </Typography>
+          {widget.compare && data && <KpiCompare widget={widget} value={data[0]?.value ?? 0} />}
         </Box>
       </Stack>
       {(widget.count || p) && (
