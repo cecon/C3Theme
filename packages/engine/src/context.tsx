@@ -21,6 +21,7 @@ export interface OrgState {
 }
 
 export interface EngineState {
+  connectivity?: import('./pageStates/types').ConnectivityPort;
   client: C3Client;
   app: AppDef;
   entities: Record<string, { def: EntityDef; capabilities: Capabilities }>;

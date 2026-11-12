@@ -30,27 +30,18 @@ import useOpensForm from './useOpensForm';
 import type { RefusedRecord } from '../api';
 import type { ActionDef, BulkItem, FieldType, WireRecord } from '../types';
 import { runsAtOnce } from '../actionTypes';
+import type { RecordActionsProps } from './recordActionProps';
+export type { RecordActionsProps } from './recordActionProps';
 import { paletteOf } from '../tone';
 
 /** Quantas ações aparecem como botão; as demais vão para o menu "Mais". */
 const VISIBLE = 2;
 
-export interface RecordActionsProps {
-  entity: string;
-  /** Um registro: as ações dele, no cabeçalho do detalhe. */
-  id?: string;
-  record?: WireRecord;
-  /** Em lote: as linhas marcadas na lista. Aparecem as ações com `bulk` que valem para ao menos uma delas. */
-  rows?: WireRecord[];
-  /** Depois de rodar em lote, com os ids que falharam (a lista os deixa marcados). */
-  onBulkDone?: (failed: string[]) => void;
-}
-
 /**
  * Botões das ações que o usuário pode rodar e cujo `visibleWhen` vale agora, para um registro ou para
  * as linhas marcadas na lista. Ação sem input e sem confirm roda no clique; as outras abrem o diálogo.
  */
-export default function RecordActions({ entity, id, record, rows, onBulkDone }: RecordActionsProps) {
+export default function RecordActions({ entity, id, record, rows, onBulkDone, only, labels, ifMatch }: RecordActionsProps) {
   const { entities, icons, client } = useEngine();
   const { def, capabilities } = entities[entity];
   const text = useText();
@@ -82,7 +73,12 @@ export default function RecordActions({ entity, id, record, rows, onBulkDone }: 
   const eligible = (a: ActionDef) => targets.filter((t) => !a.visibleWhen || evaluate(a.visibleWhen, t.values, types));
   // as da lista (`target: list`) ficam no topo da lista (ListActions)
   const available = (def.actions ?? []).filter(
-    (a) => a.target !== 'list' && capabilities.actions?.[a.name] && (!bulk || a.bulk) && eligible(a).length > 0
+    (a) =>
+      (!only || only.includes(a.name)) &&
+      a.target !== 'list' &&
+      capabilities.actions?.[a.name] &&
+      (!bulk || a.bulk) &&
+      eligible(a).length > 0
   );
 
   const success = (action: ActionDef) => (action.successMessage ? text(action.successMessage) : 'Feito.');
@@ -120,7 +116,7 @@ export default function RecordActions({ entity, id, record, rows, onBulkDone }: 
 
   async function execute(action: ActionDef, body: WireRecord): Promise<boolean | 'refused'> {
     if (!bulk) {
-      const result = await run(id!, action.name, body);
+      const result = await run(id!, action.name, body, ifMatch ? { ifMatch } : undefined);
       if (!result) return false;
       const version = result.data?._version;
       // ação com inverse: Desfazer no aviso, conferido pela versão no servidor
@@ -215,7 +211,7 @@ export default function RecordActions({ entity, id, record, rows, onBulkDone }: 
         onClick={() => start(a)}
         disabled={running}
       >
-        {text(a.label)}
+        {text(labels?.[a.name] ?? a.label)}
         {/* a contagem só aparece quando a ação não vale para todas as marcadas */}
         {bulk && eligible(a).length < rows!.length && ` (${eligible(a).length})`}
       </Button>
@@ -239,7 +235,7 @@ export default function RecordActions({ entity, id, record, rows, onBulkDone }: 
           <Menu anchorEl={menu} open={menu !== null} onClose={() => setMenu(null)}>
             {rest.map((a) => (
               <MenuItem key={a.name} onClick={() => start(a)} sx={a.tone === 'danger' ? { color: 'error.main' } : undefined}>
-                {text(a.label)}
+                {text(labels?.[a.name] ?? a.label)}
               </MenuItem>
             ))}
           </Menu>

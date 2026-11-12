@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useSWRConfig } from 'swr';
 
-import { ApiError, type RefusedRecord, type SourceParams } from '../api';
+import { ApiError, type RefusedRecord, type SourceParams, type WriteOptions } from '../api';
 import { useEngine } from '../context';
 import type { ActionResult, BulkResult, FieldErrors, WireRecord } from '../types';
 
@@ -28,10 +28,10 @@ export default function useAction(entity: string) {
   const [state, setState] = useState<ActionState>({ running: false, fieldErrors: {} });
 
   const run = useCallback(
-    async (id: string, action: string, input?: WireRecord): Promise<ActionResult | undefined> => {
+    async (id: string, action: string, input?: WireRecord, opts?: WriteOptions): Promise<ActionResult | undefined> => {
       setState({ running: true, fieldErrors: {} });
       try {
-        const result = await client.action(entity, id, action, input);
+        const result = await (opts ? client.action(entity, id, action, input, opts) : client.action(entity, id, action, input));
         // sem `data` (veio arquivo) ou null (a ação apagou): relê
         mutate(['c3-record', entity, id], result.data ?? undefined, { revalidate: result.data == null });
         mutate((key) => Array.isArray(key) && key[0] === 'c3-list');

@@ -77,3 +77,6 @@ export type { AgentKind, ChatDef } from './chat/chatDef';
 export { BRANCH_ACTION, hasAside, laneActions, lanesApi, runLaneAction } from './agent';
 export type { ChatLanesDef, ChatLanesSpec, ChatMessageActionDef, LaneAction, LanesApi, MessageActionReply, WireLane } from './agent';
 export type { ActionPayload, AgentAnswer, AgentPartProps, FormPayload, RecordPayload, Suggested } from './agent';
+
+export { usePageState } from './pageStates/context';
+export type { PageStates, PageStateDef, PageStateAction, PageDataState, ConnectivityPort } from './pageStates/types';
