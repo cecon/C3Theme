@@ -31,6 +31,7 @@ Resumo. Quem decide são o `spec/v0/app.schema.json` e o `entity.schema.json` do
 - `pages[]`: `component` (React registrado) ou `dashboard`. `layout: "blank"` ocupa a tela toda (impressão, quiosque).
 - `status` mostra "Em manutenção" (previsão, "Tentar de novo" e volta sozinha) ou "Em breve" (contagem) no lugar do login e das telas: `{ "mode": "maintenance" | "comingSoon", "title"?, "message"?, "until"? }`. Não bloqueia a API. Um proxy que responda 503 em `/_meta/*` mostra a mesma tela. Não escreva página de manutenção em TS.
 - `pages[].comingSoon: { "message"?, "until"? }` deixa no menu uma tela ainda não pronta, com "Em breve" e a contagem. Erro 500 (tela que quebra) e 404 já vêm da shell: não declare nem registre.
+- `pages[].states` declara carregando, vazio, erro, sem permissão e offline da página (texto e ação de cada um, ADR 0010); `statesEntity` é a entidade que a shell conta para saber se há dado. Não escreva tela de vazio, erro ou sem permissão em TS: na página registrada, use `<StateView>` do motor com os estados da spec.
 
 ## Lista e menu
 

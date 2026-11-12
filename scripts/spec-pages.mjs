@@ -59,3 +59,20 @@ export function checkWizards(app, entities, pagePaths, errors) {
     }
   }
 }
+
+/** Estados da página (`states`, `statesEntity`, ADR 0010): a entidade é do app, só em painel ou página registrada; ação vai a página ou entidade. */
+export function checkPageStates(app, pagePaths, errors) {
+  for (const p of app.pages ?? []) {
+    const where = `app.json página '${p.path}'`;
+    if (p.statesEntity && !app.entities?.includes(p.statesEntity))
+      errors.push(`${where}.statesEntity: '${p.statesEntity}' fora de app.entities`);
+    if (p.statesEntity && !p.dashboard && !p.component) errors.push(`${where}.statesEntity: só em página com dashboard ou component`);
+    const counted = ['loading', 'empty', 'error'].filter((k) => p.states?.[k]);
+    if (counted.length && !p.statesEntity) errors.push(`${where}.states: ${counted.join(', ')} precisa(m) de statesEntity`);
+    for (const k of ['empty', 'forbidden']) {
+      const path = p.states?.[k]?.action?.path;
+      if (path && !pagePaths.has(path) && !app.entities?.includes(path.split('/')[1]))
+        errors.push(`${where}.states.${k}.action: '${path}' não é página nem entidade do app`);
+    }
+  }
+}

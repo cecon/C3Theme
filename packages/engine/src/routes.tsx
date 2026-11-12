@@ -23,6 +23,8 @@ import WizardPage from './pages/wizard/WizardPage';
 import { AppStatus } from './status/AppStatus';
 import { NotFoundScreen, RouteErrorScreen } from './status/ErrorScreens';
 import { PAGE_SOON_MESSAGE } from './status/status';
+import PageStates from './states/PageStates';
+import StateView from './states/StateView';
 
 // o painel traz a biblioteca de gráficos: só baixa quem abre um
 const Dashboard = lazy(() => import('./pages/dashboard/Dashboard'));
@@ -53,7 +55,7 @@ export function buildRoutes(app: AppDef, layout: ReactNode, extra: RouteObject[]
   const pageRoute = (p: (typeof pages)[number]): RouteObject => ({
     path: p.path,
     errorElement: <RouteErrorScreen fullScreen={p.layout === 'blank'} />,
-    element: <PageGate path={p.path}>{p.layout === 'blank' ? <WizardGuard>{pageBody(p)}</WizardGuard> : pageBody(p)}</PageGate>
+    element: <PageGate page={p}>{p.layout === 'blank' ? <WizardGuard>{pageBody(p)}</WizardGuard> : pageBody(p)}</PageGate>
   });
 
   return [
@@ -103,9 +105,19 @@ function FlowRoute({ entity }: { entity: string }) {
 
 function pageBody(p: PageDef) {
   if (p.comingSoon) return <SoonPage soon={p.comingSoon} />;
-  if (p.dashboard) return <DashboardPage dashboard={p.dashboard} />;
+  if (p.dashboard)
+    return (
+      <PageStates page={p}>
+        <DashboardPage dashboard={p.dashboard} />
+      </PageStates>
+    );
   if (p.wizard) return <WizardPage wizard={p.wizard} />;
-  if (!p.apiDocs && !p.chat) return <CustomPage page={p} />;
+  if (!p.apiDocs && !p.chat)
+    return (
+      <PageStates page={p}>
+        <CustomPage page={p} />
+      </PageStates>
+    );
   return <Suspense fallback={<PanelSkeleton />}>{p.chat ? <ChatPage def={p.chat} /> : <ApiDocs def={p.apiDocs!} />}</Suspense>;
 }
 
@@ -125,11 +137,15 @@ function DashboardPage({ dashboard }: { dashboard: DashboardDef }) {
 /** Página com `permission` que o backend negou (em /_meta/app); sem `permission`, abre. */
 export const canOpenPage = (access: Record<string, boolean> | undefined, path: string | undefined) => !path || access?.[path] !== false;
 
-/** Bloqueia a rota da página (registrada ou painel) sem permissão na filial ativa; o menu já a esconde. */
-function PageGate({ path, children }: { path: string; children: ReactNode }) {
+/**
+ * Bloqueia a rota da página (registrada ou painel) sem permissão na filial ativa; o menu já a esconde. Com
+ * `states.forbidden`, o recado e o "como conseguir" da spec no lugar do aviso fixo.
+ */
+function PageGate({ page, children }: { page: PageDef; children: ReactNode }) {
   const { pageAccess } = useEngine();
-  if (!canOpenPage(pageAccess, path)) return <Alert severity="info">Você não tem permissão para abrir esta página.</Alert>;
-  return children;
+  if (canOpenPage(pageAccess, page.path)) return children;
+  if (page.states?.forbidden) return <StateView states={page.states} state="forbidden" />;
+  return <Alert severity="info">Você não tem permissão para abrir esta página.</Alert>;
 }
 
 /** Props da página registrada: o `config` do app.json (já validado pelo schema do componente) e a própria página. */

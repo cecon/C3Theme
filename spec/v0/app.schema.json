@@ -356,6 +356,14 @@
             }
           }
         },
+        "states": {
+          "$ref": "#/$defs/states",
+          "description": "Carregando, vazio, erro, sem permissão e offline da página, com os textos e as ações dela (ADR 0011). Sem permissão e offline valem para qualquer página; carregando, vazio e erro precisam de statesEntity. Estado não declarado fica com o padrão da shell."
+        },
+        "statesEntity": {
+          "$ref": "entity.schema.json#/$defs/identifier",
+          "description": "Entidade (de app.entities) que diz se a página tem dado: a shell conta os registros dela (GET /{entity}/_aggregate?measure=count) antes de desenhar o corpo. Enquanto conta, 'loading'; zero, 'empty'; 403, 'forbidden'; sem conexão, 'offline'; outra falha, 'error'. Só em página com dashboard ou component."
+        },
         "layout": {
           "enum": ["dashboard", "blank"],
           "default": "dashboard",
@@ -620,6 +628,58 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/link"
+          }
+        }
+      }
+    },
+    "states": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Estados de uma tela que busca dado, cada um com texto (literal ou chave de i18n) e a ação dele. O mesmo formato serve à página (pages[].states) e ao chat.",
+      "properties": {
+        "loading": {
+          "type": "object",
+          "required": ["text"],
+          "additionalProperties": false,
+          "description": "Enquanto busca: o que está sendo carregado, acima do esqueleto.",
+          "properties": { "text": { "$ref": "#/$defs/text" } }
+        },
+        "empty": {
+          "type": "object",
+          "required": ["text"],
+          "additionalProperties": false,
+          "description": "Sem dado: o recado e o próximo passo.",
+          "properties": { "text": { "$ref": "#/$defs/text" }, "action": { "$ref": "#/$defs/link" } }
+        },
+        "error": {
+          "type": "object",
+          "required": ["text"],
+          "additionalProperties": false,
+          "description": "Falha ao buscar: a mensagem e o botão de tentar de novo.",
+          "properties": {
+            "text": { "$ref": "#/$defs/text" },
+            "retry": { "$ref": "#/$defs/text", "description": "Rótulo do botão. Padrão: 'Tentar de novo'." }
+          }
+        },
+        "forbidden": {
+          "type": "object",
+          "required": ["text"],
+          "additionalProperties": false,
+          "description": "Sem permissão: no lugar do aviso fixo, o recado, como conseguir a permissão e, se houver, onde pedir.",
+          "properties": {
+            "text": { "$ref": "#/$defs/text" },
+            "howTo": { "$ref": "#/$defs/text", "description": "Como conseguir a permissão, ex.: 'Peça ao administrador o perfil Financeiro.'" },
+            "action": { "$ref": "#/$defs/link" }
+          }
+        },
+        "offline": {
+          "type": "object",
+          "required": ["text"],
+          "additionalProperties": false,
+          "description": "Sem conexão: aviso no alto da tela, que continua com o que já carregou.",
+          "properties": {
+            "text": { "$ref": "#/$defs/text" },
+            "keeps": { "type": "array", "items": { "$ref": "#/$defs/text" }, "description": "O que continua funcionando sem conexão." }
           }
         }
       }

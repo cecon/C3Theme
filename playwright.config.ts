@@ -7,7 +7,7 @@ const createAppUrl = process.env.E2E_CREATE_APP_URL;
 const vitrineAndStorybook = {
   projects: [
     { name: 'vitrine', testMatch: 'vitrine-*.spec.ts', use: { baseURL: 'http://127.0.0.1:4173' } },
-    { name: 'storybook', testMatch: 'storybook.spec.ts', use: { baseURL: 'http://127.0.0.1:6007' } }
+    { name: 'storybook', testMatch: 'storybook*.spec.ts', use: { baseURL: 'http://127.0.0.1:6007' } }
   ],
   webServer: [
     {

@@ -61,6 +61,17 @@ responde 503 sozinho por causa do `status`.
 Uma tela ainda não pronta fica no menu com `pages[].comingSoon: { "message"?, "until"? }`: a rota mostra "Em breve" na
 área de conteúdo, com o menu em volta, e a contagem até a data.
 
+Uma página que busca dado declara os seus estados em `pages[].states` (`$defs/states`, [ADR 0010](../docs/adr/0010-estados-da-pagina.md)):
+`loading` (o que está carregando), `empty` (recado e `action` com o próximo passo), `error` (mensagem e `retry`, o
+rótulo de "Tentar de novo"), `forbidden` (recado, `howTo` com como conseguir a permissão e `action` opcional) e
+`offline` (recado e `keeps`, o que continua funcionando). Todo texto aceita literal ou chave de i18n; `action` é um
+`link` (`path` do app ou `href`). `forbidden` substitui o aviso fixo de página sem permissão e `offline` aparece no alto
+de qualquer página quando a porta `connectivity` do `<C3Shell>` diz que caiu a conexão (padrão: `navigator.onLine`),
+sem tirar da tela o que já carregou. `loading`, `empty` e `error` precisam de `statesEntity`: a shell conta os
+registros dessa entidade antes de desenhar o painel ou a página registrada (zero é vazio; 403 é sem permissão; pedido
+que não chegou ao servidor é offline). Estado não declarado fica com o padrão da shell, e página sem `states` é a de
+sempre. A página registrada desenha os estados das próprias buscas com `<StateView states={page.states} state="empty" />`.
+
 Erros vêm da shell, sem declaração: uma tela que quebra mostra o 500 ("Tentar de novo" recarrega e "Voltar ao início")
 dentro do layout, com o menu em volta; se a própria moldura quebrar, o 500 ocupa a tela toda. Rota que não existe mostra
 o 404. Falha ao abrir o sistema (`/_meta/*` com outro erro ou sem conexão) mostra a tela de erro com "Tentar de novo". A

@@ -11,6 +11,7 @@ import type { WizardDef } from './wizard';
 import type { ChatDef } from './chat/chatDef';
 import type { AuthorizationConfig } from './authorization/AuthorizationDialog';
 import type { DesktopDef } from './desktop/frame';
+import type { StatesDef } from './states/states';
 
 export type { Condition, FieldType };
 export type { BoardView, CalendarView, ReportView };
@@ -215,6 +216,10 @@ export interface PageDef {
   /** Página de chat com o agente do sistema (spec/v0/chat.yaml, ADR 0006). */
   chat?: ChatDef;
   layout?: 'dashboard' | 'blank';
+  /** Carregando, vazio, erro, sem permissão e offline com textos e ações da spec (ADR 0011). */
+  states?: StatesDef;
+  /** Entidade que diz se a página tem dado: a shell conta os registros dela antes de desenhar o corpo. */
+  statesEntity?: string;
 }
 
 export interface AppDef {

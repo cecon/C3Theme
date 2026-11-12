@@ -26,6 +26,7 @@ import type { TelemetryPort } from './telemetry';
 import { ApiError, loadFailure } from './apiError';
 import { AppStatus, ShellBoundary, type AppStatusDef } from './status/AppStatus';
 import { LoadErrorScreen } from './status/ErrorScreens';
+import type { ConnectivityPort } from './states/connectivity';
 
 export interface C3ShellProps {
   /** Base da API do sistema, ex.: '/api'. */
@@ -77,6 +78,11 @@ export interface C3ShellProps {
    * `task.abandon` ao sair sem gravar), sem dado pessoal. O C3 só emite: guardar ou enviar é do sistema.
    */
   onTelemetry?: TelemetryPort;
+  /**
+   * Porta de conexão: diz se o app está on-line, para o estado `offline` das páginas (`pages[].states`). Padrão: o
+   * navegador (`navigator.onLine`). No Electron, onde o pedido vai por IPC, passe o sinal do processo main.
+   */
+  connectivity?: ConnectivityPort;
 }
 
 /**
@@ -206,10 +212,11 @@ function Shell(props: C3ShellProps) {
         icons: catalog,
         telemetry,
         reloadApp,
+        connectivity: props.connectivity,
         org: state.org && { ...state.org, setActive },
         ...(frame && { desktop: frame })
       },
-    [state, catalog, telemetry, reloadApp, setActive, frame]
+    [state, catalog, telemetry, reloadApp, setActive, frame, props.connectivity]
   );
   const app = state?.app;
   const routes = app && routesKey(app);

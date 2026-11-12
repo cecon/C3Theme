@@ -77,3 +77,11 @@ export type { AgentKind, ChatDef } from './chat/chatDef';
 export { BRANCH_ACTION, hasAside, laneActions, lanesApi, runLaneAction } from './agent';
 export type { ChatLanesDef, ChatLanesSpec, ChatMessageActionDef, LaneAction, LanesApi, MessageActionReply, WireLane } from './agent';
 export type { ActionPayload, AgentAnswer, AgentPartProps, FormPayload, RecordPayload, Suggested } from './agent';
+// estados da tela (`$defs/states`, ADR 0010): a página registrada desenha os dela com o mesmo visual da shell
+export { default as StateView } from './states/StateView';
+export type { StateViewProps } from './states/StateView';
+export { stateOfError } from './states/states';
+export type { StateKey, StatesDef } from './states/states';
+export { browserConnectivity } from './states/connectivity';
+export type { ConnectivityPort } from './states/connectivity';
+export { useOnline } from './states/useOnline';

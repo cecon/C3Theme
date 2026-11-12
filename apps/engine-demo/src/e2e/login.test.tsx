@@ -15,6 +15,8 @@ describe('entrada e painel (CRM de exemplo)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Entrar' }));
     expect(await screen.findByText('Usuário ou senha incorretos.')).toBeTruthy();
     await login('admin');
-    expect(await screen.findByText('Clientes ativos', {}, { timeout: 5000 })).toBeTruthy();
+    // banco novo, sem cliente: o painel mostra o vazio declarado em pages[].states (#99) com o próximo passo
+    expect(await screen.findByText(/Nenhum cliente ainda/, {}, { timeout: 5000 })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Novo cliente' }).getAttribute('href')).toBe('/customer/new');
   });
 });

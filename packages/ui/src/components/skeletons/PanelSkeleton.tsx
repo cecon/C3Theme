@@ -17,15 +17,17 @@ export interface PanelSkeletonProps {
   height?: number;
   /** ms antes de aparecer; 0 mostra na hora. */
   delay?: number;
+  /** O que o leitor de tela anuncia (ex.: "Carregando as faturas"). Padrão: "Carregando…". */
+  label?: string;
   sx?: SxProps<Theme>;
 }
 
 /** Painel (card de painel, seção personalizada) carregando: título e linhas de texto ou um bloco de gráfico. */
-export default function PanelSkeleton({ title = true, lines = 3, height, delay, sx }: PanelSkeletonProps) {
+export default function PanelSkeleton({ title = true, lines = 3, height, delay, label, sx }: PanelSkeletonProps) {
   const shown = useDelayed(true, delay);
   if (!shown) return null;
   return (
-    <SkeletonFrame sx={sx}>
+    <SkeletonFrame label={label} sx={sx}>
       <Panel title={title ? <Skeleton width={160} /> : undefined}>
         {height ? (
           <Skeleton variant="rounded" height={height} />

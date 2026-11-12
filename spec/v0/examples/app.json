@@ -53,6 +53,20 @@
     {
       "path": "/painel",
       "title": "Painel",
+      "statesEntity": "customer",
+      "states": {
+        "loading": { "text": "Carregando os números da carteira" },
+        "empty": {
+          "text": "Nenhum cliente ainda. Cadastre o primeiro para ver o painel.",
+          "action": { "label": "Novo cliente", "path": "/customer/new" }
+        },
+        "error": { "text": "Não deu para carregar o painel." },
+        "forbidden": { "text": "Você não vê o painel da carteira.", "howTo": "Peça ao administrador o perfil Comercial." },
+        "offline": {
+          "text": "Sem conexão. Os números podem estar desatualizados.",
+          "keeps": ["Ver o que já carregou", "Trocar os filtros do painel"]
+        }
+      },
       "dashboard": {
         "filters": [
           { "name": "periodo", "type": "period", "label": "Prazo das atividades", "default": "all" },

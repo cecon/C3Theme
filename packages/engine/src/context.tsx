@@ -3,6 +3,7 @@ import { useIntl } from 'react-intl';
 
 import type { C3Client } from './api';
 import type { DesktopFrame } from './desktop/frame';
+import type { ConnectivityPort } from './states/connectivity';
 import type { TelemetryPort } from './telemetry';
 import type { AppDef, Capabilities, EntityDef, FieldDef, OrgContext, Text, WireRecord } from './types';
 
@@ -36,6 +37,8 @@ export interface EngineState {
   reloadApp?: () => Promise<void>;
   /** Moldura do desktop (`layout.desktop` com a porta `desktopHost`). Sem ela, o app roda como site. */
   desktop?: DesktopFrame;
+  /** Se o app está on-line (`connectivity` do <C3Shell>). Sem ela, o navegador. */
+  connectivity?: ConnectivityPort;
 }
 
 const EngineContext = createContext<EngineState | null>(null);

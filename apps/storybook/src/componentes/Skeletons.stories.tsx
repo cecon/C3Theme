@@ -27,3 +27,10 @@ export const LinhasDeTabela: Story = { name: 'Linhas de tabela', args: { screen:
 
 /** Uso direto: cartão genérico, para bloco próprio do sistema. */
 export const Cartao: Story = { name: 'Cartão (uso direto)', tags: ['uso-direto'], render: () => <PanelSkeleton delay={0} lines={4} /> };
+
+/** Com `label`: o que o leitor de tela anuncia no lugar de "Carregando…" (é o `states.loading.text` da página). */
+export const CartaoComTexto: Story = {
+  name: 'Cartão com o que carrega (uso direto)',
+  tags: ['uso-direto'],
+  render: () => <PanelSkeleton delay={0} lines={4} label="Carregando as faturas do mês" />
+};
