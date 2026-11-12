@@ -57,3 +57,53 @@ it('validador cruza entidade e ação de registro do destino', () => {
   checkPageStates({}, entities, errors);
   checkPageStates({ pages: [{ path: '/sem-estados' }] }, entities, errors);
 });
+
+it.each(['página', 'chat da página', 'chat do header'])('valida referências dos estados: %s', (location) => {
+  const record = { entity: 'pedido', id: '1', action: 'enviar' };
+  const declared = { empty: { action: { record } }, loading: { message: 'Abrindo' } };
+  const app = {
+    entities: ['pedido'],
+    pages: [
+      {
+        path: '/chat',
+        ...(location === 'página' ? { states: declared } : location === 'chat da página' ? { chat: { states: declared } } : {})
+      }
+    ],
+    layout: { header: { assistant: location === 'chat do header' ? { states: declared } : true } }
+  };
+  const entities = new Map([['pedido', { entity: { actions: [{ name: 'enviar' }, { name: 'lote', target: 'list' }] } }]]);
+  const check = () => {
+    const errors: string[] = [];
+    checkPageStates(app, entities, errors);
+    return errors;
+  };
+  expect(check()).toEqual([]);
+  record.entity = 'ausente';
+  expect(check()).toHaveLength(1);
+  expect(check()[0]).toContain("entidade 'ausente' fora de app.entities");
+  record.entity = 'pedido';
+  app.entities = [];
+  expect(check()).toHaveLength(1);
+  app.entities = ['pedido'];
+  for (const action of ['lote', 'inexistente']) {
+    record.action = action;
+    const errors = check();
+    expect(errors).toHaveLength(1);
+    expect(errors[0]).toContain(`'${action}' não é ação de registro`);
+    expect(errors[0]).toContain(location === 'chat do header' ? 'layout.header.assistant' : "página '/chat'");
+    if (location === 'chat da página') expect(errors[0]).toContain('chat states.empty.action.record');
+  }
+});
+
+it('sem states ignora chats e header booleano ou ausente', () => {
+  const errors: string[] = [];
+  for (const app of [
+    {},
+    { pages: [{ path: '/chat', chat: {} }] },
+    { layout: { header: { assistant: true } } },
+    { layout: { header: { assistant: false } } }
+  ]) {
+    checkPageStates(app, new Map(), errors);
+  }
+  expect(errors).toEqual([]);
+});
