@@ -4,7 +4,7 @@ import type { Condition, FieldType } from './conditions.mjs';
 import type { DocumentFormat } from './documents.mjs';
 import type { AuthConfig } from './auth/port';
 import type { DashboardDef } from './dashboard';
-import type { BoardView, CalendarView, ColumnDef, GalleryView, ListLook, ListOpening, MapView, ReportView } from './viewTypes';
+import type { BoardView, CalendarView, ColumnDef, FlowView, GalleryView, ListLook, ListOpening, MapView, ReportView } from './viewTypes';
 import type { ActionDef, ActionPreview, GridFieldDef } from './actionTypes';
 import type { FormView, LookupDef } from './formTypes';
 import type { WizardDef } from './wizard';
@@ -154,6 +154,7 @@ export interface EntityDef {
     calendar?: CalendarView;
     report?: ReportView;
     map?: MapView;
+    flow?: FlowView;
   };
   actions?: ActionDef[];
   lookups?: LookupDef[];

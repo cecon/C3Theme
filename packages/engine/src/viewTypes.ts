@@ -1,4 +1,4 @@
-// Views de quadro, calendário, relatório e planta da entidade (spec/v0/entity.schema.json, views.board, .calendar, .report e .map).
+// Views de quadro, calendário, relatório, planta e fluxo da entidade (spec/v0/entity.schema.json, views.board, .calendar, .report, .map e .flow).
 
 import type { Condition, EnumValue, Text, Tone } from './types';
 
@@ -181,4 +181,38 @@ export interface ColumnAvatar {
 export interface CellTone {
   field: string;
   map?: Record<string, Tone>;
+}
+
+/** Campo do formulário de um tipo de passo do fluxo (`views.flow.kinds[].fields`). */
+export interface FlowKindField {
+  key: string;
+  label: Text;
+  kind?: 'text' | 'textarea' | 'number' | 'select';
+  options?: { value: string; label: Text }[];
+  required?: boolean;
+  help?: Text;
+}
+
+/** Tipo de passo declarado na spec: o mesmo contrato do `@c3theme/flow`, só com dados (sem função nem React). */
+export interface FlowKindDef {
+  type: string;
+  label: Text;
+  icon?: string;
+  tone?: Tone | 'secondary';
+  input?: boolean;
+  outputs?: { id: string; label?: Text; optional?: boolean }[];
+  fields?: FlowKindField[];
+  summary?: string;
+  loopLimit?: string;
+  max?: number;
+  removable?: boolean;
+  defaults?: Record<string, unknown>;
+}
+
+/** Editor de fluxo do registro (`views.flow`): o grafo mora no campo text `field`, como JSON. */
+export interface FlowView {
+  field: string;
+  title?: Text;
+  minimap?: boolean;
+  kinds: FlowKindDef[];
 }

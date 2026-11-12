@@ -51,6 +51,7 @@ Suba um degrau só quando o de baixo não resolve:
 | Kanban / agenda                                      | `views.board` / `views.calendar`                                                     | [telas](references/telas.md#quadro-calendário-e-painel)      |
 | Relatório agrupado com subtotais e impressão         | `views.report` (groupBy, subtotals, tree)                                            | [telas](references/telas.md#quadro-calendário-e-painel)      |
 | Planta (mesas, pista, setor do KDS) e tempo real     | `views.map` (position ou groupBy, color) + `live` na entidade                        | [telas](references/telas.md#quadro-calendário-e-painel)      |
+| Fluxo de trabalho (automação, aprovação)             | `views.flow` (grafo num campo text, `kinds` dos passos)                              | [telas](references/telas.md#quadro-calendário-e-painel)      |
 | Indicadores e gráficos                               | `pages[].dashboard` (kpi, chart, list, alert, filters)                              | [telas](references/telas.md#quadro-calendário-e-painel)      |
 | Cancelar, reemitir, aprovar (fato de negócio)        | `actions` (nunca um `PATCH` no campo de situação)                                    | [regras](references/regras.md#ações)                         |
 | Comando sem registro (importar planilha)             | ação com `target: list`                                                              | [regras](references/regras.md#ações)                         |

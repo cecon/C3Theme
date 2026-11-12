@@ -5,6 +5,7 @@ import type { MemorySeed, WireRecord } from '@c3theme/engine';
 import { BALANCETE, mediaDaConta, ORCADO_REALIZADO, revisar } from './balancete';
 import { BOLETOS, colunasDoPeriodo, DEMONSTRATIVO } from './demonstrativo';
 import { AGENDA, ENTREGAS, relacaoDeEntregas } from './entregas';
+import { PEDIDO } from '../fluxo/fluxos';
 import { OPENAPI } from './openapi';
 import { avisos, eventos, mesas, tarefas } from './operacao';
 import { APP, ENTITIES } from './spec';
@@ -111,6 +112,11 @@ export const SEED: MemorySeed = {
     tarefa: tarefas,
     evento: eventos,
     mesa: mesas,
+    // o grafo do editor de fluxo (views.flow) fica no campo text, como JSON
+    automacao: [
+      { id: '1', nome: 'Pedido pelo WhatsApp', ativa: true, grafo: JSON.stringify(PEDIDO) },
+      { id: '2', nome: 'Lembrete de pagamento', ativa: false, grafo: '' }
+    ],
     vendedor: ['Hugo Martins', 'Íris Campos', 'João Pedro'].map((nome, i) => ({ id: String(i + 1), nome }))
   },
   // quem usa as histórias não cadastra vendedor: o campo que aponta para ele fica sem o "Cadastrar"

@@ -203,6 +203,36 @@ Exemplo: [`activity.json`](v0/examples/activity.json).
 - **Limite:** lê até 500 registros do filtro; acima disso avisa para filtrar. No celular, a planta por coordenada rola de lado dentro do quadro (a geometria do salão importa mais que caber na tela).
 - **Sem endpoint novo:** usa o GET da lista, ordenado pelos grupos ou pela linha e coluna. As ações são as do registro (`actions`), com `visibleWhen`, confirmação e input como em qualquer tela.
 
+## Editor de fluxo
+
+`views.flow` dá a um registro um editor de fluxo de trabalho (o `@c3theme/flow`): passos e ligações num canvas, o formulário de cada passo e os problemas marcados no passo. É o fluxo de uma automação, de um atendimento, de uma aprovação. O motor só desenha e grava; **quem roda o fluxo é o sistema**.
+
+```json
+"fields": [{ "name": "grafo", "type": "text", "label": "Passos" }],
+"views": {
+  "flow": {
+    "field": "grafo",
+    "kinds": [
+      { "type": "gatilho", "label": "Gatilho", "icon": "Flash", "tone": "warning", "input": false, "max": 1, "removable": false },
+      {
+        "type": "condicao", "label": "Condição", "icon": "Routing2",
+        "outputs": [{ "id": "sim", "label": "sim" }, { "id": "nao", "label": "não", "optional": true }],
+        "fields": [{ "key": "regra", "label": "Regra", "required": true }, { "key": "max_voltas", "label": "Máximo de voltas", "kind": "number" }],
+        "loopLimit": "max_voltas", "summary": "regra"
+      },
+      { "type": "fim", "label": "Fim", "outputs": [] }
+    ]
+  }
+}
+```
+
+- **Onde o grafo mora:** no campo `text` de `field`, como JSON `{ "nodes": [...], "edges": [...] }` (o contrato do `@c3theme/flow`: `nodes[]` com `id`, `type`, `position {x, y}`, `label?`, `config?`; `edges[]` com `id`, `source`, `sourcePort`, `target`). Vazio é fluxo sem passos. Grava pelo `PATCH` de sempre, só com esse campo e com `If-Match` (`_version`): se outra pessoa gravou antes, a tela avisa e oferece recarregar. **Sem endpoint novo e sem mudança no backend.**
+- **Rota** `/{entity}/:id/flow`. No formulário, o campo do grafo não vira caixa de texto: mostra quantos passos o fluxo tem e o botão "Abrir o fluxo" (no cadastro novo, pede para salvar antes). Na lista por convenção o campo não entra, e o `spec:check` recusa o campo em `views.list.columns`.
+- **Tipos de passo** (`kinds`): `type` (o que vai em `nodes[].type`), `label`, `icon` (catálogo da shell), `tone`, `input: false` (gatilho, não recebe ligação), `outputs` (padrão: uma saída `out`; lista vazia encerra o fluxo; `optional` pode ficar solta), `fields` do formulário do passo (`text`, `textarea`, `number`, `select` com `options`; `required`, `help`), `summary` (a chave mostrada no cartão; em select, o rótulo da opção), `loopLimit` (chave number que libera um ciclo com limite), `max` (quantos desse tipo cabem), `removable: false` e `defaults` (o `config` do passo novo).
+- **Problema no fluxo barra o Salvar** (passo solto, saída sem ligação, ciclo sem limite, campo obrigatório vazio, tipo que a spec não declara): o sistema que roda o fluxo recebe sempre um grafo válido. A mesma validação está em `validateFlow` do `@c3theme/flow/core`, para o backend repetir se quiser.
+- **Permissão:** sem `update` na entidade, ou com o campo `readOnly`/negado, o editor abre só para olhar.
+- **O backend não confere o grafo** (é texto para ele). Regra de negócio sobre o fluxo (agente desativado, limite de passos) é do sistema, no hook de gravação, com o erro de campo de sempre.
+
 ## Tempo real
 
 `"live": true` na entidade (ou `"live": { "sound": { "on": ["created"] } }`) faz a lista, o quadro, o calendário e o relatório abertos relerem na hora quando um registro entra, muda, sai ou passa por uma ação. É o KDS da cozinha, os bicos da pista, as requisições e as comandas. A shell assina `GET /api/{entity}/_events` (SSE, [events.yaml](v0/events.yaml)) só enquanto a tela está aberta.

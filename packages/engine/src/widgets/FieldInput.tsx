@@ -25,6 +25,7 @@ import { useEngine, useText } from '../context';
 import { fromDay, toDay } from '../calendarForm';
 import { datetimeToLocalInput, displayValue, findOption, formatDate, localInputToDatetime, recordOptions } from '../format';
 import DocumentInput from './DocumentInput';
+import FlowFieldLink from '../pages/flow/FlowFieldLink';
 import PasswordInput from './PasswordInput';
 import ReferenceInput from './ReferenceInput';
 import { saveFile } from '../export';
@@ -60,7 +61,7 @@ export type CustomFieldProps = FieldInputProps & { label: string };
 export default function FieldInput(props: FieldInputProps) {
   const { field, value, onChange, error, required, locked, component } = props;
   const readOnly = props.readOnly || locked;
-  const { components, client } = useEngine();
+  const { components, client, entities } = useEngine();
   const text = useText();
   const intl = useIntl();
   const label = text(field.label, field.name);
@@ -74,6 +75,11 @@ export default function FieldInput(props: FieldInputProps) {
     console.warn(`c3: componente '${component}' não registrado; usando o padrão de ${field.type}`);
   }
 
+  // o grafo do editor de fluxo (views.flow) não é texto para digitar: vira o resumo com o botão do editor, que vale
+  // também com o formulário em leitura (o editor confere sozinho se o usuário pode alterar)
+  if (props.entity && entities[props.entity]?.def.views?.flow?.field === field.name) {
+    return <FlowFieldLink label={label} value={value} entity={props.entity} id={props.record?.id} />;
+  }
   if (field.writeOnly) return <PasswordInput {...props} label={withHint(label, hint)} />;
   if (field.format && !readOnly) return <DocumentInput {...props} label={withHint(label, hint)} />;
   const options = (field.options ?? []).map((o) => ({ value: o.value, label: text(o.label, String(o.value)) }));
