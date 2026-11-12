@@ -4,10 +4,13 @@
 // falta LICENSE/README/dist, vai teste, sobra `workspace:` ou a condição `c3theme-source`, ou um alvo de
 // `exports`/`main`/`types` não existe no tarball. O src/ vai (sem teste) para quem instala por git e resolve
 // pela condição `c3theme-source`; no npm o publishConfig.exports já tira a condição.
+// Também reprova import relativo do dist que aponta para arquivo fora do tarball (#80: `../../hrefSlots.mjs`).
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+
+import { isModuleFile, missingInPackage } from './pack/imports.mjs';
 
 const ROOT = resolve(import.meta.dirname, '..');
 const PUBLISHABLE = ['ui', 'chat', 'engine', 'flow', 'electron'];
@@ -55,7 +58,7 @@ function check(name) {
       .split('\n')
       .filter(Boolean)
       .map((f) => f.replace(/^package\//, ''));
-    execFileSync('tar', ['-xzf', tarball, '-C', dest, 'package/package.json']);
+    execFileSync('tar', ['-xzf', tarball, '-C', dest]);
     const manifest = JSON.parse(readFileSync(join(dest, 'package', 'package.json'), 'utf8'));
     const set = new Set(files);
 
@@ -74,6 +77,9 @@ function check(name) {
       const clean = file.replace(/^\.\//, '');
       if (!set.has(clean)) problems.push(`${key} aponta para ${file}, que não está no tarball`);
     }
+
+    const modules = new Map(files.map((f) => [f, isModuleFile(f) ? readFileSync(join(dest, 'package', f), 'utf8') : '']));
+    problems.push(...missingInPackage(modules));
 
     const kb = Math.round(statSync(tarball).size / 1024);
     if (problems.length) {
