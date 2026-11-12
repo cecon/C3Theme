@@ -137,3 +137,21 @@ test('painel financeiro: variação no KPI, soma no aviso, abas e filtro na list
   await expect(page.getByLabel(/Todas as faturas: \d+ linhas/)).toBeVisible();
   await expect(todas.getByText('Atrasada')).toHaveCount(0);
 });
+
+test('conversas à parte: ramificar uma resposta, voltar e perguntar à parte com o texto da caixa (#10)', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto(story('chat-conversas-à-parte--padrao'));
+  await expect(page.getByText('Nenhuma conversa à parte')).toBeVisible();
+  await page.getByRole('button', { name: 'Mais ações' }).first().click();
+  await page.getByRole('menuitem', { name: 'Ramificar daqui' }).click();
+  // o ramo abre com o histórico até a resposta
+  await expect(page.getByRole('heading', { name: 'Ramo da resposta' })).toBeVisible();
+  await expect(page.getByRole('log', { name: 'Mensagens de Ramo da resposta' }).getByText('Quais faturas estão atrasadas?')).toBeVisible();
+  await page.getByRole('button', { name: 'Voltar às conversas à parte' }).click();
+  await expect(page.getByRole('list', { name: 'Conversas à parte' }).getByText('Ramo', { exact: true })).toBeVisible();
+
+  await page.getByRole('textbox').first().fill('E a FT-0047, foi paga?');
+  await page.getByRole('button', { name: 'À parte', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'E a FT-0047, foi paga?' })).toBeVisible();
+  await expect(page.getByText('Sobre "E a FT-0047, foi paga?": sigo a conversa principal enquanto respondo aqui.')).toBeVisible();
+});

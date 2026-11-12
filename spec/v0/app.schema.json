@@ -130,6 +130,61 @@
     }
   },
   "$defs": {
+    "chatMessageAction": {
+      "type": "object",
+      "description": "Ação no menu \"Mais ações\" de uma mensagem do chat (issue #10). Com 'opens', abre uma conversa à parte a partir da mensagem (POST /_chat/{conversa}/_lanes, spec/v0/chat-lanes.yaml); sem 'opens', a shell chama POST /_chat/{conversa}/messages/{mensagem}/_actions/{id} e o sistema decide o que fazer. 'when' filtra em quais mensagens aparece (campo ausente: qualquer valor). Mensagem de sistema, passagem de tarefa, resposta chegando e mensagem ainda enviando nunca têm ações.",
+      "required": ["id", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "description": "Id da ação (snake_case). 'c3.branch' é reservado para o \"Ramificar daqui\" que 'lanes' já põe."
+        },
+        "label": {
+          "$ref": "#/$defs/text"
+        },
+        "when": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "direction": {
+              "enum": ["in", "out"],
+              "description": "in: recebida (resposta do assistente); out: enviada pelo usuário."
+            },
+            "author": {
+              "enum": ["agent", "person"],
+              "description": "Quem escreveu. Autor sem tipo: quem chega é agente, quem sai é gente."
+            }
+          }
+        },
+        "opens": {
+          "enum": ["aside", "branch"],
+          "description": "aside: pergunta lateral com a mensagem citada; branch: ramo com o histórico até a mensagem."
+        }
+      }
+    },
+    "chatLanes": {
+      "type": "object",
+      "description": "Conversas à parte (issue #10): pergunta lateral que não interrompe o trabalho da conversa principal (aside) e ramo que tenta outro caminho a partir de uma resposta (branch). A shell monta o botão de abrir o painel, o LanePanel do @c3theme/chat ao lado da conversa e as rotas de spec/v0/chat-lanes.yaml. Cada conversa à parte é uma conversa comum do chat (mesmas rotas de mensagens), com pai e origem.",
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "$ref": "#/$defs/text",
+          "description": "Título do painel. Padrão: \"Conversas à parte\"."
+        },
+        "aside": {
+          "type": "boolean",
+          "default": true,
+          "description": "Botão \"À parte\" na caixa: o texto escrito vira a primeira pergunta da conversa à parte."
+        },
+        "branch": {
+          "type": "boolean",
+          "default": true,
+          "description": "Ação \"Ramificar daqui\" (id c3.branch) nas respostas do assistente (when: {direction: in})."
+        }
+      }
+    },
     "period": {
       "enum": ["today", "week", "month", "lastMonth", "last7", "last30", "next7", "next30", "nextMonth", "year", "all"],
       "description": "Período do filtro do painel. last7/last30: os últimos N dias até hoje. next7/next30: de hoje até hoje+N−1 (o que vai vencer). nextMonth: o mês que vem inteiro."

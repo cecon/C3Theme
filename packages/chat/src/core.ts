@@ -89,4 +89,6 @@ export {
 } from './core/hitlBrowser';
 export type { BrowserCheckpoint, BrowserDecision, PagePoint } from './core/hitlBrowser';
 export { shouldAnnounce, waitingFor } from './core/waiting';
+export { actionsFor, BRANCH_ACTION, matchesMessage, messagesUntil, sortLanes, workingCount } from './core/lanes';
+export type { Lane, LaneKind, MessageAction, MessageMatch } from './core/lanes';
 export type { Waiting } from './core/waiting';

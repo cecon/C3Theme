@@ -80,3 +80,10 @@ export { default as VoiceConversation, type VoiceConversationProps } from './voi
 export { default as VoiceOrb } from './voice/VoiceOrb';
 export type { VoiceCaption, VoiceState } from './voice/types';
 export * from './hitl';
+export { default as MessageActionsMenu } from './lanes/MessageActionsMenu';
+export type { MessageActionsMenuProps } from './lanes/MessageActionsMenu';
+export { default as LanePanel } from './lanes/LanePanel';
+export type { LanePanelProps } from './lanes/LanePanel';
+export { default as LaneList } from './lanes/LaneList';
+export type { LaneListProps } from './lanes/LaneList';
+export { default as AsideButton } from './lanes/AsideButton';
