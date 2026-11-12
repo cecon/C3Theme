@@ -9,7 +9,7 @@ Quatro skills que ensinam um agente de código (Claude Code e outros que leem `S
 | [`c3-front`](skills/c3-front/SKILL.md)     | montar o front: `C3Shell`, `EngineProvider`, componentes custom, `@c3theme/ui`            |
 | [`c3-chat`](skills/c3-chat/SKILL.md)       | integrar o `@c3theme/chat` e pôr telas do motor na resposta do assistente                 |
 
-As quatro partem da mesma regra ([ADR 0001](../../docs/adr/0001-motor-dsl-caminho-padrao.md)): toda tela de negócio é JSON no motor, e o que o motor não alcança vira lacuna registrada, não tela em TS.
+As quatro partem da mesma regra ([ADR 0003](../../docs/adr/0003-motor-sem-excecoes.md)): toda tela é JSON no motor, sem exceção, inclusive o chat, e o que o motor não alcança vira issue `lacuna:` no C3Theme, não tela em TS.
 
 O agente só carrega a descrição de cada skill; o corpo e as referências entram quando a tarefa pede.
 

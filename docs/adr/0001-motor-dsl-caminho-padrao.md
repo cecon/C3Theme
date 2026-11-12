@@ -2,7 +2,9 @@
 
 ## Status
 
-Aceita em 09/11/2026 (Eduardo: "usar e estimular a todos a usarem 100% o motor DSL").
+Aceita em 09/11/2026 (Eduardo: "usar e estimular a todos a usarem 100% o motor DSL"). A lista de exceções foi
+substituída pelo [ADR 0003](0003-motor-sem-excecoes.md) em 12/11/2026: não há mais exceção, e o que o motor não
+alcança vira issue `lacuna:` no C3Theme. O resto deste ADR continua valendo.
 
 ## Contexto
 
@@ -36,9 +38,9 @@ quadro, calendário, painel, relatório, configuração e ação saem de `app.js
   `Hooks`) ou como exceção, nunca como o jeito normal de fazer uma tela.
 - **Skills do plugin `c3`**: mandam o agente escrever JSON e subir a escada do `c3-spec` degrau por degrau.
 
-### Exceções (lista fechada)
+### Exceções (lista fechada) — substituída pelo ADR 0003
 
-Só estas continuam em TS. Entrar uma exceção nova pede um ADR que substitua este.
+> Revogada em 12/11/2026 pelo [ADR 0003](0003-motor-sem-excecoes.md). A lista fica aqui como histórico.
 
 1. **Página registrada**: tela que o motor não monta e não é cadastro (caixa do PDV com TEF, montagem do pedido do
    delivery). Fica num componente com nome, citado em `pages[].component`, e o que varia por loja vai em `config`,

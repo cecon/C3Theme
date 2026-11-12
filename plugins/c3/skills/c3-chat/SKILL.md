@@ -12,6 +12,8 @@ Duas camadas:
 - Caixa do agente numa linha só, como nos apps de agente: `AgentComposer variant="inline"` com `idleAction` (voz) e `ComposerIconButton` nas `endActions`. No `AssistantPanel`, passe em `composer`. Não monte composer próprio para isso.
 - Caixa com barra embaixo (texto numa linha com o enviar dentro; +, voz, modelo, esforço e `ContextRing` embaixo): `variant="split"`. Voz ao vivo: `AssistantPanel voice={...}` (`VoiceConversation`), ligada pelo `idleAction`; o áudio e o provedor são do app, `useAudioLevel` dá o volume.
 
+**Regra ([ADR 0003](../../../../docs/adr/0003-motor-sem-excecoes.md)): o chat não é exceção ao motor.** Toda interação que o agente pede ao humano é uma parte do catálogo (`spec/v0/agent-ui.schema.json`); kind que não existe vira issue `lacuna:` no `cecon/C3Theme`, nunca renderizador próprio do sistema. A tela do chat em si ainda se monta em TS até a issue #71 (chat no `app.json`) fechar: enquanto isso, cite `// lacuna: cecon/C3Theme#71` onde montar o `AssistantPanel`.
+
 Instale preso a um commit (`github:cecon/C3Theme#<sha>&path:packages/chat`) e **leia o `packages/chat/CHANGELOG.md`** ao atualizar: as entradas marcadas **Quebra** exigem mudar o app (ex.: na 0.6.0, `switch` exaustivo em `ChatEvent` precisa tratar `ui.cancel`).
 
 ## O app implementa o transporte; o chat não faz fetch

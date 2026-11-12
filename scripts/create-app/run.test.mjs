@@ -66,9 +66,9 @@ describe('run', () => {
       fs.writeFileSync(path.join(seed, '.env.example'), 'X=1');
     });
 
-    it('copia o seed com aviso de exceção', () => {
+    it('copia o seed com aviso de obsoleto', () => {
       expect(run(['site', '--sem-motor'], io())).toBe(0);
-      expect(out[0]).toContain('exceção');
+      expect(out[0]).toContain('obsoleto');
       expect(read('apps/site/package.json')).toContain('@c3theme/site');
       expect(read('apps/site/src/config.ts')).toContain("APP_NAME = 'Site'");
       expect(read('apps/site/.env')).toBe('X=1');
