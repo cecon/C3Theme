@@ -112,7 +112,9 @@ function pageBody(p: PageDef) {
   if (p.dashboard) return <DashboardPage dashboard={p.dashboard} states={p.states} />;
   if (p.wizard) return <WizardPage wizard={p.wizard} />;
   if (!p.apiDocs && !p.chat) return <CustomPage page={p} />;
-  return <Suspense fallback={<PanelSkeleton />}>{p.chat ? <ChatPage def={p.chat} /> : <ApiDocs def={p.apiDocs!} />}</Suspense>;
+  return (
+    <Suspense fallback={<PanelSkeleton />}>{p.chat ? <ChatPage def={p.chat} path={p.path} /> : <ApiDocs def={p.apiDocs!} />}</Suspense>
+  );
 }
 
 /** Página ainda não pronta: o "Em breve" do sistema, na área de conteúdo. */

@@ -1187,6 +1187,10 @@ As rotas de `chat-lanes.yaml` são montadas pelos backends e delegadas à porta 
 
 Os exemplos Node/Rust guardam essas conversas em memória por usuário e pai. A página do assistente em `spec/v0/examples/app.json` declara o recurso; a conformidade confere cópia do ramo, envio separado e isolamento entre usuários.
 
+## Conversa vinda da rota
+
+Para várias conversas na mesma página, a conversa sai do endereço ([ADR 0009](../docs/adr/0009-conversa-pela-rota.md)): `"path": "/conversa/:conversation"` com `"chat": { "conversation": "{conversation}" }` (ou sem `conversation`, que com `:conversation` na rota vale o mesmo). Outra tela chega na conversa só navegando, por exemplo um link de coluna (`columns[].href: "/conversa/{id}"`). O id da rota segue `^[A-Za-z0-9_-]{1,64}$`; fora disso a página avisa e não chama o backend. Trocar de conversa remonta o painel: histórico, fila e rascunho não passam de uma para outra. O `pnpm spec:check` recusa `{nome}` sem `:nome` na rota e em `layout.header.assistant`. Sem parâmetro na rota, vale o id da spec (padrão `assistant`).
+
 ## Orientar o agente no meio do trabalho
 
 `"steer": true` em `pages[].chat` ou `layout.header.assistant` ([ADR 0008](../docs/adr/0008-orientar-o-turno-em-andamento.md)): com o agente respondendo, Ctrl+Enter (⌘+Enter no Mac) manda o texto para dentro do turno, sem parar; com a caixa vazia, orienta com a primeira da fila, e cada mensagem da fila ganha Orientar. `"sendKey": "modEnter"` troca o envio para Ctrl+Enter (Enter quebra a linha); Ctrl+Enter orienta nos dois modos, só com turno em andamento.

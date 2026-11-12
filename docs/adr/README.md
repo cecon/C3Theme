@@ -13,6 +13,7 @@ trocada ganha um ADR novo, e o antigo passa a `Substituída por NNNN`.
 | [0006](0006-chat-no-app-json.md)                | Chat e assistente declarados no app.json, agente é porta | Aceita                                  |
 | [0007](0007-telas-de-status-e-erro-da-shell.md) | Telas de status, 503 de proxy e erros vêm da shell       | Aceita                                  |
 | [0008](0008-orientar-o-turno-em-andamento.md)   | Orientar o turno do agente sem interromper               | Aceita                                  |
+| [0009](0009-conversa-pela-rota.md)              | Conversa da página de chat vinda da rota                 | Aceita                                  |
 
 ## Formato
 
