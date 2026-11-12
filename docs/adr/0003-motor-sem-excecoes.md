@@ -42,7 +42,7 @@ Storybook, exemplos, `create-app`).
 | Página registrada               | Continua no contrato (o Nati depende dela), mas **cada uso novo exige uma issue `lacuna:` aberta antes** e cita o número. É contorno com dono, não exceção. Conta no critério de 30%. |
 | Componente custom               | Mesma regra da página registrada: cita a issue.                                                                                                                                       |
 | Chat                            | Declarado no `app.json` e nas partes do `agent-ui.schema.json` (issues #70 e #71).                                                                                                    |
-| Flow                            | Lacuna: editor de fluxo declarado na spec (issue #72).                                                                                                                                |
+| Flow                            | `views.flow` na entidade (issue #72, feito em 12/11/2026): grafo num campo text do registro, tipos de passo em JSON, rota `/{entity}/:id/flow`.                                       |
 | Moldura do desktop              | `layout.desktop` no `app.json` e a porta `desktopHost` ([ADR 0004](0004-moldura-do-desktop-no-app-json.md), issue #73).                                                               |
 | App sem o motor (`--sem-motor`) | Saiu do `create-app` (issue #74). O que o seed tinha e a shell não: páginas de manutenção e erro 500 (issue #81).                                                                     |
 | Catálogo de primitivas          | Não é tela, então não é exceção: veja abaixo.                                                                                                                                         |
@@ -70,8 +70,8 @@ argumentos editáveis (`c3.tool`), plano editável (`c3.plan`) e navegador inter
   baixo que funciona, citando a issue.
 - **Custo**: cada lacuna é contrato para dois backends (Rust e Node) e para a conformidade; a regra do 0001 continua (só
   vira chave da spec com uso real).
-- **Ainda não está feito** em 12/11/2026: chat no `app.json` (#71), flow (#72), páginas de
-  manutenção e erro 500 (#81), telas da vitrine L10–L33 e Storybook por JSON.
+- **Ainda não está feito** em 12/11/2026: chat no `app.json` (#71), páginas de manutenção e erro 500
+  (#81), telas da vitrine L10–L33 e Storybook por JSON.
 
 ## Alternativas consideradas
 
