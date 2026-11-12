@@ -70,6 +70,8 @@ function Demo({ scenario }: { scenario: Scenario }) {
   return (
     <>
       <Button
+        variant="contained"
+        sx={{ position: 'fixed', right: 16, bottom: 16, maxWidth: 'calc(100vw - 32px)', zIndex: (theme) => theme.zIndex.tooltip }}
         onClick={() => {
           port.setOnline(offline);
           setOffline(!offline);
