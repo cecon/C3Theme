@@ -1,5 +1,7 @@
 # Estados declarados da página
 
+Decisão em [ADR 0010](adr/0010-estados-da-pagina.md).
+
 `pages[].states` é opcional. Sem a propriedade, widgets, rotas e páginas registradas mantêm a apresentação anterior. Quando presente, declara os cinco blocos: `loading`, `empty`, `error`, `forbidden` e `offline`. Todos usam `message: Text`; `empty` exige ação, `error` exige ação de retry, `forbidden` exige `instruction: Text` e `offline` exige uma lista não vazia `works: Text[]`.
 
 ```json
