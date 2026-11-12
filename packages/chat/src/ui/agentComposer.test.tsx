@@ -63,6 +63,9 @@ describe('AgentComposer', () => {
       update: vi.fn(),
       remove: vi.fn(),
       sendNow: vi.fn(),
+      steer: vi.fn(),
+      steerNext: vi.fn(),
+      canSteer: false,
       pause: vi.fn()
     };
     wrap(<Controlled onSend={vi.fn()} queue={queue} />);

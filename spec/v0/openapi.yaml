@@ -450,6 +450,7 @@ paths:
   /_chat/{conversation}/messages: { $ref: 'chat.yaml#/messages' }
   /_chat/{conversation}/_events: { $ref: 'chat.yaml#/events' }
   /_chat/{conversation}/_stop: { $ref: 'chat.yaml#/stop' }
+  /_chat/{conversation}/messages/{message}: { $ref: 'chat.yaml#/message' }
   /_chat/{conversation}/messages/{message}/_answer: { $ref: 'chat.yaml#/answer' }
   /_chat/{conversation}/messages/{message}/_ui/{part}: { $ref: 'chat.yaml#/answerUi' }
   /_chat/{conversation}/_lanes: { $ref: 'chat-lanes.yaml#/lanes' }

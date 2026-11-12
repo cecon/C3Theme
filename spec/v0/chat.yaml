@@ -35,6 +35,12 @@ components:
         createdAt: { type: string, format: date-time }
         status: { type: string, enum: [sent, delivered, read] }
         replyTo: { type: string }
+        steer:
+          type: string
+          enum: [pending, taken]
+          description: >-
+            Orientação (ADR 0008): mensagem do usuário que entra no turno em andamento sem interromper. `pending`: o
+            agente ainda não leu (a shell mostra na fila, com Remover); `taken`: leu (fica na conversa, marcada).
         meta: { type: object }
     Conversation:
       type: string
@@ -86,7 +92,10 @@ messages:
       Grava a mensagem do usuário e devolve como ficou (com o mesmo `clientId`, que substitui a otimista). A resposta
       do agente não vem aqui: chega pelo `_events` (`message` com `streaming`, depois `delta`). `pendingPart` é a
       parte que esperava resposta quando o usuário digitou: o agente decide se a mantém ou a cancela (`ui.cancel`).
-      `text` de 1 a 20000 caracteres. Arquivos ainda não (fora do v0 do chat).
+      `steer: true` orienta o turno em andamento (ADR 0008): a mensagem volta com `steer: pending` e o agente a lê no
+      próximo ponto seguro, sem parar (emite a mensagem de novo com `steer: taken`). Agente que não recebe mensagens no
+      meio do trabalho, ou sem turno em andamento, avisa com `notice` (texto pronto) e trata como mensagem comum (sem
+      `steer`). `text` de 1 a 20000 caracteres. Arquivos ainda não (fora do v0 do chat).
     operationId: chatSend
     requestBody:
       required: true
@@ -108,6 +117,7 @@ messages:
                   partId: { type: string }
                   kind: { type: string }
                   version: { type: integer }
+              steer: { type: boolean }
     responses:
       '200':
         description: A mensagem gravada.
@@ -129,7 +139,8 @@ events:
     description: >-
       Primeiro `event: ready`. Depois um evento por ChatEvent do @c3theme/chat, com o nome do `type` e o evento
       inteiro em JSON no `data`: `message` (nova ou atualizada; repetir é seguro), `delta` (pedaço de texto da
-      resposta, `done` encerra), `typing`, `removed` e `ui.cancel` (a parte deixou de esperar resposta). Só os eventos
+      resposta, `done` encerra), `typing`, `removed`, `ui.cancel` (a parte deixou de esperar resposta) e `notice`
+      (`{ text, tone? }`, aviso passageiro com texto pronto do sistema; não entra no histórico). Só os eventos
       deste usuário e desta conversa. Mensagem com parte que o motor recusa (Engine::check_agent_part) não sai: o
       sistema recebe o erro ao emitir. Quem ficou para trás perde eventos e recebe outro `ready` (relê o histórico).
     operationId: chatEvents
@@ -144,6 +155,22 @@ events:
       '400': { $ref: 'openapi.yaml#/components/responses/Error' }
       '401': { $ref: 'openapi.yaml#/components/responses/Error' }
       '404': { $ref: 'openapi.yaml#/components/responses/Error' }
+message:
+  parameters:
+    - $ref: '#/components/parameters/Conversation'
+    - $ref: '#/components/parameters/Message'
+  delete:
+    summary: Remover uma orientação que o agente ainda não leu
+    description: >-
+      Só a mensagem do próprio usuário com `steer: pending` (ADR 0008). Sai do histórico e o SSE manda `removed`. O
+      agente já leu (`taken`) ou é outra mensagem: 409. Desconhecida: 404. Sistema sem orientação: 404.
+    operationId: chatRemove
+    responses:
+      '204': { description: Removida. }
+      '400': { $ref: 'openapi.yaml#/components/responses/Error' }
+      '401': { $ref: 'openapi.yaml#/components/responses/Error' }
+      '404': { $ref: 'openapi.yaml#/components/responses/Error' }
+      '409': { $ref: 'openapi.yaml#/components/responses/Error' }
 stop:
   parameters:
     - $ref: '#/components/parameters/Conversation'

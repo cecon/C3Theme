@@ -25,7 +25,15 @@ export type ChatEvent =
    * A parte `partId` (da mensagem `messageId`, se vier) deixou de esperar resposta: `superseded` (o assistente mandou
    * outra), `agent` (desistiu dela) ou `expired` (prazo). O card fecha dizendo o motivo.
    */
-  | { type: 'ui.cancel'; conversationId: string; partId: string; messageId?: string; reason: UiCancelReason };
+  | { type: 'ui.cancel'; conversationId: string; partId: string; messageId?: string; reason: UiCancelReason }
+  /**
+   * Aviso passageiro do sistema na conversa, com texto pronto (ex.: a orientação não pôde entrar no turno e o agente
+   * vai parar e responder em seguida). Não é mensagem: não fica no histórico.
+   */
+  | { type: 'notice'; conversationId: string; text: string; tone?: NoticeTone };
+
+/** Tom do aviso passageiro: `info` (padrão) ou `warning`. */
+export type NoticeTone = 'info' | 'warning';
 
 /**
  * Porta de saída do chat: o app do sistema implementa (HTTP, WebSocket, fila) e os hooks só falam com ela.
@@ -54,6 +62,11 @@ export interface ChatTransport {
    * porque a parte já não está pendente ou mudou de versão, fecha o card como substituído.
    */
   answerUi?(conversationId: string, messageId: string, partId: string, answer: UiAnswer): Promise<void>;
+  /**
+   * Tira uma mensagem minha que o agente ainda não leu (orientação `steer: 'pending'`). Opcional: sem isso, a
+   * orientação esperando não tem Remover. Rejeitar (409: o agente já leu) devolve a mensagem.
+   */
+  remove?(conversationId: string, messageId: string): Promise<void>;
 }
 
 /** Onde o rascunho fica guardado entre aberturas da conversa. */

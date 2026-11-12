@@ -13,7 +13,7 @@ mod search;
 use axum::body::Bytes;
 use axum::extract::DefaultBodyLimit;
 use axum::response::{IntoResponse, Response};
-use axum::routing::{get, post};
+use axum::routing::{delete, get, post};
 use axum::{Json, Router};
 use serde_json::{json, Map, Value};
 
@@ -37,6 +37,7 @@ pub(crate) fn router(engine: Engine) -> Router {
         .route("/_chat/{conversation}/messages/{message}/_actions/{action}", post(chat_lanes::act))
         .route("/_chat/{conversation}/_events", get(chat::events))
         .route("/_chat/{conversation}/_stop", post(chat::stop))
+        .route("/_chat/{conversation}/messages/{message}", delete(chat::remove))
         .route("/_chat/{conversation}/messages/{message}/_answer", post(chat::answer))
         .route("/_chat/{conversation}/messages/{message}/_ui/{part}", post(chat::answer_ui))
         .route("/{entity}", get(handlers::list).post(handlers::create))

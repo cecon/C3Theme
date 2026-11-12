@@ -1,6 +1,6 @@
 // Janela de mensagens de uma conversa: estado puro e as transições, sem React e sem rede.
 
-import type { ChatEvent, MessagePage } from './transport';
+import type { ChatEvent, MessagePage, NoticeTone } from './transport';
 import type { Message } from './types';
 import { applyUiCancel, keepOnePending } from './uiPending';
 
@@ -13,6 +13,14 @@ export interface WindowState {
   /** `initial`: abrindo a conversa; `older`: subindo no histórico. */
   loading: 'initial' | 'older' | null;
   error: unknown;
+  /** Aviso passageiro mais recente (evento `notice`); `seq` muda a cada aviso, mesmo de texto igual. */
+  notice: Notice | null;
+}
+
+export interface Notice {
+  seq: number;
+  text: string;
+  tone: NoticeTone;
 }
 
 export type WindowAction =
@@ -22,14 +30,16 @@ export type WindowAction =
   | { type: 'error'; conversationId: string; error: unknown }
   | { type: 'event'; event: ChatEvent }
   | { type: 'optimistic'; message: Message }
-  | { type: 'failed'; clientId: string };
+  | { type: 'failed'; clientId: string }
+  | { type: 'dismissNotice' };
 
 export const openWindow = (conversationId: string): WindowState => ({
   conversationId,
   messages: [],
   hasMore: false,
   loading: 'initial',
-  error: null
+  error: null,
+  notice: null
 });
 
 const byTime = (a: Message, b: Message) =>
@@ -75,6 +85,8 @@ export function windowReducer(state: WindowState, action: WindowAction): WindowS
         ...state,
         messages: state.messages.map((m) => (m.clientId === action.clientId && m.status === 'sending' ? { ...m, status: 'failed' } : m))
       };
+    case 'dismissNotice':
+      return { ...state, notice: null };
     case 'event':
       return applyEvent(state, action.event);
   }
@@ -82,6 +94,10 @@ export function windowReducer(state: WindowState, action: WindowAction): WindowS
 
 function applyEvent(state: WindowState, event: ChatEvent): WindowState {
   if (event.type === 'typing') return state;
+  if (event.type === 'notice') {
+    if (event.conversationId !== state.conversationId) return state;
+    return { ...state, notice: { seq: (state.notice?.seq ?? 0) + 1, text: event.text, tone: event.tone ?? 'info' } };
+  }
   if (event.type === 'delta') {
     if (event.conversationId !== state.conversationId) return state;
     return {

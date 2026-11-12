@@ -192,4 +192,53 @@ describe('useMessageWindow.answerUi', () => {
     const { result } = renderHook(() => useMessageWindow(plain, 'c1', { me }));
     expect(result.current.answerUi).toBeUndefined();
   });
+
+  it('orientar manda steer e a mensagem fica pending; remover tira e, se falhar, volta', async () => {
+    const mem = memoryTransport(seed);
+    const sent: unknown[] = [];
+    let fail = false;
+    const transport: ChatTransport = {
+      ...mem.transport,
+      send: (m) => (sent.push(m), mem.transport.send(m)),
+      remove: (c, id) => (fail ? Promise.reject(new Error('já leu')) : mem.transport.remove!(c, id))
+    };
+    const { result } = renderHook(() => useMessageWindow(transport, 'c1', { me, newId: () => 'tmp1' }));
+    await waitFor(() => expect(result.current.loading).toBeNull());
+    act(() => result.current.send('vá pelo norte', { steer: true }));
+    expect(result.current.messages.at(-1)).toMatchObject({ id: 'tmp1', steer: 'pending', status: 'sending' });
+    await waitFor(() => expect(result.current.messages.at(-1)?.status).toBe('sent'));
+    expect(sent[0]).toMatchObject({ steer: true, text: 'vá pelo norte' });
+    expect(result.current.messages.at(-1)).toMatchObject({ id: 'm1', steer: 'pending' });
+    fail = true;
+    await act(() => result.current.remove!('m1'));
+    expect(result.current.messages.at(-1)?.id).toBe('m1');
+    fail = false;
+    await act(() => result.current.remove!('m1'));
+    expect(result.current.messages.some((m) => m.id === 'm1')).toBe(false);
+    await act(() => result.current.remove!('nada'));
+    expect(result.current.messages).toHaveLength(5);
+  });
+
+  it('envio comum não leva steer; sem remove no transporte, remove é undefined', async () => {
+    const mem = memoryTransport(seed);
+    const sent: Record<string, unknown>[] = [];
+    const transport: ChatTransport = { ...mem.transport, remove: undefined, send: (m) => (sent.push({ ...m }), mem.transport.send(m)) };
+    const { result } = renderHook(() => useMessageWindow(transport, 'c1', { me }));
+    await waitFor(() => expect(result.current.loading).toBeNull());
+    expect(result.current.remove).toBeUndefined();
+    act(() => result.current.send('oi'));
+    await waitFor(() => expect(sent).toHaveLength(1));
+    expect('steer' in sent[0]).toBe(false);
+    expect(result.current.messages.at(-1)?.steer).toBeUndefined();
+  });
+
+  it('aviso do servidor aparece e some no dismiss', async () => {
+    const { transport, emit } = memoryTransport(seed);
+    const { result } = renderHook(() => useMessageWindow(transport, 'c1', { me }));
+    await waitFor(() => expect(result.current.loading).toBeNull());
+    act(() => emit('c1', { type: 'notice', conversationId: 'c1', text: 'O agente vai parar e responder.' }));
+    expect(result.current.notice).toMatchObject({ text: 'O agente vai parar e responder.', tone: 'info' });
+    act(() => result.current.dismissNotice());
+    expect(result.current.notice).toBeNull();
+  });
 });

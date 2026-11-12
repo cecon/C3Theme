@@ -51,8 +51,7 @@ impl Assistant {
                 Outgoing {
                     client_id: self.next("lane-msg-"),
                     text,
-                    reply_to: None,
-                    pending_part: None,
+                    ..Outgoing::default()
                 },
             )
             .await?;

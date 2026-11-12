@@ -36,3 +36,16 @@ export const openAssistant: Play = async ({ canvasElement }) => {
   await userEvent.click(await within(canvasElement).findByRole('button', { name: 'Assistente' }));
   await screen.findByText('Cadastrar o cliente Padaria Bom Dia');
 };
+
+/**
+ * Orientar (ADR 0008): pede a pesquisa longa e, com o agente escrevendo, manda uma orientação por Ctrl+Enter. Ela
+ * espera na fila como "Orientando" até o agente ler.
+ */
+export const steerAgent: Play = async () => {
+  await userEvent.click(await screen.findByText('Pesquisar faturas atrasadas'));
+  const box = await screen.findByRole('textbox', { name: 'Mensagem' });
+  await screen.findByText('orienta o agente sem parar o trabalho');
+  await userEvent.type(box, 'Comece pelos maiores valores');
+  await userEvent.keyboard('{Control>}{Enter}{/Control}');
+  await screen.findByText('Comece pelos maiores valores');
+};

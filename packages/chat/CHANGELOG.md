@@ -2,6 +2,14 @@
 
 Instale fixando o commit (`github:cecon/C3Theme#<sha>&path:packages/chat`). Cada entrada diz o que muda para quem usa; **Quebra** marca o que exige mudar o app.
 
+## 0.13.0 (2026-11-12)
+
+- Orientar o turno em andamento (#91, [ADR 0008](../../docs/adr/0008-orientar-o-turno-em-andamento.md)): a pessoa manda uma mensagem para dentro do trabalho do agente, sem interromper. `AssistantPanel.steer` liga: com o agente ocupado, Ctrl+Enter (⌘+Enter no Mac) orienta com o texto da caixa ou, vazia, com a primeira da fila; cada mensagem da fila ganha **Orientar**; o atalho aparece junto da caixa (`SteerHint`). `useMessageWindow.send(text, { steer: true })` manda `OutgoingMessage.steer` e a mensagem fica `Message.steer: 'pending'` até o agente ler (`'taken'`).
+- A orientação que espera aparece na fila como "Orientando", fora da conversa, só com Remover (`ChatTransport.remove?`, `useMessageWindow.remove`, otimista; falha devolve). A lida leva a marca "Orientou" no balão. `QueuedMessages` ganha `onSteer`, `steering` e `onRemoveSteering`; `useMessageQueue` ganha `steer` (opção), `steer(id)`, `steerNext()` e `canSteer`.
+- `AgentComposer.sendKey`: `enter` (padrão) ou `modEnter` (Ctrl+Enter envia, Enter quebra a linha); `onSteer`, `steering`, `onRemoveSteering`. A decisão da tecla é pura: `composerKey` no `core`.
+- Aviso passageiro do sistema: evento `ChatEvent` `notice` (`{ text, tone? }`), guardado em `useMessageWindow().notice` (só o mais recente) e mostrado pelo `NoticeBar` acima da caixa, que sai sozinho em 8 s. `memoryTransport` devolve `steer: 'pending'` e implementa `remove`.
+- Núcleo: `composerKey`, `isSteering`, `splitSteering`, tipos `SendKey`, `KeyPress`, `ComposerKeyState`, `Notice`, `NoticeTone`. Textos novos `c3.chat.steer*`, `hintMod`, `queueHintButton`, `notice`, `removeSteer`. **Quebra** para quem faz `switch` exaustivo em `ChatEvent` (entrou `notice`); `WindowState` ganhou `notice`.
+
 ## 0.12.0 (2026-11-12)
 
 - Conversas à parte (#10, [ADR 0005](../../docs/adr/0005-conversas-a-parte.md)): pergunta lateral (`aside`), que não interrompe a conversa principal, e ramo (`branch`), que tenta outro caminho a partir de uma resposta. `Lane` é uma `Conversation` com `kind`, `parentId`, `fromMessageId` e `working`. `LanePanel` mostra a lista (as que trabalham em cima, tipo e última frase, "Nova conversa à parte") e, ao abrir uma, o `AssistantPanel` dela com voltar; `panel` repassa caixa, catálogo e ações. `LaneList` solta.

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 
-import type { ChatTransport } from '../core/transport';
+import type { ChatEvent, ChatTransport } from '../core/transport';
 import type { QuestionAnswer } from '../core/question';
 import type { Author, Message } from '../core/types';
 import { answerPart, cancelPart, type UiAnswer } from '../core/ui';
@@ -65,7 +65,8 @@ export default function useMessageWindow(transport: ChatTransport, conversationI
           text: draft.text,
           files,
           replyTo: draft.replyTo,
-          pendingPart: findPendingPart(live.current.messages)
+          pendingPart: findPendingPart(live.current.messages),
+          ...(draft.steer && { steer: true })
         });
         dispatch({ type: 'event', event: { type: 'message', message: { ...saved, clientId: draft.clientId } } });
       } catch {
@@ -75,9 +76,12 @@ export default function useMessageWindow(transport: ChatTransport, conversationI
     [transport]
   );
 
-  /** Envia texto e/ou arquivos. Texto só com espaços não sai. A parte que espera resposta vai junto (`pendingPart`). */
+  /**
+   * Envia texto e/ou arquivos. Texto só com espaços não sai. A parte que espera resposta vai junto (`pendingPart`).
+   * `steer`: orienta o turno em andamento (aparece na fila como "Orientando" até o agente ler).
+   */
   const send = useCallback(
-    (text: string, opts: { files?: Blob[]; replyTo?: string } = {}) => {
+    (text: string, opts: { files?: Blob[]; replyTo?: string; steer?: boolean } = {}) => {
       const body = text.trim();
       if (!body && !opts.files?.length) return;
       const clientId = newId();
@@ -96,7 +100,8 @@ export default function useMessageWindow(transport: ChatTransport, conversationI
         text: body || undefined,
         attachments,
         createdAt: new Date().toISOString(),
-        replyTo: opts.replyTo
+        replyTo: opts.replyTo,
+        ...(opts.steer && { steer: 'pending' as const })
       };
       void deliver(draft, opts.files);
     },
@@ -163,5 +168,26 @@ export default function useMessageWindow(transport: ChatTransport, conversationI
     };
   }, [transport]);
 
-  return { ...state, loadOlder, send, retry, stop, generating, answer, answerUi };
+  /**
+   * Tira uma orientação que o agente ainda não leu: some na hora e volta se o transporte falhar (409: ele já leu).
+   * `undefined` quando o transporte não remove.
+   */
+  const remove = useMemo(() => {
+    if (!transport.remove) return undefined;
+    return async (messageId: string) => {
+      const before = live.current.messages.find((m) => m.id === messageId);
+      if (!before) return;
+      const put = (event: ChatEvent) => dispatch({ type: 'event', event });
+      put({ type: 'removed', conversationId: before.conversationId, id: messageId });
+      try {
+        await transport.remove!(before.conversationId, messageId);
+      } catch {
+        put({ type: 'message', message: before });
+      }
+    };
+  }, [transport]);
+
+  const dismissNotice = useCallback(() => dispatch({ type: 'dismissNotice' }), []);
+
+  return { ...state, loadOlder, send, retry, stop, generating, answer, answerUi, remove, dismissNotice };
 }

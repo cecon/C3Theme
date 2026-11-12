@@ -5,6 +5,7 @@
 import { ApiError, type Chat, type ChatRoom, type Rec } from '@c3theme/engine-node';
 
 import { after, lastOpenOrder, needsOrder, turn } from './assistant-script';
+import { IDLE, steering } from './assistant-steer';
 import type { Db } from './db';
 import { user } from './users';
 
@@ -39,6 +40,7 @@ export function exampleAssistant(db: Db): Chat {
     if (i < 0) list.push(m);
     else list[i] = m;
   };
+  const steer = steering(all, key);
   const pending = (r: ChatRoom) => {
     for (const m of [...all(r)].reverse()) {
       const p = parts(m).find(open);
@@ -66,11 +68,13 @@ export function exampleAssistant(db: Db): Chat {
   async function speak(r: ChatRoom, text: string, part?: Rec) {
     const id = next('bot-');
     const started = generation.get(key(r)) ?? 0;
+    steer.start(r);
     r.message({ ...bot(id, ''), streaming: true });
     await sleep(THINK);
     let said = '';
     for (const word of text.split(/(?<= )/)) {
       if ((generation.get(key(r)) ?? 0) !== started) break;
+      steer.take(r);
       said += word;
       r.delta(id, word);
       await sleep(CHUNK);
@@ -81,6 +85,8 @@ export function exampleAssistant(db: Db): Chat {
     r.message(done);
     store(r, done);
     if (done.ui) supersede(r, partId);
+    const notes = steer.finish(r);
+    if (notes) void sayLater(r, notes);
   }
 
   async function sayLater(r: ChatRoom, text: string) {
@@ -132,8 +138,12 @@ export function exampleAssistant(db: Db): Chat {
         text: m.text,
         status: 'sent',
         createdAt: now()
-      };
+      } as Rec;
+      const steering = m.steer === true && steer.writing(r);
+      if (steering) mine.steer = 'pending';
+      else if (m.steer) r.notice(IDLE);
       store(r, mine);
+      if (steering) return mine;
       const open = pending(r);
       const order = needsOrder(m.text) ? await lastOpenOrder(db) : undefined;
       const t = turn(m.text, open !== undefined, order);
@@ -146,6 +156,7 @@ export function exampleAssistant(db: Db): Chat {
       } else void speak(r, t.say, t.part);
       return mine;
     },
+    remove: (r, id) => steer.remove(r, id),
     stop: (r) => void generation.set(key(r), (generation.get(key(r)) ?? 0) + 1),
     answer: () => {
       throw ApiError.notFound('Este assistente não faz perguntas com opções.');

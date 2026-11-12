@@ -2,18 +2,17 @@ import { useRef, type KeyboardEvent, type ReactNode, type RefObject } from 'reac
 
 // material-ui
 import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
 import InputBase from '@mui/material/InputBase';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
-// third-party
-import { DocumentText } from 'iconsax-reactjs';
-
+import { composerKey, type SendKey } from '../core/steer';
+import type { Message } from '../core/types';
 import type useMessageQueue from '../hooks/useMessageQueue';
-import { useBytesFormat } from './format';
 import QueuedMessages from './QueuedMessages';
+import FileChips from './composer/FileChips';
+import SteerHint from './steer/SteerHint';
 import useAttachments from '../hooks/useAttachments';
 import AddButton, { type AddMenuItem } from './composer/AddButton';
 import IdleButton from './composer/IdleButton';
@@ -31,6 +30,17 @@ export interface AgentComposerProps {
   onSend: (text: string, files: File[]) => void;
   /** Assistente respondendo: o botão vira Parar (com `onStop`) e o Enter põe na fila (com `queue`). */
   busy?: boolean;
+  /** Como envia: `enter` (padrão; Shift+Enter quebra a linha) ou `modEnter` (Ctrl+Enter, ⌘+Enter no Mac; Enter quebra). */
+  sendKey?: SendKey;
+  /**
+   * Orientar o turno em andamento (ADR 0008): com o agente ocupado, Ctrl+Enter (⌘+Enter) manda o texto para dentro do
+   * turno, sem interromper; com a caixa vazia, orienta com a primeira da fila. O atalho aparece junto da caixa e a fila
+   * ganha Orientar. Sem isso, Ctrl+Enter só envia.
+   */
+  onSteer?: (text: string, files: File[]) => void;
+  /** Orientações que o agente ainda não leu, na fila como "Orientando". */
+  steering?: Message[];
+  onRemoveSteering?: (id: string) => void;
   onStop?: () => void;
   /** A fila da próxima mensagem (`useMessageQueue`). Sem isso, não dá para enviar enquanto responde. */
   queue?: ReturnType<typeof useMessageQueue>;
@@ -69,12 +79,12 @@ export interface AgentComposerProps {
 /**
  * Caixa de mensagem do modo assistente: a fila acima, texto e ações alinhados em uma linha;
  * cresce com o texto e mantém o botão de enviar/parar no rodapé. A linha de status vem por último.
- * Enter envia (ou põe na fila enquanto responde), Shift+Enter quebra a linha, Esc para a resposta.
+ * Enter envia (ou põe na fila enquanto responde), Shift+Enter quebra a linha, Esc para a resposta; com
+ * `sendKey="modEnter"`, Ctrl+Enter envia e Enter quebra. Com `onSteer`, Ctrl+Enter orienta enquanto responde.
  */
 export default function AgentComposer(props: AgentComposerProps) {
   const { value, onChange, onSend, busy, onStop, queue, files: allowFiles = true, accept, addItems = [] } = props;
   const t = useChatText();
-  const bytes = useBytesFormat();
   const { files, setFiles, dragging, rootRef, pick, paste } = useAttachments({
     enabled: allowFiles,
     accept,
@@ -95,14 +105,27 @@ export default function AgentComposer(props: AgentComposerProps) {
     inputRef.current?.focus();
   }
 
-  function onKey(e: KeyboardEvent) {
-    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
-      e.preventDefault();
-      send();
-    } else if (e.key === 'Escape' && busy && onStop) {
-      e.preventDefault();
-      onStop();
+  /** Orienta com o texto da caixa ou, vazia, com a primeira da fila. */
+  function steer() {
+    if (props.disabled) return;
+    if (!hasContent) {
+      queue?.steerNext();
+      return;
     }
+    props.onSteer!(value.trim(), files);
+    onChange('');
+    setFiles([]);
+  }
+
+  function onKey(e: KeyboardEvent) {
+    const press = { key: e.key, shift: e.shiftKey, mod: e.ctrlKey || e.metaKey, composing: e.nativeEvent.isComposing };
+    const sendKey = props.sendKey ?? 'enter';
+    const intent = composerKey(press, { sendKey, busy: !!busy, canSteer: !!props.onSteer, canStop: !!onStop });
+    if (intent === 'none') return;
+    e.preventDefault();
+    if (intent === 'send') send();
+    else if (intent === 'steer') steer();
+    else onStop!();
   }
 
   const split = props.variant === 'split';
@@ -164,7 +187,15 @@ export default function AgentComposer(props: AgentComposerProps) {
     >
       {dragging && <DropHint />}
       {queue && (
-        <QueuedMessages items={queue.items} onUpdate={queue.update} onRemove={queue.remove} onSendNow={busy ? undefined : queue.sendNow} />
+        <QueuedMessages
+          items={queue.items}
+          onUpdate={queue.update}
+          onRemove={queue.remove}
+          onSendNow={busy ? undefined : queue.sendNow}
+          onSteer={busy && queue.canSteer ? queue.steer : undefined}
+          steering={props.steering}
+          onRemoveSteering={props.onRemoveSteering}
+        />
       )}
       <Paper
         variant="outlined"
@@ -178,21 +209,7 @@ export default function AgentComposer(props: AgentComposerProps) {
             : { borderColor: 'primary.main', boxShadow: (th) => `0 0 0 1px ${th.vars.palette.primary.main}` }
         }}
       >
-        {files.length > 0 && (
-          <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 1, px: 0.5, mb: 1 }}>
-            {files.map((f) => (
-              <Chip
-                key={`${f.name}:${f.size}`}
-                size="small"
-                icon={<DocumentText size={14} />}
-                label={`${f.name} · ${bytes(f.size)}`}
-                onDelete={() => setFiles((list) => list.filter((l) => l !== f))}
-                variant="outlined"
-                sx={{ maxWidth: '100%' }}
-              />
-            ))}
-          </Stack>
-        )}
+        <FileChips files={files} onRemove={(f) => setFiles((list) => list.filter((l) => l !== f))} />
         {split ? (
           <Stack direction="row" spacing={0.75} sx={{ alignItems: 'flex-end', minWidth: 0, pl: 0.5 }}>
             {input}
@@ -228,10 +245,15 @@ export default function AgentComposer(props: AgentComposerProps) {
           {actions(props.endActions)}
         </Stack>
       )}
-      {!inline && ((busy && queue) || props.hint) && (
-        <Typography variant="caption" color="text.secondary" component="p" sx={{ px: 1.5, mt: 0.5 }}>
-          {busy && queue ? t('c3.chat.queueHint') : props.hint}
-        </Typography>
+      {busy && props.onSteer ? (
+        <SteerHint />
+      ) : (
+        !inline &&
+        ((busy && queue) || props.hint) && (
+          <Typography variant="caption" color="text.secondary" component="p" sx={{ px: 1.5, mt: 0.5 }}>
+            {busy && queue ? t(props.sendKey === 'modEnter' ? 'c3.chat.queueHintButton' : 'c3.chat.queueHint') : props.hint}
+          </Typography>
+        )
       )}
       {props.status && <Box sx={{ mt: 1 }}>{props.status}</Box>}
     </Box>

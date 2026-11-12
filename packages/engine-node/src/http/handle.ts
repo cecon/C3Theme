@@ -4,7 +4,7 @@
 import { aggregate } from '../app/aggregate';
 import { listNotifications, notificationEvents, readNotifications } from '../app/bell';
 import { runAction, runBulk } from '../app/action';
-import { chatAnswer, chatAnswerUi, chatEvents, chatHistory, chatSend, chatStop } from '../app/chat';
+import { chatAnswer, chatAnswerUi, chatEvents, chatHistory, chatRemove, chatSend, chatStop } from '../app/chat';
 import { chatLanes, chatOpenLane, chatMessageAction } from '../app/chat-lanes';
 import { prefill } from '../app/action-prefill';
 import { preview } from '../app/action-preview';
@@ -164,6 +164,7 @@ function chatRoute(p: string[], pick: (table: Record<string, Route>) => Route | 
     });
   if (p.length === 3 && a === '_events') return pick({ GET: async (e, r) => sseResponse(chatEvents(e, r, c)) });
   if (p.length === 3 && a === '_stop') return pick({ POST: async (e, r) => (await chatStop(e, r, c), noContent()) });
+  if (p.length === 4 && a === 'messages') return pick({ DELETE: async (e, r) => (await chatRemove(e, r, c, m), noContent()) });
   if (p.length === 5 && a === 'messages' && b === '_answer')
     return pick({ POST: async (e, r) => (await chatAnswer(e, r, c, m, objectOrEmpty(r.body)), noContent()) });
   if (p.length === 6 && a === 'messages' && b === '_ui')

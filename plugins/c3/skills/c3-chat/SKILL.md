@@ -25,6 +25,7 @@ Duas camadas:
 ```
 
 - `layout.header.assistant` (`true` ou o objeto) põe o botão que abre a gaveta; `pages[].chat` é a página inteira. Mesmo `conversation` nos dois é a mesma conversa (uma por usuário).
+- Orientar o agente sem parar ([ADR 0008](../../../../docs/adr/0008-orientar-o-turno-em-andamento.md)): `"steer": true` (Ctrl+Enter com o agente ocupado, Orientar na fila) e `"sendKey": "modEnter"` (Ctrl+Enter envia). No backend, devolva a mensagem com `steer: "pending"`, leia as pendentes no ponto seguro (emita com `steer: "taken"`), implemente `remove` (DELETE da pendente) e use `notice` quando o agente não aceita mensagem no meio. Não monte atalho de teclado próprio.
 - O agente é do backend do sistema, pela porta `Chat` (c3-engine: `Engine::builder(..).chat(port)`; engine-node: `buildEngine({ chat })`), nas rotas `/_chat/{conversation}/...` de `spec/v0/chat.yaml`. A resposta sai pelo `ChatRoom` (`message`, `delta`, `emit`); no Rust, parte recusada pelo `check_agent_part` não sai. Exemplo completo: `crates/c3-example/src/assistant.rs` e `apps/c3-example-node/src/assistant.ts`.
 - Montar o `AssistantPanel` à mão (abaixo) é para quem não usa o motor ou para o catálogo do Storybook.
 

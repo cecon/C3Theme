@@ -7,7 +7,7 @@ import type { Outgoing } from '../ports/chat';
 export const MAX_LIMIT = 100;
 export const MAX_TEXT = 20_000;
 /** Eventos que o navegador entende (`ChatEvent` do @c3theme/chat). */
-export const EVENTS = ['message', 'delta', 'typing', 'removed', 'ui.cancel'];
+export const EVENTS = ['message', 'delta', 'typing', 'removed', 'ui.cancel', 'notice'];
 
 /** Id da conversa: `^[A-Za-z0-9_-]{1,64}$`. */
 export function checkConversation(id: string): void {
@@ -29,9 +29,9 @@ function textOf(body: Rec, key: string, max: number): string | undefined {
   throw ApiError.badRequest(`${key} precisa ser texto de 1 a ${max} caracteres.`);
 }
 
-/** Corpo de POST messages: `{ clientId, text, replyTo?, pendingPart? }`, sem outras chaves. */
+/** Corpo de POST messages: `{ clientId, text, replyTo?, pendingPart?, steer? }`, sem outras chaves. */
 export function parseOutgoing(body: Rec): Outgoing {
-  const extra = Object.keys(body).find((k) => !['clientId', 'text', 'replyTo', 'pendingPart'].includes(k));
+  const extra = Object.keys(body).find((k) => !['clientId', 'text', 'replyTo', 'pendingPart', 'steer'].includes(k));
   if (extra) throw ApiError.badRequest(`'${extra}' não vale no envio.`);
   const required = (v: string | undefined, key: string) => {
     if (v === undefined) throw ApiError.badRequest(`${key} é obrigatório.`);
@@ -40,6 +40,8 @@ export function parseOutgoing(body: Rec): Outgoing {
   const p = body.pendingPart;
   if (p !== undefined && p !== null && !(isObject(p) && ['messageId', 'partId', 'kind'].every((k) => typeof p[k] === 'string')))
     throw ApiError.badRequest('pendingPart precisa de messageId, partId e kind.');
+  if (body.steer !== undefined && body.steer !== null && typeof body.steer !== 'boolean')
+    throw ApiError.badRequest('steer precisa ser verdadeiro ou falso.');
   const out: Outgoing = {
     clientId: required(textOf(body, 'clientId', 100), 'clientId'),
     text: required(textOf(body, 'text', MAX_TEXT), 'text')
@@ -47,6 +49,7 @@ export function parseOutgoing(body: Rec): Outgoing {
   const replyTo = textOf(body, 'replyTo', 100);
   if (replyTo !== undefined) out.replyTo = replyTo;
   if (isObject(p)) out.pendingPart = p;
+  if (body.steer === true) out.steer = true;
   return out;
 }
 

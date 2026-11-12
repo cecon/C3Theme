@@ -90,6 +90,11 @@ export default function MessageBubble(props: MessageBubbleProps) {
           spacing={0.5}
           sx={{ alignItems: 'center', justifyContent: 'flex-end', mt: 0.5, opacity: mine || failed ? 1 : 0.8 }}
         >
+          {m.steer === 'taken' && (
+            <Typography variant="caption" component="span" sx={{ color: 'inherit', lineHeight: 1, fontWeight: 600 }}>
+              {t('c3.chat.steered')} ·
+            </Typography>
+          )}
           <Typography variant="caption" component="time" dateTime={m.createdAt} sx={{ color: 'inherit', lineHeight: 1 }}>
             {time(m.createdAt)}
           </Typography>

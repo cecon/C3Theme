@@ -14,6 +14,8 @@ export interface UseMessageQueueOptions {
   send: (text: string, files: File[]) => void;
   /** Trocar de conversa esvazia a fila. */
   conversationId?: string;
+  /** Orientar o turno em andamento com a mensagem (ADR 0008). Sem isso, a fila não tem Orientar. */
+  steer?: (text: string, files: File[]) => void;
 }
 
 let seq = 0;
@@ -23,7 +25,7 @@ let seq = 0;
  * fila e sai sozinho quando a resposta termina, uma por vez. Dá para editar, tirar ou mandar na hora. Depois de
  * `pause` (o usuário apertou Parar), a fila não sai sozinha na próxima parada: quem parou quer decidir.
  */
-export default function useMessageQueue({ generating, send, conversationId }: UseMessageQueueOptions) {
+export default function useMessageQueue({ generating, send, conversationId, steer }: UseMessageQueueOptions) {
   const [items, setItems] = useState<QueuedMessage[]>([]);
   const itemsRef = useRef(items);
   itemsRef.current = items;
@@ -31,6 +33,8 @@ export default function useMessageQueue({ generating, send, conversationId }: Us
   const was = useRef(generating);
   const sendRef = useRef(send);
   sendRef.current = send;
+  const steerRef = useRef(steer);
+  steerRef.current = steer;
 
   useEffect(() => setItems([]), [conversationId]);
 
@@ -48,6 +52,15 @@ export default function useMessageQueue({ generating, send, conversationId }: Us
     sendRef.current(next.text, next.files);
   }, [generating]);
 
+  /** Tira da fila e manda por `to`; sem `to` ou sem o item, fica como está. */
+  const take = useCallback((id: string, to: ((text: string, files: File[]) => void) | undefined) => {
+    const item = itemsRef.current.find((q) => q.id === id);
+    if (!item || !to) return false;
+    setItems((list) => list.filter((q) => q.id !== id));
+    to(item.text, item.files);
+    return true;
+  }, []);
+
   const enqueue = useCallback((text: string, files: File[] = []) => {
     if (!text.trim() && !files.length) return;
     setItems((list) => [...list, { id: `q${++seq}`, text: text.trim(), files }]);
@@ -59,18 +72,20 @@ export default function useMessageQueue({ generating, send, conversationId }: Us
       update: (id: string, text: string) => setItems((list) => list.map((q) => (q.id === id ? { ...q, text } : q))),
       remove: (id: string) => setItems((list) => list.filter((q) => q.id !== id)),
       /** Manda já (só faz sentido com o assistente parado). */
-      sendNow: (id: string) => {
-        const item = itemsRef.current.find((q) => q.id === id);
-        if (!item) return;
-        setItems((list) => list.filter((q) => q.id !== id));
-        sendRef.current(item.text, item.files);
+      sendNow: (id: string) => take(id, sendRef.current),
+      /** Orienta o turno em andamento com a mensagem: sai da fila e entra no turno (sem `steer`, não faz nada). */
+      steer: (id: string) => take(id, steerRef.current),
+      /** Orienta com a primeira da fila (Ctrl+Enter com a caixa vazia). Devolve se havia uma. */
+      steerNext: () => {
+        const [first] = itemsRef.current;
+        return first !== undefined && take(first.id, steerRef.current);
       },
       pause: () => {
         paused.current = true;
       }
     }),
-    [enqueue]
+    [enqueue, take]
   );
 
-  return { items, ...actions };
+  return { items, canSteer: steer !== undefined, ...actions };
 }

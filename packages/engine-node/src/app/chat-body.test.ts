@@ -51,6 +51,13 @@ describe('corpo do chat', () => {
       );
   });
 
+  it('envio que orienta: só true marca; outro tipo é 400', () => {
+    expect(parseOutgoing({ clientId: 'c1', text: 'oi', steer: true })).toEqual({ clientId: 'c1', text: 'oi', steer: true });
+    expect(parseOutgoing({ clientId: 'c1', text: 'oi', steer: false })).toEqual({ clientId: 'c1', text: 'oi' });
+    expect(parseOutgoing({ clientId: 'c1', text: 'oi', steer: null })).toEqual({ clientId: 'c1', text: 'oi' });
+    expect(message(() => parseOutgoing({ clientId: 'c1', text: 'oi', steer: 'sim' }))).toBe('steer precisa ser verdadeiro ou falso.');
+  });
+
   it('resposta de pergunta e de parte', () => {
     const a = { optionIds: ['a'], text: 'x', dismissed: false };
     expect(parseAnswer(a)).toBe(a);

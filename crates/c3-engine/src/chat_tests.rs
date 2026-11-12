@@ -39,7 +39,8 @@ fn envio_exige_client_id_e_texto() {
             client_id: "c1".into(),
             text: "oi".into(),
             reply_to: Some("m0".into()),
-            pending_part: Some(part)
+            pending_part: Some(part),
+            steer: false,
         }
     );
     let plain = parse_outgoing(&obj(json!({ "clientId": "c1", "text": "oi", "replyTo": null }))).unwrap();
@@ -63,6 +64,18 @@ fn envio_exige_client_id_e_texto() {
         "pendingPart precisa de messageId, partId e kind."
     );
     assert!(parse_outgoing(&obj(json!({ "clientId": "c1", "text": "oi", "pendingPart": "p1" }))).is_err());
+}
+
+#[test]
+fn envio_que_orienta() {
+    let steer = |v: Value| parse_outgoing(&obj(json!({ "clientId": "c1", "text": "oi", "steer": v })));
+    assert!(steer(json!(true)).unwrap().steer);
+    assert!(!steer(json!(false)).unwrap().steer);
+    assert!(!steer(Value::Null).unwrap().steer);
+    assert_eq!(
+        steer(json!("sim")).unwrap_err().body()["message"],
+        "steer precisa ser verdadeiro ou falso."
+    );
 }
 
 #[test]

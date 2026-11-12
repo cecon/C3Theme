@@ -25,7 +25,8 @@ describe('httpChatTransport', () => {
     const calls: [string, RequestInit | undefined][] = [];
     const request: ChatRequest = async (path, init) => {
       calls.push([path, init]);
-      if (path.endsWith('/_stop') || path.includes('/_answer') || path.includes('/_ui/')) return new Response(null, { status: 204 });
+      if (path.endsWith('/_stop') || path.includes('/_answer') || path.includes('/_ui/') || init?.method === 'DELETE')
+        return new Response(null, { status: 204 });
       if (init?.method === 'POST') return json({ data: { id: 'm2', clientId: 'c1' } });
       return json({ messages: [], hasMore: false });
     };
@@ -37,7 +38,9 @@ describe('httpChatTransport', () => {
     t.stop!('assistant');
     await t.answer!('assistant', 'm/1', { optionIds: ['a'] });
     await t.answerUi!('assistant', 'm1', 'p 1', { action: 'decline' });
-    await vi.waitFor(() => expect(calls).toHaveLength(7));
+    await t.send({ clientId: 'c3', conversationId: 'assistant', text: 'vá', steer: true });
+    await t.remove!('assistant', 'm/3');
+    await vi.waitFor(() => expect(calls).toHaveLength(9));
     expect(calls.map(([p, i]) => [p, i?.method, i?.body])).toEqual([
       ['/_chat/a%20b/messages?limit=30', 'GET', undefined],
       ['/_chat/assistant/messages?limit=10&before=m1', 'GET', undefined],
@@ -49,7 +52,9 @@ describe('httpChatTransport', () => {
       ],
       ['/_chat/assistant/_stop', 'POST', undefined],
       ['/_chat/assistant/messages/m%2F1/_answer', 'POST', JSON.stringify({ optionIds: ['a'] })],
-      ['/_chat/assistant/messages/m1/_ui/p%201', 'POST', JSON.stringify({ action: 'decline' })]
+      ['/_chat/assistant/messages/m1/_ui/p%201', 'POST', JSON.stringify({ action: 'decline' })],
+      ['/_chat/assistant/messages', 'POST', JSON.stringify({ clientId: 'c3', text: 'vá', steer: true })],
+      ['/_chat/assistant/messages/m%2F3', 'DELETE', undefined]
     ]);
     expect(calls[2][1]?.headers).toEqual({ 'content-type': 'application/json' });
   });
@@ -123,6 +128,7 @@ describe('httpChatTransport', () => {
     expect(toChatEvent({ event: 'message', data: '{"type":"delta"}' })).toBeNull();
     expect(toChatEvent({ event: 'typing', data: 'null' })).toBeNull();
     expect(toChatEvent({ event: 'ui.cancel', data: '{"type":"ui.cancel","partId":"p"}' })).toEqual({ type: 'ui.cancel', partId: 'p' });
+    expect(toChatEvent({ event: 'notice', data: '{"type":"notice","text":"Vai parar."}' })).toEqual({ type: 'notice', text: 'Vai parar.' });
     expect([nextDelay(1000), nextDelay(20_000)]).toEqual([2000, 30_000]);
   });
 });

@@ -1,5 +1,7 @@
 // `$defs/chat` do app.json (`pages[].chat`, `layout.header.assistant`; ADR 0006) em props do AssistantPanel. Puro.
 
+import type { SendKey } from '@c3theme/chat';
+
 import type { Text } from '../types';
 import type { ChatLanesSpec } from '../agent/lanes';
 
@@ -20,6 +22,10 @@ export interface ChatDef extends ChatLanesSpec {
   parts?: AgentKind[];
   /** Fila da próxima mensagem enquanto o agente responde. Padrão: ligada. */
   queue?: boolean;
+  /** Como a pessoa envia: `enter` (padrão) ou `modEnter` (Ctrl+Enter, ⌘+Enter no Mac). */
+  sendKey?: SendKey;
+  /** Orientar o turno em andamento (ADR 0008): Ctrl+Enter com o agente ocupado e Orientar na fila. Padrão: desligado. */
+  steer?: boolean;
 }
 
 /** `layout.header.assistant`: `true` vale o padrão; `false`, ausente ou outra coisa, sem botão. */
@@ -35,6 +41,8 @@ export interface ChatView {
   placeholder?: string;
   suggestions: string[];
   queue: boolean;
+  sendKey: SendKey;
+  steer: boolean;
 }
 
 export function chatView(def: ChatDef, text: (t: Text | undefined, fallback?: string) => string): ChatView {
@@ -43,7 +51,9 @@ export function chatView(def: ChatDef, text: (t: Text | undefined, fallback?: st
     title: text(def.title, 'Assistente'),
     placeholder: def.placeholder === undefined ? undefined : text(def.placeholder),
     suggestions: (def.suggestions ?? []).map((s) => text(s)),
-    queue: def.queue !== false
+    queue: def.queue !== false,
+    sendKey: def.sendKey === 'modEnter' ? 'modEnter' : 'enter',
+    steer: def.steer === true
   };
 }
 

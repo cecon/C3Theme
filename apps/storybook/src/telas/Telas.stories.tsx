@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 import MotorView from '../motor/MotorView';
+import { steerAgent } from '../motor/play';
 import { jsonSource } from '../motor/source';
 import { withMotor } from '../motor/withMotor';
 
@@ -67,5 +68,12 @@ export const DocumentacaoDaApi: Story = { name: 'Documentação da API', args: {
  * Peça um cadastro: vem o rascunho de cliente, que grava pelo cadastro de sempre.
  */
 export const Assistente: Story = { args: { page: '/assistente' } };
+
+/**
+ * Orientar o agente (`chat.steer`, ADR 0008): com o agente escrevendo a pesquisa, Ctrl+Enter (⌘+Enter) manda a
+ * orientação para dentro do turno, sem parar. Ela espera na fila como "Orientando" (com Remover) até o agente ler, e
+ * depois fica na conversa com a marca "Orientou". A mensagem da fila ganha Orientar.
+ */
+export const AssistenteOrientando: Story = { name: 'Assistente: orientar', args: { page: '/assistente' }, play: steerAgent };
 
 export const PrimeiraConfiguracao: Story = { name: 'Primeira configuração (assistente)', args: { page: '/primeira-configuracao' } };

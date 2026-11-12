@@ -102,6 +102,12 @@ export interface Message {
   status?: MessageStatus;
   /** Id da mensagem respondida. */
   replyTo?: string;
+  /**
+   * Orientação: mensagem minha que entra no turno em andamento do agente, sem interromper (ADR 0008). `pending`: espera
+   * o agente chegar a um ponto em que lê (fica na fila como "Orientando" e ainda dá para remover); `taken`: o agente
+   * leu (fica na conversa com a marca "Orientou").
+   */
+  steer?: 'pending' | 'taken';
   /** Dados do app, que o contrato não interpreta. */
   meta?: Record<string, unknown>;
 }
@@ -131,4 +137,6 @@ export interface OutgoingMessage {
    * mantém (não manda nada sobre ela) ou a cancela (`ui.cancel`). Quem preenche é o `useMessageWindow`.
    */
   pendingPart?: PendingPart;
+  /** Orientar: entra no turno em andamento, sem interromper (ADR 0008). O servidor devolve com `steer: 'pending'`. */
+  steer?: boolean;
 }

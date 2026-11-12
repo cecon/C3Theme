@@ -48,6 +48,7 @@ function room(engine: Engine, audience: string, conversation: string): ChatRoom 
     },
     emit,
     message: (message) => emit({ type: 'message', message }),
+    notice: (text) => emit({ type: 'notice', text, tone: 'info' }),
     delta: (id, text, done = false) => emit({ type: 'delta', id, text, done })
   };
 }
@@ -71,6 +72,14 @@ export async function chatHistory(engine: Engine, req: EngineRequest, conversati
 export async function chatSend(engine: Engine, req: EngineRequest, conversation: string, body: () => Rec): Promise<Rec> {
   const [port, r] = open(engine, req, conversation);
   return { data: await port.send(r, parseOutgoing(body())) };
+}
+
+/** DELETE da orientação esperando (ADR 0008): a porta confere o estado (409) e emite `removed`. */
+export async function chatRemove(engine: Engine, req: EngineRequest, conversation: string, message: string): Promise<void> {
+  const [port, r] = open(engine, req, conversation);
+  checkId(message, 'Mensagem');
+  if (!port.remove) throw ApiError.notFound('Este sistema não orienta o agente no meio do trabalho.');
+  await port.remove(r, message);
 }
 
 export async function chatStop(engine: Engine, req: EngineRequest, conversation: string): Promise<void> {

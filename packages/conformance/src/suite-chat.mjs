@@ -129,4 +129,46 @@ export function chatTests({ test, call, base, tag }) {
     assert.equal((await call('POST', `${path}/_lanes`, { kind: 'branch', fromMessageId: 'outra-conversa' })).status, 400);
     assert.equal((await call('POST', `${path}/_lanes`, { kind: 'branch' })).status, 400);
   });
+
+  test('chat', 'orientar: lida no meio da resposta e respondida no fim; a que espera sai pelo DELETE; sem turno, aviso', async () => {
+    const steerPath = `/_chat/${conv}-orienta`;
+    const sse = await open(base, `${steerPath}/_events`);
+    try {
+      assert.equal((await sse.next())?.name, 'ready');
+      assert.equal((await call('POST', `${steerPath}/messages`, { clientId: 'o1', text: 'Relatório de vendas do mês' })).status, 200);
+      const gone = await call('POST', `${steerPath}/messages`, { clientId: 'o2', text: 'esquece', steer: true });
+      assert.equal(gone.body.data.steer, 'pending', JSON.stringify(gone.body));
+      const goneUri = `${steerPath}/messages/${encodeURIComponent(gone.body.data.id)}`;
+      assert.equal((await call('DELETE', goneUri)).status, 204);
+      assert.equal((await call('DELETE', goneUri)).status, 404);
+      const kept = await call('POST', `${steerPath}/messages`, { clientId: 'o3', text: 'só o mês atual', steer: true });
+      assert.equal(kept.body.data.steer, 'pending');
+      const removed = await sse.until((e) => e.name === 'removed');
+      assert.equal(removed?.data.id, gone.body.data.id);
+      const taken = await sse.until((e) => e.name === 'message' && e.data.message.id === kept.body.data.id);
+      assert.equal(taken?.data.message.steer, 'taken', 'o agente leu no meio da resposta');
+      assert.equal((await call('DELETE', `${steerPath}/messages/${encodeURIComponent(kept.body.data.id)}`)).status, 409);
+      const answered = await sse.until((e) => e.name === 'message' && e.data.message.text?.includes('só o mês atual'));
+      assert.ok(answered, 'a orientação foi respondida no fim');
+      const history = (await call('GET', `${steerPath}/messages?limit=100`)).body.messages;
+      assert.ok(!history.some((m) => m.id === gone.body.data.id), 'a removida saiu do histórico');
+      assert.equal(history.find((m) => m.id === kept.body.data.id)?.steer, 'taken');
+    } finally {
+      sse.close();
+    }
+    const idlePath = `/_chat/${conv}-parado`;
+    const idle = await open(base, `${idlePath}/_events`);
+    try {
+      assert.equal((await idle.next())?.name, 'ready');
+      const sent = await call('POST', `${idlePath}/messages`, { clientId: 'p1', text: 'oi', steer: true });
+      assert.equal(sent.status, 200);
+      assert.equal(sent.body.data.steer, undefined, 'sem turno, vai como mensagem comum');
+      const notice = await idle.until((e) => e.name === 'notice');
+      assert.equal(typeof notice?.data.text, 'string');
+      assert.equal(notice?.data.conversationId, `${conv}-parado`);
+    } finally {
+      idle.close();
+    }
+    assert.equal((await call('POST', `${idlePath}/messages`, { clientId: 'p2', text: 'oi', steer: 'sim' })).status, 400);
+  });
 }

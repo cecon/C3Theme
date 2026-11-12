@@ -31,3 +31,6 @@ export const isSubmitShortcut = (e: { key: string; ctrlKey: boolean; metaKey: bo
 
 /** Nome do atalho para o leitor de tela (`aria-keyshortcuts`). */
 export const SUBMIT_KEYS = mac ? 'Meta+Enter' : 'Control+Enter';
+
+/** Nome do atalho escrito para gente ("Ctrl+Enter", no Mac "⌘+Enter"). */
+export const SUBMIT_LABEL = mac ? '⌘+Enter' : 'Ctrl+Enter';
