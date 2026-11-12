@@ -16,6 +16,21 @@ function fakeClient(next: AppDef) {
 }
 
 describe('recarregar o app sem remontar (#163)', () => {
+  it('atualiza o status sem pedir entidades indisponíveis e retoma a carga quando o status sai', async () => {
+    const next = { ...app([]), entities: ['nota'], status: { mode: 'maintenance' as const, message: 'Atualizando' } };
+    const client = fakeClient(next);
+    vi.mocked(client.entity).mockRejectedValue(new Error('503: entidade indisponível'));
+    let state: EngineState | undefined = { app: app([]) } as EngineState;
+    const setState = vi.fn((f: (s: EngineState | undefined) => EngineState | undefined) => (state = f(state)));
+    const { result } = renderHook(() => useAppReload(client, setState as never, 1));
+    await act(async () => result.current());
+    expect(state!.app.status).toEqual(next.status);
+    expect(state!.entities).toEqual({});
+    expect(client.entity).not.toHaveBeenCalled();
+    vi.mocked(client.meta).mockResolvedValue({ app: app([]), pageAccess: {} });
+    await act(async () => result.current());
+    expect(state!.app.status).toBeUndefined();
+  });
   it('só lê de novo quando a versão muda, e troca o app no estado', async () => {
     const client = fakeClient(app(['Atendente', 'Financeiro']));
     let state: EngineState | undefined = { app: app(['Atendente']) } as EngineState;
