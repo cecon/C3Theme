@@ -1,0 +1,27 @@
+{
+  "$schema": "../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "entrega",
+  "label": { "singular": "Entrega", "plural": "Entregas", "gender": "f" },
+  "titleField": "cliente",
+  "fields": [
+    { "name": "pedido", "type": "integer", "label": "Pedido", "required": true },
+    { "name": "cliente", "type": "string", "label": "Cliente", "required": true, "maxLength": 60 },
+    { "name": "bairro", "type": "string", "label": "Bairro", "maxLength": 40 },
+    { "name": "valor", "type": "decimal", "label": "Valor", "scale": 2 }
+  ],
+  "views": {
+    "list": { "columns": ["pedido", "cliente", "bairro", "valor"], "totals": [{ "field": "valor" }] }
+  },
+  "actions": [
+    {
+      "name": "imprimir_relacao",
+      "label": "Imprimir relação",
+      "description": "Manda a relação de entregas para a impressora térmica do balcão.",
+      "icon": "Printer",
+      "target": "list",
+      "preview": true,
+      "successMessage": "Relação enviada para a impressora."
+    }
+  ]
+}

@@ -10,6 +10,7 @@ import orcamento from './orcamento.json';
 import demonstrativo from './demonstrativo.json';
 import boleto from './boleto.json';
 import configuracaoLoja from './configuracao_loja.json';
+import entrega from './entrega.json';
 import evento from './evento.json';
 import fatura from './fatura.json';
 import fornecedor from './fornecedor.json';
@@ -44,5 +45,6 @@ export const ENTITIES = [
   orcadoRealizado,
   orcamento,
   demonstrativo,
-  boleto
+  boleto,
+  entrega
 ] as unknown as EntityDef[];

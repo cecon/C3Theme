@@ -588,6 +588,12 @@ components:
                           properties:
                             name: { type: string }
                             label: { type: string }
+                            format:
+                              type: string
+                              enum: [pre]
+                              description: >-
+                                pre: texto pré-formatado (cupom da impressora térmica), em fonte fixa, com os espaços
+                                preservados e sem quebrar a linha.
                       rows:
                         type: array
                         items: { type: object, additionalProperties: true }

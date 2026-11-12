@@ -4,6 +4,7 @@ import type { MemorySeed, WireRecord } from '@c3theme/engine';
 
 import { BALANCETE, mediaDaConta, ORCADO_REALIZADO, revisar } from './balancete';
 import { BOLETOS, colunasDoPeriodo, DEMONSTRATIVO } from './demonstrativo';
+import { ENTREGAS, relacaoDeEntregas } from './entregas';
 import { OPENAPI } from './openapi';
 import { avisos, eventos, mesas, tarefas } from './operacao';
 import { APP, ENTITIES } from './spec';
@@ -98,6 +99,7 @@ export const SEED: MemorySeed = {
     orcado_realizado: ORCADO_REALIZADO,
     demonstrativo: DEMONSTRATIVO,
     boleto: BOLETOS,
+    entrega: ENTREGAS,
     orcamento: [{ id: '1', conta: '3', ano: 2026, mes_01: '0.00', mes_02: null, mes_03: null }],
     fatura: faturas,
     tarefa: tarefas,
@@ -115,7 +117,9 @@ export const SEED: MemorySeed = {
   // o openapi.json da página `apiDocs` (/apis)
   files: { '/openapi.json': OPENAPI },
   // ações da lista, como o backend: a revisão em etapas do balancete
-  listActions: { conta_contabil: { revisar } },
+  listActions: { conta_contabil: { revisar }, entrega: { imprimir_relacao: () => ({ message: 'Relação enviada para a impressora.' }) } },
+  // a prévia que o backend montaria: o cupom da térmica, em texto pré-formatado (#66)
+  previews: { entrega: { imprimir_relacao: relacaoDeEntregas } },
   // a consulta que o backend faria: a média do realizado da conta no ano do formulário
   lookups: { orcamento: { media: mediaDaConta } },
   // a consulta do sistema que escolhe as colunas pelo período (os meses, na ordem dele, com o ano)

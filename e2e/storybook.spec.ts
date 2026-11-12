@@ -48,3 +48,17 @@ test('seção related com o preset "Todos" sem where: carrega os itens e a aba a
   await todos.click();
   await expect.poll(() => contado.count()).toBe(all);
 });
+
+test('prévia do cupom em texto pré-formatado: espaços e alinhamento preservados (#66)', async ({ page }) => {
+  await page.goto(story('tabela-lista-pelo-motor--relacao-entregas'));
+  await page.getByRole('button', { name: 'Imprimir relação' }).click();
+  const cells = page.getByRole('dialog').getByRole('table', { name: 'Prévia' }).getByRole('cell');
+  await expect(cells.first()).toBeVisible();
+  await expect(cells.first()).toHaveCSS('white-space', 'pre');
+  // textContent cru, sem a normalização de espaços: o título espaçado e as linhas de 40 colunas chegam como vieram
+  const lines = await cells.evaluateAll((tds) => tds.map((td) => td.textContent ?? ''));
+  expect(lines).toContain(`${'R E L .   E N T R E G A S'.padStart(32)}`.padEnd(40));
+  expect(lines.filter((l) => l.startsWith('#')).every((l) => l.length === 40)).toBe(true);
+  await page.getByRole('button', { name: 'Imprimir relação' }).last().click();
+  await expect(page.getByText('Relação enviada para a impressora.')).toBeVisible();
+});

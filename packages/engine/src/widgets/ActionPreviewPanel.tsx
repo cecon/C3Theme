@@ -10,6 +10,11 @@ import TableRow from '@mui/material/TableRow';
 
 import type { PreviewState } from '../hooks/useActionPreview';
 
+const MONO = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
+
+/** Coluna `format: "pre"` (#66): o cupom de 40/48 colunas fica alinhado, linha colada na outra, sem quebrar. */
+const PRE = { fontFamily: MONO, whiteSpace: 'pre', py: 0.125, borderBottom: 'none', fontSize: '0.8125rem', lineHeight: 1.5 } as const;
+
 const cell = (v: unknown) => (v === null || v === undefined ? '' : typeof v === 'object' ? JSON.stringify(v) : String(v));
 
 /** O que a ação vai fazer, segundo o sistema: texto e tabela só de leitura. Nada foi gravado ainda. */
@@ -30,25 +35,30 @@ export default function ActionPreviewPanel({ state }: { state: PreviewState }) {
         )
       )}
       {!error && table && table.rows.length > 0 && (
-        <Table size="small" sx={{ mt: 1.5 }} aria-label="Prévia">
-          <TableHead>
-            <TableRow>
-              {table.columns.map((c) => (
-                <TableCell key={c.name}>{c.label}</TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {table.rows.map((r, i) => (
-              // linhas da prévia não têm id: a posição é a identidade
-              <TableRow key={i}>
+        // com texto pré-formatado mais largo que o diálogo, a prévia rola de lado em vez de quebrar a linha
+        <Box sx={{ mt: 1.5, overflowX: 'auto' }}>
+          <Table size="small" aria-label="Prévia">
+            <TableHead>
+              <TableRow>
                 {table.columns.map((c) => (
-                  <TableCell key={c.name}>{cell(r[c.name])}</TableCell>
+                  <TableCell key={c.name}>{c.label}</TableCell>
                 ))}
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHead>
+            <TableBody>
+              {table.rows.map((r, i) => (
+                // linhas da prévia não têm id: a posição é a identidade
+                <TableRow key={i}>
+                  {table.columns.map((c) => (
+                    <TableCell key={c.name} sx={c.format === 'pre' ? PRE : undefined}>
+                      {cell(r[c.name])}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Box>
       )}
     </Box>
   );

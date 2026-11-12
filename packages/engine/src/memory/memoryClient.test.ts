@@ -191,3 +191,16 @@ describe('consulta do sistema no adaptador em memória', () => {
     expect((await client.list('cliente')).meta.columns).toBeUndefined();
   });
 });
+
+describe('prévia no adaptador em memória (#66)', () => {
+  const client = createMemoryClient({
+    app,
+    entities: [cliente],
+    previews: { cliente: { cupom: (input, id) => ({ message: `${id ?? 'lista'} ${input.n}` }) } }
+  });
+  it('responde pela função do seed, com fill vazio; sem ela, recusa', async () => {
+    expect(await client.preview('cliente', 'cupom', undefined, { n: 2 })).toEqual({ fill: {}, message: 'lista 2' });
+    expect(await client.preview('cliente', 'cupom', '7', { n: 1 })).toEqual({ fill: {}, message: '7 1' });
+    await expect(client.preview('cliente', 'outra', undefined, {})).rejects.toThrow();
+  });
+});

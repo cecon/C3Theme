@@ -5,14 +5,14 @@ import type { DocumentFormat } from './documents.mjs';
 import type { AuthConfig } from './auth/port';
 import type { DashboardDef } from './dashboard';
 import type { BoardView, CalendarView, ColumnDef, GalleryView, ListLook, ListOpening, MapView, ReportView } from './viewTypes';
-import type { ActionDef, GridFieldDef } from './actionTypes';
+import type { ActionDef, ActionPreview, GridFieldDef } from './actionTypes';
 import type { FormView, LookupDef } from './formTypes';
 import type { WizardDef } from './wizard';
 import type { AuthorizationConfig } from './authorization/AuthorizationDialog';
 
 export type { Condition, FieldType };
 export type { BoardView, CalendarView, ReportView };
-export type { ActionDef, GridFieldDef };
+export type { ActionDef, ActionPreview, GridFieldDef };
 
 export type Text = string | { id: string; defaultMessage?: string };
 
