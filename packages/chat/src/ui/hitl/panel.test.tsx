@@ -33,7 +33,7 @@ const chatOf = (messages: Message[], answerUi = vi.fn().mockResolvedValue(true))
   conversationId: 'c1',
   messages,
   hasMore: false,
-  loading: false,
+  loading: null,
   loadOlder: vi.fn(),
   send: vi.fn(),
   retry: vi.fn(),

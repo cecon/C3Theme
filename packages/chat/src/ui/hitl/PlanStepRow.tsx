@@ -11,6 +11,7 @@ import { ArrowDown2, ArrowUp2 } from 'iconsax-reactjs';
 
 import type { DraftStep, planAllows } from '../../core/hitlPlan';
 import { useChatText } from '../text';
+import { secondarySx } from './sx';
 
 export interface PlanStepRowProps {
   step: DraftStep;
@@ -66,7 +67,7 @@ export default function PlanStepRow({ step, index, last, allows, disabled, onTog
           </Typography>
         )}
         {(step.detail || step.required) && (
-          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+          <Typography variant="caption" sx={secondarySx}>
             {[step.required ? t('c3.chat.plan.required') : '', step.detail ?? ''].filter(Boolean).join(' · ')}
           </Typography>
         )}

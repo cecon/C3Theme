@@ -16,6 +16,7 @@ import BrowserView from './BrowserView';
 import ClosedLine from './ClosedLine';
 import DeclineBox from './DeclineBox';
 import useDecision from './useDecision';
+import { actionsSx, headerSx, spacerSx } from './sx';
 
 /**
  * `c3.browser`: o agente parou numa página antes de um passo que pede o humano (enviar um pedido, entrar num site
@@ -59,7 +60,7 @@ function BrowserBody({ part, open, onAnswer, checkpoint: c }: UiPartProps & { ch
   const footer = declining ? (
     <DeclineBox disabled={disabled} onBack={() => setDeclining(false)} onDecline={(r) => void decide(declineTool(r))} />
   ) : (
-    <Stack direction="row" sx={{ gap: 1, flexWrap: 'wrap' }}>
+    <Stack direction="row" sx={actionsSx}>
       <Button
         variant="contained"
         color={c.risk === 'high' ? 'error' : 'primary'}
@@ -73,7 +74,7 @@ function BrowserBody({ part, open, onAnswer, checkpoint: c }: UiPartProps & { ch
           {t('c3.chat.browser.takeOver')}
         </Button>
       )}
-      <Box sx={{ flex: 1 }} />
+      <Box sx={spacerSx} />
       <Button color="error" disabled={disabled} onClick={() => setDeclining(true)}>
         {t('c3.chat.tool.decline')}
       </Button>
@@ -82,7 +83,7 @@ function BrowserBody({ part, open, onAnswer, checkpoint: c }: UiPartProps & { ch
 
   return (
     <Stack spacing={1.25}>
-      <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap', rowGap: 0.5 }}>
+      <Stack direction="row" spacing={1} sx={headerSx}>
         <Typography variant="subtitle2" component="p">
           {t('c3.chat.browser.wants', { intent: c.intent })}
         </Typography>

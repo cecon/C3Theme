@@ -6,6 +6,7 @@ import Typography from '@mui/material/Typography';
 import { CloseCircle, TickCircle } from 'iconsax-reactjs';
 
 import { useChatText } from '../text';
+import { secondarySx } from './sx';
 
 export interface ClosedLineProps {
   /** O que foi pedido (nome da ferramenta, título do plano, endereço). */
@@ -33,7 +34,7 @@ export default function ClosedLine({ title, label, tone, reason }: ClosedLinePro
         </Typography>
       </Stack>
       {reason && (
-        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+        <Typography variant="body2" sx={secondarySx}>
           {t('c3.chat.hitl.reason', { reason })}
         </Typography>
       )}

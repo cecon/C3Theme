@@ -48,3 +48,40 @@ test('seção related com o preset "Todos" sem where: carrega os itens e a aba a
   await todos.click();
   await expect.poll(() => contado.count()).toBe(all);
 });
+
+test('humano no circuito: edita o argumento da ferramenta, aprova e o card fecha com o resumo', async ({ page }) => {
+  await page.goto(story('chat-humano-no-circuito--ferramenta'));
+  await expect(page.getByText('O assistente quer usar Enviar e-mail')).toBeVisible();
+  await page.getByRole('button', { name: 'Editar argumentos' }).click();
+  await page.getByRole('textbox', { name: 'Cópias' }).fill('2');
+  await page.getByRole('button', { name: 'Aprovar com as mudanças' }).click();
+  await expect(page.getByText('Aprovado com 1 mudança')).toBeVisible();
+  await expect(page.getByRole('button', { name: /Aprovar/ })).toHaveCount(0);
+});
+
+test('humano no circuito: plano sem um passo e recusa do navegador com motivo', async ({ page }) => {
+  await page.goto(story('chat-humano-no-circuito--plano'));
+  await page.getByRole('checkbox', { name: 'Passo 3' }).uncheck();
+  await page.getByRole('button', { name: 'Aprovar com as mudanças' }).click();
+  await expect(page.getByText('Plano aprovado: 3 passos · 1 tirado')).toBeVisible();
+
+  await page.goto(story('chat-humano-no-circuito--navegador'));
+  await expect(page.getByRole('region', { name: 'Navegador do assistente' })).toBeVisible();
+  await expect(page.getByRole('img', { name: 'Onde o assistente vai clicar' })).toBeVisible();
+  await page.getByRole('button', { name: 'Recusar' }).click();
+  await page.getByRole('textbox', { name: 'Diga ao assistente o porquê (opcional)' }).fill('o boleto é de outro mês');
+  await page.getByRole('button', { name: 'Recusar e avisar' }).click();
+  await expect(page.getByText('Motivo: o boleto é de outro mês')).toBeVisible();
+});
+
+test('navegador interno: assumir o controle libera a barra e navegar troca o endereço', async ({ page }) => {
+  await page.goto(story('chat-navegador-interno-uso-direto--voce-no-controle'));
+  await page.getByRole('button', { name: /^Endereço:/ }).click();
+  const address = page.getByRole('textbox', { name: 'Endereço' });
+  await address.fill('loja.example.com/pedido');
+  await address.press('Enter');
+  await expect(page.getByText('loja.example.com')).toBeVisible();
+  await page.getByRole('button', { name: 'Devolver ao assistente' }).click();
+  await expect(page.getByRole('status')).toHaveText('O assistente está no controle');
+  await expect(page.getByRole('button', { name: /^Endereço:/ })).toBeDisabled();
+});

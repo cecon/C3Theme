@@ -9,6 +9,7 @@ import { Clock } from 'iconsax-reactjs';
 
 import type { Waiting } from '../../core/waiting';
 import { useChatText } from '../text';
+import { spacerSx } from './sx';
 
 export interface WaitingBannerProps {
   waiting: Waiting;
@@ -42,7 +43,7 @@ export default function WaitingBanner({ waiting, onGo }: WaitingBannerProps) {
       <Stack sx={{ color: 'warning.main' }} aria-hidden>
         <Clock size={16} color="currentColor" />
       </Stack>
-      <Typography variant="body2" sx={{ flex: 1 }}>
+      <Typography variant="body2" sx={spacerSx}>
         {t('c3.chat.waiting', { count: waiting.count })}
       </Typography>
       <Button size="small" color="inherit" onClick={() => onGo(waiting.messageId)}>

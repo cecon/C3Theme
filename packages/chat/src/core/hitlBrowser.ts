@@ -30,9 +30,9 @@ const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'obj
 
 /** Só http e https: `javascript:`, `file:` e companhia nunca viram link nem imagem. */
 export function safeUrl(url: unknown): URL | undefined {
-  if (typeof url !== 'string') return undefined;
+  // try/catch e não URL.parse: o Safari 17 ainda não tem
   try {
-    const u = new URL(url);
+    const u = new URL(String(url));
     return u.protocol === 'https:' || u.protocol === 'http:' ? u : undefined;
   } catch {
     return undefined;
@@ -59,7 +59,7 @@ export function addressParts(url: string): { host: string; rest: string; secure:
 /** O que foi digitado na barra vira endereço: sem esquema, ganha https. Endereço inválido devolve `undefined`. */
 export function normalizeAddress(text: string): string | undefined {
   const t = text.trim();
-  if (!t || /\s/.test(t)) return undefined;
+  if (/\s/.test(t)) return undefined;
   const withScheme = /^[a-z][a-z0-9+.-]*:/i.test(t) ? t : `https://${t}`;
   return safeUrl(withScheme)?.href;
 }

@@ -53,5 +53,6 @@ describe('shouldAnnounce', () => {
     const last = [msg('1'), msg('2', { question })];
     expect(shouldAnnounce(last, waitingFor(last))).toBe(false);
     expect(shouldAnnounce(list, undefined)).toBe(false);
+    expect(shouldAnnounce([], { messageId: '1', kind: 'question', count: 1 })).toBe(true);
   });
 });

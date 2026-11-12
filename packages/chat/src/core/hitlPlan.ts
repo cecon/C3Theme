@@ -64,7 +64,8 @@ export function approvePlan(p: PlanProposal, steps: DraftStep[]): UiAnswer {
   const kept = steps.filter((s) => s.enabled).map((s) => ({ id: s.id, text: s.text.trim() }));
   const removed = steps.filter((s) => !s.enabled).map((s) => s.id);
   const original = p.steps.map((s) => ({ id: s.id, text: s.text.trim() }));
-  const edited = removed.length > 0 || JSON.stringify(kept) !== JSON.stringify(original);
+  // tirar um passo também muda a lista dos mantidos
+  const edited = JSON.stringify(kept) !== JSON.stringify(original);
   return { action: 'accept', values: { steps: kept, removed, edited } };
 }
 

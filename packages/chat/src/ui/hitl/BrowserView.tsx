@@ -95,15 +95,16 @@ export default function BrowserView(props: BrowserViewProps) {
               position: 'absolute',
               left: `${target.x}%`,
               top: `${target.y}%`,
-              width: 28,
-              height: 28,
-              ml: '-14px',
-              mt: '-14px',
+              width: 44,
+              height: 44,
+              ml: '-22px',
+              mt: '-22px',
               borderRadius: '50%',
-              border: 3,
+              border: '2.5px solid',
               borderColor: 'primary.main',
-              bgcolor: 'transparent',
-              boxShadow: 2
+              // anel claro por fora: aparece sobre fundo escuro e claro sem cobrir o que está embaixo
+              boxShadow: (th) => `0 0 0 2px ${th.palette.background.paper}`,
+              pointerEvents: 'none'
             }}
           />
         )}

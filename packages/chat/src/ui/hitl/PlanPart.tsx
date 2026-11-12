@@ -26,6 +26,7 @@ import ClosedLine from './ClosedLine';
 import DeclineBox from './DeclineBox';
 import PlanStepRow from './PlanStepRow';
 import useDecision from './useDecision';
+import { actionsSx, spacerSx } from './sx';
 
 /**
  * `c3.plan`: o assistente mostra o plano antes de começar. O humano desmarca passos (menos os obrigatórios), muda a
@@ -92,11 +93,11 @@ function PlanBody({ part, open, onAnswer, plan }: UiPartProps & { plan: PlanProp
       {declining ? (
         <DeclineBox disabled={disabled} onBack={() => setDeclining(false)} onDecline={(r) => void decide(declineTool(r))} />
       ) : (
-        <Stack direction="row" sx={{ gap: 1, flexWrap: 'wrap' }}>
+        <Stack direction="row" sx={actionsSx}>
           <Button variant="contained" disabled={disabled || !canApprove(steps)} onClick={() => void decide(answer)}>
             {t(answer.values!.edited ? 'c3.chat.plan.approveEdited' : 'c3.chat.plan.approve')}
           </Button>
-          <Box sx={{ flex: 1 }} />
+          <Box sx={spacerSx} />
           <Button color="error" disabled={disabled} onClick={() => setDeclining(true)}>
             {t('c3.chat.tool.decline')}
           </Button>

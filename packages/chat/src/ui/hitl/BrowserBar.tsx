@@ -14,6 +14,7 @@ import { ArrowLeft, ArrowRight, Lock1, Refresh, Unlock } from 'iconsax-reactjs';
 
 import { addressParts, normalizeAddress } from '../../core/hitlBrowser';
 import { useChatText } from '../text';
+import { secondarySx } from './sx';
 
 export interface BrowserBarProps {
   url: string;
@@ -26,6 +27,22 @@ export interface BrowserBarProps {
   /** Com isso, clicar no endereço deixa digitar outro; Enter vai, Esc desiste. */
   onNavigate?: (url: string) => void;
 }
+
+const barSx = { alignItems: 'center', px: 0.75, py: 0.5, bgcolor: 'action.hover' };
+const pillSx = {
+  flex: 1,
+  minWidth: 0,
+  ml: 0.5,
+  borderRadius: 5,
+  bgcolor: 'background.paper',
+  px: 1.25,
+  height: 30,
+  display: 'flex',
+  alignItems: 'center'
+};
+const addressSx = { flex: 1, minWidth: 0, justifyContent: 'flex-start', gap: 0.75, height: '100%' };
+const pathSx = { minWidth: 0 };
+const hostSx = { color: 'text.primary' };
 
 /** Barra do navegador interno: voltar, avançar, recarregar e o endereço com cadeado. */
 export default function BrowserBar({ url, canGoBack, canGoForward, onBack, onForward, onReload, onNavigate }: BrowserBarProps) {
@@ -52,23 +69,11 @@ export default function BrowserBar({ url, canGoBack, canGoForward, onBack, onFor
   );
 
   return (
-    <Stack direction="row" spacing={0.25} sx={{ alignItems: 'center', px: 0.75, py: 0.5, bgcolor: 'action.hover' }}>
+    <Stack direction="row" spacing={0.25} sx={barSx}>
       {nav(t('c3.chat.browser.back'), <ArrowLeft size={16} />, onBack, canGoBack)}
       {nav(t('c3.chat.browser.forward'), <ArrowRight size={16} />, onForward, canGoForward)}
       {nav(t('c3.chat.browser.reload'), <Refresh size={16} />, onReload)}
-      <Box
-        sx={{
-          flex: 1,
-          minWidth: 0,
-          ml: 0.5,
-          borderRadius: 5,
-          bgcolor: 'background.paper',
-          px: 1.25,
-          height: 30,
-          display: 'flex',
-          alignItems: 'center'
-        }}
-      >
+      <Box sx={pillSx}>
         {editing !== null ? (
           <InputBase
             autoFocus
@@ -92,7 +97,7 @@ export default function BrowserBar({ url, canGoBack, canGoForward, onBack, onFor
             disabled={!onNavigate}
             onClick={() => setEditing(url)}
             aria-label={`${t('c3.chat.browser.address')}: ${url}`}
-            sx={{ flex: 1, minWidth: 0, justifyContent: 'flex-start', gap: 0.75, height: '100%' }}
+            sx={addressSx}
           >
             <Box
               component="span"
@@ -101,11 +106,11 @@ export default function BrowserBar({ url, canGoBack, canGoForward, onBack, onFor
             >
               {parts?.secure ? <Lock1 size={14} /> : <Unlock size={14} />}
             </Box>
-            <Typography variant="body2" noWrap component="span" sx={{ minWidth: 0 }}>
-              <Box component="span" sx={{ color: 'text.primary' }}>
+            <Typography variant="body2" noWrap component="span" sx={pathSx}>
+              <Box component="span" sx={hostSx}>
                 {parts?.host ?? url}
               </Box>
-              <Box component="span" sx={{ color: 'text.secondary' }}>
+              <Box component="span" sx={secondarySx}>
                 {parts?.rest}
               </Box>
             </Typography>

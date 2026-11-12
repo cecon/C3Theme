@@ -45,6 +45,9 @@ O agente **propõe** e o motor **grava**. A ferramenta do agente nunca grava soz
 | `c3.form`   | pedir dados avulsos (período, motivo, cliente)        | os valores voltam ao assistente; o servidor confere com `Engine::check_agent_answer` |
 | `c3.record` | rascunho de registro novo, ou alteração com `id`      | `POST`/`PATCH` normal com `If-Match`; "Desfazer" por 30 s                           |
 | `c3.action` | rodar uma ação do registro com o input preenchido     | `POST /{e}/{id}/_actions/{a}`; `tone: danger` pede um segundo clique                |
+| `c3.tool`   | aprovar uma ferramenta, com os args editáveis antes   | volta `accept` `{ args, edited, always? }` ou `decline` `{ reason? }`; o agente roda depois |
+| `c3.plan`   | aprovar o plano (desmarcar, reordenar, reescrever)    | volta `accept` `{ steps, removed, edited }` ou `decline` `{ reason? }`              |
+| `c3.browser`| parar numa página antes do passo arriscado            | volta `accept` `{ decision: allow \| takeover }` ou `decline`; `frame` só imagem     |
 
 ```json
 { "id": "p1", "kind": "c3.record",

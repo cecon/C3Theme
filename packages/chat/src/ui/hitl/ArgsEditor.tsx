@@ -8,6 +8,7 @@ import TextField from '@mui/material/TextField';
 import type { ArgField, Parsed } from '../../core/hitl';
 import type { ChatMessageId } from '../text';
 import { useChatText } from '../text';
+import { monoFont } from './sx';
 
 export type Drafts = Record<string, string | boolean>;
 type ArgError = Exclude<Parsed, { ok: true }>['error'];
@@ -26,8 +27,6 @@ const ERROR_TEXT: Record<ArgError, ChatMessageId> = {
   json: 'c3.chat.arg.json',
   option: 'c3.chat.arg.option'
 };
-
-const mono = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
 
 /** Os argumentos da ferramenta como campos: texto, várias linhas, número, sim/não, opções e JSON. */
 export default function ArgsEditor({ fields, drafts, errors, onChange, disabled }: ArgsEditorProps) {
@@ -64,7 +63,7 @@ export default function ArgsEditor({ fields, drafts, errors, onChange, disabled 
             minRows={f.type === 'json' ? 3 : undefined}
             slotProps={{
               htmlInput: { inputMode: f.type === 'number' ? 'decimal' : undefined, spellCheck: f.type !== 'json' },
-              input: f.type === 'json' ? { sx: { fontFamily: mono, fontSize: 13 } } : undefined
+              input: f.type === 'json' ? { sx: { fontFamily: monoFont, fontSize: 13 } } : undefined
             }}
           >
             {f.options?.map((o) => (

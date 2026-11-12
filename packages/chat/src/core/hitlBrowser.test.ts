@@ -34,6 +34,7 @@ describe('safeFrame', () => {
     expect(safeFrame('xdata:image/png;base64,AAA')).toBeUndefined();
     expect(safeFrame('javascript:1')).toBeUndefined();
     expect(safeFrame(undefined)).toBeUndefined();
+    expect(safeFrame({ toString: () => 'https://a.com/x.png' })).toBeUndefined();
   });
 });
 
@@ -49,6 +50,7 @@ describe('normalizeAddress', () => {
   it('põe https quando falta', () => {
     expect(normalizeAddress(' loja.com/x ')).toBe('https://loja.com/x');
     expect(normalizeAddress('http://a.com')).toBe('http://a.com/');
+    expect(normalizeAddress('a.com/x?y=b:c')).toBe('https://a.com/x?y=b:c');
     expect(normalizeAddress('javascript:alert(1)')).toBeUndefined();
     expect(normalizeAddress('duas palavras')).toBeUndefined();
     expect(normalizeAddress('  ')).toBeUndefined();

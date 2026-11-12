@@ -29,6 +29,7 @@ import ArgsSummary from './ArgsSummary';
 import ClosedLine from './ClosedLine';
 import DeclineBox from './DeclineBox';
 import useDecision from './useDecision';
+import { actionsSx, headerSx, secondarySx, spacerSx } from './sx';
 
 /**
  * `c3.tool`: o assistente quer rodar uma ferramenta. O humano vê o quê e com quais argumentos, pode editar antes,
@@ -65,7 +66,7 @@ function ToolBody({ part, open, onAnswer, proposal: p }: UiPartProps & { proposa
 
   return (
     <Stack spacing={1.5}>
-      <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap', rowGap: 0.5 }}>
+      <Stack direction="row" spacing={1} sx={headerSx}>
         <Typography variant="subtitle2" component="p">
           {t('c3.chat.tool.wants', { tool: name })}
         </Typography>
@@ -73,7 +74,7 @@ function ToolBody({ part, open, onAnswer, proposal: p }: UiPartProps & { proposa
         {p.risk === 'medium' && <Chip size="small" color="warning" variant="outlined" label={t('c3.chat.tool.risk.medium')} />}
       </Stack>
       {p.tool.description && (
-        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+        <Typography variant="body2" sx={secondarySx}>
           {p.tool.description}
         </Typography>
       )}
@@ -94,7 +95,7 @@ function ToolBody({ part, open, onAnswer, proposal: p }: UiPartProps & { proposa
       {mode === 'decline' ? (
         <DeclineBox disabled={disabled} onBack={() => setMode('view')} onDecline={(r) => void decide(declineTool(r))} />
       ) : (
-        <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+        <Stack direction="row" sx={actionsSx}>
           <Button
             variant="contained"
             color={mode === 'sure' ? 'error' : 'primary'}
@@ -115,7 +116,7 @@ function ToolBody({ part, open, onAnswer, proposal: p }: UiPartProps & { proposa
               {t('c3.chat.tool.always')}
             </Button>
           )}
-          <Box sx={{ flex: 1 }} />
+          <Box sx={spacerSx} />
           <Button color="error" disabled={disabled} onClick={() => (allows.respond ? setMode('decline') : void decide(declineTool()))}>
             {t('c3.chat.tool.decline')}
           </Button>

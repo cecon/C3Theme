@@ -97,7 +97,7 @@ describe('readDrafts', () => {
     ]
   };
   it('aplica o rascunho e tira o vazio', () => {
-    expect(readDrafts(p, { id: '9', qtd: '3', obs: '' })).toEqual({ args: { id: '7', qtd: 3 }, errors: {} });
+    expect(readDrafts(p, { id: '9', qtd: '3', obs: '' })).toStrictEqual({ args: { id: '7', qtd: 3 }, errors: {} });
   });
   it('campo fora do rascunho fica como veio', () => {
     expect(readDrafts(p, {}).args).toEqual(p.args);
@@ -141,6 +141,7 @@ describe('respostas', () => {
     expect(approveTool(proposal, proposal.args, true).values).not.toHaveProperty('always');
     const p = { ...proposal, allow: { always: true } };
     expect(approveTool(p, p.args, true).values).toMatchObject({ always: true });
+    expect(approveTool(p, p.args).values).not.toHaveProperty('always');
   });
   it('recusar leva o motivo aparado', () => {
     expect(declineTool('  outro dia ')).toEqual({ action: 'decline', values: { reason: 'outro dia' } });
@@ -161,6 +162,7 @@ describe('toolResult', () => {
   });
   it('preenche o que faltar', () => {
     expect(toolResult(part({}))).toEqual({ args: {}, edited: [], always: undefined, reason: undefined });
+    expect(toolResult(part({ reason: 3, always: 'sim' }))).toStrictEqual({ args: {}, edited: [], always: undefined, reason: undefined });
     expect(toolResult(part('x'))).toBeUndefined();
     expect(toolResult(part(null))).toBeUndefined();
     expect(toolResult(part([]))).toBeUndefined();
@@ -172,6 +174,7 @@ describe('isToolProposal', () => {
     expect(isToolProposal(proposal)).toBe(true);
     expect(isToolProposal({ ...proposal, fields: [{ name: 'a', type: 'string' }] })).toBe(true);
     expect(isToolProposal({ ...proposal, fields: [{}] })).toBe(false);
+    expect(isToolProposal({ ...proposal, fields: [{ name: 'a', type: 'string' }, { type: 'string' }] })).toBe(false);
     expect(isToolProposal({ ...proposal, fields: 'x' })).toBe(false);
     expect(isToolProposal({ tool: { name: '' }, args: {} })).toBe(false);
     expect(isToolProposal({ tool: { name: 1 }, args: {} })).toBe(false);

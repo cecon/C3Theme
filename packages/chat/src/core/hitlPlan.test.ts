@@ -65,6 +65,10 @@ describe('rascunho', () => {
 });
 
 describe('approvePlan', () => {
+  it('espaço em volta do texto original não conta como mudança', () => {
+    const spaced: PlanProposal = { steps: [{ id: 'a', text: ' Ler ' }] };
+    expect(approvePlan(spaced, planDraft(spaced)).values).toEqual({ steps: [{ id: 'a', text: 'Ler' }], removed: [], edited: false });
+  });
   it('sem mudança, edited falso', () => {
     expect(approvePlan(plan, planDraft(plan))).toEqual({
       action: 'accept',
@@ -105,6 +109,7 @@ describe('isPlanProposal', () => {
     expect(isPlanProposal(plan)).toBe(true);
     expect(isPlanProposal({ steps: [] })).toBe(false);
     expect(isPlanProposal({ steps: [{ id: 'a' }] })).toBe(false);
+    expect(isPlanProposal({ steps: [{ id: 'a', text: 'x' }, { id: 'b' }] })).toBe(false);
     expect(isPlanProposal({ steps: [{ text: 'a' }] })).toBe(false);
     expect(isPlanProposal({ steps: 'a' })).toBe(false);
     expect(isPlanProposal(null)).toBe(false);

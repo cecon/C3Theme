@@ -16,13 +16,12 @@ export interface Waiting {
 /** A pendência mais nova da conversa, ou nada. */
 export function waitingFor(messages: Message[], now = Date.now()): Waiting | undefined {
   const part = findPendingPart(messages, now);
-  const question = messages.findLast((m) => isPending(m.question));
-  const count = (part ? 1 : 0) + (question ? 1 : 0);
-  if (!part && !question) return undefined;
-  const partIndex = part ? messages.findIndex((m) => m.id === part.messageId) : -1;
-  const questionIndex = question ? messages.indexOf(question) : -1;
-  if (part && partIndex >= questionIndex) return { messageId: part.messageId, kind: part.kind, count };
-  return { messageId: question!.id, kind: 'question', count };
+  const partAt = messages.findIndex((m) => m.id === part?.messageId);
+  const questionAt = messages.findLastIndex((m) => isPending(m.question));
+  const count = Number(partAt >= 0) + Number(questionAt >= 0);
+  if (count === 0) return undefined;
+  if (partAt >= questionAt) return { messageId: messages[partAt].id, kind: part!.kind, count };
+  return { messageId: messages[questionAt].id, kind: 'question', count };
 }
 
 /** Só vale avisar quando a pendência não está na última mensagem (que já fica à vista no fim da lista). */
