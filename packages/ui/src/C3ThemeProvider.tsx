@@ -24,6 +24,7 @@ import {
 import { uiMessagesFor } from './i18n';
 import { createC3Theme } from './theme/createC3Theme';
 import type { C3Tokens } from './theme/tokens';
+import type { ColorModePreference } from './theme/useColorMode';
 
 export type LocaleMessages = Record<string, string>;
 
@@ -32,6 +33,8 @@ export interface C3ThemeProviderProps {
   branding?: Partial<Branding>;
   /** Valores iniciais das preferências; o que o usuário mudar fica salvo em `storageKey`. */
   defaultConfig?: Partial<UiConfig>;
+  /** Modo na primeira abertura; a preferência salva da pessoa tem prioridade. Padrão: `system`. */
+  defaultMode?: ColorModePreference;
   storageKey?: string;
   /**
    * Tokens do design system do app (cores por modo, raio, fonte) por cima do visual escolhido. Passe um objeto
@@ -58,6 +61,7 @@ export default function C3ThemeProvider({
   children,
   branding,
   defaultConfig,
+  defaultMode = 'system',
   storageKey = 'c3-ui',
   tokens,
   themeOverrides,
@@ -69,7 +73,13 @@ export default function C3ThemeProvider({
 
   return (
     <ConfigProvider storageKey={storageKey} defaults={defaults}>
-      <ThemedApp storageKey={storageKey} tokens={tokens} themeOverrides={themeOverrides} loadMessages={loadMessages}>
+      <ThemedApp
+        storageKey={storageKey}
+        defaultMode={defaultMode}
+        tokens={tokens}
+        themeOverrides={themeOverrides}
+        loadMessages={loadMessages}
+      >
         <LocalesProvider value={locales}>
           <BrandingProvider value={brand}>{children}</BrandingProvider>
         </LocalesProvider>
@@ -81,6 +91,7 @@ export default function C3ThemeProvider({
 function ThemedApp({
   children,
   storageKey,
+  defaultMode,
   tokens,
   themeOverrides,
   loadMessages
@@ -119,7 +130,7 @@ function ThemedApp({
 
   return (
     <CacheProvider value={config.direction === 'rtl' ? rtlCache : ltrCache}>
-      <ThemeProvider theme={theme} modeStorageKey={`${storageKey}-mode`} defaultMode="system">
+      <ThemeProvider theme={theme} modeStorageKey={`${storageKey}-mode`} defaultMode={defaultMode}>
         <CssBaseline />
         {/* texto sem tradução cai no defaultMessage; não vale poluir o console com isso */}
         <IntlProvider locale={config.locale} messages={allMessages} onError={() => {}}>
