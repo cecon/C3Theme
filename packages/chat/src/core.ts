@@ -1,6 +1,8 @@
 // @c3theme/chat/core: contrato, porta de transporte, markdown (árvore pura) e hooks headless. Só depende do React
 // (sem MUI, sem rede).
 export type { Attachment, Author, Conversation, Message, MessageStatus, OutgoingMessage, ToolCall } from './core/types';
+export type { MessageDelivery } from './core/delivery';
+export { isDeliveryMessage, withLastDelivery } from './core/delivery';
 export { answerLabels, isAnswerReady, isPending, primaryOption } from './core/question';
 export type { AgentQuestion, QuestionAnswer, QuestionOption } from './core/question';
 export { answerPart, cancelPart, isPartOpen, stateAfter } from './core/ui';

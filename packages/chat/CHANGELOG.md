@@ -2,6 +2,11 @@
 
 Instale fixando o commit (`github:cecon/C3Theme#<sha>&path:packages/chat`). Cada entrada diz o que muda para quem usa; **Quebra** marca o que exige mudar o app.
 
+## 0.14.0 (2026-11-12)
+
+- Entrega externa da resposta (#93): `Message.entrega?: { situacao: 'enviada' | 'entregue' | 'lida' | 'falhou', motivo?: string | null }`. O assistente mostra tiques e texto ao lado da resposta; quando falha, o motivo fica visível. Não altera `Message.status` (envio da pergunta no chat).
+- `AssistantPanel.entregaDaUltimaMensagem` e `MessageList.entregaDaUltimaMensagem` preenchem somente a última resposta do agente sem entrega própria. O sistema associa o recibo à mensagem e atualiza a prop ou emite `ChatEvent` `message` com a mensagem atualizada. Campos ausentes mantêm a apresentação anterior; não há integração com canal externo no componente.
+
 ## 0.13.0 (2026-11-12)
 
 - Orientar o turno em andamento (#91, [ADR 0008](../../docs/adr/0008-orientar-o-turno-em-andamento.md)): a pessoa manda uma mensagem para dentro do trabalho do agente, sem interromper. `AssistantPanel.steer` liga: com o agente ocupado, Ctrl+Enter (⌘+Enter no Mac) orienta com o texto da caixa ou, vazia, com a primeira da fila; cada mensagem da fila ganha **Orientar**; o atalho aparece junto da caixa (`SteerHint`). `useMessageWindow.send(text, { steer: true })` manda `OutgoingMessage.steer` e a mensagem fica `Message.steer: 'pending'` até o agente ler (`'taken'`).

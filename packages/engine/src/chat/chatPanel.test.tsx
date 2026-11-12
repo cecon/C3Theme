@@ -57,6 +57,12 @@ function mount(node: React.ReactNode, chat?: ChatTransport) {
 const def: ChatDef = { title: 'Ajuda', suggestions: ['Quanto vendi hoje?'], placeholder: 'Pergunte ao assistente' };
 
 describe('ChatPanel', () => {
+  it('o resumo de entrega da spec marca a última resposta; o turno pode ter uma entrega própria', async () => {
+    const t = memoryTransport([reply(undefined)]);
+    mount(<ChatPanel def={{ entregaDaUltimaMensagem: { situacao: 'falhou', motivo: 'Canal desconectado' } }} />, t.transport);
+    expect(await screen.findByText('Falhou: Canal desconectado')).toBeTruthy();
+  });
+
   it('sem transporte de chat, avisa que o sistema não tem assistente', () => {
     mount(<ChatPanel def={def} />);
     expect(screen.getByText('Este sistema não tem assistente.')).toBeTruthy();

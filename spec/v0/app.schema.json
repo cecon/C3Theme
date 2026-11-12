@@ -539,6 +539,16 @@
         }
       }
     },
+    "chatDelivery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["situacao"],
+      "properties": {
+        "situacao": { "enum": ["enviada", "entregue", "lida", "falhou"] },
+        "motivo": { "type": ["string", "null"] }
+      },
+      "description": "Entrega da resposta do agente em canal externo. Não é o status de envio da pergunta no chat."
+    },
     "chat": {
       "type": "object",
       "additionalProperties": false,
@@ -546,6 +556,10 @@
       "properties": {
         "messageActions": { "type": "array", "items": { "$ref": "#/$defs/chatMessageAction" } },
         "lanes": { "$ref": "#/$defs/chatLanes" },
+        "entregaDaUltimaMensagem": {
+          "$ref": "#/$defs/chatDelivery",
+          "description": "Resumo da entrega externa da última resposta do agente; a entrega declarada no turno prevalece. Opcional: sem o resumo não há marca implícita."
+        },
         "conversation": {
           "type": "string",
           "pattern": "^[A-Za-z0-9_-]{1,64}$",

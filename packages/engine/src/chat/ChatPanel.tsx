@@ -72,6 +72,7 @@ function Conversation({ transport, view, def, onClose }: { transport: ChatTransp
         uiRenderers: renderers,
         queue: view.queue,
         steer: view.steer,
+        entregaDaUltimaMensagem: def.entregaDaUltimaMensagem,
         composer: { sendKey: view.sendKey, ...(view.placeholder !== undefined && { placeholder: view.placeholder }) },
         onTelemetry: telemetry,
         taskOf: agentTaskOf
