@@ -1402,8 +1402,49 @@
               "$ref": "#/$defs/identifier",
               "description": "Só com start datetime: campo boolean que marca o evento de dia inteiro. Verdadeiro: a shell não mostra a hora."
             },
-            "color": { "$ref": "#/$defs/identifier", "description": "Campo enum cuja cor (options[].color) pinta o evento." },
-            "fields": { "$ref": "#/$defs/cardFields" }
+            "color": {
+              "description": "Cor do evento. Nome de um campo enum: a color da opção. Objeto: 'map' valor → tom pelo valor de 'field' (sem map, a color da opção do enum) e 'rules', em ordem, que vencem o mapa (atrasado fica vermelho seja qual for a situação). Sem tom: primário.",
+              "oneOf": [
+                { "$ref": "#/$defs/identifier" },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "anyOf": [{ "required": ["field"] }, { "required": ["rules"] }],
+                  "properties": {
+                    "field": { "$ref": "#/$defs/identifier" },
+                    "map": { "type": "object", "minProperties": 1, "additionalProperties": { "enum": ["neutral", "primary", "info", "success", "warning", "danger"] } },
+                    "rules": {
+                      "type": "array",
+                      "minItems": 1,
+                      "items": {
+                        "type": "object",
+                        "required": ["when", "tone"],
+                        "additionalProperties": false,
+                        "properties": { "when": { "$ref": "#/$defs/condition" }, "tone": { "enum": ["neutral", "primary", "info", "success", "warning", "danger"] } }
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            "fields": { "$ref": "#/$defs/cardFields" },
+            "range": {
+              "enum": ["month", "week", "day"],
+              "default": "month",
+              "description": "Visão com que abre: o mês, a semana (uma coluna por dia, primeiro dia pela localidade, uma linha por faixa de hora) ou o dia. No celular abre sempre na Agenda. As setas e o Hoje trocam o período sem recarregar, e a consulta pede só o período visível."
+            },
+            "slot": {
+              "enum": ["hour", "30min"],
+              "default": "30min",
+              "description": "Altura da faixa de hora na semana e no dia."
+            },
+            "open": {
+              "type": "object",
+              "required": ["href"],
+              "additionalProperties": false,
+              "description": "O clique no evento leva a outra tela do app em vez do diálogo do registro: 'href' com {campo} do registro, ex. '/pedido/{pedido}' (reference vai pelo id). Campo vazio: abre o registro, como sem 'open'.",
+              "properties": { "href": { "type": "string", "pattern": "^/(?!/)" } }
+            }
           }
         }
       }

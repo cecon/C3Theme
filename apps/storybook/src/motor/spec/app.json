@@ -23,7 +23,8 @@
     "demonstrativo",
     "boleto",
     "entrega",
-    "posicao_estoque"
+    "posicao_estoque",
+    "agenda_entrega"
   ],
   "layout": {
     "orientation": "vertical",

@@ -2,6 +2,7 @@
 
 import type { AppDef, EntityDef } from '@c3theme/engine';
 
+import agendaEntrega from './agenda_entrega.json';
 import app from './app.json';
 import cliente from './cliente.json';
 import contaContabil from './conta_contabil.json';
@@ -48,5 +49,6 @@ export const ENTITIES = [
   demonstrativo,
   boleto,
   entrega,
-  posicaoEstoque
+  posicaoEstoque,
+  agendaEntrega
 ] as unknown as EntityDef[];

@@ -113,6 +113,7 @@ Resumo. Quem decide são o `spec/v0/app.schema.json` e o `entity.schema.json` do
 - `board.groupBy` e `calendar.color` são campos `enum`. Arrastar grava pelo PATCH normal, e só quando o usuário pode alterar e o campo não está travado.
 - Cartão do quadro: `code` (acima do título), `due` (prazo em chip), `assignee` (avatar), `counters` (contadores com ícone) e `done` (valor da coluna de concluídos). Não escreva componente de cartão para isso. "Adicionar cartão" no pé da coluna vem por padrão (`quickAdd: false` tira).
 - O calendário tem Mês, Semana, Dia e Agenda; arrastar ou esticar o evento remarca e selecionar dias cria no diálogo. Ponha `label.new` ("Novo evento") para o botão.
+- Calendário: `range` (`month`/`week`/`day`), `slot` (`hour`/`30min`), `color` como enum ou `{ field, map, rules: [{ when, tone }] }` (a regra vence o mapa) e `open: { "href": "/pedido/{pedido}" }` (o clique leva a outra tela).
 - Os presets da lista valem nas três telas. No menu, `"view": "board"`.
 - Cartões: `"gallery": { "image": "foto_url", "subtitle": "resumo", "caption": ["autor"], "chip": "tipo", "size": "small", "viewer": true }` em `/{entity}/gallery`. `image` é campo string (URL) ou `{ "component": "nome" }`; sem imagem saem as iniciais. Não escreva página de cartões.
 - Cabeçalho do registro com imagem: `"form": { "header": { "image": "foto_url", "subtitle": "resumo", "caption": ["autor"] } }`.

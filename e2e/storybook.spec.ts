@@ -71,3 +71,18 @@ test('consulta do sistema com href: o produto leva ao kardex filtrado por ele (#
   // o filtro do produto veio do endereço: o feijão (produto 2) não aparece
   await expect(page.getByText('Compra NF 1207')).toHaveCount(0);
 });
+
+test('agenda da semana: pedidos na hora, atrasado em vermelho e o clique leva à entrega (#65)', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto(story('layout-shell-pelo-motor--agenda-semana'));
+  await expect(page.locator('.fc-timeGridWeek-view')).toBeVisible();
+  const late = page.locator('.fc-event.ev-danger', { hasText: 'Pedido 1041' });
+  await expect(late).toBeVisible();
+  await expect(page.locator('.fc-event.ev-info', { hasText: 'Pedido 1042' })).toBeVisible();
+  // a semana seguinte não tem pedidos; Hoje volta
+  await page.getByRole('button', { name: /próximo|seguinte/i }).click();
+  await expect(page.locator('.fc-event')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Hoje' }).click();
+  await late.click();
+  await expect(page.getByRole('textbox', { name: 'Cliente' })).toHaveValue('Ana Souza');
+});

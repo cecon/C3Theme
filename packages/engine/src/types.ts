@@ -86,6 +86,7 @@ export interface Access {
 export type Denied = 'hidden' | 'readOnly';
 
 export type {
+  CalendarColor,
   ColumnDef,
   ExpandItem,
   GalleryView,

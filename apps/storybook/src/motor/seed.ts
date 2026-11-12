@@ -4,7 +4,7 @@ import type { MemorySeed, WireRecord } from '@c3theme/engine';
 
 import { BALANCETE, mediaDaConta, ORCADO_REALIZADO, revisar } from './balancete';
 import { BOLETOS, colunasDoPeriodo, DEMONSTRATIVO } from './demonstrativo';
-import { ENTREGAS, relacaoDeEntregas } from './entregas';
+import { AGENDA, ENTREGAS, relacaoDeEntregas } from './entregas';
 import { OPENAPI } from './openapi';
 import { avisos, eventos, mesas, tarefas } from './operacao';
 import { APP, ENTITIES } from './spec';
@@ -100,6 +100,7 @@ export const SEED: MemorySeed = {
     demonstrativo: DEMONSTRATIVO,
     boleto: BOLETOS,
     entrega: ENTREGAS,
+    agenda_entrega: AGENDA,
     // o que a consulta do sistema devolveria: o saldo atual de cada produto do kardex
     posicao_estoque: [
       { id: '1', produto: '1', saldo: 36 },
@@ -113,7 +114,7 @@ export const SEED: MemorySeed = {
     vendedor: ['Hugo Martins', 'Íris Campos', 'João Pedro'].map((nome, i) => ({ id: String(i + 1), nome }))
   },
   // quem usa as histórias não cadastra vendedor: o campo que aponta para ele fica sem o "Cadastrar"
-  capabilities: { vendedor: { create: false } },
+  capabilities: { vendedor: { create: false }, agenda_entrega: { create: false, update: false, delete: false } },
   notifications: avisos,
   // o que o backend calcularia: pendente até ter a loja e o caixa; a impressora vira item feito do resumo
   onSave: {

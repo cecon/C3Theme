@@ -1,0 +1,39 @@
+{
+  "$schema": "../../../../../spec/v0/entity.schema.json",
+  "specVersion": "0",
+  "name": "agenda_entrega",
+  "label": { "singular": "Entrega agendada", "plural": "Controle semanal", "gender": "f" },
+  "description": "Visão só de leitura dos pedidos agendados: a semana com os pedidos na hora da entrega, a cor pela situação e o atrasado em vermelho. O clique abre a entrega.",
+  "icon": "Calendar",
+  "titleField": "titulo",
+  "fields": [
+    { "name": "titulo", "type": "string", "label": "Pedido" },
+    { "name": "entrega_em", "type": "datetime", "label": "Entrega" },
+    {
+      "name": "situacao",
+      "type": "enum",
+      "label": "Situação",
+      "options": [
+        { "value": "O", "label": "Orçamento" },
+        { "value": "F", "label": "Formulação" },
+        { "value": "P", "label": "Pendente" }
+      ]
+    },
+    { "name": "atrasado", "type": "boolean", "label": "Atrasado" },
+    { "name": "entrega", "type": "reference", "entity": "entrega", "label": "Entrega" }
+  ],
+  "views": {
+    "list": { "columns": ["titulo", "entrega_em", "situacao", "atrasado"], "defaultSort": [{ "field": "entrega_em" }] },
+    "calendar": {
+      "start": "entrega_em",
+      "range": "week",
+      "slot": "hour",
+      "color": {
+        "field": "situacao",
+        "map": { "O": "neutral", "F": "info", "P": "warning" },
+        "rules": [{ "when": { "field": "atrasado", "op": "eq", "value": true }, "tone": "danger" }]
+      },
+      "open": { "href": "/entrega/{entrega}" }
+    }
+  }
+}

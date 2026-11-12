@@ -40,3 +40,28 @@ export function relacaoDeEntregas(): ActionPreview {
     table: { columns: [{ name: 'linha', label: 'Relação', format: 'pre' }], rows: texto.map((l) => ({ linha: l })) }
   };
 }
+
+/** Dia `dia` (0 = domingo) da semana corrente, às `hora`: a agenda abre na semana de hoje, então os dados acompanham. */
+const naSemana = (dia: number, hora: number) => {
+  const d = new Date();
+  d.setDate(d.getDate() - d.getDay() + dia);
+  d.setHours(hora, 0, 0, 0);
+  return d.toISOString();
+};
+
+/** Controle semanal (#65): os pedidos na hora da entrega; o atrasado sai em vermelho, seja qual for a situação. */
+export const AGENDA: WireRecord[] = [
+  [1, 9, 'P', true],
+  [1, 14, 'F', false],
+  [2, 10, 'O', false],
+  [3, 11, 'P', false],
+  [4, 16, 'F', false],
+  [5, 9, 'P', false]
+].map(([dia, hora, situacao, atrasado], i) => ({
+  id: String(i + 1),
+  titulo: `Pedido ${1041 + i}`,
+  entrega_em: naSemana(dia as number, hora as number),
+  situacao,
+  atrasado,
+  entrega: String((i % ENTREGAS.length) + 1)
+}));

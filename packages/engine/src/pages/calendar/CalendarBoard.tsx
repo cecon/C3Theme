@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useIntl } from 'react-intl';
-import { useSearchParams } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import useSWR from 'swr';
 
 // material-ui
@@ -21,7 +21,6 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import { CalendarToolbar, calendarStyles, notify, PageLoader, Panel, type CalendarView } from '@c3theme/ui';
 import { dayKey, monthParam, movedPatch, parseMonth, rangeWhere, toItem } from '../../calendar';
 import { useEngine, useText } from '../../context';
-import { findOption } from '../../format';
 import { newLabel } from '../../formValues';
 import type { WireRecord } from '../../types';
 import { fcLocale } from './fcLocale';
@@ -33,6 +32,9 @@ import { useViewPreset } from '../views/useViewPreset';
 import { joinAnd } from '../list/useListQuery';
 import { withPreset } from '../../presetTabs';
 import { useLive } from '../../live/useLive';
+import { eventTone } from '../../calendarTone';
+import { fillHref } from '../list/columnHref';
+import { initialView, SLOT } from './calendarMode';
 
 /** Mais que isso no período é sinal de que falta um filtro; a tela avisa em vez de pedir tudo. */
 const LIMIT = 500;
@@ -52,19 +54,20 @@ export default function CalendarBoard({ entity }: { entity: string }) {
   const ref = useRef<FullCalendar>(null);
   const view = def.views?.calendar;
   const type = def.fields.find((f) => f.name === view?.start)?.type === 'datetime' ? 'datetime' : 'date';
+  const navigate = useNavigate();
 
-  const [mode, setMode] = useState<CalendarView>(mobile ? 'listWeek' : 'dayGridMonth');
+  const [mode, setMode] = useState<CalendarView>(initialView(view?.range, mobile));
   const [title, setTitle] = useState('');
   const [range, setRange] = useState<{ from: Date; to: Date }>();
   const [dialog, setDialog] = useState<{ id?: string; edit?: boolean; initial?: WireRecord } | null>(null);
   const { year, month } = parseMonth(params.get('month'));
 
-  // no celular a visão padrão é a agenda; ao voltar para tela larga, o mês
+  // no celular a visão padrão é a agenda; ao voltar para tela larga, a do `range` (padrão o mês)
   useEffect(() => {
-    const next: CalendarView = mobile ? 'listWeek' : 'dayGridMonth';
+    const next = initialView(view?.range, mobile);
     setMode(next);
     ref.current?.getApi().changeView(next);
-  }, [mobile]);
+  }, [mobile, view?.range]);
 
   const where = useMemo(() => {
     if (!view || !range) return undefined;
@@ -77,17 +80,15 @@ export default function CalendarBoard({ entity }: { entity: string }) {
     { keepPreviousData: true }
   );
 
-  const colorField = def.fields.find((f) => f.name === view?.color);
   const events = useMemo<EventInput[]>(
     () =>
       view
         ? (data?.rows ?? []).flatMap((r) => {
             const item = toItem(r, view, type, recordTitle(def, r) || `#${r.id}`);
-            const tone = (colorField && findOption(colorField, r[colorField.name])?.color) || 'primary';
-            return item ? [{ ...item, classNames: [`ev-${tone}`] }] : [];
+            return item ? [{ ...item, classNames: [`ev-${eventTone(view.color, def, r)}`] }] : [];
           })
         : [],
-    [data, view, type, def, colorField]
+    [data, view, type, def]
   );
 
   if (!view) return <Alert severity="warning">{`${text(def.label.plural)} não declara views.calendar.`}</Alert>;
@@ -140,7 +141,8 @@ export default function CalendarBoard({ entity }: { entity: string }) {
           ref={ref}
           plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
           initialView={mode}
-          initialDate={`${monthParam(year, month)}-01`}
+          // sem mês na URL, abre em hoje (na semana, a semana de hoje, não a do dia 1º)
+          initialDate={params.has('month') ? `${monthParam(year, month)}-01` : undefined}
           locale={fcLocale(intl.locale)}
           direction={theme.direction}
           headerToolbar={false}
@@ -155,6 +157,9 @@ export default function CalendarBoard({ entity }: { entity: string }) {
           eventResizableFromStart
           longPressDelay={300}
           scrollTime="08:00:00"
+          slotDuration={SLOT[view.slot ?? '30min']}
+          // sem campo de dia inteiro, nenhum evento cai na faixa "dia inteiro" da semana: ela só ocuparia espaço
+          allDaySlot={type === 'date' || Boolean(view.allDay)}
           slotLabelFormat={{ hour: '2-digit', minute: '2-digit', hour12: false }}
           eventTimeFormat={{ hour: '2-digit', minute: '2-digit', hour12: false }}
           // o FullCalendar nomeia a célula do dia só pelo número; com eventos dentro, o nome fica sem o texto visível
@@ -185,6 +190,10 @@ export default function CalendarBoard({ entity }: { entity: string }) {
           }}
           eventClick={(arg) => {
             arg.jsEvent.preventDefault();
+            // `open.href`: o evento leva a outra tela (o pedido da agenda de entregas), com os campos do registro
+            const row = data?.rows.find((r) => r.id === arg.event.id);
+            const to = view.open && row ? fillHref(view.open.href, row) : undefined;
+            if (to) return navigate(to);
             // como na agenda em código: quem pode alterar já abre editando
             setDialog({ id: arg.event.id, edit: capabilities.update });
           }}
