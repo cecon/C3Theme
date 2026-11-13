@@ -1,20 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 // material-ui
-import Avatar from '@mui/material/Avatar';
-import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
-import ButtonBase from '@mui/material/ButtonBase';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
+import { Add } from 'iconsax-reactjs';
+import { ItemDoServidor, Carregando, Erro, Vazio, srOnly } from './rails/ServerRailParts';
+import ServerRailMenus from './rails/ServerRailMenus';
 import Typography from '@mui/material/Typography';
-import { alpha, type Theme } from '@mui/material/styles';
-import { Add, More } from 'iconsax-reactjs';
+import useRailScroll from './rails/useRailScroll';
 
 import {
   moverNaOrdem,
@@ -24,42 +20,19 @@ import {
   readRailPreferences,
   writeRailPreferences
 } from './rails/preferences';
-import {
-  SERVER_RAIL_DEFAULT_LABELS,
-  SERVER_STATE_LABEL,
-  type ServerAction,
-  type ServerRailItem,
-  type ServerRailProps
-} from './rails/types';
+import { SERVER_RAIL_DEFAULT_LABELS, type ServerRailProps } from './rails/types';
 
 export const SERVER_RAIL_WIDTH = 64;
-
-/** Cor do selo por estado; o texto do tooltip é que diz o estado, não a cor. */
-function estadoTone(t: Theme, estado: ServerRailItem['state']): string {
-  switch (estado) {
-    case 'online':
-      return t.palette.success.main;
-    case 'connecting':
-    case 'sleeping':
-      return t.palette.warning.main;
-    case 'error':
-    case 'incompatible':
-      return t.palette.error.main;
-    case 'offline':
-      return t.palette.text.disabled;
-  }
-}
-
-function nomeAcessivel(server: ServerRailItem): string {
-  return `${server.name} (${SERVER_STATE_LABEL[server.state]})`;
-}
 
 /**
  * Rail de servidores (#116): coluna estreita na borda esquerda com os servidores da conta, o botão de
  * adicionar, menus de ação por servidor, reordenação e atalhos de 1 a 9. A declaração vem da spec; os
  * dados e as ações chegam por porta. Nenhum texto ou desenho foi copiado da referência.
  */
-export default function ServerRail({
+export default function ServerRail(props: ServerRailProps) {
+  return <ServerRailScope key={props.storageKey ?? railStorageKey('app')} {...props} />;
+}
+function ServerRailScope({
   servers,
   activeId,
   state = 'ready',
@@ -79,7 +52,7 @@ export default function ServerRail({
   onAnnounce,
   labels: labelsParciais,
   className
-}: ServerRailProps & { readonly localServerId?: string }) {
+}: ServerRailProps) {
   const labels = { ...SERVER_RAIL_DEFAULT_LABELS, ...labelsParciais };
   const chave = storageKey ?? railStorageKey('app');
   const [prefs, setPrefs] = useState(() => readRailPreferences(globalThis.localStorage, chave));
@@ -89,6 +62,8 @@ export default function ServerRail({
   const [menuDeAcoes, setMenuDeAcoes] = useState<HTMLElement | null>(null);
   const [menuAdicionar, setMenuAdicionar] = useState<HTMLElement | null>(null);
   const listaRef = useRef<HTMLDivElement>(null);
+  const scroll = useRailScroll(listaRef, servers.length);
+  const local = hiddenLocal ?? servers.find((server) => server.id === localServerId);
   const botoes = useRef(new Map<string, HTMLElement>());
   const anuncio = useRef<HTMLDivElement>(null);
 
@@ -151,15 +126,17 @@ export default function ServerRail({
 
   const mover = useCallback(
     (id: string, direcao: -1 | 1) => {
-      const ids = visiveis.map((s) => s.id);
-      const nova = moverNaOrdem(ids, id, direcao);
-      if (nova === ids) {
+      const remotos = visiveis.filter((s) => s.id !== localServerId).map((s) => s.id);
+      const novaRemota = moverNaOrdem(remotos, id, direcao);
+      let index = 0;
+      const nova = visiveis.map((s) => (s.id === localServerId ? s.id : novaRemota[index++]));
+      if (novaRemota === remotos) {
         return;
       }
       reordenar(nova);
       anunciar(`Servidor movido para a posição ${nova.indexOf(id) + 1} de ${nova.length}.`);
     },
-    [visiveis, reordenar, anunciar]
+    [visiveis, reordenar, anunciar, localServerId]
   );
 
   const abrirMenuDe = (id: string, elemento: HTMLElement) => {
@@ -187,14 +164,27 @@ export default function ServerRail({
         bgcolor: 'background.default'
       }}
     >
-      <Stack ref={listaRef} component="div" spacing={0.5} sx={{ flex: 1, overflowY: 'auto', py: 1, px: 0.5, width: '100%' }}>
+      <Stack
+        ref={listaRef}
+        component="div"
+        spacing={0.5}
+        onScroll={scroll.measure}
+        onDragOver={scroll.dragOver}
+        onDragLeave={scroll.stop}
+        onDrop={scroll.stop}
+        sx={{ flex: 1, minHeight: 0, overflowY: 'auto', py: 1, px: 0.5, width: '100%', boxShadow: scroll.shadow }}
+      >
         {state === 'loading' && <Carregando label={labels.loading} />}
         {state === 'error' && <Erro mensagem={errorMessage ?? labels.errorTitle} retry={labels.retry} onRetry={onRetry} />}
         {state === 'ready' && visiveis.length === 0 && (
           <Vazio
             titulo={labels.emptyTitle}
             descricao={labels.emptyDescription}
-            onAdd={onAdd === undefined ? undefined : () => onAdd()}
+            onAdd={
+              onAdd === undefined
+                ? undefined
+                : () => (addOptions.length > 1 ? setMenuAdicionar(listaRef.current) : onAdd(addOptions[0]?.id))
+            }
             addLabel={labels.add}
           />
         )}
@@ -203,15 +193,21 @@ export default function ServerRail({
             <div
               key={server.id}
               onDragOver={(evento) => {
+                if (arrastando === null || server.id === localServerId) return;
                 evento.preventDefault();
                 setDestino(indice);
               }}
               onDrop={() => {
-                if (arrastando !== null) {
-                  const ids = visiveis.map((s) => s.id).filter((id) => id !== arrastando);
-                  ids.splice(indice, 0, arrastando);
+                if (arrastando !== null && arrastando !== server.id && server.id !== localServerId) {
+                  const remotos = visiveis.filter((s) => s.id !== localServerId).map((s) => s.id);
+                  const from = remotos.indexOf(arrastando),
+                    to = remotos.indexOf(server.id);
+                  remotos.splice(from, 1);
+                  remotos.splice(to, 0, arrastando);
+                  let index = 0;
+                  const ids = visiveis.map((s) => (s.id === localServerId ? s.id : remotos[index++]));
                   reordenar(ids);
-                  anunciar(`Servidor movido para a posição ${indice + 1} de ${ids.length}.`);
+                  anunciar(`Servidor movido para a posi??o ${ids.indexOf(arrastando) + 1} de ${ids.length}.`);
                 }
                 setArrastando(null);
                 setDestino(null);
@@ -229,10 +225,11 @@ export default function ServerRail({
                 onOpenActions={(elemento) => abrirMenuDe(server.id, elemento)}
                 onDragStart={() => setArrastando(server.id)}
                 onDragEnd={() => {
+                  scroll.stop();
                   setArrastando(null);
                   setDestino(null);
                 }}
-                draggable
+                draggable={server.id !== localServerId}
               />
             </div>
           ))}
@@ -243,7 +240,9 @@ export default function ServerRail({
           <IconButton
             aria-label={labels.add}
             onClick={(evento) =>
-              addOptions.length > 1 || (hiddenLocal !== undefined && prefs.localHidden) ? setMenuAdicionar(evento.currentTarget) : onAdd?.()
+              addOptions.length > 1 || (local !== undefined && prefs.localHidden)
+                ? setMenuAdicionar(evento.currentTarget)
+                : onAdd?.(addOptions[0]?.id)
             }
             sx={(t) => ({
               width: 40,
@@ -259,274 +258,31 @@ export default function ServerRail({
           </IconButton>
         </Tooltip>
       </Box>
-      <Menu anchorEl={menuAdicionar} open={menuAdicionar !== null} onClose={() => setMenuAdicionar(null)}>
-        {prefs.localHidden && hiddenLocal !== undefined && (
-          <MenuItem
-            onClick={() => {
-              setMenuAdicionar(null);
-              onShowLocal?.();
-              salvar({ localHidden: false });
-            }}
-          >
-            {labels.showLocal(hiddenLocal.name)}
-          </MenuItem>
-        )}
-        {addOptions.map((opcao) => (
-          <MenuItem
-            key={opcao.id}
-            onClick={() => {
-              setMenuAdicionar(null);
-              onAdd?.(opcao.id);
-            }}
-          >
-            {opcao.label}
-          </MenuItem>
-        ))}
-      </Menu>
-      <Menu
-        anchorEl={menuDeAcoes}
-        open={menuDe !== null && menuDeAcoes !== null}
-        onClose={() => {
-          setMenuDe(null);
-          setMenuDeAcoes(null);
-        }}
-        transitionDuration={0}
-      >
-        <AcoesDoServidor
-          server={visiveis.find((s) => s.id === menuDe)}
-          actions={actions}
-          labels={labels}
-          local={menuDe === localServerId}
-          onMover={(direcao) => {
-            if (menuDe !== null) {
-              mover(menuDe, direcao);
-            }
-            setMenuDe(null);
-            setMenuDeAcoes(null);
-          }}
-          onOcultar={() => {
-            salvar({ localHidden: true });
-            anunciar(`Servidor ${hiddenLocal?.name ?? ''} oculto.`);
-            setMenuDe(null);
-            setMenuDeAcoes(null);
-          }}
-          onAction={(id) => {
-            if (menuDe !== null) {
-              onAction?.(menuDe, id);
-            }
-            setMenuDe(null);
-            setMenuDeAcoes(null);
-          }}
-        />
-      </Menu>
+      <ServerRailMenus
+        menuAdicionar={menuAdicionar}
+        setMenuAdicionar={setMenuAdicionar}
+        local={local}
+        prefs={prefs}
+        onShowLocal={onShowLocal}
+        salvar={salvar}
+        labels={labels}
+        addOptions={addOptions}
+        onAdd={onAdd}
+        menuDeAcoes={menuDeAcoes}
+        menuDe={menuDe}
+        setMenuDe={setMenuDe}
+        setMenuDeAcoes={setMenuDeAcoes}
+        visiveis={visiveis}
+        actions={actions}
+        localServerId={localServerId}
+        mover={mover}
+        anunciar={anunciar}
+        onAction={onAction}
+      />
       <Box ref={anuncio} aria-live="polite" sx={srOnly} />
       <Typography component="span" sx={srOnly}>
         {labels.shortcuts}
       </Typography>
     </Box>
-  );
-}
-
-const srOnly = { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap' } as const;
-
-function ItemDoServidor({
-  server,
-  ativo,
-  destacado,
-  labels,
-  registerButton,
-  onSelect,
-  onOpenActions,
-  onDragStart,
-  onDragEnd,
-  draggable
-}: {
-  server: ServerRailItem;
-  ativo: boolean;
-  destacado: boolean;
-  labels: typeof SERVER_RAIL_DEFAULT_LABELS;
-  registerButton: (elemento: HTMLElement | null) => void;
-  onSelect: () => void;
-  onOpenActions: (elemento: HTMLElement) => void;
-  onDragStart: () => void;
-  onDragEnd: () => void;
-  draggable: boolean;
-}) {
-  const Icon = server.icon;
-  return (
-    <Box
-      sx={(t) => ({
-        position: 'relative',
-        width: '100%',
-        borderRadius: 2,
-        outline: destacado ? `2px solid ${t.palette.primary.main}` : undefined,
-        outlineOffset: -2,
-        bgcolor: ativo ? alpha(t.palette.primary.main, t.palette.action.selectedOpacity) : undefined
-      })}
-      draggable={draggable}
-      onDragStart={onDragStart}
-      onDragEnd={onDragEnd}
-    >
-      <Tooltip
-        title={`${server.name} — ${SERVER_STATE_LABEL[server.state]}${server.detail === undefined ? '' : ` · ${server.detail}`}`}
-        enterDelay={400}
-      >
-        <ButtonBase
-          ref={registerButton}
-          onClick={onSelect}
-          onContextMenu={(evento) => {
-            evento.preventDefault();
-            onOpenActions(evento.currentTarget);
-          }}
-          onKeyDown={(evento) => {
-            if (evento.key === 'ContextMenu' || (evento.shiftKey && evento.key === 'F10')) {
-              evento.preventDefault();
-              onOpenActions(evento.currentTarget);
-            }
-          }}
-          aria-current={ativo ? 'true' : undefined}
-          aria-label={nomeAcessivel(server)}
-          sx={(t) => ({
-            width: '100%',
-            flexDirection: 'column',
-            py: 1,
-            gap: 0.5,
-            borderRadius: 2,
-            '&.Mui-focusVisible': { outline: `2px solid ${t.palette.primary.main}`, outlineOffset: -2 }
-          })}
-        >
-          <Badge
-            overlap="circular"
-            variant="dot"
-            sx={(t) => ({
-              '& .MuiBadge-badge': { backgroundColor: estadoTone(t, server.state), boxShadow: `0 0 0 2px ${t.palette.background.default}` }
-            })}
-          >
-            {server.imageUrl !== undefined ? (
-              <Avatar src={server.imageUrl} alt="" sx={{ width: 32, height: 32 }} />
-            ) : Icon !== undefined ? (
-              <Icon size={24} variant={ativo ? 'Bulk' : 'Linear'} />
-            ) : (
-              <Avatar sx={{ width: 32, height: 32, fontSize: 13 }}>{server.name.trim().charAt(0).toUpperCase()}</Avatar>
-            )}
-          </Badge>
-          <Typography component="span" sx={{ ...srOnly, fontSize: 10 }}>
-            {SERVER_STATE_LABEL[server.state]}
-          </Typography>
-          {ativo && (
-            <Box aria-hidden sx={{ width: 3, height: 16, borderRadius: 2, bgcolor: 'primary.main', position: 'absolute', left: 2 }} />
-          )}
-        </ButtonBase>
-      </Tooltip>
-      <IconButton
-        aria-label={`${labels.actions}: ${server.name}`}
-        size="small"
-        onClick={(evento) => onOpenActions(evento.currentTarget)}
-        sx={{ position: 'absolute', top: 0, right: 0, p: 0.25, opacity: ativo ? 1 : 0.001, '&:focus-visible': { opacity: 1 } }}
-      >
-        <More size={14} />
-      </IconButton>
-    </Box>
-  );
-}
-
-function AcoesDoServidor({
-  server,
-  actions,
-  labels,
-  local,
-  onMover,
-  onOcultar,
-  onAction
-}: {
-  server: ServerRailItem | undefined;
-  actions: ServerRailProps['actions'];
-  labels: typeof SERVER_RAIL_DEFAULT_LABELS;
-  local: boolean;
-  onMover: (direcao: -1 | 1) => void;
-  onOcultar: () => void;
-  onAction: (id: string) => void;
-}) {
-  if (server === undefined) {
-    return null;
-  }
-  const declaradas: readonly ServerAction[] = actions?.(server) ?? [];
-  return (
-    <>
-      {declaradas.map((acao) => (
-        <MenuItem
-          key={acao.id}
-          disabled={acao.disabled ?? false}
-          title={acao.instruction}
-          onClick={() => !(acao.disabled ?? false) && onAction(acao.id)}
-        >
-          {acao.label}
-        </MenuItem>
-      ))}
-      {!local && (
-        <>
-          <Divider />
-          <MenuItem onClick={() => onMover(-1)}>{labels.moveUp}</MenuItem>
-          <MenuItem onClick={() => onMover(1)}>{labels.moveDown}</MenuItem>
-        </>
-      )}
-      {local && (
-        <>
-          <Divider />
-          <MenuItem onClick={onOcultar}>{labels.showLocal(server.name).replace('Reexibir', 'Ocultar')}</MenuItem>
-        </>
-      )}
-    </>
-  );
-}
-
-function Carregando({ label }: { label: string }) {
-  return (
-    <Stack spacing={1} sx={{ py: 1, px: 0.5 }} aria-busy="true" aria-label={label}>
-      {[0, 1, 2].map((i) => (
-        <Skeleton key={i} variant="rounded" width={36} height={36} sx={{ mx: 'auto', borderRadius: 2 }} />
-      ))}
-    </Stack>
-  );
-}
-
-function Erro({ mensagem, retry, onRetry }: { mensagem: string; retry: string; onRetry?: () => void }) {
-  return (
-    <Stack spacing={1} sx={{ px: 0.5, py: 1, textAlign: 'center' }} role="alert">
-      <Typography variant="caption">{mensagem}</Typography>
-      {onRetry !== undefined && (
-        <Typography
-          component="button"
-          variant="caption"
-          onClick={onRetry}
-          sx={{ background: 'none', border: 0, color: 'primary.main', cursor: 'pointer' }}
-        >
-          {retry}
-        </Typography>
-      )}
-    </Stack>
-  );
-}
-
-function Vazio({ titulo, descricao, addLabel, onAdd }: { titulo: string; descricao: string; addLabel: string; onAdd?: () => void }) {
-  return (
-    <Stack spacing={0.5} sx={{ px: 0.5, py: 1, textAlign: 'center' }}>
-      <Typography variant="caption" sx={{ fontWeight: 600 }}>
-        {titulo}
-      </Typography>
-      <Typography variant="caption" color="text.secondary" sx={{ fontSize: 9 }}>
-        {descricao}
-      </Typography>
-      {onAdd !== undefined && (
-        <Typography
-          component="button"
-          variant="caption"
-          onClick={onAdd}
-          sx={{ background: 'none', border: 0, color: 'primary.main', cursor: 'pointer' }}
-        >
-          {addLabel}
-        </Typography>
-      )}
-    </Stack>
   );
 }

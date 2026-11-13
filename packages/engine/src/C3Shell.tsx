@@ -211,12 +211,13 @@ function Shell(props: C3ShellProps) {
         icons: catalog,
         telemetry,
         connectivity: props.connectivity,
+        rails: props.rails,
         platform: props.platform ?? (desktopHost ? 'desktop' : undefined),
         reloadApp,
         org: state.org && { ...state.org, setActive },
         ...(frame && { desktop: frame })
       },
-    [state, catalog, telemetry, reloadApp, setActive, frame, props.connectivity, props.platform, desktopHost]
+    [state, catalog, telemetry, reloadApp, setActive, frame, props.connectivity, props.platform, props.rails, desktopHost]
   );
   const app = state?.app;
   const routes = app && routesKey(app);
@@ -225,7 +226,7 @@ function Shell(props: C3ShellProps) {
       app &&
       createShellRouter(
         props.router ?? 'browser',
-        buildRoutes(app, <C3Layout drawerFooter={drawerFooter} rails={props.rails} />, sessionRoutes(session)),
+        buildRoutes(app, <C3Layout drawerFooter={drawerFooter} />, sessionRoutes(session)),
         basename
       ),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- a sessão só muda ao sair, e aí a shell desmonta
