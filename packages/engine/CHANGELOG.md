@@ -9,3 +9,4 @@ Instale fixando o commit (`github:cecon/C3Theme#<sha>&path:packages/engine`). Ca
 - Revisão #123: e-mail obrigatório mesmo com configuração antiga de usuário, perfil sem senha no modo código,
   proteção contra envio/verificação concorrentes, espera após limite de tentativas, erros de transporte 0/429
   e teste e2e de foco/Enter, erro de código e retorno autenticado.
+- defaultMode escuro coberto por e2e de estilo computado (#132): a história Motor/Modo escuro monta o próprio C3ThemeProvider (a moldura do Storybook fica de fora) e o teste confere fundo do body e do Paper escuros, além do data-c3-mode; a escolha salva continua vencendo. Nenhuma mudança de API.
