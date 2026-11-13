@@ -146,6 +146,84 @@
     }
   },
   "$defs": {
+    "agentDock": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source",
+        "position",
+        "size",
+        "label"
+      ],
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "position": {
+          "enum": [
+            "top",
+            "bottom",
+            "right"
+          ]
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 48,
+          "maximum": 480
+        },
+        "label": {
+          "$ref": "#/$defs/text"
+        },
+        "states": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "loading": {
+              "$ref": "#/$defs/text"
+            },
+            "error": {
+              "$ref": "#/$defs/text"
+            },
+            "offline": {
+              "$ref": "#/$defs/text"
+            },
+            "retry": {
+              "$ref": "#/$defs/text"
+            },
+            "empty": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "message"
+              ],
+              "properties": {
+                "message": {
+                  "$ref": "#/$defs/text"
+                },
+                "action": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "label",
+                    "path"
+                  ],
+                  "properties": {
+                    "label": {
+                      "$ref": "#/$defs/text"
+                    },
+                    "path": {
+                      "type": "string",
+                      "pattern": "^/"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "chatMessageAction": {
       "type": "object",
       "description": "Ação no menu \"Mais ações\" de uma mensagem do chat (issue #10). Com 'opens', abre uma conversa à parte a partir da mensagem (POST /_chat/{conversa}/_lanes, spec/v0/chat-lanes.yaml); sem 'opens', a shell chama POST /_chat/{conversa}/messages/{mensagem}/_actions/{id} e o sistema decide o que fazer. 'when' filtra em quais mensagens aparece (campo ausente: qualquer valor). Mensagem de sistema, passagem de tarefa, resposta chegando e mensagem ainda enviando nunca têm ações.",
@@ -702,6 +780,7 @@
             }
           ]
         },
+        "agentDock": { "$ref": "#/$defs/agentDock" },
         "desktop": {
           "$ref": "#/$defs/desktop"
         }

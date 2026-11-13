@@ -1206,3 +1206,7 @@ Para várias conversas na mesma página, a conversa sai do endereço ([ADR 0009]
 ## Estados da pagina
 
 `pages[].states` declara carregando, vazio, erro, sem permissao e offline, com textos traduziveis e acoes. Veja o contrato, a porta de conectividade e exemplos em [Estados da pagina](../docs/page-states.md).
+
+## Dock de agentes
+
+`layout.agentDock` declara uma faixa da casca com área reservada e dados por porta. Guia e contrato: [Dock de agentes](../docs/agent-dock.md).

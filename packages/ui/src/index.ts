@@ -119,3 +119,8 @@ export * from './components/settings';
 export * from './components/device';
 // catálogo de itens instaláveis (loja de agentes, habilidades e apps)
 export * from './components/catalog';
+
+export { default as AgentDock } from './layout/AgentDock';
+export type { AgentDockItem, AgentDockProps, AgentDockPosition, AgentDockStatus } from './layout/AgentDock';
+export { default as AgentDockFrame } from './layout/AgentDockFrame';
+export type { AgentDockFrameProps } from './layout/AgentDockFrame';
