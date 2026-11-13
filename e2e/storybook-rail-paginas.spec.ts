@@ -17,6 +17,7 @@ test('fixar pelo teclado mantém menu aberto; recolhido preserva ícones e prefe
   await page.keyboard.press('Escape');
   await expect(nav.getByRole('link', { name: 'Uso' })).toHaveAttribute('aria-current', 'page');
   await nav.getByRole('button', { name: 'Recolher o rail' }).click();
+  await expect.poll(async () => (await nav.boundingBox())!.width).toBe(48);
   const box = await nav.boundingBox();
   const item = await nav.getByRole('link', { name: 'Uso' }).boundingBox();
   expect(item!.x).toBeGreaterThanOrEqual(box!.x);
@@ -24,6 +25,14 @@ test('fixar pelo teclado mantém menu aberto; recolhido preserva ícones e prefe
   await page.reload();
   await expect(nav.getByRole('button', { name: 'Expandir o rail' })).toBeVisible();
   await expect(nav.getByRole('link', { name: 'Uso' })).toBeVisible();
+});
+test('controles do Mac reservam o topo do rail sem cobrir o primeiro ícone', async ({ page }) => {
+  await page.goto(story('controles-do-mac'));
+  const nav = page.getByRole('navigation', { name: 'Páginas', exact: true });
+  const first = nav.getByRole('link', { name: 'Agentes' });
+  await expect(first).toBeVisible();
+  expect((await first.boundingBox())!.y).toBeGreaterThanOrEqual(28);
+  await expect(nav.getByLabel('Equipe de testes')).toHaveCount(0);
 });
 test('ajuda recebe as notas pela porta sem remontar o rascunho; páginas indisponíveis somem', async ({ page }) => {
   await page.goto(story('sem-pagina-opcional'));
