@@ -39,7 +39,7 @@ it('UI aceita marca e traduções, anuncia cada estado, e mantém botões nativo
       />
     </ThemeProvider>
   );
-  const button = screen.getByRole('button', { name: 'Worker · Running' });
+  const button = screen.getByRole('button', { name: 'Worker Running' });
   expect(button.tagName).toBe('BUTTON');
   button.focus();
   expect(document.activeElement).toBe(button);
