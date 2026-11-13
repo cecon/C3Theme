@@ -4,12 +4,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
-import Typography from '@mui/material/Typography';
 import { Add } from 'iconsax-reactjs';
+import { ItemDoServidor, Carregando, Erro, Vazio, srOnly } from './rails/ServerRailParts';
+import ServerRailMenus from './rails/ServerRailMenus';
+import Typography from '@mui/material/Typography';
+import useRailScroll from './rails/useRailScroll';
 
 import {
   moverNaOrdem,
@@ -20,11 +21,18 @@ import {
   writeRailPreferences
 } from './rails/preferences';
 import { SERVER_RAIL_DEFAULT_LABELS, type ServerRailProps } from './rails/types';
-import { AcoesDoServidor, Carregando, Erro, ItemDoServidor, Vazio, srOnly } from './server-rail/ServerRailParts';
 
 export const SERVER_RAIL_WIDTH = 64;
 
-export default function ServerRail({
+/**
+ * Rail de servidores (#116): coluna estreita na borda esquerda com os servidores da conta, o botão de
+ * adicionar, menus de ação por servidor, reordenação e atalhos de 1 a 9. A declaração vem da spec; os
+ * dados e as ações chegam por porta. Nenhum texto ou desenho foi copiado da referência.
+ */
+export default function ServerRail(props: ServerRailProps) {
+  return <ServerRailScope key={props.storageKey ?? railStorageKey('app')} {...props} />;
+}
+function ServerRailScope({
   servers,
   activeId,
   state = 'ready',
@@ -44,7 +52,7 @@ export default function ServerRail({
   onAnnounce,
   labels: labelsParciais,
   className
-}: ServerRailProps & { readonly localServerId?: string }) {
+}: ServerRailProps) {
   const labels = { ...SERVER_RAIL_DEFAULT_LABELS, ...labelsParciais };
   const chave = storageKey ?? railStorageKey('app');
   const [prefs, setPrefs] = useState(() => readRailPreferences(globalThis.localStorage, chave));
@@ -54,6 +62,8 @@ export default function ServerRail({
   const [menuDeAcoes, setMenuDeAcoes] = useState<HTMLElement | null>(null);
   const [menuAdicionar, setMenuAdicionar] = useState<HTMLElement | null>(null);
   const listaRef = useRef<HTMLDivElement>(null);
+  const scroll = useRailScroll(listaRef, servers.length);
+  const local = hiddenLocal ?? servers.find((server) => server.id === localServerId);
   const botoes = useRef(new Map<string, HTMLElement>());
   const anuncio = useRef<HTMLDivElement>(null);
 
@@ -80,6 +90,8 @@ export default function ServerRail({
     },
     [chave, prefs]
   );
+
+  // atalhos de 1 a 9 na ordem exibida
   useEffect(() => {
     if (!shortcut || state !== 'ready') {
       return undefined;
@@ -114,15 +126,17 @@ export default function ServerRail({
 
   const mover = useCallback(
     (id: string, direcao: -1 | 1) => {
-      const ids = visiveis.map((s) => s.id);
-      const nova = moverNaOrdem(ids, id, direcao);
-      if (nova === ids) {
+      const remotos = visiveis.filter((s) => s.id !== localServerId).map((s) => s.id);
+      const novaRemota = moverNaOrdem(remotos, id, direcao);
+      let index = 0;
+      const nova = visiveis.map((s) => (s.id === localServerId ? s.id : novaRemota[index++]));
+      if (novaRemota === remotos) {
         return;
       }
       reordenar(nova);
       anunciar(`Servidor movido para a posição ${nova.indexOf(id) + 1} de ${nova.length}.`);
     },
-    [visiveis, reordenar, anunciar]
+    [visiveis, reordenar, anunciar, localServerId]
   );
 
   const abrirMenuDe = (id: string, elemento: HTMLElement) => {
@@ -150,14 +164,27 @@ export default function ServerRail({
         bgcolor: 'background.default'
       }}
     >
-      <Stack ref={listaRef} component="div" spacing={0.5} sx={{ flex: 1, overflowY: 'auto', py: 1, px: 0.5, width: '100%' }}>
+      <Stack
+        ref={listaRef}
+        component="div"
+        spacing={0.5}
+        onScroll={scroll.measure}
+        onDragOver={scroll.dragOver}
+        onDragLeave={scroll.stop}
+        onDrop={scroll.stop}
+        sx={{ flex: 1, minHeight: 0, overflowY: 'auto', py: 1, px: 0.5, width: '100%', boxShadow: scroll.shadow }}
+      >
         {state === 'loading' && <Carregando label={labels.loading} />}
         {state === 'error' && <Erro mensagem={errorMessage ?? labels.errorTitle} retry={labels.retry} onRetry={onRetry} />}
         {state === 'ready' && visiveis.length === 0 && (
           <Vazio
             titulo={labels.emptyTitle}
             descricao={labels.emptyDescription}
-            onAdd={onAdd === undefined ? undefined : () => onAdd()}
+            onAdd={
+              onAdd === undefined
+                ? undefined
+                : () => (addOptions.length > 1 ? setMenuAdicionar(listaRef.current) : onAdd(addOptions[0]?.id))
+            }
             addLabel={labels.add}
           />
         )}
@@ -166,15 +193,21 @@ export default function ServerRail({
             <div
               key={server.id}
               onDragOver={(evento) => {
+                if (arrastando === null || server.id === localServerId) return;
                 evento.preventDefault();
                 setDestino(indice);
               }}
               onDrop={() => {
-                if (arrastando !== null) {
-                  const ids = visiveis.map((s) => s.id).filter((id) => id !== arrastando);
-                  ids.splice(indice, 0, arrastando);
+                if (arrastando !== null && arrastando !== server.id && server.id !== localServerId) {
+                  const remotos = visiveis.filter((s) => s.id !== localServerId).map((s) => s.id);
+                  const from = remotos.indexOf(arrastando),
+                    to = remotos.indexOf(server.id);
+                  remotos.splice(from, 1);
+                  remotos.splice(to, 0, arrastando);
+                  let index = 0;
+                  const ids = visiveis.map((s) => (s.id === localServerId ? s.id : remotos[index++]));
                   reordenar(ids);
-                  anunciar(`Servidor movido para a posição ${indice + 1} de ${ids.length}.`);
+                  anunciar(`Servidor movido para a posi??o ${ids.indexOf(arrastando) + 1} de ${ids.length}.`);
                 }
                 setArrastando(null);
                 setDestino(null);
@@ -192,10 +225,11 @@ export default function ServerRail({
                 onOpenActions={(elemento) => abrirMenuDe(server.id, elemento)}
                 onDragStart={() => setArrastando(server.id)}
                 onDragEnd={() => {
+                  scroll.stop();
                   setArrastando(null);
                   setDestino(null);
                 }}
-                draggable
+                draggable={server.id !== localServerId}
               />
             </div>
           ))}
@@ -206,7 +240,9 @@ export default function ServerRail({
           <IconButton
             aria-label={labels.add}
             onClick={(evento) =>
-              addOptions.length > 1 || (hiddenLocal !== undefined && prefs.localHidden) ? setMenuAdicionar(evento.currentTarget) : onAdd?.()
+              addOptions.length > 1 || (local !== undefined && prefs.localHidden)
+                ? setMenuAdicionar(evento.currentTarget)
+                : onAdd?.(addOptions[0]?.id)
             }
             sx={(t) => ({
               width: 40,
@@ -222,66 +258,27 @@ export default function ServerRail({
           </IconButton>
         </Tooltip>
       </Box>
-      <Menu anchorEl={menuAdicionar} open={menuAdicionar !== null} onClose={() => setMenuAdicionar(null)}>
-        {prefs.localHidden && hiddenLocal !== undefined && (
-          <MenuItem
-            onClick={() => {
-              setMenuAdicionar(null);
-              onShowLocal?.();
-              salvar({ localHidden: false });
-            }}
-          >
-            {labels.showLocal(hiddenLocal.name)}
-          </MenuItem>
-        )}
-        {addOptions.map((opcao) => (
-          <MenuItem
-            key={opcao.id}
-            onClick={() => {
-              setMenuAdicionar(null);
-              onAdd?.(opcao.id);
-            }}
-          >
-            {opcao.label}
-          </MenuItem>
-        ))}
-      </Menu>
-      <Menu
-        anchorEl={menuDeAcoes}
-        open={menuDe !== null && menuDeAcoes !== null}
-        onClose={() => {
-          setMenuDe(null);
-          setMenuDeAcoes(null);
-        }}
-        transitionDuration={0}
-      >
-        <AcoesDoServidor
-          server={visiveis.find((s) => s.id === menuDe)}
-          actions={actions}
-          labels={labels}
-          local={menuDe === localServerId}
-          onMover={(direcao) => {
-            if (menuDe !== null) {
-              mover(menuDe, direcao);
-            }
-            setMenuDe(null);
-            setMenuDeAcoes(null);
-          }}
-          onOcultar={() => {
-            salvar({ localHidden: true });
-            anunciar(`Servidor ${hiddenLocal?.name ?? ''} oculto.`);
-            setMenuDe(null);
-            setMenuDeAcoes(null);
-          }}
-          onAction={(id) => {
-            if (menuDe !== null) {
-              onAction?.(menuDe, id);
-            }
-            setMenuDe(null);
-            setMenuDeAcoes(null);
-          }}
-        />
-      </Menu>
+      <ServerRailMenus
+        menuAdicionar={menuAdicionar}
+        setMenuAdicionar={setMenuAdicionar}
+        local={local}
+        prefs={prefs}
+        onShowLocal={onShowLocal}
+        salvar={salvar}
+        labels={labels}
+        addOptions={addOptions}
+        onAdd={onAdd}
+        menuDeAcoes={menuDeAcoes}
+        menuDe={menuDe}
+        setMenuDe={setMenuDe}
+        setMenuDeAcoes={setMenuDeAcoes}
+        visiveis={visiveis}
+        actions={actions}
+        localServerId={localServerId}
+        mover={mover}
+        anunciar={anunciar}
+        onAction={onAction}
+      />
       <Box ref={anuncio} aria-live="polite" sx={srOnly} />
       <Typography component="span" sx={srOnly}>
         {labels.shortcuts}

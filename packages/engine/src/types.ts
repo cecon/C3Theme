@@ -271,6 +271,8 @@ export interface AppDef {
     /** Moldura da janela de desktop; só vale com a porta `desktopHost` do <C3Shell>. */
     desktop?: DesktopDef;
     rails?: RailsDef;
+    /** Zonas opcionais da casca, com dados e a??es pela porta rails. */
+    rails?: import('./railsTypes').RailsDef;
   };
 }
 

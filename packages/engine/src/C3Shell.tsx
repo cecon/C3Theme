@@ -29,7 +29,6 @@ import { LoadErrorScreen } from './status/ErrorScreens';
 
 export interface C3ShellProps {
   sidebars?: Record<string, import('./sidebar/types').SidebarPort>;
-
   agentDocks?: Record<string, import('./dock/types').AgentDockPort>;
   connectivity?: import('./pageStates/types').ConnectivityPort;
   /** Onde o app roda (seções com `platforms`). Sem isso: `desktop` com `desktopHost`, `mobile` em tela estreita, `web`. */
@@ -215,26 +214,14 @@ function Shell(props: C3ShellProps) {
         telemetry,
         connectivity: props.connectivity,
         sidebars: props.sidebars,
-
         agentDocks: props.agentDocks,
+        rails: props.rails,
         platform: props.platform ?? (desktopHost ? 'desktop' : undefined),
         reloadApp,
         org: state.org && { ...state.org, setActive },
         ...(frame && { desktop: frame })
       },
-    [
-      state,
-      catalog,
-      telemetry,
-      reloadApp,
-      setActive,
-      frame,
-      props.connectivity,
-      props.platform,
-      props.sidebars,
-      props.agentDocks,
-      desktopHost
-    ]
+    [state, catalog, telemetry, reloadApp, setActive, frame, props.connectivity, props.platform, props.rails, props.sidebars, props.agentDocks, desktopHost]
   );
   const app = state?.app;
   const routes = app && routesKey(app);
@@ -243,7 +230,7 @@ function Shell(props: C3ShellProps) {
       app &&
       createShellRouter(
         props.router ?? 'browser',
-        buildRoutes(app, <C3Layout drawerFooter={drawerFooter} rails={props.rails} />, sessionRoutes(session)),
+        buildRoutes(app, <C3Layout drawerFooter={drawerFooter} />, sessionRoutes(session)),
         basename
       ),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- a sessão só muda ao sair, e aí a shell desmonta

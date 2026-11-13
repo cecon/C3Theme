@@ -1,7 +1,7 @@
 import type { ComponentType, ReactNode } from 'react';
 
 /** Estado de conexão de um servidor no rail (#116). Sem depender só de cor. */
-export type ServerConnectionState = 'online' | 'connecting' | 'offline' | 'error' | 'incompatible' | 'sleeping';
+export type ServerConnectionState = 'online' | 'connecting' | 'offline' | 'error' | 'incompatible' | 'sleeping' | 'waking';
 
 /** Rótulo curto do estado, para o tooltip e o nome acessível. */
 export const SERVER_STATE_LABEL: Readonly<Record<ServerConnectionState, string>> = {
@@ -10,6 +10,7 @@ export const SERVER_STATE_LABEL: Readonly<Record<ServerConnectionState, string>>
   offline: 'offline',
   error: 'com erro',
   incompatible: 'incompatível',
+  waking: 'acordando',
   sleeping: 'dormindo'
 };
 
@@ -59,6 +60,7 @@ export interface ServerRailPort {
 }
 
 export interface ServerRailProps extends ServerRailPort {
+  readonly localServerId?: string;
   /** Preferências: ordem local e servidor local oculto. */
   readonly storageKey?: string;
   readonly onSelect: (id: string) => void;

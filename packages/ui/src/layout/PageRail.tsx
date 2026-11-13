@@ -12,6 +12,7 @@ import Typography from '@mui/material/Typography';
 import { Add, ArrowLeft2, ArrowRight2, Bookmark, Bookmark2, MessageQuestion, Setting2, Shop } from 'iconsax-reactjs';
 import { Link as RouterLink } from 'react-router';
 
+import ItemDaPagina from './rails/PageRailItemView';
 import { railStorageKey, readRailPreferences, writeRailPreferences } from './rails/preferences';
 import type { PageRailItem, PageRailPort } from './rails/types';
 
@@ -291,5 +292,3 @@ export default function PageRail({
     </Box>
   );
 }
-
-import { ItemDaPagina } from './page-rail/PageRailParts';

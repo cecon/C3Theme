@@ -399,7 +399,19 @@
               ],
               "description": "in: recebida (resposta do assistente); out: enviada pelo usuário."
             },
-            "meta": { "type": "object", "minProperties": 1, "additionalProperties": { "type": ["string", "number", "boolean", "null"] }, "description": "Igualdade por chave de message.meta; ausente equivale a false." },
+            "meta": {
+              "type": "object",
+              "minProperties": 1,
+              "additionalProperties": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "description": "Igualdade por chave de message.meta; ausente equivale a false."
+            },
             "author": {
               "enum": [
                 "agent",
@@ -979,7 +991,9 @@
       "additionalProperties": false,
       "description": "As quatro regiões da shell. Body é a rota ativa (lista/form/detalhe de entidade ou página custom), por isso não é configurado aqui.",
       "properties": {
-        "sidebar": { "$ref": "#/$defs/sectionSidebar" },
+        "sidebar": {
+          "$ref": "#/$defs/sectionSidebar"
+        },
         "orientation": {
           "enum": [
             "vertical",
@@ -1018,7 +1032,9 @@
             }
           ]
         },
-        "agentDock": { "$ref": "#/$defs/agentDock" },
+        "agentDock": {
+          "$ref": "#/$defs/agentDock"
+        },
         "desktop": {
           "$ref": "#/$defs/desktop"
         },
@@ -1212,9 +1228,31 @@
       "additionalProperties": false,
       "description": "Conversa com o agente do sistema (ADR 0006). O agente é do sistema, como a autenticação: o motor expõe as rotas de spec/v0/chat.yaml e desenha o AssistantPanel; o que o agente pede ao humano são as partes de agent-ui.schema.json.",
       "properties": {
-        "pinned": { "oneOf": [{ "type": "boolean" }, { "type": "object", "additionalProperties": false, "properties": { "label": { "$ref": "#/$defs/text" } } }] },
-        "messageActions": { "type": "array", "items": { "$ref": "#/$defs/chatMessageAction" } },
-        "lanes": { "$ref": "#/$defs/chatLanes" },
+        "pinned": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "label": {
+                  "$ref": "#/$defs/text"
+                }
+              }
+            }
+          ]
+        },
+        "messageActions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/chatMessageAction"
+          }
+        },
+        "lanes": {
+          "$ref": "#/$defs/chatLanes"
+        },
         "entregaDaUltimaMensagem": {
           "$ref": "#/$defs/chatDelivery",
           "description": "Resumo da entrega externa da última resposta do agente; a entrega declarada no turno prevalece. Opcional: sem o resumo não há marca implícita."

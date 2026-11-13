@@ -86,3 +86,4 @@ export type { PageStates, PageStateDef, PageStateAction, PageDataState, Connecti
 export type { SidebarDef, SidebarSnapshot, SidebarPort } from './sidebar/types';
 
 export type { AgentDockDef, AgentDockPort, AgentDockSnapshot, DockAgent } from './dock/types';
+export type { ShellRailsPort } from './C3Layout';
