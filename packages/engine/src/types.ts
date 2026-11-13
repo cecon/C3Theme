@@ -288,13 +288,6 @@ export type WireRecord = Record<string, unknown> & {
 };
 /** title null: registro apontado fora do que o usuário pode ler. */
 export type RefValue = { id: string; title: string | null };
-/** GET /_meta/context: empresas e filiais que o usuário acessa. */
-export interface OrgContext {
-  organization: { company: string; branch: string } | null;
-  companies: { id: string; title: string }[];
-  branches: { id: string; title: string; company: string }[];
-  activeBranch: string | null;
-  defaultBranch: string | null;
-}
+export type { OrgContext } from './orgTypes';
 // resultados de lista, ação e lote: resultTypes.ts
 export type * from './resultTypes';
