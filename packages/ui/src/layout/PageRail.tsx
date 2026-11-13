@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react';
 
 // material-ui
 import Box from '@mui/material/Box';
-import ButtonBase from '@mui/material/ButtonBase';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
@@ -10,10 +9,10 @@ import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import { alpha } from '@mui/material/styles';
 import { Add, ArrowLeft2, ArrowRight2, Bookmark, Bookmark2, MessageQuestion, Setting2, Shop } from 'iconsax-reactjs';
 import { Link as RouterLink } from 'react-router';
 
+import ItemDaPagina from './rails/PageRailItemView';
 import { railStorageKey, readRailPreferences, writeRailPreferences } from './rails/preferences';
 import type { PageRailItem, PageRailPort } from './rails/types';
 
@@ -291,39 +290,5 @@ export default function PageRail({
         ))}
       </Menu>
     </Box>
-  );
-}
-
-function ItemDaPagina({ page, ativa }: { page: PageRailItem; ativa: boolean }) {
-  const Icon = page.icon;
-  return (
-    <Tooltip title={page.title} enterDelay={400} placement="right">
-      <ButtonBase
-        component={RouterLink}
-        to={page.url}
-        aria-current={ativa ? 'page' : undefined}
-        aria-label={page.title}
-        sx={(t) => ({
-          width: 44,
-          height: 40,
-          borderRadius: 2,
-          flexDirection: 'column',
-          color: ativa ? t.palette.primary.main : t.palette.text.secondary,
-          bgcolor: ativa ? alpha(t.palette.primary.main, t.palette.action.selectedOpacity) : 'transparent',
-          '&:hover': { bgcolor: 'action.hover' },
-          '&.Mui-focusVisible': { outline: `2px solid ${t.palette.primary.main}`, outlineOffset: -2 },
-          position: 'relative'
-        })}
-      >
-        {Icon !== undefined ? <Icon size={20} variant={ativa ? 'Bulk' : 'Linear'} /> : <Box sx={{ width: 20 }} />}
-        {page.badge}
-        {ativa && (
-          <Box
-            aria-hidden
-            sx={{ position: 'absolute', left: 2, top: 12, width: 2, height: 16, borderRadius: 1, bgcolor: 'primary.main' }}
-          />
-        )}
-      </ButtonBase>
-    </Tooltip>
   );
 }

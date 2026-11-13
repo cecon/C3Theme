@@ -139,7 +139,7 @@ export default function RailDrawer(props: RailDrawerProps) {
               position: 'fixed',
               top: 0,
               bottom: 0,
-              left: RAIL_WIDTH,
+              left: `calc(var(--c3-shell-rails-left, 0px) + ${RAIL_WIDTH}px)`,
               zIndex: (t) => t.zIndex.drawer + 1,
               borderRight: 1,
               borderColor: 'divider'

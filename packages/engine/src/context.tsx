@@ -21,6 +21,7 @@ export interface OrgState {
 }
 
 export interface EngineState {
+  rails?: import('./C3Layout').ShellRailsPort;
   connectivity?: import('./pageStates/types').ConnectivityPort;
   /** Plataforma declarada pelo app (ou desktop pela porta desktopHost); sem ela, `useClientPlatform` detecta. */
   platform?: import('./types').ClientPlatform;

@@ -21,6 +21,7 @@ import {
   type ServerRailProps
 } from '@c3theme/ui';
 import { iconByName, useEngine, useText } from './context';
+import ShellRailsFrame from './ShellRailsFrame';
 import BranchSelector from './widgets/BranchSelector';
 import NotificationBell from './widgets/NotificationBell';
 import MenuCount from './widgets/MenuCount';
@@ -48,8 +49,9 @@ export interface C3LayoutProps {
   rails?: ShellRailsPort;
 }
 
-export default function C3Layout({ drawerFooter, desktop, rails }: C3LayoutProps) {
-  const { app, entities, components, icons, pageAccess, desktop: frame } = useEngine();
+export default function C3Layout({ drawerFooter, desktop, rails: suppliedRails }: C3LayoutProps) {
+  const { app, entities, components, icons, pageAccess, desktop: frame, rails: liveRails } = useEngine();
+  const rails = liveRails ?? suppliedRails;
   const text = useText();
   const location = useLocation();
   const header = app.layout.header ?? {};
@@ -123,25 +125,30 @@ export default function C3Layout({ drawerFooter, desktop, rails }: C3LayoutProps
     }));
 
   return (
-    <div style={{ display: 'flex', height: '100vh', minHeight: 0 }}>
-      {zonas.servers !== undefined && rails?.servers !== undefined && (
-        <ServerRail
-          {...rails.servers}
-          shortcut={zonas.servers.shortcuts ?? rails.servers.shortcut}
-          storageKey={rails.servers.storageKey}
-          localServerId={zonas.servers.localServerId}
-        />
-      )}
-      {zonas.pages !== undefined && (
-        <PageRail
-          pages={paginas}
-          activePath={location.pathname}
-          brand={{ label: app.name, ...(zonas.pages.brandHref === undefined ? {} : { href: zonas.pages.brandHref }) }}
-          defaultPinned={zonas.pages.defaultPinned ?? []}
-          {...rails?.pages}
-        />
-      )}
-      <div style={{ flex: 1, minWidth: 0, minHeight: 0 }}>{layout}</div>
-    </div>
+    <ShellRailsFrame
+      rails={
+        <>
+          {zonas.servers !== undefined && rails?.servers !== undefined && (
+            <ServerRail
+              {...rails.servers}
+              shortcut={zonas.servers.shortcuts ?? rails.servers.shortcut}
+              storageKey={rails.servers.storageKey}
+              localServerId={zonas.servers.localServerId}
+            />
+          )}
+          {zonas.pages !== undefined && (
+            <PageRail
+              pages={paginas}
+              activePath={location.pathname}
+              brand={{ label: app.name, ...(zonas.pages.brandHref === undefined ? {} : { href: zonas.pages.brandHref }) }}
+              defaultPinned={zonas.pages.defaultPinned ?? []}
+              {...rails?.pages}
+            />
+          )}
+        </>
+      }
+    >
+      {layout}
+    </ShellRailsFrame>
   );
 }
