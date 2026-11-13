@@ -22,6 +22,10 @@ export interface OrgState {
 }
 
 export interface EngineState {
+  sidebars?: Record<string, import('./sidebar/types').SidebarPort>;
+
+  agentDocks?: Record<string, import('./dock/types').AgentDockPort>;
+  rails?: import('./C3Layout').ShellRailsPort;
   connectivity?: import('./pageStates/types').ConnectivityPort;
   /** Plataforma declarada pelo app (ou desktop pela porta desktopHost); sem ela, `useClientPlatform` detecta. */
   platform?: import('./types').ClientPlatform;

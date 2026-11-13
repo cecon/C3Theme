@@ -250,6 +250,8 @@ export interface AppDef {
   /** Autorização de outro usuário: códigos de erro que abrem o diálogo e os campos dele. */
   authorization?: AuthorizationConfig;
   layout: {
+    sidebar?: import('./sidebar/types').SidebarDef;
+    agentDock?: import('./dock/types').AgentDockDef;
     orientation?: 'vertical' | 'horizontal' | 'rail';
     /** Onde fica o usuário logado: avatar no cabeçalho (padrão) ou cartão no pé do menu lateral. */
     user?: 'header' | 'drawer';
@@ -269,6 +271,8 @@ export interface AppDef {
     footer?: { text?: Text; links?: LinkDef[] } | null;
     /** Moldura da janela de desktop; só vale com a porta `desktopHost` do <C3Shell>. */
     desktop?: DesktopDef;
+    /** Zonas opcionais da casca, com dados e a??es pela porta rails. */
+    rails?: import('./railsTypes').RailsDef;
   };
 }
 

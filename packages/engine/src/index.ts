@@ -100,3 +100,8 @@ export type { ActionPayload, AgentAnswer, AgentPartProps, FormPayload, RecordPay
 
 export { usePageState } from './pageStates/context';
 export type { PageStates, PageStateDef, PageStateAction, PageDataState, ConnectivityPort } from './pageStates/types';
+
+export type { SidebarDef, SidebarSnapshot, SidebarPort } from './sidebar/types';
+
+export type { AgentDockDef, AgentDockPort, AgentDockSnapshot, DockAgent } from './dock/types';
+export type { ShellRailsPort } from './C3Layout';
