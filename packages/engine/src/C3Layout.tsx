@@ -21,6 +21,8 @@ import {
   type ServerRailProps
 } from '@c3theme/ui';
 import { iconByName, useEngine, useText } from './context';
+import DeclaredSidebar from './sidebar/DeclaredSidebar';
+import { ShellDockFrame } from './dock/ShellAgentDock';
 import BranchSelector from './widgets/BranchSelector';
 import NotificationBell from './widgets/NotificationBell';
 import MenuCount from './widgets/MenuCount';
@@ -71,6 +73,8 @@ export default function C3Layout({ drawerFooter, desktop, rails }: C3LayoutProps
   const layout = (
     <AppLayout
       menu={menu}
+      sidebar={app.layout.sidebar ? (onNavigate) => <DeclaredSidebar def={app.layout.sidebar!} onNavigate={onNavigate} /> : undefined}
+      navigationHidden={app.layout.sidebar?.hidden}
       breadcrumbs={false}
       drawerFooter={drawerFooter}
       desktop={desktop ?? frame?.options}
@@ -108,7 +112,7 @@ export default function C3Layout({ drawerFooter, desktop, rails }: C3LayoutProps
 
   const zonas = app.layout.rails;
   if (zonas === undefined) {
-    return layout;
+    return <ShellDockFrame>{layout}</ShellDockFrame>;
   }
 
   const paginas = flattenNav(menu)
@@ -123,7 +127,7 @@ export default function C3Layout({ drawerFooter, desktop, rails }: C3LayoutProps
     }));
 
   return (
-    <div style={{ display: 'flex', height: '100vh', minHeight: 0 }}>
+    <ShellDockFrame><div style={{ display: 'flex', height: '100vh', minHeight: 0 }}>
       {zonas.servers !== undefined && rails?.servers !== undefined && (
         <ServerRail
           {...rails.servers}
@@ -142,6 +146,6 @@ export default function C3Layout({ drawerFooter, desktop, rails }: C3LayoutProps
         />
       )}
       <div style={{ flex: 1, minWidth: 0, minHeight: 0 }}>{layout}</div>
-    </div>
+    </div></ShellDockFrame>
   );
 }

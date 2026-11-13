@@ -11,7 +11,7 @@ export type LaneKind = 'aside' | 'branch';
 export interface ChatMessageActionDef {
   id: string;
   label: Text;
-  when?: { direction?: 'in' | 'out'; author?: 'agent' | 'person' };
+  when?: { direction?: 'in' | 'out'; author?: 'agent' | 'person'; meta?: Record<string, string | number | boolean | null> };
   opens?: LaneKind;
 }
 

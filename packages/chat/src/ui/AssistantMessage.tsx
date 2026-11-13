@@ -13,6 +13,7 @@ import { Copy, CopySuccess, Refresh2 } from 'iconsax-reactjs';
 
 import type { QuestionAnswer } from '../core/question';
 import type { Message } from '../core/types';
+import PinnedMark from './pinned/PinnedMark';
 import type { MessageActionsMenuProps } from './lanes/MessageActionsMenu';
 import MessageActionsMenu from './lanes/MessageActionsMenu';
 import ActivityTrace from './ActivityTrace';
@@ -102,6 +103,7 @@ export default function AssistantMessage(props: AssistantMessageProps) {
   return (
     <Stack spacing={0.75} sx={{ width: '100%', minWidth: 0, alignItems: 'flex-start' }} aria-busy={m.streaming || undefined}>
       {header}
+      {m.meta?.fixada === true && <PinnedMark />}
       <ActivityTrace message={m} workTime={workTime} onOpenWorkspace={onOpenWorkspace && (() => onOpenWorkspace(m))} />
       {m.question && !m.streaming ? (
         <QuestionCard

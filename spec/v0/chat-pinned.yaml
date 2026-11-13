@@ -1,0 +1,41 @@
+# Recurso opcional: a persistência e as ações de fixar/desafixar pertencem ao sistema.
+pinned:
+  parameters:
+    - { name: conversation, in: path, required: true, schema: { type: string } }
+  get:
+    summary: Mensagens fixadas da conversa, na ordem do histórico
+    operationId: chatPinned
+    description: >-
+      Ligado por chat.pinned. Retorna trechos e ids para navegar ao histórico paginado existente.
+      Sem sessão: 401. Backend sem o recurso ou conversa indisponível: 404 (a shell esconde o botão).
+    responses:
+      '200':
+        description: Lista de fixadas, inclusive vazia.
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [data]
+              properties:
+                data:
+                  type: array
+                  items:
+                    type: object
+                    required: [messageId, author, direction, text, createdAt, pinnedAt]
+                    properties:
+                      messageId: { type: string }
+                      author:
+                        type: object
+                        required: [id, name]
+                        properties:
+                          id: { type: string }
+                          name: { type: string }
+                          avatarUrl: { type: string }
+                          kind: { enum: [agent, person] }
+                          color: { type: string }
+                      direction: { enum: [in, out] }
+                      text: { type: string }
+                      createdAt: { type: string, format: date-time }
+                      pinnedAt: { type: string, format: date-time }
+      '401': { $ref: 'openapi.yaml#/components/responses/Error' }
+      '404': { $ref: 'openapi.yaml#/components/responses/Error' }

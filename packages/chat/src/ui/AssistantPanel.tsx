@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 
 // material-ui
 import Chip from '@mui/material/Chip';
@@ -37,7 +37,7 @@ export type AssistantChat = Pick<
   ReturnType<typeof useMessageWindow>,
   'conversationId' | 'messages' | 'hasMore' | 'loading' | 'loadOlder' | 'send' | 'retry' | 'stop' | 'generating' | 'answer'
 > &
-  Partial<Pick<ReturnType<typeof useMessageWindow>, 'answerUi' | 'remove' | 'notice' | 'dismissNotice' | 'error'>>;
+  Partial<Pick<ReturnType<typeof useMessageWindow>, 'answerUi' | 'putMessage' | 'remove' | 'notice' | 'dismissNotice' | 'error'>>;
 
 export interface AssistantPanelProps {
   chat: AssistantChat;
@@ -51,6 +51,8 @@ export interface AssistantPanelProps {
   onClose?: () => void;
   /** Botões extras no cabeçalho. */
   actions?: ReactNode;
+  /** Destino externo, incluindo a lista das fixadas. */
+  jumpTo?: { messageId: string; seq: number };
   /** Histórico de conversas: com isso, aparece a caixa de troca. */
   conversations?: Conversation[];
   onSelectConversation?: (id: string) => void;
@@ -118,6 +120,9 @@ export default function AssistantPanel(props: AssistantPanelProps) {
   const renderers = useMemo(() => ({ ...hitlUiRenderers, ...props.uiRenderers }), [props.uiRenderers]);
   const waiting = waitingFor(chat.messages);
   const [jumpTo, setJumpTo] = useState<{ messageId: string; seq: number }>();
+  useEffect(() => {
+    if (props.jumpTo) setJumpTo((j) => ({ messageId: props.jumpTo!.messageId, seq: (j?.seq ?? 0) + 1 }));
+  }, [props.jumpTo]);
   const steer = props.steer ? (text: string, files: File[]) => chat.send(text, { files, steer: true }) : undefined;
   const queue = useMessageQueue({
     generating: chat.generating,

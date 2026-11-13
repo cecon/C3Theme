@@ -35,6 +35,8 @@ export interface ChatDef extends ChatLanesSpec {
   entregaDaUltimaMensagem?: MessageDelivery;
   /** Carregando, vazio, erro, sem permissão e offline com os textos da spec (ADR 0011). Ausente: o painel de sempre. */
   states?: PageStates;
+  /** Lista fornecida por GET /_chat/{conversation}/_pinned. */
+  pinned?: boolean | { label?: Text };
 }
 
 /** `layout.header.assistant`: `true` vale o padrão; `false`, ausente ou outra coisa, sem botão. */
