@@ -5,6 +5,7 @@ import type { C3Client } from './api';
 import type { DesktopFrame } from './desktop/frame';
 import type { TelemetryPort } from './telemetry';
 import type { AppDef, Capabilities, EntityDef, FieldDef, OrgContext, Text, WireRecord } from './types';
+import type { SettingsPort } from './settings/port';
 
 /** Componente custom registrado na shell e citado na spec por nome (`component`). */
 export type C3Components = Record<string, ComponentType<any>>;
@@ -39,6 +40,8 @@ export interface EngineState {
   reloadApp?: () => Promise<void>;
   /** Moldura do desktop (`layout.desktop` com a porta `desktopHost`). Sem ela, o app roda como site. */
   desktop?: DesktopFrame;
+  /** Valores e gravação das configurações em modal (`settings` do app.json). Sem a porta, os valores são os da spec. */
+  settingsPort?: SettingsPort;
 }
 
 const EngineContext = createContext<EngineState | null>(null);

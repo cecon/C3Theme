@@ -6,6 +6,7 @@ import { lazy, ReactNode, Suspense } from 'react';
 
 import { AppFooter, AppLayout, ColorModeButton, CommandSearch, DesktopOptions, FullscreenButton, SettingsButton } from '@c3theme/ui';
 import { iconByName, useEngine, useText } from './context';
+import SettingsLauncher from './settings/SettingsLauncher';
 import BranchSelector from './widgets/BranchSelector';
 import NotificationBell from './widgets/NotificationBell';
 import MenuCount from './widgets/MenuCount';
@@ -23,10 +24,12 @@ export interface C3LayoutProps {
   drawerFooter?: ReactNode;
   /** App de desktop sem barra de título. Sem isso, a moldura de `layout.desktop` (com a porta `desktopHost`). */
   desktop?: DesktopOptions;
+  /** Abre as configurações direto nesta seção (a política passa a seção inicial). */
+  settingsSection?: string;
 }
 
-export default function C3Layout({ drawerFooter, desktop }: C3LayoutProps) {
-  const { app, entities, components, icons, pageAccess, desktop: frame } = useEngine();
+export default function C3Layout({ drawerFooter, desktop, settingsSection }: C3LayoutProps) {
+  const { app, entities, components, icons, pageAccess, desktop: frame, settingsPort } = useEngine();
   const text = useText();
   const header = app.layout.header ?? {};
   const recordSearch = useRecordSearch();
@@ -68,7 +71,16 @@ export default function C3Layout({ drawerFooter, desktop }: C3LayoutProps) {
           {header.notifications && <NotificationBell />}
           <ColorModeButton />
           {header.fullscreen !== false && <FullscreenButton />}
-          {header.settings !== false && <SettingsButton />}
+          {header.settings !== false &&
+            (app.settings === undefined ? (
+              <SettingsButton />
+            ) : (
+              <SettingsLauncher
+                def={app.settings}
+                port={settingsPort}
+                {...(settingsSection === undefined ? {} : { initialSection: settingsSection })}
+              />
+            ))}
         </>
       }
       footer={
