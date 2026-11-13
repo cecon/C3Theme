@@ -1,4 +1,4 @@
-﻿// @vitest-environment jsdom
+// @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -6,7 +6,7 @@ import AgentDock from './AgentDock';
 import AgentDockFrame from './AgentDockFrame';
 
 afterEach(cleanup);
-it.each(['top', 'bottom', 'right'] as const)('frame %s reserva Ã¡rea e limita o tamanho Ã  metade do viewport', (position) => {
+it.each(['top', 'bottom', 'right'] as const)('frame %s reserva área e limita o tamanho à metade do viewport', (position) => {
   render(
     <ThemeProvider theme={createTheme({ cssVariables: true })}>
       <AgentDockFrame position={position} size={120} dock={<span>Dock</span>}>
@@ -21,7 +21,7 @@ it.each(['top', 'bottom', 'right'] as const)('frame %s reserva Ã¡rea e limita 
   expect(area.position).toBe('fixed');
   expect(position === 'right' ? area.width : area.height.replaceAll(' ', '')).toBe(position === 'right' ? '120px' : 'min(120px,50dvh)');
 });
-it('UI aceita marca e traduÃ§Ãµes, anuncia cada estado, e mantÃ©m botÃµes nativos navegÃ¡veis', () => {
+it('UI aceita marca e traduções, anuncia cada estado, e mantém botões nativos navegáveis', () => {
   const select = vi.fn();
   render(
     <ThemeProvider theme={createTheme({ cssVariables: true })}>
@@ -38,7 +38,7 @@ it('UI aceita marca e traduÃ§Ãµes, anuncia cada estado, e mantÃ©m botÃµe
       />
     </ThemeProvider>
   );
-  const button = screen.getByRole('button', { name: 'Worker Â· Running' });
+  const button = screen.getByRole('button', { name: 'Worker Running' });
   expect(button.tagName).toBe('BUTTON');
   button.focus();
   expect(document.activeElement).toBe(button);
@@ -47,4 +47,3 @@ it('UI aceita marca e traduÃ§Ãµes, anuncia cada estado, e mantÃ©m botÃµe
   expect(screen.getByText('W')).toBeTruthy();
   expect(screen.getByRole('status').textContent).toContain('Review: Falhou');
 });
-
