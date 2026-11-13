@@ -9,7 +9,7 @@ import { useAuthorization } from './authorization/useAuthorization';
 import { createShellRouter, type RouterMode } from './router';
 import { browserFetch, type C3Fetch } from './transport';
 import { C3Components, C3Icons, EngineProvider, EngineState } from './context';
-import C3Layout from './C3Layout';
+import C3Layout, { type ShellRailsPort } from './C3Layout';
 import { desktopFrame, frameFromOptions, frameTokens } from './desktop/frame';
 import type { DesktopHost } from './desktop/port';
 import useIconCatalog from './hooks/useIconCatalog';
@@ -57,6 +57,8 @@ export interface C3ShellProps {
   transport?: C3Fetch;
   /** Rodapé do drawer (ex.: usuário logado e sair), que é do sistema e não da spec. */
   drawerFooter?: ReactNode;
+  /** Dados e ações dos railes de servidores (#116) e de páginas (#117); só aparecem se `layout.rails` declarar a zona. */
+  rails?: ShellRailsPort;
   /**
    * Porta da janela de desktop (Electron, Tauri): a plataforma e o entalhe. Com ela, a shell monta a moldura que o
    * `layout.desktop` do app.json declara (barra de título, botões da janela, menu translúcido, fonte e densidade).
@@ -223,7 +225,7 @@ function Shell(props: C3ShellProps) {
       app &&
       createShellRouter(
         props.router ?? 'browser',
-        buildRoutes(app, <C3Layout drawerFooter={drawerFooter} />, sessionRoutes(session)),
+        buildRoutes(app, <C3Layout drawerFooter={drawerFooter} rails={props.rails} />, sessionRoutes(session)),
         basename
       ),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- a sessão só muda ao sair, e aí a shell desmonta

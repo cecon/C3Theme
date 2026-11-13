@@ -4,7 +4,12 @@
   "title": "C3 App v0",
   "description": "Estrutura do sistema que a shell monta: layout (header, menu, body, footer), páginas e rotas. Rotas de entidade são derivadas; só páginas custom declaram rota.",
   "type": "object",
-  "required": ["specVersion", "name", "entities", "layout"],
+  "required": [
+    "specVersion",
+    "name",
+    "entities",
+    "layout"
+  ],
   "additionalProperties": false,
   "properties": {
     "$schema": {
@@ -25,13 +30,24 @@
     },
     "status": {
       "type": "object",
-      "required": ["mode"],
+      "required": [
+        "mode"
+      ],
       "additionalProperties": false,
       "description": "Tela pública em vez do login e das páginas. Não bloqueia a API: autorização e manutenção de serviços continuam sendo responsabilidade do sistema. Até a remoção deste objeto, a tela permanece ativa; until é previsão, não agenda automática (quando chega, a tela só pergunta de novo ao backend). Um proxy na frente do backend mostra a mesma tela respondendo 503 em /_meta/* (corpo opcional { \"status\": {...} } e Retry-After).",
       "properties": {
-        "mode": { "enum": ["maintenance", "comingSoon"] },
-        "title": { "$ref": "#/$defs/text" },
-        "message": { "$ref": "#/$defs/text" },
+        "mode": {
+          "enum": [
+            "maintenance",
+            "comingSoon"
+          ]
+        },
+        "title": {
+          "$ref": "#/$defs/text"
+        },
+        "message": {
+          "$ref": "#/$defs/text"
+        },
         "until": {
           "type": "string",
           "format": "date-time",
@@ -64,7 +80,10 @@
     },
     "organization": {
       "type": "object",
-      "required": ["company", "branch"],
+      "required": [
+        "company",
+        "branch"
+      ],
       "additionalProperties": false,
       "description": "Liga o escopo por empresa e filial (ver 'scope' em entity.schema.json). Aponta quais entidades do próprio sistema são a empresa (CNPJ raiz, scope 'group') e a filial (estabelecimento, inclusive a matriz, scope 'company'). O grupo econômico não aparece aqui: é o banco inteiro. Sem 'organization', toda entidade é 'group'.",
       "properties": {
@@ -90,7 +109,10 @@
           "description": "Frase abaixo do título, ex.: 'Use o usuário do posto'."
         },
         "identifier": {
-          "enum": ["email", "username"],
+          "enum": [
+            "email",
+            "username"
+          ],
           "default": "email",
           "description": "O que o usuário digita para entrar: e-mail (validado) ou nome de usuário/código."
         },
@@ -118,24 +140,54 @@
     },
     "authorization": {
       "type": "object",
-      "required": ["codes", "fields"],
+      "required": [
+        "codes",
+        "fields"
+      ],
       "additionalProperties": false,
       "description": "Autorização de outro usuário (supervisor, liberação de orçamento). Quando o servidor recusa criar, alterar, excluir ou uma ação com um destes códigos, a shell mostra a mensagem e pede os campos; 'Autorizar' reenvia o mesmo pedido com o cabeçalho C3-Authorization (JSON dos campos em base64, UTF-8). O sistema confere quem libera e grava a auditoria no hook; nova recusa (mesmo código, 401 ou 403) aparece no diálogo. A senha nunca vai ao formulário nem ao rascunho.",
       "properties": {
-        "codes": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" } },
-        "title": { "$ref": "#/$defs/text", "description": "Título do diálogo. Padrão: 'Autorização'." },
+        "codes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          }
+        },
+        "title": {
+          "$ref": "#/$defs/text",
+          "description": "Título do diálogo. Padrão: 'Autorização'."
+        },
         "fields": {
           "type": "array",
           "minItems": 1,
           "items": {
             "type": "object",
-            "required": ["name", "label"],
+            "required": [
+              "name",
+              "label"
+            ],
             "additionalProperties": false,
             "properties": {
-              "name": { "$ref": "entity.schema.json#/$defs/identifier" },
-              "label": { "$ref": "#/$defs/text" },
-              "type": { "enum": ["string", "password", "text"], "default": "string" },
-              "minLength": { "type": "integer", "minimum": 1 }
+              "name": {
+                "$ref": "entity.schema.json#/$defs/identifier"
+              },
+              "label": {
+                "$ref": "#/$defs/text"
+              },
+              "type": {
+                "enum": [
+                  "string",
+                  "password",
+                  "text"
+                ],
+                "default": "string"
+              },
+              "minLength": {
+                "type": "integer",
+                "minimum": 1
+              }
             }
           }
         }
@@ -149,7 +201,10 @@
     "chatMessageAction": {
       "type": "object",
       "description": "Ação no menu \"Mais ações\" de uma mensagem do chat (issue #10). Com 'opens', abre uma conversa à parte a partir da mensagem (POST /_chat/{conversa}/_lanes, spec/v0/chat-lanes.yaml); sem 'opens', a shell chama POST /_chat/{conversa}/messages/{mensagem}/_actions/{id} e o sistema decide o que fazer. 'when' filtra em quais mensagens aparece (campo ausente: qualquer valor). Mensagem de sistema, passagem de tarefa, resposta chegando e mensagem ainda enviando nunca têm ações.",
-      "required": ["id", "label"],
+      "required": [
+        "id",
+        "label"
+      ],
       "additionalProperties": false,
       "properties": {
         "id": {
@@ -165,17 +220,26 @@
           "additionalProperties": false,
           "properties": {
             "direction": {
-              "enum": ["in", "out"],
+              "enum": [
+                "in",
+                "out"
+              ],
               "description": "in: recebida (resposta do assistente); out: enviada pelo usuário."
             },
             "author": {
-              "enum": ["agent", "person"],
+              "enum": [
+                "agent",
+                "person"
+              ],
               "description": "Quem escreveu. Autor sem tipo: quem chega é agente, quem sai é gente."
             }
           }
         },
         "opens": {
-          "enum": ["aside", "branch"],
+          "enum": [
+            "aside",
+            "branch"
+          ],
           "description": "aside: pergunta lateral com a mensagem citada; branch: ramo com o histórico até a mensagem."
         }
       }
@@ -202,7 +266,19 @@
       }
     },
     "period": {
-      "enum": ["today", "week", "month", "lastMonth", "last7", "last30", "next7", "next30", "nextMonth", "year", "all"],
+      "enum": [
+        "today",
+        "week",
+        "month",
+        "lastMonth",
+        "last7",
+        "last30",
+        "next7",
+        "next30",
+        "nextMonth",
+        "year",
+        "all"
+      ],
       "description": "Período do filtro do painel. last7/last30: os últimos N dias até hoje. next7/next30: de hoje até hoje+N−1 (o que vai vencer). nextMonth: o mês que vem inteiro."
     },
     "icon": {
@@ -489,10 +565,14 @@
     },
     "page": {
       "type": "object",
-      "required": ["path"],
+      "required": [
+        "path"
+      ],
       "additionalProperties": false,
       "properties": {
-        "states": { "$ref": "#/$defs/pageStates" },
+        "states": {
+          "$ref": "#/$defs/pageStates"
+        },
         "path": {
           "$ref": "#/$defs/path"
         },
@@ -518,7 +598,10 @@
         },
         "wizard": {
           "type": "object",
-          "required": ["entity", "steps"],
+          "required": [
+            "entity",
+            "steps"
+          ],
           "additionalProperties": false,
           "description": "Assistente em passos (primeira configuração): cada passo edita campos de uma entidade singleton, com Voltar, Avançar e Pular, e o resumo no fim. Com 'pending', toda rota da shell leva ao assistente enquanto o registro diz que está pendente. Use isto, dashboard, apiDocs ou component.",
           "properties": {
@@ -535,11 +618,18 @@
               "minItems": 1,
               "items": {
                 "type": "object",
-                "required": ["title", "rows"],
+                "required": [
+                  "title",
+                  "rows"
+                ],
                 "additionalProperties": false,
                 "properties": {
-                  "title": { "$ref": "#/$defs/text" },
-                  "description": { "$ref": "#/$defs/text" },
+                  "title": {
+                    "$ref": "#/$defs/text"
+                  },
+                  "description": {
+                    "$ref": "#/$defs/text"
+                  },
                   "rows": {
                     "type": "array",
                     "minItems": 1,
@@ -548,10 +638,16 @@
                       "type": "array",
                       "minItems": 1,
                       "maxItems": 4,
-                      "items": { "$ref": "entity.schema.json#/$defs/formField" }
+                      "items": {
+                        "$ref": "entity.schema.json#/$defs/formField"
+                      }
                     }
                   },
-                  "optional": { "type": "boolean", "default": false, "description": "Mostra 'Pular': avança sem validar nem gravar." },
+                  "optional": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Mostra 'Pular': avança sem validar nem gravar."
+                  },
                   "action": {
                     "$ref": "entity.schema.json#/$defs/identifier",
                     "description": "Ação de registro da entidade, sem input, que roda depois de gravar o passo."
@@ -564,16 +660,25 @@
               "additionalProperties": false,
               "description": "Resumo no fim: o que está feito e o que falta, com o link da tela de cada item.",
               "properties": {
-                "title": { "$ref": "#/$defs/text" },
-                "description": { "$ref": "#/$defs/text" },
+                "title": {
+                  "$ref": "#/$defs/text"
+                },
+                "description": {
+                  "$ref": "#/$defs/text"
+                },
                 "items": {
                   "type": "array",
                   "items": {
                     "type": "object",
-                    "required": ["label", "path"],
+                    "required": [
+                      "label",
+                      "path"
+                    ],
                     "additionalProperties": false,
                     "properties": {
-                      "label": { "$ref": "#/$defs/text" },
+                      "label": {
+                        "$ref": "#/$defs/text"
+                      },
                       "done": {
                         "$ref": "entity.schema.json#/$defs/identifier",
                         "description": "Campo boolean do registro: verdadeiro é feito."
@@ -612,7 +717,9 @@
         },
         "apiDocs": {
           "type": "object",
-          "required": ["spec"],
+          "required": [
+            "spec"
+          ],
           "additionalProperties": false,
           "description": "Documentação da API: a shell lê o openapi.json (OpenAPI 3) pelo cliente do motor, com o token da sessão, e mostra as rotas por tag, com busca por caminho ou resumo e o 'experimentar' em cada rota. Use isto, dashboard ou component.",
           "properties": {
@@ -624,60 +731,94 @@
           }
         },
         "layout": {
-          "enum": ["dashboard", "blank"],
+          "enum": [
+            "dashboard",
+            "blank"
+          ],
           "default": "dashboard",
           "description": "'dashboard' renderiza dentro de header/menu/footer; 'blank' ocupa a tela toda (ex.: impressão, quiosque)."
         }
       },
       "oneOf": [
         {
-          "required": ["component"]
+          "required": [
+            "component"
+          ]
         },
         {
-          "required": ["dashboard"],
+          "required": [
+            "dashboard"
+          ],
           "not": {
-            "required": ["config"]
+            "required": [
+              "config"
+            ]
           }
         },
         {
-          "required": ["wizard"],
+          "required": [
+            "wizard"
+          ],
           "not": {
-            "required": ["config"]
+            "required": [
+              "config"
+            ]
           }
         },
         {
-          "required": ["apiDocs"],
+          "required": [
+            "apiDocs"
+          ],
           "not": {
-            "required": ["config"]
+            "required": [
+              "config"
+            ]
           }
         },
         {
-          "required": ["chat"],
+          "required": [
+            "chat"
+          ],
           "not": {
-            "required": ["config"]
+            "required": [
+              "config"
+            ]
           }
         },
         {
-          "required": ["comingSoon"],
+          "required": [
+            "comingSoon"
+          ],
           "not": {
-            "required": ["config"]
+            "required": [
+              "config"
+            ]
           }
         }
       ]
     },
     "layout": {
       "type": "object",
-      "required": ["menu"],
+      "required": [
+        "menu"
+      ],
       "additionalProperties": false,
       "description": "As quatro regiões da shell. Body é a rota ativa (lista/form/detalhe de entidade ou página custom), por isso não é configurado aqui.",
       "properties": {
         "orientation": {
-          "enum": ["vertical", "horizontal", "rail"],
+          "enum": [
+            "vertical",
+            "horizontal",
+            "rail"
+          ],
           "default": "vertical",
           "description": "Menu lateral (acordeão), barra superior ou 'rail': dois níveis, com trilho de módulos (itens de primeiro nível) e painel com as telas do módulo; filhos de filhos viram títulos de seção no painel."
         },
         "user": {
-          "enum": ["header", "drawer"],
+          "enum": [
+            "header",
+            "drawer"
+          ],
           "default": "header",
           "description": "Onde fica o usuário logado (menu de conta com perfil e sair): avatar à direita do cabeçalho ou cartão no pé do menu lateral. Com o menu em barra superior, fica sempre no cabeçalho."
         },
@@ -704,6 +845,45 @@
         },
         "desktop": {
           "$ref": "#/$defs/desktop"
+        },
+        "rails": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Zonas das bordas: rail de servidores (#116) e rail de páginas (#117). A spec declara a zona; os dados e as ações chegam pela porta `rails` do C3Shell.",
+          "properties": {
+            "servers": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "shortcuts": {
+                  "type": "boolean",
+                  "description": "Atalhos de 1 a 9 selecionam o servidor na posição."
+                },
+                "localServerId": {
+                  "type": "string",
+                  "description": "Id do servidor deste computador, o único que pode ser ocultado."
+                }
+              }
+            },
+            "pages": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "defaultPinned": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Páginas fixadas até a pessoa escolher outras."
+                },
+                "brandHref": {
+                  "type": "string",
+                  "format": "uri",
+                  "description": "Link da marca no topo do rail."
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -713,7 +893,10 @@
       "description": "Moldura do app quando ele roda como janela de desktop (Electron, Tauri). Só vale com a porta `desktopHost` do <C3Shell>, que diz a plataforma e o entalhe do Mac: no navegador a chave é ignorada. O processo main abre a janela pela mesma declaração (`windowFrame` de @c3theme/electron/main).",
       "properties": {
         "titleBar": {
-          "enum": ["hidden", "system"],
+          "enum": [
+            "hidden",
+            "system"
+          ],
           "default": "hidden",
           "description": "`hidden`: janela sem a barra de título do sistema; o cabeçalho e o topo do menu arrastam a janela e os botões da janela ganham espaço (Mac à esquerda, Windows à direita). `system`: fica a barra do sistema, sem recuo."
         },
@@ -737,7 +920,10 @@
           "description": "Largura da janela (px) a partir da qual o menu lateral fica fixo; abaixo dela vira gaveta com o botão de menu."
         },
         "density": {
-          "enum": ["compact", "comfortable"],
+          "enum": [
+            "compact",
+            "comfortable"
+          ],
           "default": "compact",
           "description": "`compact`: densidade de app de desktop (fonte de 13 px, campos e cabeçalho menores), também em menus e diálogos. `comfortable`: a do site."
         },
@@ -755,12 +941,20 @@
           "default": true,
           "description": "Busca do Ctrl K. true: telas do menu; false: some; { \"records\": true }: também registros e mensagens que o backend acha em GET /_search (spec/v0/search.yaml).",
           "oneOf": [
-            { "type": "boolean" },
+            {
+              "type": "boolean"
+            },
             {
               "type": "object",
               "additionalProperties": false,
-              "required": ["records"],
-              "properties": { "records": { "type": "boolean" } }
+              "required": [
+                "records"
+              ],
+              "properties": {
+                "records": {
+                  "type": "boolean"
+                }
+              }
             }
           ]
         },
@@ -795,7 +989,14 @@
         },
         "assistant": {
           "description": "Botão do assistente no header: abre o AssistantPanel numa gaveta à direita, pelas rotas de spec/v0/chat.yaml. true usa o padrão; o objeto ajusta título, sugestões e partes. Backend sem a porta Chat responde 404 e o painel avisa que o sistema não tem assistente.",
-          "oneOf": [{ "type": "boolean" }, { "$ref": "#/$defs/chat" }]
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "#/$defs/chat"
+            }
+          ]
         },
         "actions": {
           "type": "array",
@@ -809,10 +1010,24 @@
     "chatDelivery": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["situacao"],
+      "required": [
+        "situacao"
+      ],
       "properties": {
-        "situacao": { "enum": ["enviada", "entregue", "lida", "falhou"] },
-        "motivo": { "type": ["string", "null"] }
+        "situacao": {
+          "enum": [
+            "enviada",
+            "entregue",
+            "lida",
+            "falhou"
+          ]
+        },
+        "motivo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
       },
       "description": "Entrega da resposta do agente em canal externo. Não é o status de envio da pergunta no chat."
     },
@@ -821,8 +1036,15 @@
       "additionalProperties": false,
       "description": "Conversa com o agente do sistema (ADR 0006). O agente é do sistema, como a autenticação: o motor expõe as rotas de spec/v0/chat.yaml e desenha o AssistantPanel; o que o agente pede ao humano são as partes de agent-ui.schema.json.",
       "properties": {
-        "messageActions": { "type": "array", "items": { "$ref": "#/$defs/chatMessageAction" } },
-        "lanes": { "$ref": "#/$defs/chatLanes" },
+        "messageActions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/chatMessageAction"
+          }
+        },
+        "lanes": {
+          "$ref": "#/$defs/chatLanes"
+        },
         "entregaDaUltimaMensagem": {
           "$ref": "#/$defs/chatDelivery",
           "description": "Resumo da entrega externa da última resposta do agente; a entrega declarada no turno prevalece. Opcional: sem o resumo não há marca implícita."
@@ -854,7 +1076,14 @@
           "uniqueItems": true,
           "minItems": 1,
           "items": {
-            "enum": ["c3.form", "c3.record", "c3.action", "c3.tool", "c3.plan", "c3.browser"]
+            "enum": [
+              "c3.form",
+              "c3.record",
+              "c3.action",
+              "c3.tool",
+              "c3.plan",
+              "c3.browser"
+            ]
           },
           "description": "Partes de interface que esta conversa desenha (catálogo fechado de agent-ui.schema.json). Ausente: todas. Parte de kind fora da lista aparece como 'não sei mostrar'."
         },
@@ -864,7 +1093,10 @@
           "description": "Fila da próxima mensagem enquanto o agente responde."
         },
         "sendKey": {
-          "enum": ["enter", "modEnter"],
+          "enum": [
+            "enter",
+            "modEnter"
+          ],
           "default": "enter",
           "description": "Como a pessoa envia: 'enter' (Shift+Enter quebra a linha) ou 'modEnter' (Ctrl+Enter, ⌘+Enter no Mac; Enter quebra a linha)."
         },
@@ -897,7 +1129,9 @@
     },
     "link": {
       "type": "object",
-      "required": ["label"],
+      "required": [
+        "label"
+      ],
       "additionalProperties": false,
       "properties": {
         "label": {
@@ -916,16 +1150,22 @@
       },
       "oneOf": [
         {
-          "required": ["path"]
+          "required": [
+            "path"
+          ]
         },
         {
-          "required": ["href"]
+          "required": [
+            "href"
+          ]
         }
       ]
     },
     "menuGroup": {
       "type": "object",
-      "required": ["items"],
+      "required": [
+        "items"
+      ],
       "additionalProperties": false,
       "properties": {
         "title": {
@@ -956,7 +1196,13 @@
           "description": "Abre a lista já com um filtro nomeado da entidade (views.list.presets), ex.: 'Clientes VIP'. A mesma tela abre de vários itens de menu com filtros diferentes."
         },
         "view": {
-          "enum": ["list", "board", "calendar", "report", "map"],
+          "enum": [
+            "list",
+            "board",
+            "calendar",
+            "report",
+            "map"
+          ],
           "default": "list",
           "description": "Qual tela da entidade o item abre: a lista, o quadro (views.board), o calendário (views.calendar), o relatório (views.report) ou a planta (views.map). O preset vale para todas. Só com 'entity'."
         },
@@ -991,22 +1237,34 @@
       },
       "oneOf": [
         {
-          "required": ["entity"]
+          "required": [
+            "entity"
+          ]
         },
         {
-          "required": ["path"]
+          "required": [
+            "path"
+          ]
         },
         {
-          "required": ["href", "title"]
+          "required": [
+            "href",
+            "title"
+          ]
         },
         {
-          "required": ["children", "title"]
+          "required": [
+            "children",
+            "title"
+          ]
         }
       ]
     },
     "dashboard": {
       "type": "object",
-      "required": ["widgets"],
+      "required": [
+        "widgets"
+      ],
       "additionalProperties": false,
       "description": "Painel montado pela shell a partir do contrato (GET /{entity}/_aggregate e GET da lista): indicadores, gráficos e listas curtas em uma grade de 12 colunas, na ordem declarada. Tudo respeita escopo, filial ativa e permissões do usuário; widget de entidade que o usuário não lista não aparece. Filtros do painel (filters) ficam na barra do topo e entram no recorte de cada widget que os liga (bind).",
       "properties": {
@@ -1036,7 +1294,10 @@
           "description": "Botões no topo do painel, à direita: atalhos para a lista e para criar.",
           "items": {
             "type": "object",
-            "required": ["label", "path"],
+            "required": [
+              "label",
+              "path"
+            ],
             "additionalProperties": false,
             "properties": {
               "label": {
@@ -1051,7 +1312,10 @@
                 "pattern": "^[A-Z][A-Za-z0-9]*$"
               },
               "variant": {
-                "enum": ["contained", "outlined"],
+                "enum": [
+                  "contained",
+                  "outlined"
+                ],
                 "default": "outlined"
               }
             }
@@ -1064,86 +1328,244 @@
         {
           "type": "object",
           "description": "Uso com limite, lido do resumo (tokens por provedor): um bloco por item com o nome, o valor, o limite, a barra com o % consumido (amarela a partir de 80%, vermelha acima de 100%) e os detalhes (entrada, saída, janela, custo na moeda).",
-          "required": ["type", "title", "from", "label", "value"],
+          "required": [
+            "type",
+            "title",
+            "from",
+            "label",
+            "value"
+          ],
           "additionalProperties": false,
           "properties": {
-            "type": { "const": "meter" },
-            "title": { "$ref": "#/$defs/text" },
-            "subtitle": { "$ref": "#/$defs/text" },
-            "source": { "$ref": "#/$defs/summarySource", "description": "Outro resumo só para este widget; sem ele, o dashboard.source." },
-            "from": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$", "description": "Caminho no resumo (com pontos): lista, um bloco por item, ou objeto, um bloco." },
-            "width": { "type": "integer", "minimum": 1, "maximum": 12, "default": 6 },
-            "empty": { "$ref": "#/$defs/text", "description": "Texto sem itens no caminho. Padrão: 'Nada por aqui.'" },
-            "label": { "$ref": "#/$defs/summaryPath" },
-            "value": { "$ref": "#/$defs/summaryPath" },
-            "limit": { "$ref": "#/$defs/summaryPath", "description": "Sem limite no item, mostra só o valor, sem barra." },
-            "format": { "$ref": "#/$defs/summaryFormat" },
-            "details": { "type": "array", "maxItems": 8, "items": { "$ref": "#/$defs/summaryDetail" } }
+            "type": {
+              "const": "meter"
+            },
+            "title": {
+              "$ref": "#/$defs/text"
+            },
+            "subtitle": {
+              "$ref": "#/$defs/text"
+            },
+            "source": {
+              "$ref": "#/$defs/summarySource",
+              "description": "Outro resumo só para este widget; sem ele, o dashboard.source."
+            },
+            "from": {
+              "type": "string",
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$",
+              "description": "Caminho no resumo (com pontos): lista, um bloco por item, ou objeto, um bloco."
+            },
+            "width": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12,
+              "default": 6
+            },
+            "empty": {
+              "$ref": "#/$defs/text",
+              "description": "Texto sem itens no caminho. Padrão: 'Nada por aqui.'"
+            },
+            "label": {
+              "$ref": "#/$defs/summaryPath"
+            },
+            "value": {
+              "$ref": "#/$defs/summaryPath"
+            },
+            "limit": {
+              "$ref": "#/$defs/summaryPath",
+              "description": "Sem limite no item, mostra só o valor, sem barra."
+            },
+            "format": {
+              "$ref": "#/$defs/summaryFormat"
+            },
+            "details": {
+              "type": "array",
+              "maxItems": 8,
+              "items": {
+                "$ref": "#/$defs/summaryDetail"
+              }
+            }
           }
         },
         {
           "type": "object",
           "description": "Participação no total, lida do resumo (consumo por agente): ranking com a barra do % ou rosca com a legenda.",
-          "required": ["type", "title", "from", "label", "value"],
+          "required": [
+            "type",
+            "title",
+            "from",
+            "label",
+            "value"
+          ],
           "additionalProperties": false,
           "properties": {
-            "type": { "const": "share" },
-            "title": { "$ref": "#/$defs/text" },
-            "subtitle": { "$ref": "#/$defs/text" },
-            "source": { "$ref": "#/$defs/summarySource", "description": "Outro resumo só para este widget; sem ele, o dashboard.source." },
-            "from": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$", "description": "Caminho no resumo (com pontos): lista, um bloco por item, ou objeto, um bloco." },
-            "width": { "type": "integer", "minimum": 1, "maximum": 12, "default": 6 },
-            "empty": { "$ref": "#/$defs/text", "description": "Texto sem itens no caminho. Padrão: 'Nada por aqui.'" },
-            "label": { "$ref": "#/$defs/summaryPath" },
-            "value": { "$ref": "#/$defs/summaryPath" },
-            "share": { "$ref": "#/$defs/summaryPath", "description": "Participação já calculada (0 a 100); sem ela, o valor sobre a soma dos itens." },
-            "format": { "$ref": "#/$defs/summaryFormat" },
-            "chart": { "enum": ["ranking", "donut"], "default": "ranking" },
-            "limit": { "type": "integer", "minimum": 1, "maximum": 50 }
+            "type": {
+              "const": "share"
+            },
+            "title": {
+              "$ref": "#/$defs/text"
+            },
+            "subtitle": {
+              "$ref": "#/$defs/text"
+            },
+            "source": {
+              "$ref": "#/$defs/summarySource",
+              "description": "Outro resumo só para este widget; sem ele, o dashboard.source."
+            },
+            "from": {
+              "type": "string",
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$",
+              "description": "Caminho no resumo (com pontos): lista, um bloco por item, ou objeto, um bloco."
+            },
+            "width": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12,
+              "default": 6
+            },
+            "empty": {
+              "$ref": "#/$defs/text",
+              "description": "Texto sem itens no caminho. Padrão: 'Nada por aqui.'"
+            },
+            "label": {
+              "$ref": "#/$defs/summaryPath"
+            },
+            "value": {
+              "$ref": "#/$defs/summaryPath"
+            },
+            "share": {
+              "$ref": "#/$defs/summaryPath",
+              "description": "Participação já calculada (0 a 100); sem ela, o valor sobre a soma dos itens."
+            },
+            "format": {
+              "$ref": "#/$defs/summaryFormat"
+            },
+            "chart": {
+              "enum": [
+                "ranking",
+                "donut"
+              ],
+              "default": "ranking"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
           }
         },
         {
           "type": "object",
           "description": "Objeto único do resumo com estado, textos e ações (o card de atualização do app): chip do estado, campos, avisos condicionais, barra de progresso, a mensagem de erro do sistema e as ações. O sistema diz, no objeto (availability), que ações valem agora e por que a desabilitada não vale.",
-          "required": ["type", "title", "from", "state", "states"],
+          "required": [
+            "type",
+            "title",
+            "from",
+            "state",
+            "states"
+          ],
           "additionalProperties": false,
           "properties": {
-            "type": { "const": "status" },
-            "title": { "$ref": "#/$defs/text" },
-            "subtitle": { "$ref": "#/$defs/text" },
-            "source": { "$ref": "#/$defs/summarySource", "description": "Outro resumo só para este widget; sem ele, o dashboard.source." },
-            "from": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$", "description": "Caminho no resumo (com pontos): lista, um bloco por item, ou objeto, um bloco." },
-            "width": { "type": "integer", "minimum": 1, "maximum": 12, "default": 6 },
-            "empty": { "$ref": "#/$defs/text", "description": "Texto sem itens no caminho. Padrão: 'Nada por aqui.'" },
-            "state": { "$ref": "#/$defs/summaryPath" },
+            "type": {
+              "const": "status"
+            },
+            "title": {
+              "$ref": "#/$defs/text"
+            },
+            "subtitle": {
+              "$ref": "#/$defs/text"
+            },
+            "source": {
+              "$ref": "#/$defs/summarySource",
+              "description": "Outro resumo só para este widget; sem ele, o dashboard.source."
+            },
+            "from": {
+              "type": "string",
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$",
+              "description": "Caminho no resumo (com pontos): lista, um bloco por item, ou objeto, um bloco."
+            },
+            "width": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12,
+              "default": 6
+            },
+            "empty": {
+              "$ref": "#/$defs/text",
+              "description": "Texto sem itens no caminho. Padrão: 'Nada por aqui.'"
+            },
+            "state": {
+              "$ref": "#/$defs/summaryPath"
+            },
             "states": {
               "type": "object",
               "minProperties": 1,
               "description": "Valor do estado → rótulo e cor do chip. Estado fora daqui mostra o valor cru.",
               "additionalProperties": {
                 "type": "object",
-                "required": ["label"],
+                "required": [
+                  "label"
+                ],
                 "additionalProperties": false,
                 "properties": {
-                  "label": { "$ref": "#/$defs/text" },
-                  "tone": { "enum": ["neutral", "primary", "info", "success", "warning", "danger"], "default": "neutral" }
+                  "label": {
+                    "$ref": "#/$defs/text"
+                  },
+                  "tone": {
+                    "enum": [
+                      "neutral",
+                      "primary",
+                      "info",
+                      "success",
+                      "warning",
+                      "danger"
+                    ],
+                    "default": "neutral"
+                  }
                 }
               }
             },
-            "fields": { "type": "array", "maxItems": 8, "items": { "$ref": "#/$defs/summaryDetail" } },
-            "progress": { "$ref": "#/$defs/summaryPath", "description": "Número de 0 a 100: a barra aparece quando ele vem (baixando)." },
-            "message": { "$ref": "#/$defs/summaryPath", "description": "Texto de erro do sistema, mostrado quando vem." },
+            "fields": {
+              "type": "array",
+              "maxItems": 8,
+              "items": {
+                "$ref": "#/$defs/summaryDetail"
+              }
+            },
+            "progress": {
+              "$ref": "#/$defs/summaryPath",
+              "description": "Número de 0 a 100: a barra aparece quando ele vem (baixando)."
+            },
+            "message": {
+              "$ref": "#/$defs/summaryPath",
+              "description": "Texto de erro do sistema, mostrado quando vem."
+            },
             "notices": {
               "type": "array",
               "maxItems": 4,
               "items": {
                 "type": "object",
-                "required": ["when", "text"],
+                "required": [
+                  "when",
+                  "text"
+                ],
                 "additionalProperties": false,
                 "properties": {
-                  "when": { "$ref": "entity.schema.json#/$defs/condition", "description": "Condição sobre os campos do objeto (canal igual a beta)." },
-                  "text": { "$ref": "#/$defs/text" },
-                  "tone": { "enum": ["info", "warning", "error"], "default": "info" }
+                  "when": {
+                    "$ref": "entity.schema.json#/$defs/condition",
+                    "description": "Condição sobre os campos do objeto (canal igual a beta)."
+                  },
+                  "text": {
+                    "$ref": "#/$defs/text"
+                  },
+                  "tone": {
+                    "enum": [
+                      "info",
+                      "warning",
+                      "error"
+                    ],
+                    "default": "info"
+                  }
                 }
               }
             },
@@ -1152,13 +1574,32 @@
               "maxItems": 6,
               "items": {
                 "type": "object",
-                "required": ["id", "label", "path"],
+                "required": [
+                  "id",
+                  "label",
+                  "path"
+                ],
                 "additionalProperties": false,
                 "properties": {
-                  "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$" },
-                  "label": { "$ref": "#/$defs/text" },
-                  "path": { "type": "string", "pattern": "^/", "description": "POST no sistema; a resposta com data é o resumo novo." },
-                  "variant": { "enum": ["contained", "outlined"], "default": "outlined" }
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]{0,62}$"
+                  },
+                  "label": {
+                    "$ref": "#/$defs/text"
+                  },
+                  "path": {
+                    "type": "string",
+                    "pattern": "^/",
+                    "description": "POST no sistema; a resposta com data é o resumo novo."
+                  },
+                  "variant": {
+                    "enum": [
+                      "contained",
+                      "outlined"
+                    ],
+                    "default": "outlined"
+                  }
                 }
               }
             },
@@ -1171,12 +1612,23 @@
         {
           "type": "object",
           "description": "Grade de atividade (heatmap): uma coluna por semana e uma linha por dia da semana, mais forte quanto maior o valor do dia. Usa o _aggregate do chart com interval day. Com os dados de um ano só (filtro de período 'year', por exemplo), mostra janeiro a dezembro; senão, do primeiro ao último dia que veio. Clique no dia abre a lista daquele dia.",
-          "required": ["type", "title", "entity", "groupBy"],
+          "required": [
+            "type",
+            "title",
+            "entity",
+            "groupBy"
+          ],
           "additionalProperties": false,
           "properties": {
-            "type": { "const": "heatmap" },
-            "title": { "$ref": "#/$defs/text" },
-            "subtitle": { "$ref": "#/$defs/text" },
+            "type": {
+              "const": "heatmap"
+            },
+            "title": {
+              "$ref": "#/$defs/text"
+            },
+            "subtitle": {
+              "$ref": "#/$defs/text"
+            },
             "entity": {
               "type": "string",
               "pattern": "^[a-z][a-z0-9_]{0,62}$",
@@ -1187,7 +1639,10 @@
               "pattern": "^[a-z][a-z0-9-]*$",
               "description": "Preset de views.list.presets da entidade: o filtro do widget e o destino do clique."
             },
-            "where": { "$ref": "entity.schema.json#/$defs/condition", "description": "Filtro extra, somado ao preset (e)." },
+            "where": {
+              "$ref": "entity.schema.json#/$defs/condition",
+              "description": "Filtro extra, somado ao preset (e)."
+            },
             "width": {
               "type": "integer",
               "minimum": 1,
@@ -1206,7 +1661,14 @@
               "description": "'count' conta os registros do dia; 'sum:<campo>' soma um campo integer ou decimal."
             },
             "tone": {
-              "enum": ["neutral", "primary", "info", "success", "warning", "danger"],
+              "enum": [
+                "neutral",
+                "primary",
+                "info",
+                "success",
+                "warning",
+                "danger"
+              ],
               "default": "success",
               "description": "Cor das células: quatro tons, do mais claro ao mais forte, na legenda 'menos … mais'."
             },
@@ -1217,15 +1679,24 @@
             "bind": {
               "type": "object",
               "description": "Filtros do painel que este widget usa: nome do filtro -> campo do widget (período em date/datetime, registro em reference da mesma entidade). Somados (e) ao preset e ao where.",
-              "additionalProperties": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$" },
-              "propertyNames": { "pattern": "^[a-z][a-z0-9_]{0,62}$" }
+              "additionalProperties": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{0,62}$"
+              },
+              "propertyNames": {
+                "pattern": "^[a-z][a-z0-9_]{0,62}$"
+              }
             }
           }
         },
         {
           "type": "object",
           "description": "Indicador: um número (contagem ou soma) que leva à lista com o mesmo filtro.",
-          "required": ["type", "title", "entity"],
+          "required": [
+            "type",
+            "title",
+            "entity"
+          ],
           "additionalProperties": false,
           "properties": {
             "type": {
@@ -1277,7 +1748,14 @@
               "description": "Ícone do catálogo num quadrado colorido (tone), à esquerda do título e do valor."
             },
             "tone": {
-              "enum": ["neutral", "primary", "info", "success", "warning", "danger"],
+              "enum": [
+                "neutral",
+                "primary",
+                "info",
+                "success",
+                "warning",
+                "danger"
+              ],
               "default": "neutral",
               "description": "Cor do ícone e da barra de progresso."
             },
@@ -1288,7 +1766,9 @@
             },
             "progress": {
               "type": "object",
-              "required": ["label"],
+              "required": [
+                "label"
+              ],
               "additionalProperties": false,
               "description": "Barra de progresso com o %: part (somado ao filtro do widget) sobre whole (ausente: o filtro do próprio widget). Ex.: Total faturado com 'recebido' = pagas sobre o total.",
               "properties": {
@@ -1307,13 +1787,23 @@
             },
             "compare": {
               "type": "object",
-              "required": ["label"],
+              "required": [
+                "label"
+              ],
               "additionalProperties": false,
               "description": "Variação da medida sobre outro recorte, com a seta e a cor (ex.: saldo projetado de hoje x o de 30 dias). O recorte é o preset e o where daqui, no lugar dos do widget. Base zero: sem variação.",
               "properties": {
-                "label": { "$ref": "#/$defs/text", "description": "O outro recorte, depois de 'vs.' (ex.: 'em 30 dias')." },
-                "preset": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
-                "where": { "$ref": "entity.schema.json#/$defs/condition" },
+                "label": {
+                  "$ref": "#/$defs/text",
+                  "description": "O outro recorte, depois de 'vs.' (ex.: 'em 30 dias')."
+                },
+                "preset": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "where": {
+                  "$ref": "entity.schema.json#/$defs/condition"
+                },
                 "invert": {
                   "type": "boolean",
                   "default": false,
@@ -1326,7 +1816,12 @@
         {
           "type": "object",
           "description": "Gráfico de um campo agrupado: barras (enum, boolean, reference) ou linha no tempo (date, datetime).",
-          "required": ["type", "title", "entity", "groupBy"],
+          "required": [
+            "type",
+            "title",
+            "entity",
+            "groupBy"
+          ],
           "additionalProperties": false,
           "properties": {
             "type": {
@@ -1367,12 +1862,21 @@
               "description": "'count' conta os registros; 'sum:<campo>' soma um campo integer ou decimal."
             },
             "interval": {
-              "enum": ["day", "month", "year"],
+              "enum": [
+                "day",
+                "month",
+                "year"
+              ],
               "default": "month",
               "description": "Só com groupBy de data."
             },
             "chart": {
-              "enum": ["bar", "line", "area", "donut"],
+              "enum": [
+                "bar",
+                "line",
+                "area",
+                "donut"
+              ],
               "description": "'bar' (padrão sem data): barras deitadas; 'line' (padrão com data): linha no tempo; 'area': linhas suaves com área e legenda, uma por série; 'donut': rosca com legenda (cor, rótulo, % e valor)."
             },
             "bind": {
@@ -1397,7 +1901,9 @@
               "description": "Só em 'area': várias linhas no mesmo eixo, cada uma com seu filtro (somado ao do widget), medida e cor (faturado x recebido).",
               "items": {
                 "type": "object",
-                "required": ["label"],
+                "required": [
+                  "label"
+                ],
                 "additionalProperties": false,
                 "properties": {
                   "label": {
@@ -1413,7 +1919,14 @@
                     "description": "'count' conta os registros; 'sum:<campo>' soma um campo integer ou decimal."
                   },
                   "tone": {
-                    "enum": ["neutral", "primary", "info", "success", "warning", "danger"]
+                    "enum": [
+                      "neutral",
+                      "primary",
+                      "info",
+                      "success",
+                      "warning",
+                      "danger"
+                    ]
                   }
                 }
               }
@@ -1443,7 +1956,11 @@
         {
           "type": "object",
           "description": "Lista curta (os primeiros registros) com link para cada um e para a lista completa.",
-          "required": ["type", "title", "entity"],
+          "required": [
+            "type",
+            "title",
+            "entity"
+          ],
           "additionalProperties": false,
           "properties": {
             "type": {
@@ -1501,21 +2018,39 @@
               "description": "Abas no cartão, cada uma com a sua entidade e filtro (ex.: 'A receber' sobre titulo_receber e 'A pagar' sobre titulo_pagar). Colunas, ordem e limite vêm do widget quando a aba não diz; o preset e o where do widget não entram (cada aba tem o seu). O bind do widget vale em todas as abas.",
               "items": {
                 "type": "object",
-                "required": ["label"],
+                "required": [
+                  "label"
+                ],
                 "additionalProperties": false,
                 "properties": {
-                  "label": { "$ref": "#/$defs/text" },
-                  "entity": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$", "description": "Padrão: a entidade do widget." },
-                  "preset": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
-                  "where": { "$ref": "entity.schema.json#/$defs/condition" },
+                  "label": {
+                    "$ref": "#/$defs/text"
+                  },
+                  "entity": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]{0,62}$",
+                    "description": "Padrão: a entidade do widget."
+                  },
+                  "preset": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                  },
+                  "where": {
+                    "$ref": "entity.schema.json#/$defs/condition"
+                  },
                   "columns": {
                     "type": "array",
                     "minItems": 1,
                     "maxItems": 4,
                     "uniqueItems": true,
-                    "items": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$" }
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]{0,62}$"
+                    }
                   },
-                  "sort": { "type": "string" }
+                  "sort": {
+                    "type": "string"
+                  }
                 }
               }
             },
@@ -1540,7 +2075,11 @@
         {
           "type": "object",
           "description": "Aviso (\"12 vendas sem NFC-e\"): conta os registros do recorte e só aparece com contagem acima de zero. Leva à lista com o mesmo recorte.",
-          "required": ["type", "entity", "text"],
+          "required": [
+            "type",
+            "entity",
+            "text"
+          ],
           "additionalProperties": false,
           "properties": {
             "type": {
@@ -1587,7 +2126,11 @@
               "description": "Soma mostrada em {value} ('sum:<campo>' integer ou decimal), na mesma chamada da contagem."
             },
             "tone": {
-              "enum": ["info", "warning", "error"],
+              "enum": [
+                "info",
+                "warning",
+                "error"
+              ],
               "default": "warning"
             }
           }
@@ -1595,7 +2138,12 @@
         {
           "type": "object",
           "description": "Ranking: os maiores grupos pela medida (o cliente que mais deve), com iniciais, a contagem, o valor e um destaque.",
-          "required": ["type", "title", "entity", "groupBy"],
+          "required": [
+            "type",
+            "title",
+            "entity",
+            "groupBy"
+          ],
           "additionalProperties": false,
           "properties": {
             "type": {
@@ -1662,7 +2210,10 @@
             },
             "flag": {
               "type": "object",
-              "required": ["where", "label"],
+              "required": [
+                "where",
+                "label"
+              ],
               "additionalProperties": false,
               "description": "Parte do grupo que pede atenção (vencidas): chip com {value} (a medida dessa parte) e a cor; sem ela, otherwise.",
               "properties": {
@@ -1673,19 +2224,35 @@
                   "$ref": "#/$defs/text"
                 },
                 "tone": {
-                  "enum": ["neutral", "primary", "info", "success", "warning", "danger"],
+                  "enum": [
+                    "neutral",
+                    "primary",
+                    "info",
+                    "success",
+                    "warning",
+                    "danger"
+                  ],
                   "default": "danger"
                 },
                 "otherwise": {
                   "type": "object",
-                  "required": ["label"],
+                  "required": [
+                    "label"
+                  ],
                   "additionalProperties": false,
                   "properties": {
                     "label": {
                       "$ref": "#/$defs/text"
                     },
                     "tone": {
-                      "enum": ["neutral", "primary", "info", "success", "warning", "danger"],
+                      "enum": [
+                        "neutral",
+                        "primary",
+                        "info",
+                        "success",
+                        "warning",
+                        "danger"
+                      ],
                       "default": "warning"
                     }
                   }
@@ -1702,7 +2269,13 @@
         {
           "type": "object",
           "description": "Avisos recentes: ícone e cor pelo enum kind, o título do registro, o texto e há quanto tempo (time), do mais novo ao mais velho.",
-          "required": ["type", "title", "entity", "kind", "time"],
+          "required": [
+            "type",
+            "title",
+            "entity",
+            "kind",
+            "time"
+          ],
           "additionalProperties": false,
           "properties": {
             "type": {
@@ -1777,12 +2350,22 @@
     },
     "summarySource": {
       "type": "object",
-      "required": ["path"],
+      "required": [
+        "path"
+      ],
       "additionalProperties": false,
       "description": "Endpoint do resumo no sistema (spec/v0/summary.yaml): GET devolve { data: {...} } com o token da sessão.",
       "properties": {
-        "path": { "type": "string", "pattern": "^/" },
-        "refresh": { "type": "integer", "minimum": 1, "maximum": 3600, "description": "Relê a cada N segundos (progresso do download)." }
+        "path": {
+          "type": "string",
+          "pattern": "^/"
+        },
+        "refresh": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600,
+          "description": "Relê a cada N segundos (progresso do download)."
+        }
       }
     },
     "summaryPath": {
@@ -1791,19 +2374,37 @@
       "description": "Caminho no item do resumo, com pontos (janela.inicio)."
     },
     "summaryFormat": {
-      "enum": ["number", "percent", "money", "datetime", "text"],
+      "enum": [
+        "number",
+        "percent",
+        "money",
+        "datetime",
+        "text"
+      ],
       "default": "number",
       "description": "money usa a moeda ISO 4217 de currency; datetime, data e hora curtas no idioma."
     },
     "summaryDetail": {
       "type": "object",
-      "required": ["label", "value"],
+      "required": [
+        "label",
+        "value"
+      ],
       "additionalProperties": false,
       "properties": {
-        "label": { "$ref": "#/$defs/text" },
-        "value": { "$ref": "#/$defs/summaryPath" },
-        "format": { "$ref": "#/$defs/summaryFormat" },
-        "currency": { "$ref": "#/$defs/summaryPath", "description": "Caminho da moeda (ISO 4217) para format money." }
+        "label": {
+          "$ref": "#/$defs/text"
+        },
+        "value": {
+          "$ref": "#/$defs/summaryPath"
+        },
+        "format": {
+          "$ref": "#/$defs/summaryFormat"
+        },
+        "currency": {
+          "$ref": "#/$defs/summaryPath",
+          "description": "Caminho da moeda (ISO 4217) para format money."
+        }
       }
     },
     "dashboardFilter": {
@@ -1811,7 +2412,10 @@
         {
           "type": "object",
           "description": "Período relativo ao relógio do sistema: hoje, esta semana, este mês, mês passado, últimos 7 ou 30 dias, este ano, tudo. Liga-se a campo date ou datetime: início incluso, fim excluso.",
-          "required": ["name", "type"],
+          "required": [
+            "name",
+            "type"
+          ],
           "additionalProperties": false,
           "properties": {
             "name": {
@@ -1832,7 +2436,9 @@
               "type": "array",
               "minItems": 1,
               "uniqueItems": true,
-              "items": { "$ref": "#/$defs/period" },
+              "items": {
+                "$ref": "#/$defs/period"
+              },
               "description": "Quais períodos o seletor oferece, nesta ordem (vencimentos: [\"today\", \"next7\", \"next30\", \"month\"]). Padrão: todos. O default precisa estar aqui."
             }
           }
@@ -1840,7 +2446,11 @@
         {
           "type": "object",
           "description": "Um registro de outra entidade (filial, vendedor), escolhido por busca. Liga-se a campo reference para a mesma entidade; vazio não filtra.",
-          "required": ["name", "type", "entity"],
+          "required": [
+            "name",
+            "type",
+            "entity"
+          ],
           "additionalProperties": false,
           "properties": {
             "name": {

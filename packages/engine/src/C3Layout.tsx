@@ -3,8 +3,23 @@
 // dentro de um roteador, com as telas no <Outlet />.
 
 import { lazy, ReactNode, Suspense } from 'react';
+import { useLocation } from 'react-router';
 
-import { AppFooter, AppLayout, ColorModeButton, CommandSearch, DesktopOptions, FullscreenButton, SettingsButton } from '@c3theme/ui';
+import {
+  AppFooter,
+  AppLayout,
+  ColorModeButton,
+  CommandSearch,
+  DesktopOptions,
+  flattenNav,
+  FullscreenButton,
+  PageRail,
+  ServerRail,
+  SettingsButton,
+  type PageRailItem,
+  type PageRailProps,
+  type ServerRailProps
+} from '@c3theme/ui';
 import { iconByName, useEngine, useText } from './context';
 import BranchSelector from './widgets/BranchSelector';
 import NotificationBell from './widgets/NotificationBell';
@@ -18,16 +33,25 @@ import { headerChat } from './chat/chatDef';
 // o assistente traz o @c3theme/chat: só baixa quem tem `layout.header.assistant`
 const AssistantButton = lazy(() => import('./chat/AssistantButton'));
 
+/** Dados e ações dos railes (#116/#117) entregues pelo app; a spec declara só a zona. */
+export interface ShellRailsPort {
+  readonly servers?: ServerRailProps;
+  readonly pages?: Partial<Omit<PageRailProps, 'pages'>>;
+}
+
 export interface C3LayoutProps {
   /** Rodapé do drawer (ex.: usuário logado e sair), que é do sistema e não da spec. */
   drawerFooter?: ReactNode;
   /** App de desktop sem barra de título. Sem isso, a moldura de `layout.desktop` (com a porta `desktopHost`). */
   desktop?: DesktopOptions;
+  /** Rails de servidores e de páginas; só aparecem quando `layout.rails` declara a zona. */
+  rails?: ShellRailsPort;
 }
 
-export default function C3Layout({ drawerFooter, desktop }: C3LayoutProps) {
+export default function C3Layout({ drawerFooter, desktop, rails }: C3LayoutProps) {
   const { app, entities, components, icons, pageAccess, desktop: frame } = useEngine();
   const text = useText();
+  const location = useLocation();
   const header = app.layout.header ?? {};
   const recordSearch = useRecordSearch();
   const assistant = headerChat(header.assistant);
@@ -44,7 +68,7 @@ export default function C3Layout({ drawerFooter, desktop }: C3LayoutProps) {
   const footer = app.layout.footer;
   const user = useSessionUser();
 
-  return (
+  const layout = (
     <AppLayout
       menu={menu}
       breadcrumbs={false}
@@ -80,5 +104,44 @@ export default function C3Layout({ drawerFooter, desktop }: C3LayoutProps) {
         )
       }
     />
+  );
+
+  const zonas = app.layout.rails;
+  if (zonas === undefined) {
+    return layout;
+  }
+
+  const paginas = flattenNav(menu)
+    .map(({ item }) => item)
+    .filter((item) => item.external !== true && item.url !== undefined)
+    .map((item) => ({
+      id: item.id,
+      title: item.title,
+      url: item.url as string,
+      icon: item.icon as PageRailItem['icon'],
+      fixed: item.url === app.homePath
+    }));
+
+  return (
+    <div style={{ display: 'flex', height: '100vh', minHeight: 0 }}>
+      {zonas.servers !== undefined && rails?.servers !== undefined && (
+        <ServerRail
+          {...rails.servers}
+          shortcut={zonas.servers.shortcuts ?? rails.servers.shortcut}
+          storageKey={rails.servers.storageKey}
+          localServerId={zonas.servers.localServerId}
+        />
+      )}
+      {zonas.pages !== undefined && (
+        <PageRail
+          pages={paginas}
+          activePath={location.pathname}
+          brand={{ label: app.name, ...(zonas.pages.brandHref === undefined ? {} : { href: zonas.pages.brandHref }) }}
+          defaultPinned={zonas.pages.defaultPinned ?? []}
+          {...rails?.pages}
+        />
+      )}
+      <div style={{ flex: 1, minWidth: 0, minHeight: 0 }}>{layout}</div>
+    </div>
   );
 }
