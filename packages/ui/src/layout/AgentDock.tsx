@@ -118,7 +118,7 @@ export default function AgentDock({
               '&.Mui-focusVisible': { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: 2 }
             }}
           >
-            <Badge badgeContent={item.approvals} color="warning">
+            <Badge aria-hidden="true" badgeContent={item.approvals} color="warning">
               <Avatar sx={{ width: 28, height: 28, fontSize: 14, bgcolor: 'primary.main', color: 'primary.contrastText' }}>
                 {item.mark ?? item.label.slice(0, 1)}
               </Avatar>
