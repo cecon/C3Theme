@@ -27,6 +27,7 @@ function estadoTone(t: Theme, estado: ServerRailItem['state']): string {
     case 'online':
       return t.palette.success.main;
     case 'connecting':
+    case 'waking':
     case 'sleeping':
       return t.palette.warning.main;
     case 'error':

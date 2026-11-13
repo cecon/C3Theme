@@ -221,7 +221,20 @@ function Shell(props: C3ShellProps) {
         org: state.org && { ...state.org, setActive },
         ...(frame && { desktop: frame })
       },
-    [state, catalog, telemetry, reloadApp, setActive, frame, props.connectivity, props.platform, props.rails, props.sidebars, props.agentDocks, desktopHost]
+    [
+      state,
+      catalog,
+      telemetry,
+      reloadApp,
+      setActive,
+      frame,
+      props.connectivity,
+      props.platform,
+      props.rails,
+      props.sidebars,
+      props.agentDocks,
+      desktopHost
+    ]
   );
   const app = state?.app;
   const routes = app && routesKey(app);

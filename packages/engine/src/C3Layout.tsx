@@ -129,30 +129,32 @@ export default function C3Layout({ drawerFooter, desktop, rails: suppliedRails }
     }));
 
   return (
-    <ShellDockFrame><ShellRailsFrame
-      rails={
-        <>
-          {zonas.servers !== undefined && rails?.servers !== undefined && (
-            <ServerRail
-              {...rails.servers}
-              shortcut={zonas.servers.shortcuts ?? rails.servers.shortcut}
-              storageKey={rails.servers.storageKey}
-              localServerId={zonas.servers.localServerId}
-            />
-          )}
-          {zonas.pages !== undefined && (
-            <PageRail
-              pages={paginas}
-              activePath={location.pathname}
-              brand={{ label: app.name, ...(zonas.pages.brandHref === undefined ? {} : { href: zonas.pages.brandHref }) }}
-              defaultPinned={zonas.pages.defaultPinned ?? []}
-              {...rails?.pages}
-            />
-          )}
-        </>
-      }
-    >
-      {layout}
-    </ShellRailsFrame></ShellDockFrame>
+    <ShellDockFrame>
+      <ShellRailsFrame
+        rails={
+          <>
+            {zonas.servers !== undefined && rails?.servers !== undefined && (
+              <ServerRail
+                {...rails.servers}
+                shortcut={zonas.servers.shortcuts ?? rails.servers.shortcut}
+                storageKey={rails.servers.storageKey}
+                localServerId={zonas.servers.localServerId}
+              />
+            )}
+            {zonas.pages !== undefined && (
+              <PageRail
+                pages={paginas}
+                activePath={location.pathname}
+                brand={{ label: app.name, ...(zonas.pages.brandHref === undefined ? {} : { href: zonas.pages.brandHref }) }}
+                defaultPinned={zonas.pages.defaultPinned ?? []}
+                {...rails?.pages}
+              />
+            )}
+          </>
+        }
+      >
+        {layout}
+      </ShellRailsFrame>
+    </ShellDockFrame>
   );
 }

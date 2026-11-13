@@ -4,12 +4,7 @@
   "title": "C3 App v0",
   "description": "Estrutura do sistema que a shell monta: layout (header, menu, body, footer), páginas e rotas. Rotas de entidade são derivadas; só páginas custom declaram rota.",
   "type": "object",
-  "required": [
-    "specVersion",
-    "name",
-    "entities",
-    "layout"
-  ],
+  "required": ["specVersion", "name", "entities", "layout"],
   "additionalProperties": false,
   "properties": {
     "$schema": {
@@ -30,17 +25,12 @@
     },
     "status": {
       "type": "object",
-      "required": [
-        "mode"
-      ],
+      "required": ["mode"],
       "additionalProperties": false,
       "description": "Tela pública em vez do login e das páginas. Não bloqueia a API: autorização e manutenção de serviços continuam sendo responsabilidade do sistema. Até a remoção deste objeto, a tela permanece ativa; until é previsão, não agenda automática (quando chega, a tela só pergunta de novo ao backend). Um proxy na frente do backend mostra a mesma tela respondendo 503 em /_meta/* (corpo opcional { \"status\": {...} } e Retry-After).",
       "properties": {
         "mode": {
-          "enum": [
-            "maintenance",
-            "comingSoon"
-          ]
+          "enum": ["maintenance", "comingSoon"]
         },
         "title": {
           "$ref": "#/$defs/text"
@@ -80,10 +70,7 @@
     },
     "organization": {
       "type": "object",
-      "required": [
-        "company",
-        "branch"
-      ],
+      "required": ["company", "branch"],
       "additionalProperties": false,
       "description": "Liga o escopo por empresa e filial (ver 'scope' em entity.schema.json). Aponta quais entidades do próprio sistema são a empresa (CNPJ raiz, scope 'group') e a filial (estabelecimento, inclusive a matriz, scope 'company'). O grupo econômico não aparece aqui: é o banco inteiro. Sem 'organization', toda entidade é 'group'.",
       "properties": {
@@ -109,10 +96,7 @@
           "description": "Frase abaixo do título, ex.: 'Use o usuário do posto'."
         },
         "identifier": {
-          "enum": [
-            "email",
-            "username"
-          ],
+          "enum": ["email", "username"],
           "default": "email",
           "description": "O que o usuário digita para entrar: e-mail (validado) ou nome de usuário/código."
         },
@@ -140,10 +124,7 @@
     },
     "authorization": {
       "type": "object",
-      "required": [
-        "codes",
-        "fields"
-      ],
+      "required": ["codes", "fields"],
       "additionalProperties": false,
       "description": "Autorização de outro usuário (supervisor, liberação de orçamento). Quando o servidor recusa criar, alterar, excluir ou uma ação com um destes códigos, a shell mostra a mensagem e pede os campos; 'Autorizar' reenvia o mesmo pedido com o cabeçalho C3-Authorization (JSON dos campos em base64, UTF-8). O sistema confere quem libera e grava a auditoria no hook; nova recusa (mesmo código, 401 ou 403) aparece no diálogo. A senha nunca vai ao formulário nem ao rascunho.",
       "properties": {
@@ -164,10 +145,7 @@
           "minItems": 1,
           "items": {
             "type": "object",
-            "required": [
-              "name",
-              "label"
-            ],
+            "required": ["name", "label"],
             "additionalProperties": false,
             "properties": {
               "name": {
@@ -177,11 +155,7 @@
                 "$ref": "#/$defs/text"
               },
               "type": {
-                "enum": [
-                  "string",
-                  "password",
-                  "text"
-                ],
+                "enum": ["string", "password", "text"],
                 "default": "string"
               },
               "minLength": {
@@ -200,12 +174,7 @@
   "$defs": {
     "sectionSidebar": {
       "type": "object",
-      "required": [
-        "source",
-        "label",
-        "title",
-        "sections"
-      ],
+      "required": ["source", "label", "title", "sections"],
       "additionalProperties": false,
       "properties": {
         "source": {
@@ -228,10 +197,7 @@
           "type": "array",
           "items": {
             "type": "object",
-            "required": [
-              "id",
-              "label"
-            ],
+            "required": ["id", "label"],
             "additionalProperties": false,
             "properties": {
               "id": {
@@ -251,11 +217,7 @@
           "type": "array",
           "items": {
             "type": "object",
-            "required": [
-              "id",
-              "label",
-              "action"
-            ],
+            "required": ["id", "label", "action"],
             "additionalProperties": false,
             "properties": {
               "id": {
@@ -273,10 +235,7 @@
               },
               "action": {
                 "type": "object",
-                "required": [
-                  "id",
-                  "label"
-                ],
+                "required": ["id", "label"],
                 "additionalProperties": false,
                 "properties": {
                   "id": {
@@ -296,23 +255,14 @@
     "agentDock": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "source",
-        "position",
-        "size",
-        "label"
-      ],
+      "required": ["source", "position", "size", "label"],
       "properties": {
         "source": {
           "type": "string",
           "minLength": 1
         },
         "position": {
-          "enum": [
-            "top",
-            "bottom",
-            "right"
-          ]
+          "enum": ["top", "bottom", "right"]
         },
         "size": {
           "type": "integer",
@@ -341,9 +291,7 @@
             "empty": {
               "type": "object",
               "additionalProperties": false,
-              "required": [
-                "message"
-              ],
+              "required": ["message"],
               "properties": {
                 "message": {
                   "$ref": "#/$defs/text"
@@ -351,10 +299,7 @@
                 "action": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "label",
-                    "path"
-                  ],
+                  "required": ["label", "path"],
                   "properties": {
                     "label": {
                       "$ref": "#/$defs/text"
@@ -374,10 +319,7 @@
     "chatMessageAction": {
       "type": "object",
       "description": "Ação no menu \"Mais ações\" de uma mensagem do chat (issue #10). Com 'opens', abre uma conversa à parte a partir da mensagem (POST /_chat/{conversa}/_lanes, spec/v0/chat-lanes.yaml); sem 'opens', a shell chama POST /_chat/{conversa}/messages/{mensagem}/_actions/{id} e o sistema decide o que fazer. 'when' filtra em quais mensagens aparece (campo ausente: qualquer valor). Mensagem de sistema, passagem de tarefa, resposta chegando e mensagem ainda enviando nunca têm ações.",
-      "required": [
-        "id",
-        "label"
-      ],
+      "required": ["id", "label"],
       "additionalProperties": false,
       "properties": {
         "id": {
@@ -393,39 +335,25 @@
           "additionalProperties": false,
           "properties": {
             "direction": {
-              "enum": [
-                "in",
-                "out"
-              ],
+              "enum": ["in", "out"],
               "description": "in: recebida (resposta do assistente); out: enviada pelo usuário."
             },
             "meta": {
               "type": "object",
               "minProperties": 1,
               "additionalProperties": {
-                "type": [
-                  "string",
-                  "number",
-                  "boolean",
-                  "null"
-                ]
+                "type": ["string", "number", "boolean", "null"]
               },
               "description": "Igualdade por chave de message.meta; ausente equivale a false."
             },
             "author": {
-              "enum": [
-                "agent",
-                "person"
-              ],
+              "enum": ["agent", "person"],
               "description": "Quem escreveu. Autor sem tipo: quem chega é agente, quem sai é gente."
             }
           }
         },
         "opens": {
-          "enum": [
-            "aside",
-            "branch"
-          ],
+          "enum": ["aside", "branch"],
           "description": "aside: pergunta lateral com a mensagem citada; branch: ramo com o histórico até a mensagem."
         }
       }
@@ -452,19 +380,7 @@
       }
     },
     "period": {
-      "enum": [
-        "today",
-        "week",
-        "month",
-        "lastMonth",
-        "last7",
-        "last30",
-        "next7",
-        "next30",
-        "nextMonth",
-        "year",
-        "all"
-      ],
+      "enum": ["today", "week", "month", "lastMonth", "last7", "last30", "next7", "next30", "nextMonth", "year", "all"],
       "description": "Período do filtro do painel. last7/last30: os últimos N dias até hoje. next7/next30: de hoje até hoje+N−1 (o que vai vencer). nextMonth: o mês que vem inteiro."
     },
     "icon": {
@@ -485,9 +401,7 @@
     },
     "pageStateAction": {
       "type": "object",
-      "required": [
-        "label"
-      ],
+      "required": ["label"],
       "additionalProperties": false,
       "properties": {
         "label": {
@@ -514,11 +428,7 @@
         },
         "record": {
           "type": "object",
-          "required": [
-            "entity",
-            "id",
-            "action"
-          ],
+          "required": ["entity", "id", "action"],
           "additionalProperties": false,
           "properties": {
             "entity": {
@@ -538,38 +448,24 @@
       },
       "oneOf": [
         {
-          "required": [
-            "path"
-          ]
+          "required": ["path"]
         },
         {
-          "required": [
-            "retry"
-          ]
+          "required": ["retry"]
         },
         {
-          "required": [
-            "record"
-          ]
+          "required": ["record"]
         }
       ]
     },
     "pageStates": {
       "type": "object",
-      "required": [
-        "loading",
-        "empty",
-        "error",
-        "forbidden",
-        "offline"
-      ],
+      "required": ["loading", "empty", "error", "forbidden", "offline"],
       "additionalProperties": false,
       "properties": {
         "loading": {
           "type": "object",
-          "required": [
-            "message"
-          ],
+          "required": ["message"],
           "additionalProperties": false,
           "properties": {
             "message": {
@@ -594,10 +490,7 @@
         },
         "empty": {
           "type": "object",
-          "required": [
-            "message",
-            "action"
-          ],
+          "required": ["message", "action"],
           "additionalProperties": false,
           "properties": {
             "message": {
@@ -622,10 +515,7 @@
         },
         "error": {
           "type": "object",
-          "required": [
-            "message",
-            "action"
-          ],
+          "required": ["message", "action"],
           "additionalProperties": false,
           "properties": {
             "message": {
@@ -649,9 +539,7 @@
                   "$ref": "#/$defs/pageStateAction"
                 },
                 {
-                  "required": [
-                    "retry"
-                  ]
+                  "required": ["retry"]
                 }
               ]
             }
@@ -659,10 +547,7 @@
         },
         "forbidden": {
           "type": "object",
-          "required": [
-            "message",
-            "instruction"
-          ],
+          "required": ["message", "instruction"],
           "additionalProperties": false,
           "properties": {
             "message": {
@@ -702,10 +587,7 @@
         },
         "offline": {
           "type": "object",
-          "required": [
-            "message",
-            "works"
-          ],
+          "required": ["message", "works"],
           "additionalProperties": false,
           "properties": {
             "message": {
@@ -751,9 +633,7 @@
     },
     "page": {
       "type": "object",
-      "required": [
-        "path"
-      ],
+      "required": ["path"],
       "additionalProperties": false,
       "properties": {
         "states": {
@@ -784,10 +664,7 @@
         },
         "wizard": {
           "type": "object",
-          "required": [
-            "entity",
-            "steps"
-          ],
+          "required": ["entity", "steps"],
           "additionalProperties": false,
           "description": "Assistente em passos (primeira configuração): cada passo edita campos de uma entidade singleton, com Voltar, Avançar e Pular, e o resumo no fim. Com 'pending', toda rota da shell leva ao assistente enquanto o registro diz que está pendente. Use isto, dashboard, apiDocs ou component.",
           "properties": {
@@ -804,10 +681,7 @@
               "minItems": 1,
               "items": {
                 "type": "object",
-                "required": [
-                  "title",
-                  "rows"
-                ],
+                "required": ["title", "rows"],
                 "additionalProperties": false,
                 "properties": {
                   "title": {
@@ -856,10 +730,7 @@
                   "type": "array",
                   "items": {
                     "type": "object",
-                    "required": [
-                      "label",
-                      "path"
-                    ],
+                    "required": ["label", "path"],
                     "additionalProperties": false,
                     "properties": {
                       "label": {
@@ -903,9 +774,7 @@
         },
         "apiDocs": {
           "type": "object",
-          "required": [
-            "spec"
-          ],
+          "required": ["spec"],
           "additionalProperties": false,
           "description": "Documentação da API: a shell lê o openapi.json (OpenAPI 3) pelo cliente do motor, com o token da sessão, e mostra as rotas por tag, com busca por caminho ou resumo e o 'experimentar' em cada rota. Use isto, dashboard ou component.",
           "properties": {
@@ -917,77 +786,50 @@
           }
         },
         "layout": {
-          "enum": [
-            "dashboard",
-            "blank"
-          ],
+          "enum": ["dashboard", "blank"],
           "default": "dashboard",
           "description": "'dashboard' renderiza dentro de header/menu/footer; 'blank' ocupa a tela toda (ex.: impressão, quiosque)."
         }
       },
       "oneOf": [
         {
-          "required": [
-            "component"
-          ]
+          "required": ["component"]
         },
         {
-          "required": [
-            "dashboard"
-          ],
+          "required": ["dashboard"],
           "not": {
-            "required": [
-              "config"
-            ]
+            "required": ["config"]
           }
         },
         {
-          "required": [
-            "wizard"
-          ],
+          "required": ["wizard"],
           "not": {
-            "required": [
-              "config"
-            ]
+            "required": ["config"]
           }
         },
         {
-          "required": [
-            "apiDocs"
-          ],
+          "required": ["apiDocs"],
           "not": {
-            "required": [
-              "config"
-            ]
+            "required": ["config"]
           }
         },
         {
-          "required": [
-            "chat"
-          ],
+          "required": ["chat"],
           "not": {
-            "required": [
-              "config"
-            ]
+            "required": ["config"]
           }
         },
         {
-          "required": [
-            "comingSoon"
-          ],
+          "required": ["comingSoon"],
           "not": {
-            "required": [
-              "config"
-            ]
+            "required": ["config"]
           }
         }
       ]
     },
     "layout": {
       "type": "object",
-      "required": [
-        "menu"
-      ],
+      "required": ["menu"],
       "additionalProperties": false,
       "description": "As quatro regiões da shell. Body é a rota ativa (lista/form/detalhe de entidade ou página custom), por isso não é configurado aqui.",
       "properties": {
@@ -995,19 +837,12 @@
           "$ref": "#/$defs/sectionSidebar"
         },
         "orientation": {
-          "enum": [
-            "vertical",
-            "horizontal",
-            "rail"
-          ],
+          "enum": ["vertical", "horizontal", "rail"],
           "default": "vertical",
           "description": "Menu lateral (acordeão), barra superior ou 'rail': dois níveis, com trilho de módulos (itens de primeiro nível) e painel com as telas do módulo; filhos de filhos viram títulos de seção no painel."
         },
         "user": {
-          "enum": [
-            "header",
-            "drawer"
-          ],
+          "enum": ["header", "drawer"],
           "default": "header",
           "description": "Onde fica o usuário logado (menu de conta com perfil e sair): avatar à direita do cabeçalho ou cartão no pé do menu lateral. Com o menu em barra superior, fica sempre no cabeçalho."
         },
@@ -1085,10 +920,7 @@
       "description": "Moldura do app quando ele roda como janela de desktop (Electron, Tauri). Só vale com a porta `desktopHost` do <C3Shell>, que diz a plataforma e o entalhe do Mac: no navegador a chave é ignorada. O processo main abre a janela pela mesma declaração (`windowFrame` de @c3theme/electron/main).",
       "properties": {
         "titleBar": {
-          "enum": [
-            "hidden",
-            "system"
-          ],
+          "enum": ["hidden", "system"],
           "default": "hidden",
           "description": "`hidden`: janela sem a barra de título do sistema; o cabeçalho e o topo do menu arrastam a janela e os botões da janela ganham espaço (Mac à esquerda, Windows à direita). `system`: fica a barra do sistema, sem recuo."
         },
@@ -1112,10 +944,7 @@
           "description": "Largura da janela (px) a partir da qual o menu lateral fica fixo; abaixo dela vira gaveta com o botão de menu."
         },
         "density": {
-          "enum": [
-            "compact",
-            "comfortable"
-          ],
+          "enum": ["compact", "comfortable"],
           "default": "compact",
           "description": "`compact`: densidade de app de desktop (fonte de 13 px, campos e cabeçalho menores), também em menus e diálogos. `comfortable`: a do site."
         },
@@ -1139,9 +968,7 @@
             {
               "type": "object",
               "additionalProperties": false,
-              "required": [
-                "records"
-              ],
+              "required": ["records"],
               "properties": {
                 "records": {
                   "type": "boolean"
@@ -1202,23 +1029,13 @@
     "chatDelivery": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "situacao"
-      ],
+      "required": ["situacao"],
       "properties": {
         "situacao": {
-          "enum": [
-            "enviada",
-            "entregue",
-            "lida",
-            "falhou"
-          ]
+          "enum": ["enviada", "entregue", "lida", "falhou"]
         },
         "motivo": {
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": ["string", "null"]
         }
       },
       "description": "Entrega da resposta do agente em canal externo. Não é o status de envio da pergunta no chat."
@@ -1284,14 +1101,7 @@
           "uniqueItems": true,
           "minItems": 1,
           "items": {
-            "enum": [
-              "c3.form",
-              "c3.record",
-              "c3.action",
-              "c3.tool",
-              "c3.plan",
-              "c3.browser"
-            ]
+            "enum": ["c3.form", "c3.record", "c3.action", "c3.tool", "c3.plan", "c3.browser"]
           },
           "description": "Partes de interface que esta conversa desenha (catálogo fechado de agent-ui.schema.json). Ausente: todas. Parte de kind fora da lista aparece como 'não sei mostrar'."
         },
@@ -1301,10 +1111,7 @@
           "description": "Fila da próxima mensagem enquanto o agente responde."
         },
         "sendKey": {
-          "enum": [
-            "enter",
-            "modEnter"
-          ],
+          "enum": ["enter", "modEnter"],
           "default": "enter",
           "description": "Como a pessoa envia: 'enter' (Shift+Enter quebra a linha) ou 'modEnter' (Ctrl+Enter, ⌘+Enter no Mac; Enter quebra a linha)."
         },
@@ -1337,9 +1144,7 @@
     },
     "link": {
       "type": "object",
-      "required": [
-        "label"
-      ],
+      "required": ["label"],
       "additionalProperties": false,
       "properties": {
         "label": {
@@ -1358,22 +1163,16 @@
       },
       "oneOf": [
         {
-          "required": [
-            "path"
-          ]
+          "required": ["path"]
         },
         {
-          "required": [
-            "href"
-          ]
+          "required": ["href"]
         }
       ]
     },
     "menuGroup": {
       "type": "object",
-      "required": [
-        "items"
-      ],
+      "required": ["items"],
       "additionalProperties": false,
       "properties": {
         "title": {
@@ -1404,13 +1203,7 @@
           "description": "Abre a lista já com um filtro nomeado da entidade (views.list.presets), ex.: 'Clientes VIP'. A mesma tela abre de vários itens de menu com filtros diferentes."
         },
         "view": {
-          "enum": [
-            "list",
-            "board",
-            "calendar",
-            "report",
-            "map"
-          ],
+          "enum": ["list", "board", "calendar", "report", "map"],
           "default": "list",
           "description": "Qual tela da entidade o item abre: a lista, o quadro (views.board), o calendário (views.calendar), o relatório (views.report) ou a planta (views.map). O preset vale para todas. Só com 'entity'."
         },
@@ -1445,34 +1238,22 @@
       },
       "oneOf": [
         {
-          "required": [
-            "entity"
-          ]
+          "required": ["entity"]
         },
         {
-          "required": [
-            "path"
-          ]
+          "required": ["path"]
         },
         {
-          "required": [
-            "href",
-            "title"
-          ]
+          "required": ["href", "title"]
         },
         {
-          "required": [
-            "children",
-            "title"
-          ]
+          "required": ["children", "title"]
         }
       ]
     },
     "dashboard": {
       "type": "object",
-      "required": [
-        "widgets"
-      ],
+      "required": ["widgets"],
       "additionalProperties": false,
       "description": "Painel montado pela shell a partir do contrato (GET /{entity}/_aggregate e GET da lista): indicadores, gráficos e listas curtas em uma grade de 12 colunas, na ordem declarada. Tudo respeita escopo, filial ativa e permissões do usuário; widget de entidade que o usuário não lista não aparece. Filtros do painel (filters) ficam na barra do topo e entram no recorte de cada widget que os liga (bind).",
       "properties": {
@@ -1502,10 +1283,7 @@
           "description": "Botões no topo do painel, à direita: atalhos para a lista e para criar.",
           "items": {
             "type": "object",
-            "required": [
-              "label",
-              "path"
-            ],
+            "required": ["label", "path"],
             "additionalProperties": false,
             "properties": {
               "label": {
@@ -1520,10 +1298,7 @@
                 "pattern": "^[A-Z][A-Za-z0-9]*$"
               },
               "variant": {
-                "enum": [
-                  "contained",
-                  "outlined"
-                ],
+                "enum": ["contained", "outlined"],
                 "default": "outlined"
               }
             }
@@ -1536,13 +1311,7 @@
         {
           "type": "object",
           "description": "Uso com limite, lido do resumo (tokens por provedor): um bloco por item com o nome, o valor, o limite, a barra com o % consumido (amarela a partir de 80%, vermelha acima de 100%) e os detalhes (entrada, saída, janela, custo na moeda).",
-          "required": [
-            "type",
-            "title",
-            "from",
-            "label",
-            "value"
-          ],
+          "required": ["type", "title", "from", "label", "value"],
           "additionalProperties": false,
           "properties": {
             "type": {
@@ -1598,13 +1367,7 @@
         {
           "type": "object",
           "description": "Participação no total, lida do resumo (consumo por agente): ranking com a barra do % ou rosca com a legenda.",
-          "required": [
-            "type",
-            "title",
-            "from",
-            "label",
-            "value"
-          ],
+          "required": ["type", "title", "from", "label", "value"],
           "additionalProperties": false,
           "properties": {
             "type": {
@@ -1649,10 +1412,7 @@
               "$ref": "#/$defs/summaryFormat"
             },
             "chart": {
-              "enum": [
-                "ranking",
-                "donut"
-              ],
+              "enum": ["ranking", "donut"],
               "default": "ranking"
             },
             "limit": {
@@ -1665,13 +1425,7 @@
         {
           "type": "object",
           "description": "Objeto único do resumo com estado, textos e ações (o card de atualização do app): chip do estado, campos, avisos condicionais, barra de progresso, a mensagem de erro do sistema e as ações. O sistema diz, no objeto (availability), que ações valem agora e por que a desabilitada não vale.",
-          "required": [
-            "type",
-            "title",
-            "from",
-            "state",
-            "states"
-          ],
+          "required": ["type", "title", "from", "state", "states"],
           "additionalProperties": false,
           "properties": {
             "type": {
@@ -1711,23 +1465,14 @@
               "description": "Valor do estado → rótulo e cor do chip. Estado fora daqui mostra o valor cru.",
               "additionalProperties": {
                 "type": "object",
-                "required": [
-                  "label"
-                ],
+                "required": ["label"],
                 "additionalProperties": false,
                 "properties": {
                   "label": {
                     "$ref": "#/$defs/text"
                   },
                   "tone": {
-                    "enum": [
-                      "neutral",
-                      "primary",
-                      "info",
-                      "success",
-                      "warning",
-                      "danger"
-                    ],
+                    "enum": ["neutral", "primary", "info", "success", "warning", "danger"],
                     "default": "neutral"
                   }
                 }
@@ -1753,10 +1498,7 @@
               "maxItems": 4,
               "items": {
                 "type": "object",
-                "required": [
-                  "when",
-                  "text"
-                ],
+                "required": ["when", "text"],
                 "additionalProperties": false,
                 "properties": {
                   "when": {
@@ -1767,11 +1509,7 @@
                     "$ref": "#/$defs/text"
                   },
                   "tone": {
-                    "enum": [
-                      "info",
-                      "warning",
-                      "error"
-                    ],
+                    "enum": ["info", "warning", "error"],
                     "default": "info"
                   }
                 }
@@ -1782,11 +1520,7 @@
               "maxItems": 6,
               "items": {
                 "type": "object",
-                "required": [
-                  "id",
-                  "label",
-                  "path"
-                ],
+                "required": ["id", "label", "path"],
                 "additionalProperties": false,
                 "properties": {
                   "id": {
@@ -1802,10 +1536,7 @@
                     "description": "POST no sistema; a resposta com data é o resumo novo."
                   },
                   "variant": {
-                    "enum": [
-                      "contained",
-                      "outlined"
-                    ],
+                    "enum": ["contained", "outlined"],
                     "default": "outlined"
                   }
                 }
@@ -1820,12 +1551,7 @@
         {
           "type": "object",
           "description": "Grade de atividade (heatmap): uma coluna por semana e uma linha por dia da semana, mais forte quanto maior o valor do dia. Usa o _aggregate do chart com interval day. Com os dados de um ano só (filtro de período 'year', por exemplo), mostra janeiro a dezembro; senão, do primeiro ao último dia que veio. Clique no dia abre a lista daquele dia.",
-          "required": [
-            "type",
-            "title",
-            "entity",
-            "groupBy"
-          ],
+          "required": ["type", "title", "entity", "groupBy"],
           "additionalProperties": false,
           "properties": {
             "type": {
@@ -1869,14 +1595,7 @@
               "description": "'count' conta os registros do dia; 'sum:<campo>' soma um campo integer ou decimal."
             },
             "tone": {
-              "enum": [
-                "neutral",
-                "primary",
-                "info",
-                "success",
-                "warning",
-                "danger"
-              ],
+              "enum": ["neutral", "primary", "info", "success", "warning", "danger"],
               "default": "success",
               "description": "Cor das células: quatro tons, do mais claro ao mais forte, na legenda 'menos … mais'."
             },
@@ -1900,11 +1619,7 @@
         {
           "type": "object",
           "description": "Indicador: um número (contagem ou soma) que leva à lista com o mesmo filtro.",
-          "required": [
-            "type",
-            "title",
-            "entity"
-          ],
+          "required": ["type", "title", "entity"],
           "additionalProperties": false,
           "properties": {
             "type": {
@@ -1956,14 +1671,7 @@
               "description": "Ícone do catálogo num quadrado colorido (tone), à esquerda do título e do valor."
             },
             "tone": {
-              "enum": [
-                "neutral",
-                "primary",
-                "info",
-                "success",
-                "warning",
-                "danger"
-              ],
+              "enum": ["neutral", "primary", "info", "success", "warning", "danger"],
               "default": "neutral",
               "description": "Cor do ícone e da barra de progresso."
             },
@@ -1974,9 +1682,7 @@
             },
             "progress": {
               "type": "object",
-              "required": [
-                "label"
-              ],
+              "required": ["label"],
               "additionalProperties": false,
               "description": "Barra de progresso com o %: part (somado ao filtro do widget) sobre whole (ausente: o filtro do próprio widget). Ex.: Total faturado com 'recebido' = pagas sobre o total.",
               "properties": {
@@ -1995,9 +1701,7 @@
             },
             "compare": {
               "type": "object",
-              "required": [
-                "label"
-              ],
+              "required": ["label"],
               "additionalProperties": false,
               "description": "Variação da medida sobre outro recorte, com a seta e a cor (ex.: saldo projetado de hoje x o de 30 dias). O recorte é o preset e o where daqui, no lugar dos do widget. Base zero: sem variação.",
               "properties": {
@@ -2024,12 +1728,7 @@
         {
           "type": "object",
           "description": "Gráfico de um campo agrupado: barras (enum, boolean, reference) ou linha no tempo (date, datetime).",
-          "required": [
-            "type",
-            "title",
-            "entity",
-            "groupBy"
-          ],
+          "required": ["type", "title", "entity", "groupBy"],
           "additionalProperties": false,
           "properties": {
             "type": {
@@ -2070,21 +1769,12 @@
               "description": "'count' conta os registros; 'sum:<campo>' soma um campo integer ou decimal."
             },
             "interval": {
-              "enum": [
-                "day",
-                "month",
-                "year"
-              ],
+              "enum": ["day", "month", "year"],
               "default": "month",
               "description": "Só com groupBy de data."
             },
             "chart": {
-              "enum": [
-                "bar",
-                "line",
-                "area",
-                "donut"
-              ],
+              "enum": ["bar", "line", "area", "donut"],
               "description": "'bar' (padrão sem data): barras deitadas; 'line' (padrão com data): linha no tempo; 'area': linhas suaves com área e legenda, uma por série; 'donut': rosca com legenda (cor, rótulo, % e valor)."
             },
             "bind": {
@@ -2109,9 +1799,7 @@
               "description": "Só em 'area': várias linhas no mesmo eixo, cada uma com seu filtro (somado ao do widget), medida e cor (faturado x recebido).",
               "items": {
                 "type": "object",
-                "required": [
-                  "label"
-                ],
+                "required": ["label"],
                 "additionalProperties": false,
                 "properties": {
                   "label": {
@@ -2127,14 +1815,7 @@
                     "description": "'count' conta os registros; 'sum:<campo>' soma um campo integer ou decimal."
                   },
                   "tone": {
-                    "enum": [
-                      "neutral",
-                      "primary",
-                      "info",
-                      "success",
-                      "warning",
-                      "danger"
-                    ]
+                    "enum": ["neutral", "primary", "info", "success", "warning", "danger"]
                   }
                 }
               }
@@ -2164,11 +1845,7 @@
         {
           "type": "object",
           "description": "Lista curta (os primeiros registros) com link para cada um e para a lista completa.",
-          "required": [
-            "type",
-            "title",
-            "entity"
-          ],
+          "required": ["type", "title", "entity"],
           "additionalProperties": false,
           "properties": {
             "type": {
@@ -2226,9 +1903,7 @@
               "description": "Abas no cartão, cada uma com a sua entidade e filtro (ex.: 'A receber' sobre titulo_receber e 'A pagar' sobre titulo_pagar). Colunas, ordem e limite vêm do widget quando a aba não diz; o preset e o where do widget não entram (cada aba tem o seu). O bind do widget vale em todas as abas.",
               "items": {
                 "type": "object",
-                "required": [
-                  "label"
-                ],
+                "required": ["label"],
                 "additionalProperties": false,
                 "properties": {
                   "label": {
@@ -2283,11 +1958,7 @@
         {
           "type": "object",
           "description": "Aviso (\"12 vendas sem NFC-e\"): conta os registros do recorte e só aparece com contagem acima de zero. Leva à lista com o mesmo recorte.",
-          "required": [
-            "type",
-            "entity",
-            "text"
-          ],
+          "required": ["type", "entity", "text"],
           "additionalProperties": false,
           "properties": {
             "type": {
@@ -2334,11 +2005,7 @@
               "description": "Soma mostrada em {value} ('sum:<campo>' integer ou decimal), na mesma chamada da contagem."
             },
             "tone": {
-              "enum": [
-                "info",
-                "warning",
-                "error"
-              ],
+              "enum": ["info", "warning", "error"],
               "default": "warning"
             }
           }
@@ -2346,12 +2013,7 @@
         {
           "type": "object",
           "description": "Ranking: os maiores grupos pela medida (o cliente que mais deve), com iniciais, a contagem, o valor e um destaque.",
-          "required": [
-            "type",
-            "title",
-            "entity",
-            "groupBy"
-          ],
+          "required": ["type", "title", "entity", "groupBy"],
           "additionalProperties": false,
           "properties": {
             "type": {
@@ -2418,10 +2080,7 @@
             },
             "flag": {
               "type": "object",
-              "required": [
-                "where",
-                "label"
-              ],
+              "required": ["where", "label"],
               "additionalProperties": false,
               "description": "Parte do grupo que pede atenção (vencidas): chip com {value} (a medida dessa parte) e a cor; sem ela, otherwise.",
               "properties": {
@@ -2432,35 +2091,19 @@
                   "$ref": "#/$defs/text"
                 },
                 "tone": {
-                  "enum": [
-                    "neutral",
-                    "primary",
-                    "info",
-                    "success",
-                    "warning",
-                    "danger"
-                  ],
+                  "enum": ["neutral", "primary", "info", "success", "warning", "danger"],
                   "default": "danger"
                 },
                 "otherwise": {
                   "type": "object",
-                  "required": [
-                    "label"
-                  ],
+                  "required": ["label"],
                   "additionalProperties": false,
                   "properties": {
                     "label": {
                       "$ref": "#/$defs/text"
                     },
                     "tone": {
-                      "enum": [
-                        "neutral",
-                        "primary",
-                        "info",
-                        "success",
-                        "warning",
-                        "danger"
-                      ],
+                      "enum": ["neutral", "primary", "info", "success", "warning", "danger"],
                       "default": "warning"
                     }
                   }
@@ -2477,13 +2120,7 @@
         {
           "type": "object",
           "description": "Avisos recentes: ícone e cor pelo enum kind, o título do registro, o texto e há quanto tempo (time), do mais novo ao mais velho.",
-          "required": [
-            "type",
-            "title",
-            "entity",
-            "kind",
-            "time"
-          ],
+          "required": ["type", "title", "entity", "kind", "time"],
           "additionalProperties": false,
           "properties": {
             "type": {
@@ -2558,9 +2195,7 @@
     },
     "summarySource": {
       "type": "object",
-      "required": [
-        "path"
-      ],
+      "required": ["path"],
       "additionalProperties": false,
       "description": "Endpoint do resumo no sistema (spec/v0/summary.yaml): GET devolve { data: {...} } com o token da sessão.",
       "properties": {
@@ -2582,22 +2217,13 @@
       "description": "Caminho no item do resumo, com pontos (janela.inicio)."
     },
     "summaryFormat": {
-      "enum": [
-        "number",
-        "percent",
-        "money",
-        "datetime",
-        "text"
-      ],
+      "enum": ["number", "percent", "money", "datetime", "text"],
       "default": "number",
       "description": "money usa a moeda ISO 4217 de currency; datetime, data e hora curtas no idioma."
     },
     "summaryDetail": {
       "type": "object",
-      "required": [
-        "label",
-        "value"
-      ],
+      "required": ["label", "value"],
       "additionalProperties": false,
       "properties": {
         "label": {
@@ -2620,10 +2246,7 @@
         {
           "type": "object",
           "description": "Período relativo ao relógio do sistema: hoje, esta semana, este mês, mês passado, últimos 7 ou 30 dias, este ano, tudo. Liga-se a campo date ou datetime: início incluso, fim excluso.",
-          "required": [
-            "name",
-            "type"
-          ],
+          "required": ["name", "type"],
           "additionalProperties": false,
           "properties": {
             "name": {
@@ -2654,11 +2277,7 @@
         {
           "type": "object",
           "description": "Um registro de outra entidade (filial, vendedor), escolhido por busca. Liga-se a campo reference para a mesma entidade; vazio não filtra.",
-          "required": [
-            "name",
-            "type",
-            "entity"
-          ],
+          "required": ["name", "type", "entity"],
           "additionalProperties": false,
           "properties": {
             "name": {

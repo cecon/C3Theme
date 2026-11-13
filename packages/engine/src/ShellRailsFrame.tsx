@@ -22,8 +22,14 @@ export default function ShellRailsFrame({ rails, children }: { rails: ReactNode;
     >
       <GlobalStyles
         styles={{
-          '.MuiDrawer-root.MuiDrawer-anchorLeft .MuiDrawer-paper': { left, maxWidth: `calc(100vw - ${left}px)` },
-          '.MuiDrawer-root.MuiDrawer-anchorRight .MuiDrawer-paper': { maxWidth: `calc(100vw - ${left}px)` }
+          ':root': { '--c3-shell-rails-left': `${left}px` },
+          '.MuiDrawer-root.MuiDrawer-anchorLeft .MuiDrawer-paper': {
+            left,
+            maxWidth: `calc(100vw - ${left}px - var(--c3-shell-dock-right, 0px))`
+          },
+          '.MuiDrawer-root.MuiDrawer-anchorRight .MuiDrawer-paper': {
+            maxWidth: `calc(100vw - ${left}px - var(--c3-shell-dock-right, 0px))`
+          }
         }}
       />
       <Box ref={ref} sx={{ display: 'flex', minHeight: 0, overflow: 'hidden' }}>
