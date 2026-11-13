@@ -57,7 +57,7 @@ export function ConteudoDoStatus({
   if (status === 'carregando') {
     return (
       <Stack sx={{ gap: 1.5 }} role="status">
-        <LinearProgress />
+        <LinearProgress aria-label={t('c3.settingsModal.loading')} />
         <Typography variant="body2" color="text.secondary">
           {t('c3.settingsModal.loading')}
         </Typography>
