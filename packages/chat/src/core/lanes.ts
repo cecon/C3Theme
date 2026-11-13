@@ -27,6 +27,8 @@ export interface MessageMatch {
   direction?: 'in' | 'out';
   /** `agent`: autor é agente (ou sem `kind`, no assistente); `person`: autor é gente. */
   author?: 'agent' | 'person';
+  /** Igualdade por chave; chave ausente equivale a false. */
+  meta?: Record<string, string | number | boolean | null>;
 }
 
 /** Ação no menu de uma mensagem. */
@@ -46,6 +48,11 @@ export function matchesMessage(message: Message, when: MessageMatch = {}): boole
   if (message.kind === 'system' || message.kind === 'handoff' || message.streaming) return false;
   if (when.direction && message.direction !== when.direction) return false;
   if (when.author && authorKind(message) !== when.author) return false;
+  if (
+    when.meta &&
+    !Object.entries(when.meta).every(([key, value]) => (Object.hasOwn(message.meta ?? {}, key) ? message.meta![key] : false) === value)
+  )
+    return false;
   return true;
 }
 

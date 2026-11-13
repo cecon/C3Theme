@@ -187,7 +187,9 @@ export default function useMessageWindow(transport: ChatTransport, conversationI
     };
   }, [transport]);
 
+  const putMessage = useCallback((message: Message) => dispatch({ type: 'event', event: { type: 'message', message } }), []);
+
   const dismissNotice = useCallback(() => dispatch({ type: 'dismissNotice' }), []);
 
-  return { ...state, loadOlder, send, retry, stop, generating, answer, answerUi, remove, dismissNotice };
+  return { ...state, loadOlder, send, retry, stop, generating, answer, answerUi, putMessage, remove, dismissNotice };
 }
