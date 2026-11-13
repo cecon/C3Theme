@@ -9,7 +9,7 @@ import { useAuthorization } from './authorization/useAuthorization';
 import { createShellRouter, type RouterMode } from './router';
 import { browserFetch, type C3Fetch } from './transport';
 import { C3Components, C3Icons, EngineProvider, EngineState } from './context';
-import C3Layout from './C3Layout';
+import C3Layout, { type ShellRailsPort } from './C3Layout';
 import { desktopFrame, frameFromOptions, frameTokens } from './desktop/frame';
 import type { DesktopHost } from './desktop/port';
 import useIconCatalog from './hooks/useIconCatalog';
@@ -17,17 +17,20 @@ import { readStoredBranch, storeBranch } from './branchStorage';
 import { loadEntities } from './access';
 import { buildRoutes, homePath, routesKey } from './routes';
 import useAppReload from './hooks/useAppReload';
+import { settingsPermissions } from './settings';
 import AuthGate from './auth/AuthGate';
 import type { AuthPort } from './auth/port';
 import { useAuthSession } from './auth/session';
 import { sessionRoutes } from './auth/sessionUser';
 import type { AppDef } from './types';
 import type { TelemetryPort } from './telemetry';
+import type { SettingsPort } from './settings/port';
 import { ApiError, loadFailure } from './apiError';
 import { AppStatus, ShellBoundary, type AppStatusDef } from './status/AppStatus';
 import { LoadErrorScreen } from './status/ErrorScreens';
 
 export interface C3ShellProps {
+  sidebars?: Record<string, import('./sidebar/types').SidebarPort>;
   agentDocks?: Record<string, import('./dock/types').AgentDockPort>;
   connectivity?: import('./pageStates/types').ConnectivityPort;
   /** Onde o app roda (seções com `platforms`). Sem isso: `desktop` com `desktopHost`, `mobile` em tela estreita, `web`. */
@@ -58,6 +61,8 @@ export interface C3ShellProps {
   transport?: C3Fetch;
   /** Rodapé do drawer (ex.: usuário logado e sair), que é do sistema e não da spec. */
   drawerFooter?: ReactNode;
+  /** Dados e ações dos railes de servidores (#116) e de páginas (#117); só aparecem se `layout.rails` declarar a zona. */
+  rails?: ShellRailsPort;
   /**
    * Porta da janela de desktop (Electron, Tauri): a plataforma e o entalhe. Com ela, a shell monta a moldura que o
    * `layout.desktop` do app.json declara (barra de título, botões da janela, menu translúcido, fonte e densidade).
@@ -81,6 +86,13 @@ export interface C3ShellProps {
    * `task.abandon` ao sair sem gravar), sem dado pessoal. O C3 só emite: guardar ou enviar é do sistema.
    */
   onTelemetry?: TelemetryPort;
+  /**
+   * Porta das configurações em modal (#119): valores iniciais, gravação de cada mudança e ações de linha. Sem ela,
+   * o modal desenha o que a spec declara e as mudanças ficam só na tela.
+   */
+  settings?: SettingsPort;
+  /** Abre as configurações direto nesta seção (a política pode passar a seção inicial). */
+  settingsSection?: string;
 }
 
 /**
@@ -210,13 +222,30 @@ function Shell(props: C3ShellProps) {
         icons: catalog,
         telemetry,
         connectivity: props.connectivity,
+        sidebars: props.sidebars,
         agentDocks: props.agentDocks,
+        rails: props.rails,
         platform: props.platform ?? (desktopHost ? 'desktop' : undefined),
         reloadApp,
         org: state.org && { ...state.org, setActive },
+        ...(props.settings && { settingsPort: props.settings }),
         ...(frame && { desktop: frame })
       },
-    [state, catalog, telemetry, reloadApp, setActive, frame, props.connectivity, props.agentDocks, props.platform, desktopHost]
+    [
+      state,
+      catalog,
+      telemetry,
+      reloadApp,
+      setActive,
+      frame,
+      props.connectivity,
+      props.platform,
+      props.settings,
+      props.rails,
+      props.sidebars,
+      props.agentDocks,
+      desktopHost
+    ]
   );
   const app = state?.app;
   const routes = app && routesKey(app);
@@ -225,7 +254,7 @@ function Shell(props: C3ShellProps) {
       app &&
       createShellRouter(
         props.router ?? 'browser',
-        buildRoutes(app, <C3Layout drawerFooter={drawerFooter} />, sessionRoutes(session)),
+        buildRoutes(app, <C3Layout drawerFooter={drawerFooter} settingsSection={props.settingsSection} />, sessionRoutes(session)),
         basename
       ),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- a sessão só muda ao sair, e aí a shell desmonta
@@ -264,6 +293,8 @@ function Shell(props: C3ShellProps) {
   );
 }
 
-/** Só pergunta quando alguma página declara `permission`. */
+/** Só pergunta quando alguma página ou alguma seção de configuração declara `permission`. */
 const loadPageAccess = (client: C3Client, app: AppDef) =>
-  app.pages?.some((p) => p.permission) ? client.pageAccess() : Promise.resolve({});
+  app.pages?.some((p) => p.permission) || (app.settings !== undefined && settingsPermissions(app.settings).length > 0)
+    ? client.pageAccess()
+    : Promise.resolve({});

@@ -20,9 +20,15 @@ rotas `blank` (impressão, quiosque) não recebem zonas da casca.
 ```
 
 Declare o objeto acima em `layout.agentDock`. Posições: `top`, `bottom`, `right`; `size` é a altura (top/bottom) ou largura
-(right), em pixels inteiros entre 48 e 480. Em janelas pequenas, o motor limita a reserva à metade da dimensão da janela.
+(right), em pixels inteiros entre 48 e 480. Em janelas pequenas, o motor limita a reserva à metade da dimensão útil:
+altura da janela para `top`/`bottom`, largura restante depois dos rails à esquerda para `right`.
 O dock rola por dentro e o restante da página conserva área útil. `FillHeight`, o cabeçalho fixo e as gavetas da conversa
 respeitam essa reserva; não há sobreposição do dock na conversa. Os textos declarados aceitam `Text`/i18n.
+
+Com `layout.rails` e `layout.sidebar` juntos, a ordem é dock, rails, casca com lista lateral e página.
+As gavetas em portal usam as reservas dos dois lados, inclusive no celular. Em áreas extremamente estreitas,
+a caixa do chat mantém a digitação em uma linha acima dos botões, e os controles do cabeçalho rolam no espaço útil.
+A história **Telas/Casca integrada** exercita essa composição com conta, conversa, fixadas e atualização das portas.
 
 Passe `agentDocks={{ agents: port }}` ao `C3Shell` (ou ao `EngineProvider`). A chave `source` seleciona essa porta de dados,
 não um componente React. Fonte ausente mostra erro. O motor não inventa endpoint nem consulta o domínio dos agentes.

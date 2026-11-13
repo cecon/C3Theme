@@ -12,7 +12,7 @@ export interface AgentDockFrameProps {
 /** Fixed strip plus reserved area. At least half the viewport remains available to the page. */
 export default function AgentDockFrame({ position, size, dock, children }: AgentDockFrameProps) {
   const lateral = position === 'right';
-  const extent = `min(${size}px, 50${lateral ? 'vw' : 'dvh'})`;
+  const extent = lateral ? `min(${size}px, calc((100vw - var(--c3-shell-rails-left, 0px)) / 2))` : `min(${size}px, 50dvh)`;
   const top = position === 'top' ? extent : '0px';
   const bottom = position === 'bottom' ? extent : '0px';
   const right = lateral ? extent : '0px';

@@ -3,6 +3,7 @@
 import type { Condition, FieldType } from './conditions.mjs';
 import type { DocumentFormat } from './documents.mjs';
 import type { AuthConfig } from './auth/port';
+import type { AppSettingsDef } from './settingsTypes';
 import type { DashboardDef } from './dashboard';
 import type { BoardView, CalendarView, ColumnDef, FlowView, GalleryView, ListLook, ListOpening, MapView, ReportView } from './viewTypes';
 import type { ActionDef, ActionPreview, GridFieldDef } from './actionTypes';
@@ -244,9 +245,12 @@ export interface AppDef {
   organization?: { company: string; branch: string };
   /** Página com `component` (página registrada, com `config` e `permission`) ou `dashboard` (montado pela shell). */
   pages?: PageDef[];
+  /** Configurações em modal (#119): abas pessoais, seções do servidor, busca e foco preso. */
+  settings?: AppSettingsDef;
   /** Autorização de outro usuário: códigos de erro que abrem o diálogo e os campos dele. */
   authorization?: AuthorizationConfig;
   layout: {
+    sidebar?: import('./sidebar/types').SidebarDef;
     agentDock?: import('./dock/types').AgentDockDef;
     orientation?: 'vertical' | 'horizontal' | 'rail';
     /** Onde fica o usuário logado: avatar no cabeçalho (padrão) ou cartão no pé do menu lateral. */
@@ -267,6 +271,8 @@ export interface AppDef {
     footer?: { text?: Text; links?: LinkDef[] } | null;
     /** Moldura da janela de desktop; só vale com a porta `desktopHost` do <C3Shell>. */
     desktop?: DesktopDef;
+    /** Zonas opcionais da casca, com dados e a??es pela porta rails. */
+    rails?: import('./railsTypes').RailsDef;
   };
 }
 

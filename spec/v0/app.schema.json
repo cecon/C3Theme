@@ -29,9 +29,15 @@
       "additionalProperties": false,
       "description": "Tela pública em vez do login e das páginas. Não bloqueia a API: autorização e manutenção de serviços continuam sendo responsabilidade do sistema. Até a remoção deste objeto, a tela permanece ativa; until é previsão, não agenda automática (quando chega, a tela só pergunta de novo ao backend). Um proxy na frente do backend mostra a mesma tela respondendo 503 em /_meta/* (corpo opcional { \"status\": {...} } e Retry-After).",
       "properties": {
-        "mode": { "enum": ["maintenance", "comingSoon"] },
-        "title": { "$ref": "#/$defs/text" },
-        "message": { "$ref": "#/$defs/text" },
+        "mode": {
+          "enum": ["maintenance", "comingSoon"]
+        },
+        "title": {
+          "$ref": "#/$defs/text"
+        },
+        "message": {
+          "$ref": "#/$defs/text"
+        },
         "until": {
           "type": "string",
           "format": "date-time",
@@ -122,8 +128,18 @@
       "additionalProperties": false,
       "description": "Autorização de outro usuário (supervisor, liberação de orçamento). Quando o servidor recusa criar, alterar, excluir ou uma ação com um destes códigos, a shell mostra a mensagem e pede os campos; 'Autorizar' reenvia o mesmo pedido com o cabeçalho C3-Authorization (JSON dos campos em base64, UTF-8). O sistema confere quem libera e grava a auditoria no hook; nova recusa (mesmo código, 401 ou 403) aparece no diálogo. A senha nunca vai ao formulário nem ao rascunho.",
       "properties": {
-        "codes": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" } },
-        "title": { "$ref": "#/$defs/text", "description": "Título do diálogo. Padrão: 'Autorização'." },
+        "codes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          }
+        },
+        "title": {
+          "$ref": "#/$defs/text",
+          "description": "Título do diálogo. Padrão: 'Autorização'."
+        },
         "fields": {
           "type": "array",
           "minItems": 1,
@@ -132,10 +148,20 @@
             "required": ["name", "label"],
             "additionalProperties": false,
             "properties": {
-              "name": { "$ref": "entity.schema.json#/$defs/identifier" },
-              "label": { "$ref": "#/$defs/text" },
-              "type": { "enum": ["string", "password", "text"], "default": "string" },
-              "minLength": { "type": "integer", "minimum": 1 }
+              "name": {
+                "$ref": "entity.schema.json#/$defs/identifier"
+              },
+              "label": {
+                "$ref": "#/$defs/text"
+              },
+              "type": {
+                "enum": ["string", "password", "text"],
+                "default": "string"
+              },
+              "minLength": {
+                "type": "integer",
+                "minimum": 1
+              }
             }
           }
         }
@@ -143,29 +169,104 @@
     },
     "layout": {
       "$ref": "#/$defs/layout"
+    },
+    "settings": {
+      "$ref": "#/$defs/settings",
+      "description": "Configurações em modal (#119): as abas pessoais e, no rodapé delas, as seções do servidor. A shell desenha a moldura (fundo inerte, foco preso, Escape, retorno de foco), a busca por linha e a navegação; os valores e a gravação vêm da porta `settings` do <C3Shell>."
     }
   },
   "$defs": {
+    "sectionSidebar": {
+      "type": "object",
+      "required": ["source", "label", "title", "sections"],
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "label": {
+          "$ref": "#/$defs/text"
+        },
+        "title": {
+          "$ref": "#/$defs/text"
+        },
+        "empty": {
+          "$ref": "#/$defs/text"
+        },
+        "hidden": {
+          "type": "boolean"
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "label"],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "label": {
+                "$ref": "#/$defs/text"
+              },
+              "editable": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "cards": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "label", "action"],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "label": {
+                "$ref": "#/$defs/text"
+              },
+              "message": {
+                "$ref": "#/$defs/text"
+              },
+              "dismissible": {
+                "type": "boolean"
+              },
+              "action": {
+                "type": "object",
+                "required": ["id", "label"],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "label": {
+                    "$ref": "#/$defs/text"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "agentDock": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "source",
-        "position",
-        "size",
-        "label"
-      ],
+      "required": ["source", "position", "size", "label"],
       "properties": {
         "source": {
           "type": "string",
           "minLength": 1
         },
         "position": {
-          "enum": [
-            "top",
-            "bottom",
-            "right"
-          ]
+          "enum": ["top", "bottom", "right"]
         },
         "size": {
           "type": "integer",
@@ -194,9 +295,7 @@
             "empty": {
               "type": "object",
               "additionalProperties": false,
-              "required": [
-                "message"
-              ],
+              "required": ["message"],
               "properties": {
                 "message": {
                   "$ref": "#/$defs/text"
@@ -204,10 +303,7 @@
                 "action": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "label",
-                    "path"
-                  ],
+                  "required": ["label", "path"],
                   "properties": {
                     "label": {
                       "$ref": "#/$defs/text"
@@ -246,7 +342,14 @@
               "enum": ["in", "out"],
               "description": "in: recebida (resposta do assistente); out: enviada pelo usuário."
             },
-            "meta": { "type": "object", "minProperties": 1, "additionalProperties": { "type": ["string", "number", "boolean", "null"] }, "description": "Igualdade por chave de message.meta; ausente equivale a false." },
+            "meta": {
+              "type": "object",
+              "minProperties": 1,
+              "additionalProperties": {
+                "type": ["string", "number", "boolean", "null"]
+              },
+              "description": "Igualdade por chave de message.meta; ausente equivale a false."
+            },
             "author": {
               "enum": ["agent", "person"],
               "description": "Quem escreveu. Autor sem tipo: quem chega é agente, quem sai é gente."
@@ -302,9 +405,7 @@
     },
     "pageStateAction": {
       "type": "object",
-      "required": [
-        "label"
-      ],
+      "required": ["label"],
       "additionalProperties": false,
       "properties": {
         "label": {
@@ -331,11 +432,7 @@
         },
         "record": {
           "type": "object",
-          "required": [
-            "entity",
-            "id",
-            "action"
-          ],
+          "required": ["entity", "id", "action"],
           "additionalProperties": false,
           "properties": {
             "entity": {
@@ -355,38 +452,24 @@
       },
       "oneOf": [
         {
-          "required": [
-            "path"
-          ]
+          "required": ["path"]
         },
         {
-          "required": [
-            "retry"
-          ]
+          "required": ["retry"]
         },
         {
-          "required": [
-            "record"
-          ]
+          "required": ["record"]
         }
       ]
     },
     "pageStates": {
       "type": "object",
-      "required": [
-        "loading",
-        "empty",
-        "error",
-        "forbidden",
-        "offline"
-      ],
+      "required": ["loading", "empty", "error", "forbidden", "offline"],
       "additionalProperties": false,
       "properties": {
         "loading": {
           "type": "object",
-          "required": [
-            "message"
-          ],
+          "required": ["message"],
           "additionalProperties": false,
           "properties": {
             "message": {
@@ -411,10 +494,7 @@
         },
         "empty": {
           "type": "object",
-          "required": [
-            "message",
-            "action"
-          ],
+          "required": ["message", "action"],
           "additionalProperties": false,
           "properties": {
             "message": {
@@ -439,10 +519,7 @@
         },
         "error": {
           "type": "object",
-          "required": [
-            "message",
-            "action"
-          ],
+          "required": ["message", "action"],
           "additionalProperties": false,
           "properties": {
             "message": {
@@ -466,9 +543,7 @@
                   "$ref": "#/$defs/pageStateAction"
                 },
                 {
-                  "required": [
-                    "retry"
-                  ]
+                  "required": ["retry"]
                 }
               ]
             }
@@ -476,10 +551,7 @@
         },
         "forbidden": {
           "type": "object",
-          "required": [
-            "message",
-            "instruction"
-          ],
+          "required": ["message", "instruction"],
           "additionalProperties": false,
           "properties": {
             "message": {
@@ -519,10 +591,7 @@
         },
         "offline": {
           "type": "object",
-          "required": [
-            "message",
-            "works"
-          ],
+          "required": ["message", "works"],
           "additionalProperties": false,
           "properties": {
             "message": {
@@ -571,7 +640,9 @@
       "required": ["path"],
       "additionalProperties": false,
       "properties": {
-        "states": { "$ref": "#/$defs/pageStates" },
+        "states": {
+          "$ref": "#/$defs/pageStates"
+        },
         "path": {
           "$ref": "#/$defs/path"
         },
@@ -617,8 +688,12 @@
                 "required": ["title", "rows"],
                 "additionalProperties": false,
                 "properties": {
-                  "title": { "$ref": "#/$defs/text" },
-                  "description": { "$ref": "#/$defs/text" },
+                  "title": {
+                    "$ref": "#/$defs/text"
+                  },
+                  "description": {
+                    "$ref": "#/$defs/text"
+                  },
                   "rows": {
                     "type": "array",
                     "minItems": 1,
@@ -627,10 +702,16 @@
                       "type": "array",
                       "minItems": 1,
                       "maxItems": 4,
-                      "items": { "$ref": "entity.schema.json#/$defs/formField" }
+                      "items": {
+                        "$ref": "entity.schema.json#/$defs/formField"
+                      }
                     }
                   },
-                  "optional": { "type": "boolean", "default": false, "description": "Mostra 'Pular': avança sem validar nem gravar." },
+                  "optional": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Mostra 'Pular': avança sem validar nem gravar."
+                  },
                   "action": {
                     "$ref": "entity.schema.json#/$defs/identifier",
                     "description": "Ação de registro da entidade, sem input, que roda depois de gravar o passo."
@@ -643,8 +724,12 @@
               "additionalProperties": false,
               "description": "Resumo no fim: o que está feito e o que falta, com o link da tela de cada item.",
               "properties": {
-                "title": { "$ref": "#/$defs/text" },
-                "description": { "$ref": "#/$defs/text" },
+                "title": {
+                  "$ref": "#/$defs/text"
+                },
+                "description": {
+                  "$ref": "#/$defs/text"
+                },
                 "items": {
                   "type": "array",
                   "items": {
@@ -652,7 +737,9 @@
                     "required": ["label", "path"],
                     "additionalProperties": false,
                     "properties": {
-                      "label": { "$ref": "#/$defs/text" },
+                      "label": {
+                        "$ref": "#/$defs/text"
+                      },
                       "done": {
                         "$ref": "entity.schema.json#/$defs/identifier",
                         "description": "Campo boolean do registro: verdadeiro é feito."
@@ -750,6 +837,9 @@
       "additionalProperties": false,
       "description": "As quatro regiões da shell. Body é a rota ativa (lista/form/detalhe de entidade ou página custom), por isso não é configurado aqui.",
       "properties": {
+        "sidebar": {
+          "$ref": "#/$defs/sectionSidebar"
+        },
         "orientation": {
           "enum": ["vertical", "horizontal", "rail"],
           "default": "vertical",
@@ -781,9 +871,61 @@
             }
           ]
         },
-        "agentDock": { "$ref": "#/$defs/agentDock" },
+        "agentDock": {
+          "$ref": "#/$defs/agentDock"
+        },
         "desktop": {
           "$ref": "#/$defs/desktop"
+        },
+        "rails": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Zonas das bordas: rail de servidores (#116) e rail de páginas (#117). A spec declara a zona; os dados e as ações chegam pela porta `rails` do C3Shell.",
+          "properties": {
+            "servers": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "shortcuts": {
+                  "type": "boolean",
+                  "description": "Atalhos de 1 a 9 selecionam o servidor na posição."
+                },
+                "localServerId": {
+                  "type": "string",
+                  "description": "Id do servidor deste computador, o único que pode ser ocultado."
+                }
+              }
+            },
+            "pages": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "hidden": {
+                  "type": "boolean"
+                },
+                "items": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "pattern": "^/"
+                  }
+                },
+                "defaultPinned": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Páginas fixadas até a pessoa escolher outras."
+                },
+                "brandHref": {
+                  "type": "string",
+                  "format": "uri",
+                  "description": "Link da marca no topo do rail."
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -835,12 +977,18 @@
           "default": true,
           "description": "Busca do Ctrl K. true: telas do menu; false: some; { \"records\": true }: também registros e mensagens que o backend acha em GET /_search (spec/v0/search.yaml).",
           "oneOf": [
-            { "type": "boolean" },
+            {
+              "type": "boolean"
+            },
             {
               "type": "object",
               "additionalProperties": false,
               "required": ["records"],
-              "properties": { "records": { "type": "boolean" } }
+              "properties": {
+                "records": {
+                  "type": "boolean"
+                }
+              }
             }
           ]
         },
@@ -875,7 +1023,14 @@
         },
         "assistant": {
           "description": "Botão do assistente no header: abre o AssistantPanel numa gaveta à direita, pelas rotas de spec/v0/chat.yaml. true usa o padrão; o objeto ajusta título, sugestões e partes. Backend sem a porta Chat responde 404 e o painel avisa que o sistema não tem assistente.",
-          "oneOf": [{ "type": "boolean" }, { "$ref": "#/$defs/chat" }]
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "#/$defs/chat"
+            }
+          ]
         },
         "actions": {
           "type": "array",
@@ -891,8 +1046,12 @@
       "additionalProperties": false,
       "required": ["situacao"],
       "properties": {
-        "situacao": { "enum": ["enviada", "entregue", "lida", "falhou"] },
-        "motivo": { "type": ["string", "null"] }
+        "situacao": {
+          "enum": ["enviada", "entregue", "lida", "falhou"]
+        },
+        "motivo": {
+          "type": ["string", "null"]
+        }
       },
       "description": "Entrega da resposta do agente em canal externo. Não é o status de envio da pergunta no chat."
     },
@@ -901,9 +1060,31 @@
       "additionalProperties": false,
       "description": "Conversa com o agente do sistema (ADR 0006). O agente é do sistema, como a autenticação: o motor expõe as rotas de spec/v0/chat.yaml e desenha o AssistantPanel; o que o agente pede ao humano são as partes de agent-ui.schema.json.",
       "properties": {
-        "pinned": { "oneOf": [{ "type": "boolean" }, { "type": "object", "additionalProperties": false, "properties": { "label": { "$ref": "#/$defs/text" } } }] },
-        "messageActions": { "type": "array", "items": { "$ref": "#/$defs/chatMessageAction" } },
-        "lanes": { "$ref": "#/$defs/chatLanes" },
+        "pinned": {
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "label": {
+                  "$ref": "#/$defs/text"
+                }
+              }
+            }
+          ]
+        },
+        "messageActions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/chatMessageAction"
+          }
+        },
+        "lanes": {
+          "$ref": "#/$defs/chatLanes"
+        },
         "entregaDaUltimaMensagem": {
           "$ref": "#/$defs/chatDelivery",
           "description": "Resumo da entrega externa da última resposta do agente; a entrega declarada no turno prevalece. Opcional: sem o resumo não há marca implícita."
@@ -1148,18 +1329,54 @@
           "required": ["type", "title", "from", "label", "value"],
           "additionalProperties": false,
           "properties": {
-            "type": { "const": "meter" },
-            "title": { "$ref": "#/$defs/text" },
-            "subtitle": { "$ref": "#/$defs/text" },
-            "source": { "$ref": "#/$defs/summarySource", "description": "Outro resumo só para este widget; sem ele, o dashboard.source." },
-            "from": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$", "description": "Caminho no resumo (com pontos): lista, um bloco por item, ou objeto, um bloco." },
-            "width": { "type": "integer", "minimum": 1, "maximum": 12, "default": 6 },
-            "empty": { "$ref": "#/$defs/text", "description": "Texto sem itens no caminho. Padrão: 'Nada por aqui.'" },
-            "label": { "$ref": "#/$defs/summaryPath" },
-            "value": { "$ref": "#/$defs/summaryPath" },
-            "limit": { "$ref": "#/$defs/summaryPath", "description": "Sem limite no item, mostra só o valor, sem barra." },
-            "format": { "$ref": "#/$defs/summaryFormat" },
-            "details": { "type": "array", "maxItems": 8, "items": { "$ref": "#/$defs/summaryDetail" } }
+            "type": {
+              "const": "meter"
+            },
+            "title": {
+              "$ref": "#/$defs/text"
+            },
+            "subtitle": {
+              "$ref": "#/$defs/text"
+            },
+            "source": {
+              "$ref": "#/$defs/summarySource",
+              "description": "Outro resumo só para este widget; sem ele, o dashboard.source."
+            },
+            "from": {
+              "type": "string",
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$",
+              "description": "Caminho no resumo (com pontos): lista, um bloco por item, ou objeto, um bloco."
+            },
+            "width": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12,
+              "default": 6
+            },
+            "empty": {
+              "$ref": "#/$defs/text",
+              "description": "Texto sem itens no caminho. Padrão: 'Nada por aqui.'"
+            },
+            "label": {
+              "$ref": "#/$defs/summaryPath"
+            },
+            "value": {
+              "$ref": "#/$defs/summaryPath"
+            },
+            "limit": {
+              "$ref": "#/$defs/summaryPath",
+              "description": "Sem limite no item, mostra só o valor, sem barra."
+            },
+            "format": {
+              "$ref": "#/$defs/summaryFormat"
+            },
+            "details": {
+              "type": "array",
+              "maxItems": 8,
+              "items": {
+                "$ref": "#/$defs/summaryDetail"
+              }
+            }
           }
         },
         {
@@ -1168,19 +1385,56 @@
           "required": ["type", "title", "from", "label", "value"],
           "additionalProperties": false,
           "properties": {
-            "type": { "const": "share" },
-            "title": { "$ref": "#/$defs/text" },
-            "subtitle": { "$ref": "#/$defs/text" },
-            "source": { "$ref": "#/$defs/summarySource", "description": "Outro resumo só para este widget; sem ele, o dashboard.source." },
-            "from": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$", "description": "Caminho no resumo (com pontos): lista, um bloco por item, ou objeto, um bloco." },
-            "width": { "type": "integer", "minimum": 1, "maximum": 12, "default": 6 },
-            "empty": { "$ref": "#/$defs/text", "description": "Texto sem itens no caminho. Padrão: 'Nada por aqui.'" },
-            "label": { "$ref": "#/$defs/summaryPath" },
-            "value": { "$ref": "#/$defs/summaryPath" },
-            "share": { "$ref": "#/$defs/summaryPath", "description": "Participação já calculada (0 a 100); sem ela, o valor sobre a soma dos itens." },
-            "format": { "$ref": "#/$defs/summaryFormat" },
-            "chart": { "enum": ["ranking", "donut"], "default": "ranking" },
-            "limit": { "type": "integer", "minimum": 1, "maximum": 50 }
+            "type": {
+              "const": "share"
+            },
+            "title": {
+              "$ref": "#/$defs/text"
+            },
+            "subtitle": {
+              "$ref": "#/$defs/text"
+            },
+            "source": {
+              "$ref": "#/$defs/summarySource",
+              "description": "Outro resumo só para este widget; sem ele, o dashboard.source."
+            },
+            "from": {
+              "type": "string",
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$",
+              "description": "Caminho no resumo (com pontos): lista, um bloco por item, ou objeto, um bloco."
+            },
+            "width": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12,
+              "default": 6
+            },
+            "empty": {
+              "$ref": "#/$defs/text",
+              "description": "Texto sem itens no caminho. Padrão: 'Nada por aqui.'"
+            },
+            "label": {
+              "$ref": "#/$defs/summaryPath"
+            },
+            "value": {
+              "$ref": "#/$defs/summaryPath"
+            },
+            "share": {
+              "$ref": "#/$defs/summaryPath",
+              "description": "Participação já calculada (0 a 100); sem ela, o valor sobre a soma dos itens."
+            },
+            "format": {
+              "$ref": "#/$defs/summaryFormat"
+            },
+            "chart": {
+              "enum": ["ranking", "donut"],
+              "default": "ranking"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
           }
         },
         {
@@ -1189,14 +1443,37 @@
           "required": ["type", "title", "from", "state", "states"],
           "additionalProperties": false,
           "properties": {
-            "type": { "const": "status" },
-            "title": { "$ref": "#/$defs/text" },
-            "subtitle": { "$ref": "#/$defs/text" },
-            "source": { "$ref": "#/$defs/summarySource", "description": "Outro resumo só para este widget; sem ele, o dashboard.source." },
-            "from": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$", "description": "Caminho no resumo (com pontos): lista, um bloco por item, ou objeto, um bloco." },
-            "width": { "type": "integer", "minimum": 1, "maximum": 12, "default": 6 },
-            "empty": { "$ref": "#/$defs/text", "description": "Texto sem itens no caminho. Padrão: 'Nada por aqui.'" },
-            "state": { "$ref": "#/$defs/summaryPath" },
+            "type": {
+              "const": "status"
+            },
+            "title": {
+              "$ref": "#/$defs/text"
+            },
+            "subtitle": {
+              "$ref": "#/$defs/text"
+            },
+            "source": {
+              "$ref": "#/$defs/summarySource",
+              "description": "Outro resumo só para este widget; sem ele, o dashboard.source."
+            },
+            "from": {
+              "type": "string",
+              "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*$",
+              "description": "Caminho no resumo (com pontos): lista, um bloco por item, ou objeto, um bloco."
+            },
+            "width": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12,
+              "default": 6
+            },
+            "empty": {
+              "$ref": "#/$defs/text",
+              "description": "Texto sem itens no caminho. Padrão: 'Nada por aqui.'"
+            },
+            "state": {
+              "$ref": "#/$defs/summaryPath"
+            },
             "states": {
               "type": "object",
               "minProperties": 1,
@@ -1206,14 +1483,31 @@
                 "required": ["label"],
                 "additionalProperties": false,
                 "properties": {
-                  "label": { "$ref": "#/$defs/text" },
-                  "tone": { "enum": ["neutral", "primary", "info", "success", "warning", "danger"], "default": "neutral" }
+                  "label": {
+                    "$ref": "#/$defs/text"
+                  },
+                  "tone": {
+                    "enum": ["neutral", "primary", "info", "success", "warning", "danger"],
+                    "default": "neutral"
+                  }
                 }
               }
             },
-            "fields": { "type": "array", "maxItems": 8, "items": { "$ref": "#/$defs/summaryDetail" } },
-            "progress": { "$ref": "#/$defs/summaryPath", "description": "Número de 0 a 100: a barra aparece quando ele vem (baixando)." },
-            "message": { "$ref": "#/$defs/summaryPath", "description": "Texto de erro do sistema, mostrado quando vem." },
+            "fields": {
+              "type": "array",
+              "maxItems": 8,
+              "items": {
+                "$ref": "#/$defs/summaryDetail"
+              }
+            },
+            "progress": {
+              "$ref": "#/$defs/summaryPath",
+              "description": "Número de 0 a 100: a barra aparece quando ele vem (baixando)."
+            },
+            "message": {
+              "$ref": "#/$defs/summaryPath",
+              "description": "Texto de erro do sistema, mostrado quando vem."
+            },
             "notices": {
               "type": "array",
               "maxItems": 4,
@@ -1222,9 +1516,17 @@
                 "required": ["when", "text"],
                 "additionalProperties": false,
                 "properties": {
-                  "when": { "$ref": "entity.schema.json#/$defs/condition", "description": "Condição sobre os campos do objeto (canal igual a beta)." },
-                  "text": { "$ref": "#/$defs/text" },
-                  "tone": { "enum": ["info", "warning", "error"], "default": "info" }
+                  "when": {
+                    "$ref": "entity.schema.json#/$defs/condition",
+                    "description": "Condição sobre os campos do objeto (canal igual a beta)."
+                  },
+                  "text": {
+                    "$ref": "#/$defs/text"
+                  },
+                  "tone": {
+                    "enum": ["info", "warning", "error"],
+                    "default": "info"
+                  }
                 }
               }
             },
@@ -1236,10 +1538,22 @@
                 "required": ["id", "label", "path"],
                 "additionalProperties": false,
                 "properties": {
-                  "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$" },
-                  "label": { "$ref": "#/$defs/text" },
-                  "path": { "type": "string", "pattern": "^/", "description": "POST no sistema; a resposta com data é o resumo novo." },
-                  "variant": { "enum": ["contained", "outlined"], "default": "outlined" }
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]{0,62}$"
+                  },
+                  "label": {
+                    "$ref": "#/$defs/text"
+                  },
+                  "path": {
+                    "type": "string",
+                    "pattern": "^/",
+                    "description": "POST no sistema; a resposta com data é o resumo novo."
+                  },
+                  "variant": {
+                    "enum": ["contained", "outlined"],
+                    "default": "outlined"
+                  }
                 }
               }
             },
@@ -1255,9 +1569,15 @@
           "required": ["type", "title", "entity", "groupBy"],
           "additionalProperties": false,
           "properties": {
-            "type": { "const": "heatmap" },
-            "title": { "$ref": "#/$defs/text" },
-            "subtitle": { "$ref": "#/$defs/text" },
+            "type": {
+              "const": "heatmap"
+            },
+            "title": {
+              "$ref": "#/$defs/text"
+            },
+            "subtitle": {
+              "$ref": "#/$defs/text"
+            },
             "entity": {
               "type": "string",
               "pattern": "^[a-z][a-z0-9_]{0,62}$",
@@ -1268,7 +1588,10 @@
               "pattern": "^[a-z][a-z0-9-]*$",
               "description": "Preset de views.list.presets da entidade: o filtro do widget e o destino do clique."
             },
-            "where": { "$ref": "entity.schema.json#/$defs/condition", "description": "Filtro extra, somado ao preset (e)." },
+            "where": {
+              "$ref": "entity.schema.json#/$defs/condition",
+              "description": "Filtro extra, somado ao preset (e)."
+            },
             "width": {
               "type": "integer",
               "minimum": 1,
@@ -1298,8 +1621,13 @@
             "bind": {
               "type": "object",
               "description": "Filtros do painel que este widget usa: nome do filtro -> campo do widget (período em date/datetime, registro em reference da mesma entidade). Somados (e) ao preset e ao where.",
-              "additionalProperties": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$" },
-              "propertyNames": { "pattern": "^[a-z][a-z0-9_]{0,62}$" }
+              "additionalProperties": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]{0,62}$"
+              },
+              "propertyNames": {
+                "pattern": "^[a-z][a-z0-9_]{0,62}$"
+              }
             }
           }
         },
@@ -1392,9 +1720,17 @@
               "additionalProperties": false,
               "description": "Variação da medida sobre outro recorte, com a seta e a cor (ex.: saldo projetado de hoje x o de 30 dias). O recorte é o preset e o where daqui, no lugar dos do widget. Base zero: sem variação.",
               "properties": {
-                "label": { "$ref": "#/$defs/text", "description": "O outro recorte, depois de 'vs.' (ex.: 'em 30 dias')." },
-                "preset": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
-                "where": { "$ref": "entity.schema.json#/$defs/condition" },
+                "label": {
+                  "$ref": "#/$defs/text",
+                  "description": "O outro recorte, depois de 'vs.' (ex.: 'em 30 dias')."
+                },
+                "preset": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9-]*$"
+                },
+                "where": {
+                  "$ref": "entity.schema.json#/$defs/condition"
+                },
                 "invert": {
                   "type": "boolean",
                   "default": false,
@@ -1585,18 +1921,34 @@
                 "required": ["label"],
                 "additionalProperties": false,
                 "properties": {
-                  "label": { "$ref": "#/$defs/text" },
-                  "entity": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$", "description": "Padrão: a entidade do widget." },
-                  "preset": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
-                  "where": { "$ref": "entity.schema.json#/$defs/condition" },
+                  "label": {
+                    "$ref": "#/$defs/text"
+                  },
+                  "entity": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]{0,62}$",
+                    "description": "Padrão: a entidade do widget."
+                  },
+                  "preset": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9-]*$"
+                  },
+                  "where": {
+                    "$ref": "entity.schema.json#/$defs/condition"
+                  },
                   "columns": {
                     "type": "array",
                     "minItems": 1,
                     "maxItems": 4,
                     "uniqueItems": true,
-                    "items": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$" }
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_]{0,62}$"
+                    }
                   },
-                  "sort": { "type": "string" }
+                  "sort": {
+                    "type": "string"
+                  }
                 }
               }
             },
@@ -1862,8 +2214,16 @@
       "additionalProperties": false,
       "description": "Endpoint do resumo no sistema (spec/v0/summary.yaml): GET devolve { data: {...} } com o token da sessão.",
       "properties": {
-        "path": { "type": "string", "pattern": "^/" },
-        "refresh": { "type": "integer", "minimum": 1, "maximum": 3600, "description": "Relê a cada N segundos (progresso do download)." }
+        "path": {
+          "type": "string",
+          "pattern": "^/"
+        },
+        "refresh": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600,
+          "description": "Relê a cada N segundos (progresso do download)."
+        }
       }
     },
     "summaryPath": {
@@ -1881,10 +2241,19 @@
       "required": ["label", "value"],
       "additionalProperties": false,
       "properties": {
-        "label": { "$ref": "#/$defs/text" },
-        "value": { "$ref": "#/$defs/summaryPath" },
-        "format": { "$ref": "#/$defs/summaryFormat" },
-        "currency": { "$ref": "#/$defs/summaryPath", "description": "Caminho da moeda (ISO 4217) para format money." }
+        "label": {
+          "$ref": "#/$defs/text"
+        },
+        "value": {
+          "$ref": "#/$defs/summaryPath"
+        },
+        "format": {
+          "$ref": "#/$defs/summaryFormat"
+        },
+        "currency": {
+          "$ref": "#/$defs/summaryPath",
+          "description": "Caminho da moeda (ISO 4217) para format money."
+        }
       }
     },
     "dashboardFilter": {
@@ -1913,7 +2282,9 @@
               "type": "array",
               "minItems": 1,
               "uniqueItems": true,
-              "items": { "$ref": "#/$defs/period" },
+              "items": {
+                "$ref": "#/$defs/period"
+              },
               "description": "Quais períodos o seletor oferece, nesta ordem (vencimentos: [\"today\", \"next7\", \"next30\", \"month\"]). Padrão: todos. O default precisa estar aqui."
             }
           }
@@ -1942,6 +2313,344 @@
           }
         }
       ]
+    },
+    "settingsControl": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Controle de uma linha de configuração. switch, select e slider mudam na hora; readOnly impede gravação. action dispara uma ação; page abre uma subpágina; text é leitura, salvo readOnly:false; custom chama componente registrado.",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "enum": ["switch", "select", "slider", "action", "page", "text", "custom"]
+        },
+        "value": {
+          "description": "Valor inicial do controle (booleano, texto ou número). O sistema pode substituí-lo pela porta `settings`."
+        },
+        "readOnly": {
+          "type": "boolean"
+        },
+        "options": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["value", "label"],
+            "additionalProperties": false,
+            "properties": {
+              "value": {
+                "type": "string"
+              },
+              "label": {
+                "$ref": "#/$defs/text"
+              }
+            }
+          }
+        },
+        "min": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        },
+        "step": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "label": {
+          "$ref": "#/$defs/text"
+        },
+        "action": {
+          "type": "string"
+        },
+        "page": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]*$"
+        },
+        "component": {
+          "type": "string"
+        },
+        "config": {
+          "type": "object"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "switch"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "enum": ["select", "text"]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "slider"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "type": "number"
+              },
+              "step": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "action"
+              }
+            }
+          },
+          "then": {
+            "required": ["label"]
+          }
+        },
+        {
+          "if": {
+            "required": ["type"],
+            "properties": {
+              "type": {
+                "const": "select"
+              }
+            }
+          },
+          "then": {
+            "required": ["options"]
+          }
+        },
+        {
+          "if": {
+            "required": ["type"],
+            "properties": {
+              "type": {
+                "const": "slider"
+              }
+            }
+          },
+          "then": {
+            "required": ["min", "max"]
+          }
+        },
+        {
+          "if": {
+            "required": ["type"],
+            "properties": {
+              "type": {
+                "const": "page"
+              }
+            }
+          },
+          "then": {
+            "required": ["page", "label"]
+          }
+        },
+        {
+          "if": {
+            "required": ["type"],
+            "properties": {
+              "type": {
+                "const": "custom"
+              }
+            }
+          },
+          "then": {
+            "required": ["component"]
+          }
+        }
+      ]
+    },
+    "settingsRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Linha de configuração: título, explicação e controle à direita. A busca acha a linha pelo título, pela explicação e pelas palavras-chave.",
+      "required": ["id", "title", "control"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]*$"
+        },
+        "title": {
+          "$ref": "#/$defs/text"
+        },
+        "description": {
+          "$ref": "#/$defs/text"
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/text"
+          }
+        },
+        "platforms": {
+          "type": "array",
+          "items": {
+            "enum": ["desktop", "web", "mobile"]
+          }
+        },
+        "control": {
+          "$ref": "#/$defs/settingsControl"
+        }
+      }
+    },
+    "settingsPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Subpágina de uma seção (detalhe de provedor, importação, papéis...): a shell mostra a trilha com a seção e um Voltar que devolve o foco ao ponto anterior.",
+      "required": ["id", "title", "rows"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]*$"
+        },
+        "title": {
+          "$ref": "#/$defs/text"
+        },
+        "description": {
+          "$ref": "#/$defs/text"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/settingsRow"
+          }
+        },
+        "pages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/settingsPage"
+          }
+        }
+      }
+    },
+    "settingsSection": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Aba (configurações pessoais) ou seção (configurações do servidor), com ícone, descrição curta, linhas e subpáginas. `platforms` e `permission` decidem se aparece: a plataforma some fora da lista; a permissão negada esconde a seção, salvo `hideWhenDenied: false`, que mostra o painel de sem permissão.",
+      "required": ["id", "title"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]*$"
+        },
+        "title": {
+          "$ref": "#/$defs/text"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "description": {
+          "$ref": "#/$defs/text"
+        },
+        "platforms": {
+          "type": "array",
+          "items": {
+            "enum": ["desktop", "web", "mobile"]
+          }
+        },
+        "permission": {
+          "type": "string"
+        },
+        "capability": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Capacidade exigida em settings.load().capabilities; sem ela a seção fica oculta."
+        },
+        "hideWhenDenied": {
+          "type": "boolean"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/settingsRow"
+          }
+        },
+        "pages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/settingsPage"
+          }
+        }
+      }
+    },
+    "settings": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Modal de configurações: título, busca, abas/seções, política de fechamento e o modal do servidor no rodapé do pessoal. Os modais gêmeos usam a mesma declaração; quem escolhe as abas pessoais e as seções do servidor é o app.",
+      "required": ["title", "sections"],
+      "properties": {
+        "title": {
+          "$ref": "#/$defs/text"
+        },
+        "description": {
+          "$ref": "#/$defs/text"
+        },
+        "search": {
+          "$ref": "#/$defs/text",
+          "description": "Texto da caixa de busca que filtra as linhas de todas as abas pelo título e pela descrição. Sem ele, a busca não aparece."
+        },
+        "initialSection": {
+          "type": "string"
+        },
+        "initialFocusRow": {
+          "type": "string",
+          "description": "Linha da seção inicial que recebe foco após carregar."
+        },
+        "restoreSection": {
+          "type": "boolean"
+        },
+        "closeOnBackdrop": {
+          "type": "boolean"
+        },
+        "confirmPending": {
+          "type": "boolean"
+        },
+        "sections": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/settingsSection"
+          }
+        },
+        "server": {
+          "$ref": "#/$defs/settings",
+          "description": "Configurações do servidor, abertas pelo rodapé do modal pessoal."
+        }
+      }
     }
   }
 }
