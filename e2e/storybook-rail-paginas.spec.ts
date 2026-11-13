@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-const story = (id: string) => `/iframe.html?id=telas-rail-de-paginas--${id}&viewMode=story`;
+const story = (id: string) => `/iframe.html?id=telas-rail-de-páginas--${id}&viewMode=story`;
 test('fixar pelo teclado mantém menu aberto; recolhido preserva ícones e preferência', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 800 });
   await page.goto(story('padrao'));
