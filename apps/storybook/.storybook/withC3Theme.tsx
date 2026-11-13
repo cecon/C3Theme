@@ -72,15 +72,25 @@ function ThemeFrame({ globals, bare, fill, route, router, tokens, children }: Fr
   );
 }
 
-export const withC3Theme: Decorator = (Story, { globals, parameters, viewMode }) => (
-  <ThemeFrame
-    globals={globals as Globals}
-    bare={parameters.bare === true}
-    fill={viewMode === 'story'}
-    route={parameters.route}
-    router={parameters.router !== false}
-    tokens={parameters.tokens}
-  >
+/**
+ * Cada história roda dentro do C3ThemeProvider (tema, preferências, i18n), de um roteador em memória
+ * (Breadcrumbs, menus e links usam react-router) e com o Notifier montado (avisos do `notify`).
+ *
+ * `parameters.providerDoTema === false` desliga esta moldura: a história traz o próprio provider, como a que
+ * cobre o `defaultMode` do motor (#132) sem um provider de fora sobrescrevendo a escolha.
+ */
+export const withC3Theme: Decorator = (Story, { globals, parameters, viewMode }) =>
+  parameters.providerDoTema === false ? (
     <Story />
-  </ThemeFrame>
-);
+  ) : (
+    <ThemeFrame
+      globals={globals as Globals}
+      bare={parameters.bare === true}
+      fill={viewMode === 'story'}
+      route={parameters.route}
+      router={parameters.router !== false}
+      tokens={parameters.tokens}
+    >
+      <Story />
+    </ThemeFrame>
+  );
