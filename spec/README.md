@@ -1172,6 +1172,66 @@ O SmartX (Universo TOTVS 2026) é a mesma aposta: um renderer (SmartWise) lê co
 - **Não adotado:** gerar código do framework a partir do contrato (o SmartWise gera Angular; aqui a shell interpreta em tempo de execução, e não há build por tela) e editor low-code de telas. Esse editor, lá, é um produto separado; aqui não entra antes de um piloto real mostrar quanto do JSON se repete.
 - **Do Smart View, não adotado:** designer de relatório e serviço de análise separado, com banco e modelo de metadado próprios. Dois modelos de metadado para o mesmo dado é o erro a evitar. O Objeto de Negócio virou a [consulta do sistema](#consulta-do-sistema-parâmetros): entidade só de leitura servida por um SELECT do sistema, com a lista, os filtros e a exportação de sempre.
 
+## Configurações em modal
+
+App de desktop costuma ter um botão de configurações no cabeçalho que abre um **modal** em vez de uma página. A
+declaração `settings` do app.json descreve as abas pessoais, as seções do servidor e as linhas de cada uma; a shell
+desenha a moldura, a navegação e a busca, e recebe valores e gravação pela porta `settings` do `<C3Shell>`.
+
+```json
+"settings": {
+  "title": "Configurações",
+  "search": "Pesquisar configurações…",
+  "restoreSection": true,
+  "sections": [
+    {
+      "id": "geral",
+      "title": "Geral",
+      "description": "Resumo do app",
+      "rows": [
+        { "id": "iniciar", "title": "Abrir ao iniciar", "control": { "type": "switch", "value": true } },
+        { "id": "idioma", "title": "Idioma", "control": { "type": "select", "options": [{ "value": "pt", "label": "Português" }] } }
+      ]
+    },
+    {
+      "id": "servidores",
+      "title": "Servidores hospedados",
+      "rows": [{ "id": "abrir-provedor", "title": "Provedor", "control": { "type": "page", "page": "provedor", "label": "Abrir" } }],
+      "pages": [{ "id": "provedor", "title": "Provedor", "rows": [{ "id": "chave", "title": "Chave", "control": { "type": "text" } }] }]
+    }
+  ],
+  "server": {
+    "title": "Configurações do servidor",
+    "search": "Pesquisar configurações do servidor…",
+    "sections": [
+      { "id": "geral", "title": "Geral", "rows": [{ "id": "nome", "title": "Nome do servidor", "control": { "type": "switch", "value": false } }] },
+      { "id": "mcp", "title": "MCP", "permission": "/servidor/mcp", "rows": [{ "id": "servidores", "title": "Servidores MCP", "control": { "type": "switch" } }] }
+    ]
+  }
+}
+```
+
+- **Abas e seções** aparecem na ordem da declaração. `platforms` (`desktop`, `web`, `mobile`) esconde a aba/seção/linha
+  fora da plataforma; `permission` é uma chave do `pages` de `GET /_meta/app` e, negada, esconde a seção — com
+  `hideWhenDenied: false` a seção continua na navegação e o painel mostra o recado de sem permissão. A seção inicial é
+  `initialSection`; a seção pedida pela porta ou restaurada tem prioridade. Com `restoreSection`, a última aberta volta na próxima abertura. `confirmPending: false` desliga a
+  confirmação de fechar com alterações pendentes, e `closeOnBackdrop: false` impede o clique no fundo de fechar.
+- **Busca.** `search` liga a caixa acima da navegação: no pessoal filtra as linhas de todas as abas e subpáginas pelo título e
+  pela descrição, com o título exato na frente e os trechos depois, no máximo oito resultados com a contagem anunciada.
+  Enter abre o primeiro resultado: a aba/seção certa, a subpágina dela, rola até a linha, destaca e foca o controle. Sem
+  resultado, aparece o vazio. No servidor, procura o título e a descrição da seção. Seções sem permissão não expõem linhas na busca. Escape limpa a busca antes de fechar o modal.
+- **Foco e fundo.** O diálogo abre com o foco na busca (ou na aba aberta), prende Tab/Shift+Tab dentro dele e devolve o
+  foco ao elemento que o abriu ao fechar, inclusive depois de trocar de aba. A casca atrás fica inerte; Escape e o botão
+  de fechar fecham, e o clique no fundo segue a política.
+- **Subpáginas.** Cada `page` de uma seção mostra a trilha (seção e páginas anteriores) e um Voltar que devolve o foco ao
+  ponto que abriu a subpágina. `control.type: "page"` é a linha que abre a subpágina.
+- **Porta `settings`.** `load({modal: 'personal' | 'server'})` entrega `values` (id da linha → valor), `capabilities` e `version` (rodapé); `change()` grava uma
+  mudança e o modal mostra salvando/salvo; `action()` dispara a ação de uma linha `action`. Sem a porta, valem os
+  valores da spec e nada é gravado. A declaração do `server` vira o segundo modal, aberto pelo rodapé do pessoal.
+- **Capacidade e restauração.** A seção pode declarar `capability`; sem a capacidade em `load().capabilities`, fica oculta. `port.serverId` isola a última seção por servidor no launcher (ou use `restoreKey` ao montar `SettingsModal` diretamente).
+- **Controles e escrita.** `readOnly:true` impede mudanças; `text` é leitura por padrão, com `readOnly:false` vira campo editável. As mudanças da porta são enviadas em ordem, falhas preservam o ajuste e permitem repetir sem reler o painel. Fechar não cancela pedidos já enviados ao servidor. Os controles do formulário singleton/autosave, confirmação sensível e atalhos continuam sendo a entrega da [#110](https://github.com/cecon/C3Theme/issues/110); a #119 cuida da moldura e não substitui aquele formulário.
+- **Política de foco.** `initialFocusRow` indica uma linha da seção inicial para foco após carregar. Ao usar a moldura UI diretamente, `initialFocusRef` e `returnFocusRef` permitem indicar o controle inicial e um destino estável para retorno quando o abridor for removido.
+
 ## Fora do v0 (de propósito)
 
 - Concorrência otimista no formulário e nas listas `with_parent`: o contrato já tem `_version` e `If-Match` (ver [Versão e Desfazer](#versão-e-desfazer)), mas o formulário da shell ainda não manda a versão e a `_version` não conta as linhas filhas.

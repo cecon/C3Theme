@@ -17,12 +17,14 @@ import { readStoredBranch, storeBranch } from './branchStorage';
 import { loadEntities } from './access';
 import { buildRoutes, homePath, routesKey } from './routes';
 import useAppReload from './hooks/useAppReload';
+import { settingsPermissions } from './settings';
 import AuthGate from './auth/AuthGate';
 import type { AuthPort } from './auth/port';
 import { useAuthSession } from './auth/session';
 import { sessionRoutes } from './auth/sessionUser';
 import type { AppDef } from './types';
 import type { TelemetryPort } from './telemetry';
+import type { SettingsPort } from './settings/port';
 import { ApiError, loadFailure } from './apiError';
 import { AppStatus, ShellBoundary, type AppStatusDef } from './status/AppStatus';
 import { LoadErrorScreen } from './status/ErrorScreens';
@@ -80,6 +82,13 @@ export interface C3ShellProps {
    * `task.abandon` ao sair sem gravar), sem dado pessoal. O C3 só emite: guardar ou enviar é do sistema.
    */
   onTelemetry?: TelemetryPort;
+  /**
+   * Porta das configurações em modal (#119): valores iniciais, gravação de cada mudança e ações de linha. Sem ela,
+   * o modal desenha o que a spec declara e as mudanças ficam só na tela.
+   */
+  settings?: SettingsPort;
+  /** Abre as configurações direto nesta seção (a política pode passar a seção inicial). */
+  settingsSection?: string;
 }
 
 /**
@@ -212,9 +221,10 @@ function Shell(props: C3ShellProps) {
         platform: props.platform ?? (desktopHost ? 'desktop' : undefined),
         reloadApp,
         org: state.org && { ...state.org, setActive },
+        ...(props.settings && { settingsPort: props.settings }),
         ...(frame && { desktop: frame })
       },
-    [state, catalog, telemetry, reloadApp, setActive, frame, props.connectivity, props.platform, desktopHost]
+    [state, catalog, telemetry, reloadApp, setActive, frame, props.connectivity, props.platform, props.settings, desktopHost]
   );
   const app = state?.app;
   const routes = app && routesKey(app);
@@ -223,7 +233,7 @@ function Shell(props: C3ShellProps) {
       app &&
       createShellRouter(
         props.router ?? 'browser',
-        buildRoutes(app, <C3Layout drawerFooter={drawerFooter} />, sessionRoutes(session)),
+        buildRoutes(app, <C3Layout drawerFooter={drawerFooter} settingsSection={props.settingsSection} />, sessionRoutes(session)),
         basename
       ),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- a sessão só muda ao sair, e aí a shell desmonta
@@ -262,6 +272,8 @@ function Shell(props: C3ShellProps) {
   );
 }
 
-/** Só pergunta quando alguma página declara `permission`. */
+/** Só pergunta quando alguma página ou alguma seção de configuração declara `permission`. */
 const loadPageAccess = (client: C3Client, app: AppDef) =>
-  app.pages?.some((p) => p.permission) ? client.pageAccess() : Promise.resolve({});
+  app.pages?.some((p) => p.permission) || (app.settings !== undefined && settingsPermissions(app.settings).length > 0)
+    ? client.pageAccess()
+    : Promise.resolve({});

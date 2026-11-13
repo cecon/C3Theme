@@ -5,6 +5,22 @@ export type { C3ShellProps } from './C3Shell';
 // a moldura da shell (menu, cabeçalho, rodapé do app.json) para quem monta o EngineProvider no próprio app
 export { default as C3Layout } from './C3Layout';
 export type { C3LayoutProps } from './C3Layout';
+export { default as SettingsModal } from './settings/SettingsModal';
+export { default as SettingsLauncher } from './settings/SettingsLauncher';
+export type { SettingsModalProps } from './settings/SettingsModal';
+export type { SettingsLauncherProps } from './settings/SettingsLauncher';
+export type { SettingsAction, SettingsChange, SettingsData, SettingsPort, SettingsValue } from './settings/port';
+export {
+  findPage,
+  initialSection,
+  pageTrail,
+  sectionDenied,
+  settingsEntries,
+  settingsPermissions,
+  visibleRows,
+  visibleSections
+} from './settings';
+export type { SettingsContext } from './settings';
 export { createClient, ApiError, isStale } from './api';
 // login pela shell: o sistema passa a porta (ou o adaptador HTTP de /auth/*) e o app.json diz quais telas existem
 export { httpAuth } from './auth/httpAuth';
@@ -62,6 +78,7 @@ export type { FieldInputProps, CustomFieldProps } from './widgets/FieldInput';
 export type { CustomSectionProps } from './pages/FormSection';
 export type { CustomPageProps } from './routes';
 export type * from './types';
+export type * from './settingsTypes';
 export type { FlowKindDef, FlowKindField, FlowView } from './viewTypes';
 export type { AggregateItem, AggregateParams, DashboardDef, EntityWidget, WidgetDef } from './dashboard';
 export type { MeterWidget, ShareWidget, StatusWidget, SummaryFormat, SummarySource, SummaryWidget } from './summary';

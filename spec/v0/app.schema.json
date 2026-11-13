@@ -55,6 +55,10 @@
       },
       "description": "Páginas que não são CRUD de entidade. Cada uma é um painel descrito aqui (dashboard) ou aponta para um componente registrado na shell (relatório, tela especial)."
     },
+    "settings": {
+      "$ref": "#/$defs/settings",
+      "description": "Configurações em modal (#119): as abas pessoais e, no rodapé delas, as seções do servidor. A shell desenha a moldura (fundo inerte, foco preso, Escape, retorno de foco), a busca por linha e a navegação; os valores e a gravação vêm da porta `settings` do <C3Shell>."
+    },
     "maxUploadSize": {
       "type": "integer",
       "minimum": 1048576,
@@ -146,6 +150,134 @@
     }
   },
   "$defs": {
+    "settingsControl": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Controle de uma linha de configuração. switch, select e slider mudam na hora; readOnly impede gravação. action dispara uma ação; page abre uma subpágina; text é leitura, salvo readOnly:false; custom chama componente registrado.",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "enum": ["switch", "select", "slider", "action", "page", "text", "custom"]
+        },
+        "value": {
+          "description": "Valor inicial do controle (booleano, texto ou número). O sistema pode substituí-lo pela porta `settings`."
+        },
+        "readOnly": { "type": "boolean" },
+        "options": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["value", "label"],
+            "additionalProperties": false,
+            "properties": {
+              "value": { "type": "string" },
+              "label": { "$ref": "#/$defs/text" }
+            }
+          }
+        },
+        "min": { "type": "number" },
+        "max": { "type": "number" },
+        "step": { "type": "number" },
+        "unit": { "type": "string" },
+        "label": { "$ref": "#/$defs/text" },
+        "action": { "type": "string" },
+        "page": { "type": "string", "pattern": "^[a-z][a-z0-9_-]*$" },
+        "component": { "type": "string" },
+        "config": { "type": "object" }
+      },
+      "allOf": [
+        { "if": { "properties": { "type": { "const": "switch" } } }, "then": { "properties": { "value": { "type": "boolean" } } } },
+        { "if": { "properties": { "type": { "enum": ["select", "text"] } } }, "then": { "properties": { "value": { "type": "string" } } } },
+        { "if": { "properties": { "type": { "const": "slider" } } }, "then": { "properties": { "value": { "type": "number" }, "step": { "type": "number", "exclusiveMinimum": 0 } } } },
+        { "if": { "properties": { "type": { "const": "action" } } }, "then": { "required": ["label"] } },
+        {
+          "if": { "required": ["type"], "properties": { "type": { "const": "select" } } },
+          "then": { "required": ["options"] }
+        },
+        {
+          "if": { "required": ["type"], "properties": { "type": { "const": "slider" } } },
+          "then": { "required": ["min", "max"] }
+        },
+        {
+          "if": { "required": ["type"], "properties": { "type": { "const": "page" } } },
+          "then": { "required": ["page", "label"] }
+        },
+        {
+          "if": { "required": ["type"], "properties": { "type": { "const": "custom" } } },
+          "then": { "required": ["component"] }
+        }
+      ]
+    },
+    "settingsRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Linha de configuração: título, explicação e controle à direita. A busca acha a linha pelo título, pela explicação e pelas palavras-chave.",
+      "required": ["id", "title", "control"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9_-]*$" },
+        "title": { "$ref": "#/$defs/text" },
+        "description": { "$ref": "#/$defs/text" },
+        "keywords": { "type": "array", "items": { "$ref": "#/$defs/text" } },
+        "platforms": { "type": "array", "items": { "enum": ["desktop", "web", "mobile"] } },
+        "control": { "$ref": "#/$defs/settingsControl" }
+      }
+    },
+    "settingsPage": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Subpágina de uma seção (detalhe de provedor, importação, papéis...): a shell mostra a trilha com a seção e um Voltar que devolve o foco ao ponto anterior.",
+      "required": ["id", "title", "rows"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9_-]*$" },
+        "title": { "$ref": "#/$defs/text" },
+        "description": { "$ref": "#/$defs/text" },
+        "rows": { "type": "array", "items": { "$ref": "#/$defs/settingsRow" } },
+        "pages": { "type": "array", "items": { "$ref": "#/$defs/settingsPage" } }
+      }
+    },
+    "settingsSection": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Aba (configurações pessoais) ou seção (configurações do servidor), com ícone, descrição curta, linhas e subpáginas. `platforms` e `permission` decidem se aparece: a plataforma some fora da lista; a permissão negada esconde a seção, salvo `hideWhenDenied: false`, que mostra o painel de sem permissão.",
+      "required": ["id", "title"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9_-]*$" },
+        "title": { "$ref": "#/$defs/text" },
+        "icon": { "type": "string" },
+        "description": { "$ref": "#/$defs/text" },
+        "platforms": { "type": "array", "items": { "enum": ["desktop", "web", "mobile"] } },
+        "permission": { "type": "string" },
+        "capability": { "type": "string", "minLength": 1, "description": "Capacidade exigida em settings.load().capabilities; sem ela a seção fica oculta." },
+        "hideWhenDenied": { "type": "boolean" },
+        "rows": { "type": "array", "items": { "$ref": "#/$defs/settingsRow" } },
+        "pages": { "type": "array", "items": { "$ref": "#/$defs/settingsPage" } }
+      }
+    },
+    "settings": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Modal de configurações: título, busca, abas/seções, política de fechamento e o modal do servidor no rodapé do pessoal. Os modais gêmeos usam a mesma declaração; quem escolhe as abas pessoais e as seções do servidor é o app.",
+      "required": ["title", "sections"],
+      "properties": {
+        "title": { "$ref": "#/$defs/text" },
+        "description": { "$ref": "#/$defs/text" },
+        "search": {
+          "$ref": "#/$defs/text",
+          "description": "Texto da caixa de busca que filtra as linhas de todas as abas pelo título e pela descrição. Sem ele, a busca não aparece."
+        },
+        "initialSection": { "type": "string" },
+        "initialFocusRow": { "type": "string", "description": "Linha da seção inicial que recebe foco após carregar." },
+        "restoreSection": { "type": "boolean" },
+        "closeOnBackdrop": { "type": "boolean" },
+        "confirmPending": { "type": "boolean" },
+        "sections": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/settingsSection" } },
+        "server": {
+          "$ref": "#/$defs/settings",
+          "description": "Configurações do servidor, abertas pelo rodapé do modal pessoal."
+        }
+      }
+    },
     "chatMessageAction": {
       "type": "object",
       "description": "Ação no menu \"Mais ações\" de uma mensagem do chat (issue #10). Com 'opens', abre uma conversa à parte a partir da mensagem (POST /_chat/{conversa}/_lanes, spec/v0/chat-lanes.yaml); sem 'opens', a shell chama POST /_chat/{conversa}/messages/{mensagem}/_actions/{id} e o sistema decide o que fazer. 'when' filtra em quais mensagens aparece (campo ausente: qualquer valor). Mensagem de sistema, passagem de tarefa, resposta chegando e mensagem ainda enviando nunca têm ações.",
