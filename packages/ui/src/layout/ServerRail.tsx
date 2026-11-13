@@ -192,7 +192,7 @@ function ServerRailScope({
                   let index = 0;
                   const ids = visiveis.map((s) => (s.id === localServerId ? s.id : remotos[index++]));
                   reordenar(ids);
-                  anunciar(`Servidor movido para a posi??o ${ids.indexOf(arrastando) + 1} de ${ids.length}.`);
+                  anunciar(`Servidor movido para a posição ${ids.indexOf(arrastando) + 1} de ${ids.length}.`);
                 }
                 setArrastando(null);
                 setDestino(null);

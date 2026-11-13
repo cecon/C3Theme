@@ -271,11 +271,10 @@ export interface AppDef {
     footer?: { text?: Text; links?: LinkDef[] } | null;
     /** Moldura da janela de desktop; só vale com a porta `desktopHost` do <C3Shell>. */
     desktop?: DesktopDef;
-    /** Zonas opcionais da casca, com dados e a??es pela porta rails. */
+    /** Zonas opcionais da casca, com dados e ações pela porta rails. */
     rails?: import('./railsTypes').RailsDef;
   };
 }
-
 /** Registro no formato trafegado. Reference lido vem { id, title }. */
 export type WireRecord = Record<string, unknown> & {
   id?: string;
@@ -289,7 +288,6 @@ export type WireRecord = Record<string, unknown> & {
 };
 /** title null: registro apontado fora do que o usuário pode ler. */
 export type RefValue = { id: string; title: string | null };
-
 /** GET /_meta/context: empresas e filiais que o usuário acessa. */
 export interface OrgContext {
   organization: { company: string; branch: string } | null;
@@ -298,6 +296,5 @@ export interface OrgContext {
   activeBranch: string | null;
   defaultBranch: string | null;
 }
-
 // resultados de lista, ação e lote: resultTypes.ts
 export type * from './resultTypes';
