@@ -13,6 +13,7 @@ import { canOpenPage } from './routes';
 import { buildMenu } from './shellMenu';
 import { useSessionUser } from './auth/sessionUser';
 import useRecordSearch from './hooks/useRecordSearch';
+import { ShellDockFrame } from './dock/ShellAgentDock';
 import { headerChat } from './chat/chatDef';
 
 // o assistente traz o @c3theme/chat: só baixa quem tem `layout.header.assistant`
@@ -45,40 +46,42 @@ export default function C3Layout({ drawerFooter, desktop }: C3LayoutProps) {
   const user = useSessionUser();
 
   return (
-    <AppLayout
-      menu={menu}
-      breadcrumbs={false}
-      drawerFooter={drawerFooter}
-      desktop={desktop ?? frame?.options}
-      user={user}
-      userPlacement={app.layout.user}
-      header={
-        <>
-          {header.search !== false && <CommandSearch search={recordSearch} />}
-          <BranchSelector />
-          {header.actions?.map((name) => {
-            const Action = components[name];
-            return Action ? <Action key={name} /> : null;
-          })}
-          {assistant && (
-            <Suspense fallback={null}>
-              <AssistantButton def={assistant} />
-            </Suspense>
-          )}
-          {header.notifications && <NotificationBell />}
-          <ColorModeButton />
-          {header.fullscreen !== false && <FullscreenButton />}
-          {header.settings !== false && <SettingsButton />}
-        </>
-      }
-      footer={
-        footer === null ? null : (
-          <AppFooter
-            text={footer?.text ? text(footer.text) : undefined}
-            links={(footer?.links ?? []).map((l) => ({ label: text(l.label), href: l.href ?? l.path ?? '#' }))}
-          />
-        )
-      }
-    />
+    <ShellDockFrame>
+      <AppLayout
+        menu={menu}
+        breadcrumbs={false}
+        drawerFooter={drawerFooter}
+        desktop={desktop ?? frame?.options}
+        user={user}
+        userPlacement={app.layout.user}
+        header={
+          <>
+            {header.search !== false && <CommandSearch search={recordSearch} />}
+            <BranchSelector />
+            {header.actions?.map((name) => {
+              const Action = components[name];
+              return Action ? <Action key={name} /> : null;
+            })}
+            {assistant && (
+              <Suspense fallback={null}>
+                <AssistantButton def={assistant} />
+              </Suspense>
+            )}
+            {header.notifications && <NotificationBell />}
+            <ColorModeButton />
+            {header.fullscreen !== false && <FullscreenButton />}
+            {header.settings !== false && <SettingsButton />}
+          </>
+        }
+        footer={
+          footer === null ? null : (
+            <AppFooter
+              text={footer?.text ? text(footer.text) : undefined}
+              links={(footer?.links ?? []).map((l) => ({ label: text(l.label), href: l.href ?? l.path ?? '#' }))}
+            />
+          )
+        }
+      />
+    </ShellDockFrame>
   );
 }

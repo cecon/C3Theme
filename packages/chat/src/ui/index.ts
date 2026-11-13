@@ -90,3 +90,5 @@ export type { LanePanelProps } from './lanes/LanePanel';
 export { default as LaneList } from './lanes/LaneList';
 export type { LaneListProps } from './lanes/LaneList';
 export { default as AsideButton } from './lanes/AsideButton';
+
+export { default as PinnedMenu, type PinnedMessage, type PinnedMenuProps } from './pinned/PinnedMenu';

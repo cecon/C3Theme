@@ -1,5 +1,12 @@
 # @c3theme/engine
 
+## Não lançado
+
+- Dock de agentes opcional pela spec (`layout.agentDock`) e porta `agentDocks` da casca: três posições com espaço
+  reservado, estados reativos, navegação por teclado e anúncio de mudanças. Guia: [agent-dock](../../docs/agent-dock.md).
+- Mensagens fixadas (#120): `chat.pinned` declara a lista e navegação até mensagens antigas; `messageActions.when.meta`
+  escolhe as ações pelo meta. A shell relê a mensagem e a lista depois das ações, sem perder o rascunho.
+  Contrato e exemplo em [docs/chat-pinned.md](../../docs/chat-pinned.md).
 Instale fixando o commit (`github:cecon/C3Theme#<sha>&path:packages/engine`). Cada entrada diz o que muda para quem usa; **Quebra** marca o que exige mudar o app.
 
 ## Sem versão nova (2026-11-13)
