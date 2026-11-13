@@ -169,14 +169,26 @@ export default function AgentComposer(props: AgentComposerProps) {
       maxRows={8}
       fullWidth
       inputProps={{ 'aria-label': t('c3.chat.message') }}
-      sx={inline ? { px: 0.5, py: 0.5, typography: 'body2', flex: 1, minWidth: 0 } : { px: 1, typography: 'body2' }}
+      sx={
+        inline
+          ? {
+              px: 0.5,
+              py: 0.5,
+              typography: 'body2',
+              flex: 1,
+              minWidth: 0,
+              '@container (max-width: 180px)': { flex: '1 0 100%', order: -1 }
+            }
+          : { px: 1, typography: 'body2' }
+      }
     />
   );
-  const actions = (node: ReactNode) => (
-    <Stack direction="row" spacing={inline ? 0.75 : 0} sx={{ alignItems: 'center', minWidth: 0, flexShrink: 1, overflow: 'hidden' }}>
-      {node}
-    </Stack>
-  );
+  const actions = (node: ReactNode) =>
+    node == null || node === false ? null : (
+      <Stack direction="row" spacing={inline ? 0.75 : 0} sx={{ alignItems: 'center', minWidth: 0, flexShrink: 1, overflow: 'hidden' }}>
+        {node}
+      </Stack>
+    );
   return (
     <Box
       ref={rootRef}
@@ -216,7 +228,12 @@ export default function AgentComposer(props: AgentComposerProps) {
             {main}
           </Stack>
         ) : inline ? (
-          <Stack direction="row" spacing={0.75} sx={{ alignItems: 'flex-end', minWidth: 0 }}>
+          <Stack
+            direction="row"
+            spacing={0.75}
+            useFlexGap
+            sx={{ alignItems: 'flex-end', minWidth: 0, '@container (max-width: 180px)': { flexWrap: 'wrap' } }}
+          >
             {add}
             {input}
             {actions(props.startActions)}

@@ -136,34 +136,36 @@ export default function C3Layout({ drawerFooter, desktop, rails: suppliedRails }
   const defaultStorage = railStorageKey(app.name);
 
   return (
-    <ShellDockFrame><ShellRailsFrame
-      topInset={controlsLeft ? controls.height : 0}
-      rails={
-        <>
-          {zonas.servers !== undefined && rails?.servers !== undefined && (
-            <ServerRail
-              {...rails.servers}
-              shortcut={zonas.servers.shortcuts ?? rails.servers.shortcut}
-              storageKey={rails.servers.storageKey ?? defaultStorage}
-              localServerId={zonas.servers.localServerId}
-            />
-          )}
-          {zonas.pages !== undefined && (
-            <PageRail
-              pages={paginas}
-              activePath={location.pathname + location.search}
-              brand={{ label: app.name, ...(zonas.pages.brandHref === undefined ? {} : { href: zonas.pages.brandHref }) }}
-              defaultPinned={zonas.pages.defaultPinned ?? []}
-              {...rails?.pages}
-              storageKey={rails?.pages?.storageKey ?? defaultStorage}
-              hidden={zonas.pages.hidden || rails?.pages?.hidden}
-              hideBrand={controlsLeft || rails?.pages?.hideBrand}
-            />
-          )}
-        </>
-      }
-    >
-      {layout}
-    </ShellRailsFrame></ShellDockFrame>
+    <ShellDockFrame>
+      <ShellRailsFrame
+        topInset={controlsLeft ? controls.height : 0}
+        rails={
+          <>
+            {zonas.servers !== undefined && rails?.servers !== undefined && (
+              <ServerRail
+                {...rails.servers}
+                shortcut={zonas.servers.shortcuts ?? rails.servers.shortcut}
+                storageKey={rails.servers.storageKey ?? defaultStorage}
+                localServerId={zonas.servers.localServerId}
+              />
+            )}
+            {zonas.pages !== undefined && (
+              <PageRail
+                pages={paginas}
+                activePath={location.pathname + location.search}
+                brand={{ label: app.name, ...(zonas.pages.brandHref === undefined ? {} : { href: zonas.pages.brandHref }) }}
+                defaultPinned={zonas.pages.defaultPinned ?? []}
+                {...rails?.pages}
+                storageKey={rails?.pages?.storageKey ?? defaultStorage}
+                hidden={zonas.pages.hidden || rails?.pages?.hidden}
+                hideBrand={controlsLeft || rails?.pages?.hideBrand}
+              />
+            )}
+          </>
+        }
+      >
+        {layout}
+      </ShellRailsFrame>
+    </ShellDockFrame>
   );
 }

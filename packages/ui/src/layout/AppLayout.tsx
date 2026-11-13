@@ -17,6 +17,7 @@ import { useTheme, type Theme } from '@mui/material/styles';
 import { HamburgerMenu } from 'iconsax-reactjs';
 
 import Logo from '../components/Logo';
+import { compactToolbar, headerActions } from './compactShell';
 import { useBranding, useUiConfig } from '../config';
 import { useHeaderHeight } from '../theme/density';
 import Breadcrumbs from './Breadcrumbs';
@@ -149,6 +150,8 @@ export default function AppLayout({
         <Box
           sx={{
             display: 'flex',
+            containerType: 'inline-size',
+            containerName: 'c3-layout',
             bgcolor: translucent ? 'transparent' : 'background.default',
             ...(fill ? { height: 'var(--c3-shell-height, 100dvh)', overflow: 'hidden' } : { minHeight: 'var(--c3-shell-height, 100vh)' }),
             // no papel sai só o conteúdo: menu, cabeçalho, breadcrumb e rodapé ficam na tela
@@ -221,7 +224,7 @@ export default function AppLayout({
             >
               <Toolbar
                 sx={[
-                  { minHeight: { xs: headerHeight }, gap: 1.5, px: { xs: 2, sm: 3 } },
+                  compactToolbar(headerHeight),
                   controlsInset(app?.controls ?? null, 'right'),
                   headerAtLeft ? controlsInset(app?.controls ?? null, 'left') : {}
                 ]}
@@ -247,7 +250,7 @@ export default function AppLayout({
                     )}
                   </>
                 )}
-                <Stack direction="row" spacing={1} sx={{ flex: 1, alignItems: 'center', justifyContent: 'flex-end', minWidth: 0 }}>
+                <Stack direction="row" spacing={1} sx={headerActions}>
                   {header}
                   {user && !userInDrawer && <UserMenu {...user} />}
                 </Stack>
@@ -267,6 +270,7 @@ export default function AppLayout({
                 display: 'flex',
                 flexDirection: 'column',
                 px: { xs: 2, sm: 3 },
+                '@container c3-layout (max-width: 360px)': { px: 0.5, pt: 1 },
                 pt: 3,
                 width: '100%',
                 maxWidth: config.container ? CONTAINER_WIDTH : 'none',

@@ -19,7 +19,8 @@ it.each(['top', 'bottom', 'right'] as const)('frame %s reserva área e limita o 
   expect(styles.getPropertyValue('--c3-shell-height').replaceAll(' ', '')).toContain(position === 'right' ? '0px-0px' : 'min(120px,50dvh)');
   const area = getComputedStyle(document.querySelector('[data-agent-dock-area]')!);
   expect(area.position).toBe('fixed');
-  expect(position === 'right' ? area.width : area.height.replaceAll(' ', '')).toBe(position === 'right' ? '120px' : 'min(120px,50dvh)');
+  if (position === 'right') expect(area.width).toContain('--c3-shell-rails-left');
+  else expect(area.height.replaceAll(' ', '')).toBe('min(120px,50dvh)');
 });
 it('UI aceita marca e traduções, anuncia cada estado, e mantém botões nativos navegáveis', () => {
   const select = vi.fn();

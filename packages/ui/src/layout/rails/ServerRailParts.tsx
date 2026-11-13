@@ -142,7 +142,7 @@ export function ItemDoServidor({
 
 export function Carregando({ label }: { label: string }) {
   return (
-    <Stack spacing={1} sx={{ py: 1, px: 0.5 }} aria-busy="true" aria-label={label}>
+    <Stack role="status" spacing={1} sx={{ py: 1, px: 0.5 }} aria-busy="true" aria-label={label}>
       {[0, 1, 2].map((i) => (
         <Skeleton key={i} variant="rounded" width={36} height={36} sx={{ mx: 'auto', borderRadius: 2 }} />
       ))}

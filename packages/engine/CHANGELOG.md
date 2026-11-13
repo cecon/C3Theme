@@ -14,6 +14,10 @@ Cada entrada diz o que muda para quem usa; **Quebra** marca o que exige mudar o 
 
 ## Não lançado
 
+- Integração dos rails (#116/#117), lista lateral (#118) e dock (#122): reserva geométrica combinada, gavetas
+  limitadas à área útil e atualização das portas sem remontar a conversa. Regressão em 390 e 1280 pixels,
+  com conta, mensagens fixadas e rascunho preservados.
+
 - Dock de agentes opcional pela spec (`layout.agentDock`) e porta `agentDocks` da casca: três posições com espaço
   reservado, estados reativos, navegação por teclado e anúncio de mudanças. Guia: [agent-dock](../../docs/agent-dock.md).
 - Mensagens fixadas (#120): `chat.pinned` declara a lista e navegação até mensagens antigas; `messageActions.when.meta`
