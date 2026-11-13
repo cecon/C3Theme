@@ -36,6 +36,10 @@ export interface AuthSession {
   user: AuthUser | null;
   token: string | null;
   login(identifier: string, password: string): Promise<void>;
+  /** Modo código: pede o envio do código para o identificador. */
+  requestCode(identifier: string): Promise<void>;
+  /** Modo código: confere o código e entra. */
+  loginWithCode(identifier: string, code: string): Promise<void>;
   logout(): void;
   setUser(user: AuthUser): void;
 }
@@ -103,7 +107,27 @@ export function AuthSessionProvider({
 
   const login = useCallback(
     async (identifier: string, password: string) => {
+      if (!port.login) throw new Error('A porta de autenticação não tem entrada por senha.');
       const r = await port.login(identifier, password);
+      tokenStore.set(r.token);
+      setToken(r.token);
+      setUserState(r.user);
+    },
+    [port]
+  );
+
+  const requestCode = useCallback(
+    async (identifier: string) => {
+      if (!port.enviarCodigo) throw new Error('A porta de autenticação não tem entrada por código.');
+      await port.enviarCodigo(identifier);
+    },
+    [port]
+  );
+
+  const loginWithCode = useCallback(
+    async (identifier: string, code: string) => {
+      if (!port.entrarComCodigo) throw new Error('A porta de autenticação não tem entrada por código.');
+      const r = await port.entrarComCodigo(identifier, code);
       tokenStore.set(r.token);
       setToken(r.token);
       setUserState(r.user);
@@ -130,10 +154,12 @@ export function AuthSessionProvider({
         user,
         token,
         login,
+        requestCode,
+        loginWithCode,
         logout,
         setUser: setUserState
       },
-    [meta, port, retry, user, token, login, logout]
+    [meta, port, retry, user, token, login, requestCode, loginWithCode, logout]
   );
 
   if (error) return <>{failed(error, retry)}</>;

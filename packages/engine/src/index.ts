@@ -24,7 +24,8 @@ export type { SettingsContext } from './settings';
 export { createClient, ApiError, isStale } from './api';
 // login pela shell: o sistema passa a porta (ou o adaptador HTTP de /auth/*) e o app.json diz quais telas existem
 export { httpAuth } from './auth/httpAuth';
-export type { AuthPort, AuthUser, AuthConfig } from './auth/port';
+export type { AuthPort, AuthUser, AuthConfig, ModoDeEntrada } from './auth/port';
+export { entradaPorCodigo, modoDeEntrada } from './auth/port';
 export { useAuthSession } from './auth/session';
 export type { AuthSession } from './auth/session';
 export type { C3Client, C3Notification, ListParams, NotificationList, SearchResult, WriteOptions } from './api';
