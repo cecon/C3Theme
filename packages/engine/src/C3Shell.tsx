@@ -36,8 +36,8 @@ export interface C3ShellProps {
   /** Componentes custom citados na spec por nome (`component` em página, campo, coluna, seção, header). */
   components?: C3Components;
   /**
-   * Ícones citados na spec por nome (`icon`), ex.: `{ Profile2User, Box }` do iconsax-reactjs. Sem ele, a shell
-   * carrega o catálogo inteiro do iconsax num pedaço à parte (vários MB): passe só os que a spec usa.
+   * Ícones citados na spec por nome (`icon`), ex.: `{ Profile2User, Box }` do iconsax-reactjs.
+   * Sem catálogo, omite os ícones da spec. Catálogo completo opt-in: @c3theme/engine/icones-completos.
    */
   icons?: C3Icons;
   /** Cabeçalhos por requisição, ex.: () => ({ Authorization: `Bearer ${token}` }). */

@@ -42,6 +42,8 @@ jobs:
       - run: pnpm skills:check
       - run: pnpm typecheck
       - run: pnpm lint
+      # Imports caros ficam fora da entrada; o catálogo inteiro exige opt-in explícito (#121).
+      - run: node scripts/check-entry-bundle.mjs && node scripts/check-entry-bundle.mjs --full-icons
       # testes + cobertura mínima por pacote (scripts/coverage-floors.ts; meta 80% de linhas e branches)
       - run: pnpm test:coverage
       # o que vai para o npm (ui, chat, engine): só dist + LICENSE + README, sem teste, sem workspace:

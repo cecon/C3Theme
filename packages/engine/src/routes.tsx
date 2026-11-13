@@ -11,7 +11,6 @@ import { PageStateView } from './pageStates/PageStateView';
 import { PanelSkeleton } from '@c3theme/ui';
 import { useEngine } from './context';
 import type { DashboardDef } from './dashboard';
-import EntityBoard from './pages/board/EntityBoard';
 import EntityCalendar from './pages/calendar/EntityCalendar';
 import EntityReport from './pages/report/EntityReport';
 import EntityMap from './pages/map/EntityMap';
@@ -33,6 +32,8 @@ const ApiDocs = lazy(() => import('./pages/apiDocs/ApiDocs'));
 const ChatPage = lazy(() => import('./chat/ChatPage'));
 // o editor de fluxo traz o canvas (React Flow): também só baixa quem abre
 const EntityFlow = lazy(() => import('./pages/flow/EntityFlow'));
+// arrastar cartões traz o DnD: só baixa ao abrir o quadro
+const EntityBoard = lazy(() => import('./pages/board/EntityBoard'));
 
 export function homePath(app?: AppDef) {
   const first = app?.layout.menu[0]?.items[0];
@@ -75,7 +76,14 @@ export function buildRoutes(app: AppDef, layout: ReactNode, extra: RouteObject[]
           { path: `${e}/new`, element: <EntityForm key={`${e}-new`} entity={e} /> },
           // rotas fixas ganham do `:id`; o id de um registro nunca é 'gallery', 'board', 'calendar', 'report' nem 'map' (README da spec)
           { path: `${e}/gallery`, element: <EntityList key={`${e}-gallery`} entity={e} view="gallery" /> },
-          { path: `${e}/board`, element: <EntityBoard key={`${e}-board`} entity={e} /> },
+          {
+            path: `${e}/board`,
+            element: (
+              <Suspense fallback={<PanelSkeleton />}>
+                <EntityBoard key={`${e}-board`} entity={e} />
+              </Suspense>
+            )
+          },
           { path: `${e}/calendar`, element: <EntityCalendar key={`${e}-calendar`} entity={e} /> },
           { path: `${e}/report`, element: <EntityReport key={`${e}-report`} entity={e} /> },
           { path: `${e}/map`, element: <EntityMap key={`${e}-map`} entity={e} /> },

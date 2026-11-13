@@ -7,7 +7,7 @@ import { Home2, Profile2User } from 'iconsax-reactjs';
 
 import { C3Shell } from '@c3theme/engine';
 
-// só os ícones que a spec cita (`icon`): sem esta lista, a shell carrega o catálogo inteiro do iconsax
+// só os ícones que a spec cita (`icon`): sem esta lista, a shell omite os ícones da spec
 const icons = { Home2, Profile2User };
 
 export default function App() {

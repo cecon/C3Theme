@@ -27,6 +27,11 @@
       "c3theme-source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./icones-completos": {
+      "c3theme-source": "./src/icones-completos.ts",
+      "types": "./dist/icones-completos.d.ts",
+      "default": "./dist/icones-completos.js"
     }
   },
   "files": [
@@ -87,6 +92,10 @@
       ".": {
         "types": "./dist/index.d.ts",
         "default": "./dist/index.js"
+      },
+      "./icones-completos": {
+        "types": "./dist/icones-completos.d.ts",
+        "default": "./dist/icones-completos.js"
       }
     }
   }

@@ -50,7 +50,7 @@ export default function App() {
 }
 ```
 
-- **Passe `icons`**. Sem ele, a shell carrega o catálogo inteiro do iconsax, que tem vários MB.
+- **Passe `icons`** com só os nomes da spec. Sem ele, a shell omite esses ícones e mantém os rótulos. Para nomes arbitrários, importe `icons` de `@c3theme/engine/icones-completos` e passe à shell (opt-in de vários MB; nunca reexportado pelo motor principal).
 - `theme.defaultConfig`: `look` (`c3` ou `angle`, para conviver com um sistema Angle), `brand`, `menuOrientation`, `locale` etc. O usuário muda o resto no painel de aparência.
 - `onTelemetry` recebe `task.start`, `task.done` e `task.abandon`, sem dado pessoal. Guardar ou enviar é com o sistema.
 - `drawerFooter` existe, mas o usuário logado vai por `layout.user: "drawer"` na spec. Não monte outro cartão de usuário.

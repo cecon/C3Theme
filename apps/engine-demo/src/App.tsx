@@ -4,6 +4,7 @@
 import { C3Shell, httpAuth } from '@c3theme/engine';
 
 import Balcao from './balcao/Balcao';
+import { icons } from './icons';
 
 // login pela shell: telas pelo `auth` do app.json, autenticação pelo /auth/* do c3-example
 const auth = httpAuth('/api');
@@ -13,5 +14,5 @@ const auth = httpAuth('/api');
 const components = { balcao: Balcao };
 
 export default function App() {
-  return <C3Shell apiUrl="/api" auth={auth} components={components} theme={{ storageKey: 'c3-engine-demo' }} />;
+  return <C3Shell apiUrl="/api" auth={auth} components={components} icons={icons} theme={{ storageKey: 'c3-engine-demo' }} />;
 }
