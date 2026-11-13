@@ -1205,6 +1205,9 @@ Para várias conversas na mesma página, a conversa sai do endereço ([ADR 0009]
 
 ## Estados da pagina
 
+Mensagens fixadas do chat: `chat.pinned`, filtro `messageActions.when.meta` e navegação paginada em
+[Mensagens fixadas](../docs/chat-pinned.md); endpoint opcional em [chat-pinned.yaml](v0/chat-pinned.yaml).
+
 `pages[].states` declara carregando, vazio, erro, sem permissao e offline, com textos traduziveis e acoes. Veja o contrato, a porta de conectividade e exemplos em [Estados da pagina](../docs/page-states.md).
 
 ## Dock de agentes

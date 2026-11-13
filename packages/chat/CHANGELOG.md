@@ -2,6 +2,10 @@
 
 Instale fixando o commit (`github:cecon/C3Theme#<sha>&path:packages/chat`). Cada entrada diz o que muda para quem usa; **Quebra** marca o que exige mudar o app.
 
+## Nao lancado
+
+- #120: `MessageMatch.meta`, selo Fixada nos dois tipos de mensagem, `PinnedMenu`, `AssistantPanel.jumpTo` e `useMessageWindow.putMessage` para atualizacao sem remontar.
+
 ## 0.14.0 (2026-11-12)
 
 - Entrega externa da resposta (#93): `Message.entrega?: { situacao: 'enviada' | 'entregue' | 'lida' | 'falhou', motivo?: string | null }`. O assistente mostra tiques e texto ao lado da resposta; quando falha, o motivo fica visível. Não altera `Message.status` (envio da pergunta no chat).

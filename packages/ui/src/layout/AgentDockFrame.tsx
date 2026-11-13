@@ -30,11 +30,12 @@ export default function AgentDockFrame({ position, size, dock, children }: Agent
     >
       <GlobalStyles
         styles={{
+          ':root': { '--c3-shell-dock-right': right, '--c3-shell-dock-top': top, '--c3-shell-dock-bottom': bottom },
           '.MuiDrawer-root .MuiDrawer-paper': {
             top,
             bottom,
             height: `calc(100% - ${top} - ${bottom})`,
-            maxWidth: `calc(100vw - ${right})`
+            maxWidth: `calc(100vw - ${right} - var(--c3-shell-rails-left, 0px))`
           },
           '.MuiDrawer-root.MuiDrawer-anchorRight > .MuiDrawer-paper': { right },
           '.MuiAppBar-root.MuiAppBar-positionSticky': { top }
