@@ -106,7 +106,6 @@ export default function AgentDock({
           <ButtonBase
             key={item.id}
             onClick={() => onSelect(item.id)}
-            aria-label={`${item.label} · ${status[item.status]}${item.approvals ? ` · ${item.approvals} aprovações` : ''}`}
             sx={{
               borderRadius: 1,
               p: 0.5,
