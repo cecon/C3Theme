@@ -87,7 +87,7 @@ function SidebarScope(props: SectionSidebarProps) {
         }}
       >
         {loading ? (
-          <Box aria-label="Carregando lista" sx={{ p: 2 }}>
+          <Box role="status" aria-label="Carregando lista" sx={{ p: 2 }}>
             {[0, 1, 2].map((i) => (
               <Skeleton key={i} height={40} />
             ))}
