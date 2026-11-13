@@ -71,10 +71,10 @@ it('porta atualiza estados e anuncia aprovações sem remontar página; selecion
   const view = mount(f.port);
   fireEvent.change(screen.getByLabelText('Rascunho'), { target: { value: 'Meu texto' } });
   f.publish({ items: [{ ...agent, status: 'waiting-approval', approvals: 2 }] });
-  expect(screen.getByRole('button', { name: 'Design · Aguardando aprovação · 2 aprovações' })).toBeTruthy();
+  expect(screen.getByRole('button', { name: 'Design Aguardando aprovação' })).toBeTruthy();
   expect(screen.getAllByRole('status').some((element) => element.textContent?.includes('2 aprovações'))).toBe(true);
   expect((screen.getByLabelText('Rascunho') as HTMLInputElement).value).toBe('Meu texto');
-  fireEvent.click(screen.getByRole('button', { name: /Design ·/ }));
+  fireEvent.click(screen.getByRole('button', { name: /Design/ }));
   expect(screen.getByTestId('location').textContent).toBe('/chat/a');
   view.unmount();
   expect(f.unsubscribe).toHaveBeenCalledOnce();
@@ -97,7 +97,7 @@ it('offline conserva último snapshot mesmo quando porta não envia os itens', (
   mount(f.port);
   f.publish({ items: [], offline: true, error: true });
   expect(screen.getByText('Sem conexão · último estado conhecido')).toBeTruthy();
-  expect(screen.getByRole('button', { name: 'Design · Ocioso' })).toBeTruthy();
+  expect(screen.getByRole('button', { name: 'Design Ocioso' })).toBeTruthy();
   expect(screen.queryByRole('alert')).toBeNull();
 });
 it('opt-in: sem declaração não reserva área, fonte ausente explica erro', () => {
