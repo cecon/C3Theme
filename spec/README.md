@@ -1205,6 +1205,9 @@ Para várias conversas na mesma página, a conversa sai do endereço ([ADR 0009]
 
 ## Estados da pagina
 
+Mensagens fixadas do chat: `chat.pinned`, filtro `messageActions.when.meta` e navegação paginada em
+[Mensagens fixadas](../docs/chat-pinned.md); endpoint opcional em [chat-pinned.yaml](v0/chat-pinned.yaml).
+
 `pages[].states` declara carregando, vazio, erro, sem permissao e offline, com textos traduziveis e acoes. Veja o contrato, a porta de conectividade e exemplos em [Estados da pagina](../docs/page-states.md).
 
 ## Lista lateral por servidor
@@ -1212,3 +1215,7 @@ Para várias conversas na mesma página, a conversa sai do endereço ([ADR 0009]
 `layout.sidebar` declara fonte, seções e cartões da lista lateral; `C3Shell.sidebars`
 recebe dados e ações por porta. Preferências locais ficam separadas por servidor.
 Veja [contrato e exemplos](../docs/sidebar.md) e a vitrine **Telas / Lista lateral por servidor**.
+
+## Dock de agentes
+
+`layout.agentDock` declara uma faixa da casca com área reservada e dados por porta. Guia e contrato: [Dock de agentes](../docs/agent-dock.md).

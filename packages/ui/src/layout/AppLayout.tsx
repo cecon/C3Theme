@@ -150,7 +150,7 @@ export default function AppLayout({
           sx={{
             display: 'flex',
             bgcolor: translucent ? 'transparent' : 'background.default',
-            ...(fill ? { height: '100dvh', overflow: 'hidden' } : { minHeight: '100vh' }),
+            ...(fill ? { height: 'var(--c3-shell-height, 100dvh)', overflow: 'hidden' } : { minHeight: 'var(--c3-shell-height, 100vh)' }),
             // no papel sai só o conteúdo: menu, cabeçalho, breadcrumb e rodapé ficam na tela
             '@media print': {
               display: 'block',

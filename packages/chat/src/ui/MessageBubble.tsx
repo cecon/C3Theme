@@ -7,6 +7,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
 import type { Message } from '../core/types';
+import PinnedMark from './pinned/PinnedMark';
 import AttachmentView from './AttachmentView';
 import { useTimeFormat } from './format';
 import Markdown from './Markdown';
@@ -72,6 +73,7 @@ export default function MessageBubble(props: MessageBubbleProps) {
             {m.author.name}
           </Typography>
         )}
+        {m.meta?.fixada === true && <PinnedMark />}
         {m.text && (
           <Typography
             variant="body2"

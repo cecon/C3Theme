@@ -248,6 +248,8 @@ export interface AppDef {
   authorization?: AuthorizationConfig;
   layout: {
     sidebar?: import('./sidebar/types').SidebarDef;
+
+    agentDock?: import('./dock/types').AgentDockDef;
     orientation?: 'vertical' | 'horizontal' | 'rail';
     /** Onde fica o usuário logado: avatar no cabeçalho (padrão) ou cartão no pé do menu lateral. */
     user?: 'header' | 'drawer';

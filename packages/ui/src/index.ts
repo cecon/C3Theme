@@ -122,3 +122,8 @@ export * from './components/catalog';
 
 export { default as SectionSidebar } from './layout/SectionSidebar';
 export type { SectionSidebarProps, SidebarItem, SidebarSection, SidebarCard } from './layout/SectionSidebar';
+
+export { default as AgentDock } from './layout/AgentDock';
+export type { AgentDockItem, AgentDockProps, AgentDockPosition, AgentDockStatus } from './layout/AgentDock';
+export { default as AgentDockFrame } from './layout/AgentDockFrame';
+export type { AgentDockFrameProps } from './layout/AgentDockFrame';

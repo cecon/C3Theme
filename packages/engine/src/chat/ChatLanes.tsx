@@ -18,6 +18,8 @@ import { hasAside, laneActions, lanesApi, runLaneAction, type WireLane } from '.
 import { ApiError } from '../apiError';
 import { useEngine, useText } from '../context';
 import type { ChatDef } from './chatDef';
+import usePinned from './usePinned';
+import { rereadMessage } from './pinned';
 
 interface Props {
   def: ChatDef;
@@ -39,6 +41,8 @@ export default function ChatLanes({ def, chat, transport, me, panel }: Props) {
   const [available, setAvailable] = useState(true);
   const [error, setError] = useState('');
   const [pending, setPending] = useState(false);
+  const [revision, setRevision] = useState(0);
+  const pinned = usePinned(def, chat, revision);
   const enabled = !!api && available;
   const showLanes = enabled && (!!def.lanes || lanes.length > 0);
 
@@ -96,8 +100,28 @@ export default function ChatLanes({ def, chat, transport, me, panel }: Props) {
           <AssistantPanel
             {...panel}
             chat={chat}
+            actions={
+              <>
+                {panel.actions}
+                {pinned.actions}
+              </>
+            }
+            jumpTo={pinned.jumpTo}
             messageActions={enabled && !pending ? actions : []}
-            onMessageAction={enabled ? (m, id) => void run(() => runLaneAction(api!, actions, chat.conversationId, m.id, id)) : undefined}
+            onMessageAction={
+              enabled
+                ? (m, id) =>
+                    void run(async () => {
+                      const result = await runLaneAction(api!, actions, chat.conversationId, m.id, id);
+                      if (!actions.find((a) => a.id === id)?.opens) {
+                        const fresh = await rereadMessage(transport, chat.conversationId, m.id);
+                        if (fresh) chat.putMessage?.(fresh);
+                        setRevision((n) => n + 1);
+                      }
+                      return result;
+                    })
+                : undefined
+            }
             onAside={aside}
           />
         </Box>
