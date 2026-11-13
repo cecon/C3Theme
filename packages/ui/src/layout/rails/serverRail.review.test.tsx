@@ -38,3 +38,15 @@ it('mover remoto pelo menu conserva a posição do servidor local', async () => 
   fireEvent.click(within(await screen.findByRole('menu')).getByRole('menuitem', { name: 'Mover para baixo' }));
   expect(onReorder).toHaveBeenCalledWith(['s2', 'local', 's1']);
 });
+it('arrastar um servidor remoto sobre outro reordena e anuncia a nova posição', () => {
+  const onReorder = vi.fn();
+  const onAnnounce = vi.fn();
+  render(<ServerRail servers={servers} localServerId="local" onSelect={vi.fn()} onReorder={onReorder} onAnnounce={onAnnounce} />);
+  const origem = screen.getByRole('button', { name: 'Matriz (online)' }).closest('[draggable="true"]')!;
+  const destino = screen.getByRole('button', { name: 'Filial (offline)' }).closest('[draggable="true"]')!.parentElement!;
+  fireEvent.dragStart(origem);
+  fireEvent.dragOver(destino);
+  fireEvent.drop(destino);
+  expect(onReorder).toHaveBeenCalledWith(['s2', 'local', 's1']);
+  expect(onAnnounce).toHaveBeenCalledWith('Servidor movido para a posição 3 de 3.');
+});
