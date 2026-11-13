@@ -896,6 +896,8 @@
               "type": "object",
               "additionalProperties": false,
               "properties": {
+                "hidden": { "type": "boolean" },
+                "items": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^/" } },
                 "defaultPinned": {
                   "type": "array",
                   "items": {

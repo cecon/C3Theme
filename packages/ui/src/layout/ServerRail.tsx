@@ -11,15 +11,9 @@ import { ItemDoServidor, Carregando, Erro, Vazio, srOnly } from './rails/ServerR
 import ServerRailMenus from './rails/ServerRailMenus';
 import Typography from '@mui/material/Typography';
 import useRailScroll from './rails/useRailScroll';
+import { useRailPreferences } from './rails/useRailPreferences';
 
-import {
-  moverNaOrdem,
-  ordenarServidores,
-  posicaoDoAtalho,
-  railStorageKey,
-  readRailPreferences,
-  writeRailPreferences
-} from './rails/preferences';
+import { moverNaOrdem, ordenarServidores, posicaoDoAtalho, railStorageKey } from './rails/preferences';
 import { SERVER_RAIL_DEFAULT_LABELS, type ServerRailProps } from './rails/types';
 
 export const SERVER_RAIL_WIDTH = 64;
@@ -55,7 +49,7 @@ function ServerRailScope({
 }: ServerRailProps) {
   const labels = { ...SERVER_RAIL_DEFAULT_LABELS, ...labelsParciais };
   const chave = storageKey ?? railStorageKey('app');
-  const [prefs, setPrefs] = useState(() => readRailPreferences(globalThis.localStorage, chave));
+  const [prefs, salvar] = useRailPreferences(chave);
   const [arrastando, setArrastando] = useState<string | null>(null);
   const [destino, setDestino] = useState<number | null>(null);
   const [menuDe, setMenuDe] = useState<string | null>(null);
@@ -80,15 +74,6 @@ function ServerRailScope({
       }
     },
     [onAnnounce]
-  );
-
-  const salvar = useCallback(
-    (mudanca: Partial<typeof prefs>) => {
-      const proximo = { ...prefs, ...mudanca };
-      setPrefs(proximo);
-      writeRailPreferences(globalThis.localStorage, chave, proximo);
-    },
-    [chave, prefs]
   );
 
   // atalhos de 1 a 9 na ordem exibida

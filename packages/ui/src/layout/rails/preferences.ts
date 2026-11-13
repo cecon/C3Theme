@@ -55,11 +55,13 @@ export function readRailPreferences(storage: Pick<Storage, 'getItem'>, key: stri
 }
 
 /** Grava as preferências; armazenamento indisponível não derruba a casca. */
-export function writeRailPreferences(storage: Pick<Storage, 'setItem'>, key: string, prefs: RailPreferences): void {
+export function writeRailPreferences(storage: Pick<Storage, 'setItem'>, key: string, prefs: RailPreferences): boolean {
   try {
     storage.setItem(key, JSON.stringify(prefs));
+    return true;
   } catch {
     // modo privado ou cota cheia: a preferência vale só nesta sessão
+    return false;
   }
 }
 

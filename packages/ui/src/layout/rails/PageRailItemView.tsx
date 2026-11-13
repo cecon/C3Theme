@@ -25,7 +25,13 @@ export default function ItemDaPagina({ page, ativa }: { page: PageRailItem; ativ
           position: 'relative'
         })}
       >
-        {Icon !== undefined ? <Icon size={20} variant={ativa ? 'Bulk' : 'Linear'} /> : <Box sx={{ width: 20 }} />}
+        {Icon !== undefined ? (
+          <Icon size={20} variant={ativa ? 'Bulk' : 'Linear'} />
+        ) : (
+          <Box aria-hidden sx={{ width: 20 }}>
+            {page.title.trim().slice(0, 1)}
+          </Box>
+        )}
         {page.badge}
         {ativa && (
           <Box
