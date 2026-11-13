@@ -1,24 +1,23 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 // material-ui
 import Box from '@mui/material/Box';
-import ButtonBase from '@mui/material/ButtonBase';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
-import { alpha } from '@mui/material/styles';
-import { Add, ArrowLeft2, ArrowRight2, Bookmark, Bookmark2, MessageQuestion, Setting2, Shop } from 'iconsax-reactjs';
-import { Link as RouterLink } from 'react-router';
+import { Add, ArrowLeft2, ArrowRight2, MessageQuestion, Setting2, Shop } from 'iconsax-reactjs';
 
-import { railStorageKey, readRailPreferences, writeRailPreferences } from './rails/preferences';
+import ItemDaPagina from './rails/PageRailItemView';
+import { railStorageKey } from './rails/preferences';
+import { useRailPreferences } from './rails/useRailPreferences';
+import PageRailMenus from './rails/PageRailMenus';
+import { pageRailActive } from './rails/pageRailActive';
 import type { PageRailItem, PageRailPort } from './rails/types';
 
 export const PAGE_RAIL_WIDTH = 64;
-export const PAGE_RAIL_COLLAPSED_WIDTH = 0;
+export const PAGE_RAIL_COLLAPSED_WIDTH = 48;
 
 export interface PageRailProps extends PageRailPort {
   /** Páginas fixadas pela declaração, quando a pessoa ainda não escolheu. */
@@ -62,18 +61,9 @@ export default function PageRail({
   usage = []
 }: PageRailProps) {
   const chave = storageKey ?? railStorageKey('app');
-  const [prefs, setPrefs] = useState(() => readRailPreferences(globalThis.localStorage, chave));
+  const [prefs, salvar] = useRailPreferences(chave);
   const [maisAncora, setMaisAncora] = useState<HTMLElement | null>(null);
   const [ajudaAncora, setAjudaAncora] = useState<HTMLElement | null>(null);
-
-  const salvar = useCallback(
-    (mudanca: Partial<typeof prefs>) => {
-      const proximo = { ...prefs, ...mudanca };
-      setPrefs(proximo);
-      writeRailPreferences(globalThis.localStorage, chave, proximo);
-    },
-    [chave, prefs]
-  );
 
   useEffect(() => {
     onCollapsedChange?.(prefs.pagesCollapsed);
@@ -83,13 +73,17 @@ export default function PageRail({
     return null;
   }
 
-  const fixadas = new Set([...(prefs.pinnedPages ?? pinned ?? defaultPinned), ...(pages[0]?.fixed === true ? [pages[0].id] : [])]);
+  const fixadas = new Set([
+    ...(pinned ?? prefs.pinnedPages ?? defaultPinned),
+    ...pages.filter((page, i) => i === 0 || page.fixed).map((page) => page.id)
+  ]);
+  const activeId = pageRailActive(pages, activePath);
   const noRail = pages.filter((page) => fixadas.has(page.id));
   const recolhido = prefs.pagesCollapsed;
-  const ativaNoMais = activePath !== undefined && !noRail.some((page) => page.url === activePath);
+  const ativaNoMais = activeId !== undefined && !noRail.some((page) => page.id === activeId);
 
   const alternarFixacao = (page: PageRailItem) => {
-    if (page.fixed === true) {
+    if (page.id === pages[0]?.id || page.fixed === true) {
       return;
     }
     const proximas = new Set(fixadas);
@@ -107,7 +101,7 @@ export default function PageRail({
       component="nav"
       aria-label="Páginas"
       sx={{
-        width: recolhido ? 16 : PAGE_RAIL_WIDTH,
+        width: recolhido ? PAGE_RAIL_COLLAPSED_WIDTH : PAGE_RAIL_WIDTH,
         flexShrink: 0,
         height: '100%',
         display: 'flex',
@@ -148,7 +142,7 @@ export default function PageRail({
       )}
       <Stack component="div" spacing={0.5} sx={{ flex: 1, py: 1, overflowY: 'auto', width: '100%', alignItems: 'center' }}>
         {noRail.map((page) => (
-          <ItemDaPagina key={page.id} page={page} ativa={activePath === page.url} />
+          <ItemDaPagina key={page.id} page={page} ativa={activeId === page.id} />
         ))}
         {blocks.map((block) => (
           <Tooltip key={block.id} title={block.label} enterDelay={400} placement="right">
@@ -199,9 +193,8 @@ export default function PageRail({
       <Stack spacing={0.5} sx={{ py: 1, alignItems: 'center' }}>
         <Tooltip title="Mais páginas" enterDelay={400} placement="right">
           <IconButton
-            aria-label={
-              ativaNoMais ? `Mais páginas (página atual: ${pages.find((p) => p.url === activePath)?.title ?? ''})` : 'Mais páginas'
-            }
+            aria-label={ativaNoMais ? `Mais páginas (página atual: ${pages.find((p) => p.id === activeId)?.title ?? ''})` : 'Mais páginas'}
+            aria-current={ativaNoMais ? 'page' : undefined}
             onClick={(evento) => setMaisAncora(evento.currentTarget)}
             size="small"
             sx={{ position: 'relative' }}
@@ -239,91 +232,17 @@ export default function PageRail({
           </IconButton>
         </Tooltip>
       </Stack>
-      <Menu anchorEl={maisAncora} open={maisAncora !== null} onClose={() => setMaisAncora(null)} transitionDuration={0}>
-        {pages.map((page) => (
-          <MenuItem
-            key={page.id}
-            selected={activePath === page.url}
-            onClick={() => setMaisAncora(null)}
-            component={RouterLink}
-            to={page.url}
-            sx={{ gap: 1 }}
-          >
-            {page.icon !== undefined ? <page.icon size={18} /> : <Box sx={{ width: 18 }} />}
-            <Typography variant="inherit" sx={{ flex: 1 }}>
-              {page.title}
-            </Typography>
-            {page.fixed !== true && (
-              <IconButton
-                component="span"
-                size="small"
-                aria-label={fixadas.has(page.id) ? `Desafixar ${page.title}` : `Fixar ${page.title} no rail`}
-                onClick={(evento) => {
-                  evento.preventDefault();
-                  evento.stopPropagation();
-                  alternarFixacao(page);
-                }}
-              >
-                {fixadas.has(page.id) ? <Bookmark2 size={16} /> : <Bookmark size={16} />}
-              </IconButton>
-            )}
-          </MenuItem>
-        ))}
-      </Menu>
-      <Menu anchorEl={ajudaAncora} open={ajudaAncora !== null} onClose={() => setAjudaAncora(null)} transitionDuration={0}>
-        <Box sx={{ px: 2, py: 1, minWidth: 260 }}>
-          <Typography variant="subtitle2">{`Versão ${help?.version ?? ''}`}</Typography>
-          {help?.loadingNotes === true ? (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              Carregando notas…
-            </Typography>
-          ) : help?.releaseNotes !== undefined && help.releaseNotes !== null ? (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, whiteSpace: 'pre-line' }}>
-              {help.releaseNotes}
-            </Typography>
-          ) : null}
-        </Box>
-        <Divider />
-        {(help?.links ?? []).map((link) => (
-          <MenuItem key={link.href} component="a" href={link.href} target="_blank" rel="noreferrer" onClick={() => setAjudaAncora(null)}>
-            {link.label}
-          </MenuItem>
-        ))}
-      </Menu>
+      <PageRailMenus
+        pages={pages}
+        activeId={activeId}
+        pinned={fixadas}
+        pageAnchor={maisAncora}
+        helpAnchor={ajudaAncora}
+        help={help}
+        onPageClose={() => setMaisAncora(null)}
+        onHelpClose={() => setAjudaAncora(null)}
+        onToggle={alternarFixacao}
+      />
     </Box>
-  );
-}
-
-function ItemDaPagina({ page, ativa }: { page: PageRailItem; ativa: boolean }) {
-  const Icon = page.icon;
-  return (
-    <Tooltip title={page.title} enterDelay={400} placement="right">
-      <ButtonBase
-        component={RouterLink}
-        to={page.url}
-        aria-current={ativa ? 'page' : undefined}
-        aria-label={page.title}
-        sx={(t) => ({
-          width: 44,
-          height: 40,
-          borderRadius: 2,
-          flexDirection: 'column',
-          color: ativa ? t.palette.primary.main : t.palette.text.secondary,
-          bgcolor: ativa ? alpha(t.palette.primary.main, t.palette.action.selectedOpacity) : 'transparent',
-          '&:hover': { bgcolor: 'action.hover' },
-          '&.Mui-focusVisible': { outline: `2px solid ${t.palette.primary.main}`, outlineOffset: -2 },
-          position: 'relative'
-        })}
-      >
-        {Icon !== undefined ? <Icon size={20} variant={ativa ? 'Bulk' : 'Linear'} /> : <Box sx={{ width: 20 }} />}
-        {page.badge}
-        {ativa && (
-          <Box
-            aria-hidden
-            sx={{ position: 'absolute', left: 2, top: 12, width: 2, height: 16, borderRadius: 1, bgcolor: 'primary.main' }}
-          />
-        )}
-      </ButtonBase>
-    </Tooltip>
   );
 }
