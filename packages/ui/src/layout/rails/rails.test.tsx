@@ -145,7 +145,7 @@ describe('rail de páginas (#117)', () => {
     montarPaginas();
     fireEvent.click(screen.getByRole('button', { name: /Mais páginas/ }));
     expect(screen.getByText('Configurações')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Fixar Uso no rail' }));
+    fireEvent.click(screen.getByRole('menuitemcheckbox', { name: 'Fixar Uso no rail' }));
     // o menu continua aberto depois de fixar
     expect(screen.getByText('Configurações')).toBeTruthy();
     fireEvent.keyDown(document.activeElement ?? document.body, { key: 'Escape' });

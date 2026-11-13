@@ -3,7 +3,7 @@ import Box from '@mui/material/Box';
 import GlobalStyles from '@mui/material/GlobalStyles';
 
 /** Reserva as colunas antes da casca e desloca também os drawers que o MUI coloca em portal. */
-export default function ShellRailsFrame({ rails, children }: { rails: ReactNode; children: ReactNode }) {
+export default function ShellRailsFrame({ rails, children, topInset = 0 }: { rails: ReactNode; children: ReactNode; topInset?: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const [left, setLeft] = useState(0);
   useLayoutEffect(() => {
@@ -26,7 +26,7 @@ export default function ShellRailsFrame({ rails, children }: { rails: ReactNode;
           '.MuiDrawer-root.MuiDrawer-anchorRight .MuiDrawer-paper': { maxWidth: `calc(100vw - ${left}px)` }
         }}
       />
-      <Box ref={ref} sx={{ display: 'flex', minHeight: 0, overflow: 'hidden' }}>
+      <Box ref={ref} sx={{ display: 'flex', minHeight: 0, overflow: 'hidden', pt: `${topInset}px` }}>
         {rails}
       </Box>
       <Box sx={{ minWidth: 0, minHeight: 0, '--c3-shell-rails-left': `${left}px` }}>{children}</Box>

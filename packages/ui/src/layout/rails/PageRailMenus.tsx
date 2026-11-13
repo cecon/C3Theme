@@ -60,8 +60,9 @@ export default function PageRailMenus({
                   <MenuItem
                     key={`${page.id}-pin`}
                     component="button"
+                    role="menuitemcheckbox"
                     aria-label={pinned.has(page.id) ? `Desafixar ${page.title}` : `Fixar ${page.title} no rail`}
-                    aria-pressed={pinned.has(page.id)}
+                    aria-checked={pinned.has(page.id)}
                     onClick={() => onToggle(page)}
                     sx={{ justifyContent: 'center', minWidth: 44 }}
                   >

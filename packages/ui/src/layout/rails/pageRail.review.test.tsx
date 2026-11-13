@@ -23,9 +23,9 @@ it('primeira página sempre está fixada mesmo sem fixed/homePath/defaultPinned;
   expect(screen.getByRole('link', { name: 'Agentes' })).toBeTruthy();
   expect(screen.getByRole('button', { name: /Mais páginas/ }).getAttribute('aria-current')).toBe('page');
   fireEvent.click(screen.getByRole('button', { name: /Mais páginas/ }));
-  expect(screen.queryByRole('menuitem', { name: /Desafixar Agentes/ })).toBeNull();
-  fireEvent.click(screen.getByRole('menuitem', { name: 'Fixar Uso no rail' }));
-  expect(screen.getByRole('menuitem', { name: 'Desafixar Uso' })).toBeTruthy();
+  expect(screen.queryByRole('menuitemcheckbox', { name: /Desafixar Agentes/ })).toBeNull();
+  fireEvent.click(screen.getByRole('menuitemcheckbox', { name: 'Fixar Uso no rail' }));
+  expect(screen.getByRole('menuitemcheckbox', { name: 'Desafixar Uso' })).toBeTruthy();
 });
 it('estado recolhido mantém largura suficiente para os ícones e restaura ao reabrir', () => {
   const mount = () =>
@@ -108,4 +108,33 @@ it('detalhes e filtros continuam marcando a página correta', () => {
   const variants = [...pages, { id: 'filtered', title: 'Filtro', url: '/usage?period=month' }];
   expect(pageRailActive(variants, '/usage?period=month')).toBe('filtered');
   expect(pageRailActive(variants, '/usage?period=week')).toBe('/usage');
+});
+it('armazenamento indisponível conserva patches dos dois rails durante a sessão', () => {
+  const blocked = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+    throw new Error('quota');
+  });
+  let one!: (patch: Partial<RailPreferences>) => void;
+  let two!: (patch: Partial<RailPreferences>) => void;
+  let current!: RailPreferences;
+  function A() {
+    const [prefs, patch] = useRailPreferences('quota');
+    current = prefs;
+    one = patch;
+    return null;
+  }
+  function B() {
+    const [, patch] = useRailPreferences('quota');
+    two = patch;
+    return null;
+  }
+  render(
+    <>
+      <A />
+      <B />
+    </>
+  );
+  act(() => one({ pagesCollapsed: true }));
+  act(() => two({ serverOrder: ['remote'] }));
+  expect(current).toMatchObject({ pagesCollapsed: true, serverOrder: ['remote'] });
+  blocked.mockRestore();
 });
