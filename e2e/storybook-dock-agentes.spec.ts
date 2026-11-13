@@ -34,7 +34,7 @@ for (const width of [390, 1280]) {
       if (position === 'top') await expect.poll(drawerEdge).toBeGreaterThanOrEqual(area!.y + area!.height - 1);
       if (position === 'right') await expect.poll(drawerEdge).toBeLessThanOrEqual(area!.x + 1);
       await page.getByRole('button', { name: 'Fechar conversa' }).click();
-      const item = dock.getByRole('button', { name: /Desenvolvimento · Aguardando aprovação/ });
+      const item = dock.getByRole('button', { name: /Desenvolvimento Aguardando aprovação/ });
       await item.focus();
       await page.keyboard.press('Enter');
       await expect(page).toHaveURL(/#\/dev/);
