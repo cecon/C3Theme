@@ -28,6 +28,7 @@ import { AppStatus, ShellBoundary, type AppStatusDef } from './status/AppStatus'
 import { LoadErrorScreen } from './status/ErrorScreens';
 
 export interface C3ShellProps {
+  sidebars?: Record<string, import('./sidebar/types').SidebarPort>;
   connectivity?: import('./pageStates/types').ConnectivityPort;
   /** Onde o app roda (seções com `platforms`). Sem isso: `desktop` com `desktopHost`, `mobile` em tela estreita, `web`. */
   platform?: import('./types').ClientPlatform;
@@ -209,12 +210,13 @@ function Shell(props: C3ShellProps) {
         icons: catalog,
         telemetry,
         connectivity: props.connectivity,
+        sidebars: props.sidebars,
         platform: props.platform ?? (desktopHost ? 'desktop' : undefined),
         reloadApp,
         org: state.org && { ...state.org, setActive },
         ...(frame && { desktop: frame })
       },
-    [state, catalog, telemetry, reloadApp, setActive, frame, props.connectivity, props.platform, desktopHost]
+    [state, catalog, telemetry, reloadApp, setActive, frame, props.connectivity, props.platform, props.sidebars, desktopHost]
   );
   const app = state?.app;
   const routes = app && routesKey(app);

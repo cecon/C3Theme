@@ -21,7 +21,7 @@ import { useBranding, useUiConfig } from '../config';
 import { useHeaderHeight } from '../theme/density';
 import Breadcrumbs from './Breadcrumbs';
 import { controlsInset, DesktopOptions, dragRegionSx, HEADER_OPACITY, seeThrough, translucentSidebarSx, useAppFrame } from './desktop';
-import DrawerBrand from './DrawerBrand';
+import DefaultDrawerContent from './DefaultDrawerContent';
 import { useDocumentTitle } from './documentTitle';
 import { FillContext } from './FillHeight';
 import HorizontalNav from './HorizontalNav';
@@ -29,7 +29,6 @@ import { NavContext, NavGroup } from './nav';
 import { warnNav } from './navLint';
 import RailDrawer from './RailDrawer';
 import UserMenu, { UserMenuProps } from './UserMenu';
-import VerticalNav from './VerticalNav';
 import { useUiText } from '../i18n';
 
 export const DRAWER_WIDTH = 264;
@@ -39,6 +38,9 @@ export const HEADER_HEIGHT = 64;
 
 export interface AppLayoutProps {
   menu: NavGroup[];
+  /** Substitui a lista do menu, preservando a gaveta e o layout responsivo. */
+  sidebar?: ReactNode | ((onNavigate: () => void) => ReactNode);
+  navigationHidden?: boolean;
   /** Conteúdo do header à direita do botão de menu (busca, ações, usuário). */
   header?: ReactNode;
   /** Rodapé do conteúdo; `null` esconde. */
@@ -75,6 +77,8 @@ export const CONTAINER_WIDTH = 1440;
  */
 export default function AppLayout({
   menu,
+  sidebar,
+  navigationHidden = false,
   header,
   footer,
   drawerFooter,
@@ -106,12 +110,13 @@ export default function AppLayout({
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
-  const horizontal = desktop && config.menuOrientation === 'horizontal';
+  const horizontal = desktop && config.menuOrientation === 'horizontal' && !sidebar;
   const rail = config.menuOrientation === 'rail';
   const tinted = config.look === 'angle';
   const mini = desktop && !horizontal && config.miniDrawer;
-  const width = horizontal ? 0 : mini ? MINI_DRAWER_WIDTH : DRAWER_WIDTH;
-  const userInDrawer = Boolean(user) && userPlacement === 'drawer' && !horizontal;
+  const hideNavigation = navigationHidden || (!!sidebar && mini);
+  const width = horizontal || hideNavigation ? 0 : mini ? MINI_DRAWER_WIDTH : DRAWER_WIDTH;
+  const userInDrawer = Boolean(user) && userPlacement === 'drawer' && !horizontal && (rail || (!sidebar && !hideNavigation));
   // sem menu fixo à esquerda, o cabeçalho encosta no canto dos botões da janela do Mac
   const headerAtLeft = horizontal || !desktop;
   const sidebarBg = sidebarOpacity !== null ? translucentSidebarSx(theme, sidebarOpacity) : {};
@@ -122,27 +127,18 @@ export default function AppLayout({
 
   const toggle = () => (desktop ? setConfig({ miniDrawer: !config.miniDrawer }) : setMobileOpen((o) => !o));
 
-  const drawerContent = (
-    <Stack sx={{ height: '100%' }}>
-      <DrawerBrand height={headerHeight} compact={mini} desktop={app} />
-      <Box sx={{ flex: 1, overflowY: 'auto' }}>
-        <VerticalNav mini={mini} onNavigate={() => setMobileOpen(false)} onExpand={() => setConfig({ miniDrawer: false })} />
-      </Box>
-      {drawerFooter && !mini && (
-        <>
-          <Divider />
-          <Box sx={{ p: 2 }}>{drawerFooter}</Box>
-        </>
-      )}
-      {userInDrawer && (
-        <>
-          {!(drawerFooter && !mini) && <Divider />}
-          <Box sx={{ p: mini ? 1.5 : 1 }}>
-            <UserMenu {...user!} placement={mini ? 'drawer-mini' : 'drawer'} />
-          </Box>
-        </>
-      )}
-    </Stack>
+  const renderedSidebar = typeof sidebar === 'function' ? sidebar(() => setMobileOpen(false)) : sidebar;
+  const drawerContent = renderedSidebar ?? (
+    <DefaultDrawerContent
+      headerHeight={headerHeight}
+      mini={mini}
+      app={app}
+      drawerFooter={drawerFooter}
+      userInDrawer={userInDrawer}
+      user={user}
+      onNavigate={() => setMobileOpen(false)}
+      onExpand={() => setConfig({ miniDrawer: false })}
+    />
   );
 
   return (
@@ -176,9 +172,10 @@ export default function AppLayout({
               app={app}
               railFooter={userInDrawer && <UserMenu {...user!} placement="drawer-mini" />}
               panelFooter={drawerFooter}
+              panelOverride={sidebar ? (hideNavigation ? null : renderedSidebar) : navigationHidden ? null : undefined}
             />
           )}
-          {!horizontal && !rail && (
+          {!horizontal && !rail && !hideNavigation && (
             <Box component="aside" sx={{ width: desktop ? width : 0, flexShrink: 0, transition: 'width .2s' }}>
               {desktop ? (
                 <Drawer
@@ -235,7 +232,12 @@ export default function AppLayout({
                   </Box>
                 ) : (
                   <>
-                    <IconButton aria-label={t('c3.menu.toggle')} onClick={toggle} edge="start">
+                    <IconButton
+                      sx={{ visibility: navigationHidden ? 'hidden' : undefined }}
+                      aria-label={t('c3.menu.toggle')}
+                      onClick={toggle}
+                      edge="start"
+                    >
                       <HamburgerMenu size={20} />
                     </IconButton>
                     {!desktop && (

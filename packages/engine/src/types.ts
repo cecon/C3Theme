@@ -247,6 +247,7 @@ export interface AppDef {
   /** Autorização de outro usuário: códigos de erro que abrem o diálogo e os campos dele. */
   authorization?: AuthorizationConfig;
   layout: {
+    sidebar?: import('./sidebar/types').SidebarDef;
     orientation?: 'vertical' | 'horizontal' | 'rail';
     /** Onde fica o usuário logado: avatar no cabeçalho (padrão) ou cartão no pé do menu lateral. */
     user?: 'header' | 'drawer';

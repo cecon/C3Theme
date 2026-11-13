@@ -146,6 +146,101 @@
     }
   },
   "$defs": {
+    "sectionSidebar": {
+      "type": "object",
+      "required": [
+        "source",
+        "label",
+        "title",
+        "sections"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "label": {
+          "$ref": "#/$defs/text"
+        },
+        "title": {
+          "$ref": "#/$defs/text"
+        },
+        "empty": {
+          "$ref": "#/$defs/text"
+        },
+        "hidden": {
+          "type": "boolean"
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "label"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "label": {
+                "$ref": "#/$defs/text"
+              },
+              "editable": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "cards": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "label",
+              "action"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "label": {
+                "$ref": "#/$defs/text"
+              },
+              "message": {
+                "$ref": "#/$defs/text"
+              },
+              "dismissible": {
+                "type": "boolean"
+              },
+              "action": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "label"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "label": {
+                    "$ref": "#/$defs/text"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "chatMessageAction": {
       "type": "object",
       "description": "Ação no menu \"Mais ações\" de uma mensagem do chat (issue #10). Com 'opens', abre uma conversa à parte a partir da mensagem (POST /_chat/{conversa}/_lanes, spec/v0/chat-lanes.yaml); sem 'opens', a shell chama POST /_chat/{conversa}/messages/{mensagem}/_actions/{id} e o sistema decide o que fazer. 'when' filtra em quais mensagens aparece (campo ausente: qualquer valor). Mensagem de sistema, passagem de tarefa, resposta chegando e mensagem ainda enviando nunca têm ações.",
@@ -671,6 +766,7 @@
       "additionalProperties": false,
       "description": "As quatro regiões da shell. Body é a rota ativa (lista/form/detalhe de entidade ou página custom), por isso não é configurado aqui.",
       "properties": {
+        "sidebar": { "$ref": "#/$defs/sectionSidebar" },
         "orientation": {
           "enum": ["vertical", "horizontal", "rail"],
           "default": "vertical",

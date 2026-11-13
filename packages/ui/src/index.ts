@@ -119,3 +119,6 @@ export * from './components/settings';
 export * from './components/device';
 // catálogo de itens instaláveis (loja de agentes, habilidades e apps)
 export * from './components/catalog';
+
+export { default as SectionSidebar } from './layout/SectionSidebar';
+export type { SectionSidebarProps, SidebarItem, SidebarSection, SidebarCard } from './layout/SectionSidebar';

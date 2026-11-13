@@ -6,6 +6,7 @@ import { lazy, ReactNode, Suspense } from 'react';
 
 import { AppFooter, AppLayout, ColorModeButton, CommandSearch, DesktopOptions, FullscreenButton, SettingsButton } from '@c3theme/ui';
 import { iconByName, useEngine, useText } from './context';
+import DeclaredSidebar from './sidebar/DeclaredSidebar';
 import BranchSelector from './widgets/BranchSelector';
 import NotificationBell from './widgets/NotificationBell';
 import MenuCount from './widgets/MenuCount';
@@ -47,6 +48,8 @@ export default function C3Layout({ drawerFooter, desktop }: C3LayoutProps) {
   return (
     <AppLayout
       menu={menu}
+      sidebar={app.layout.sidebar ? (onNavigate) => <DeclaredSidebar def={app.layout.sidebar!} onNavigate={onNavigate} /> : undefined}
+      navigationHidden={app.layout.sidebar?.hidden}
       breadcrumbs={false}
       drawerFooter={drawerFooter}
       desktop={desktop ?? frame?.options}

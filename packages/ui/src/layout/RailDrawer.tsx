@@ -27,6 +27,8 @@ interface RailDrawerProps {
   railFooter?: ReactNode;
   /** Pé do painel (some com o painel). */
   panelFooter?: ReactNode;
+  /** undefined mantém o painel de navegação; null o oculta; um nó ocupa a lista junto ao trilho. */
+  panelOverride?: ReactNode;
   /** App de desktop: topo do trilho arrasta a janela e foge dos botões dela; menu translúcido. */
   app?: ResolvedDesktop | null;
 }
@@ -37,7 +39,7 @@ interface RailDrawerProps {
  * juntos na gaveta.
  */
 export default function RailDrawer(props: RailDrawerProps) {
-  const { desktop, mini, mobileOpen, onMobileClose, headerHeight, railFooter, panelFooter, app = null } = props;
+  const { desktop, mini, mobileOpen, onMobileClose, headerHeight, railFooter, panelFooter, panelOverride, app = null } = props;
   const groups = useNav();
   const { pathname, search } = useLocation();
   const theme = useTheme();
@@ -45,7 +47,8 @@ export default function RailDrawer(props: RailDrawerProps) {
   const active = activeItemId(groups, pathname, search);
   const modules = groups.flatMap((g) => g.items).filter((i) => i.children?.length);
   const holder = modules.find((m) => containsId(m, active))?.id;
-  const floating = desktop && mini;
+  const customPanel = panelOverride !== undefined;
+  const floating = desktop && mini && !customPanel;
   const railRef = useRef<HTMLDivElement>(null);
 
   const [chosen, setChosen] = useState<string | undefined>(floating ? undefined : (holder ?? (desktop ? undefined : modules[0]?.id)));
@@ -77,19 +80,22 @@ export default function RailDrawer(props: RailDrawerProps) {
     </Stack>
   );
 
-  const panel = module && (
-    <Stack sx={{ width: PANEL_WIDTH, height: '100%', flexShrink: 0 }}>
-      <Box sx={{ flex: 1, minHeight: 0 }}>
-        <RailPanel module={module} active={active} headerHeight={headerHeight} onNavigate={navigate} drag={Boolean(app)} />
-      </Box>
-      {panelFooter && (
-        <>
-          <Divider />
-          <Box sx={{ p: 2 }}>{panelFooter}</Box>
-        </>
-      )}
-    </Stack>
-  );
+  const panel = customPanel
+    ? panelOverride &&
+      (!desktop || !mini) && <Box sx={{ width: PANEL_WIDTH, height: '100%', minHeight: 0, flexShrink: 0 }}>{panelOverride}</Box>
+    : module && (
+        <Stack sx={{ width: PANEL_WIDTH, height: '100%', flexShrink: 0 }}>
+          <Box sx={{ flex: 1, minHeight: 0 }}>
+            <RailPanel module={module} active={active} headerHeight={headerHeight} onNavigate={navigate} drag={Boolean(app)} />
+          </Box>
+          {panelFooter && (
+            <>
+              <Divider />
+              <Box sx={{ p: 2 }}>{panelFooter}</Box>
+            </>
+          )}
+        </Stack>
+      );
 
   if (!desktop)
     return (
@@ -105,7 +111,7 @@ export default function RailDrawer(props: RailDrawerProps) {
       </Drawer>
     );
 
-  const width = RAIL_WIDTH + (module && !floating ? PANEL_WIDTH : 0);
+  const width = RAIL_WIDTH + (panel && !floating ? PANEL_WIDTH : 0);
   return (
     <Box component="aside" sx={{ width, flexShrink: 0, transition: 'width .2s' }}>
       <Drawer

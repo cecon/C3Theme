@@ -1206,3 +1206,9 @@ Para várias conversas na mesma página, a conversa sai do endereço ([ADR 0009]
 ## Estados da pagina
 
 `pages[].states` declara carregando, vazio, erro, sem permissao e offline, com textos traduziveis e acoes. Veja o contrato, a porta de conectividade e exemplos em [Estados da pagina](../docs/page-states.md).
+
+## Lista lateral por servidor
+
+`layout.sidebar` declara fonte, seções e cartões da lista lateral; `C3Shell.sidebars`
+recebe dados e ações por porta. Preferências locais ficam separadas por servidor.
+Veja [contrato e exemplos](../docs/sidebar.md) e a vitrine **Telas / Lista lateral por servidor**.
