@@ -266,6 +266,14 @@ export interface AppDef {
     footer?: { text?: Text; links?: LinkDef[] } | null;
     /** Moldura da janela de desktop; só vale com a porta `desktopHost` do <C3Shell>. */
     desktop?: DesktopDef;
+    /**
+     * Raios de servidores (#116) e de páginas (#117) nas bordas da casca. A spec declara a zona; os
+     * dados e as ações chegam pela porta `rails` do <C3Shell>.
+     */
+    rails?: {
+      servers?: { shortcuts?: boolean; localServerId?: string };
+      pages?: { defaultPinned?: string[]; brandHref?: string };
+    };
   };
 }
 

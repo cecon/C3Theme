@@ -58,6 +58,30 @@ export { lintNav, MAX_NAV_DEPTH } from './layout/navLint';
 export type { NavWarning } from './layout/navLint';
 export { RAIL_WIDTH } from './layout/RailNav';
 export { PANEL_WIDTH } from './layout/RailPanel';
+export { default as ServerRail, SERVER_RAIL_WIDTH } from './layout/ServerRail';
+export type {
+  ServerAction,
+  ServerAddOption,
+  ServerConnectionState,
+  ServerRailItem,
+  ServerRailLabels,
+  ServerRailPort,
+  ServerRailProps
+} from './layout/rails/types';
+export { SERVER_RAIL_DEFAULT_LABELS, SERVER_STATE_LABEL } from './layout/rails/types';
+export { default as PageRail, PAGE_RAIL_COLLAPSED_WIDTH, PAGE_RAIL_WIDTH } from './layout/PageRail';
+export type { PageRailProps } from './layout/PageRail';
+export type { PageRailBlock, PageRailHelp, PageRailItem, PageRailPort } from './layout/rails/types';
+export {
+  moverNaOrdem,
+  ordenarServidores,
+  posicaoDoAtalho,
+  RAIL_PREFERENCES_PADRAO,
+  railStorageKey,
+  readRailPreferences,
+  writeRailPreferences,
+  type RailPreferences
+} from './layout/rails/preferences';
 
 // componentes
 export { default as ActionDialog } from './components/ActionDialog';
