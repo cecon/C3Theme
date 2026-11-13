@@ -9,6 +9,10 @@ describe('leitura do erro da entrada por código (#123)', () => {
     expect(codigoDoErro(Object.assign(new Error('x'), { code: 'sem-rede' }))).toBe('sem-rede');
     expect(codigoDoErro(Object.assign(new Error('x'), { code: 'outro' }))).toBeUndefined();
     expect(codigoDoErro('falha')).toBeUndefined();
+    expect(codigoDoErro({ code: 'constructor' })).toBeUndefined();
+    expect(codigoDoErro({ code: 'toString' })).toBeUndefined();
+    expect(codigoDoErro({ status: 0 })).toBe('sem-rede');
+    expect(codigoDoErro({ status: 429 })).toBe('muitas-tentativas');
   });
 
   it('traduz cada estado para PT-BR e mantém a mensagem da porta quando o código é desconhecido', () => {

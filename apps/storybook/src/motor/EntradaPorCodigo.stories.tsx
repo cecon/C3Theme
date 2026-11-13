@@ -9,7 +9,13 @@ import type { AuthPort } from '@c3theme/engine';
  */
 const resposta = (corpo: unknown) => new Response(JSON.stringify({ data: corpo }), { headers: { 'content-type': 'application/json' } });
 
-const APP = { name: 'C3', homePath: '/', entities: [], pages: [{ path: '/', title: 'Início' }], layout: { menu: [] } };
+const APP = {
+  name: 'C3',
+  homePath: '/inicio',
+  entities: [],
+  pages: [{ path: '/inicio', title: 'Início', comingSoon: { message: 'Você entrou com o código de e-mail.' } }],
+  layout: { menu: [] }
+};
 
 const transport = async (url: string) => {
   if (url.endsWith('/_meta/login')) return resposta({ name: 'C3', auth: {} });
@@ -29,7 +35,7 @@ const auth: AuthPort = {
 
 const meta = {
   title: 'Motor/Entrada por código',
-  parameters: { layout: 'fullscreen' }
+  parameters: { layout: 'fullscreen', bare: true, router: false }
 } satisfies Meta;
 
 export default meta;
@@ -38,5 +44,5 @@ type Story = StoryObj<typeof meta>;
 /** E-mail, enviar código e conferir o código — sem senha e sem rotas de senha. */
 export const Codigo: Story = {
   name: 'E-mail + código',
-  render: () => <C3Shell apiUrl="/api" auth={auth} transport={transport} theme={{ storageKey: 'story-codigo' }} />
+  render: () => <C3Shell router="hash" apiUrl="/api" auth={auth} transport={transport} theme={{ storageKey: 'story-codigo' }} />
 };

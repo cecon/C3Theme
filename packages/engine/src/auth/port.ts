@@ -67,7 +67,8 @@ export interface AuthPort {
 /** Cada fluxo aparece só quando o app.json liga e a porta implementa. */
 export const canRegister = (c: AuthConfig, p: AuthPort) => Boolean(c.register && p.register);
 export const canRecover = (c: AuthConfig, p: AuthPort) => Boolean(c.forgotPassword && p.forgotPassword && p.verifyCode && p.resetPassword);
-export const canProfile = (c: AuthConfig, p: AuthPort) => c.profile !== false && Boolean(p.updateProfile || p.changePassword);
+export const canProfile = (c: AuthConfig, p: AuthPort) =>
+  c.profile !== false && Boolean(p.updateProfile || (p.entrada !== 'codigo' && p.changePassword));
 
 /** O modo efetivo da porta: `codigo` só com os dois métodos; `senha` só com `login`; sem nada, indefinido. */
 export function modoDeEntrada(port: AuthPort): ModoDeEntrada | undefined {

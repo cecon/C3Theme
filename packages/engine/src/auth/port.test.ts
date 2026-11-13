@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { entradaPorCodigo, modoDeEntrada, type AuthPort } from './port';
+import { canProfile, entradaPorCodigo, modoDeEntrada, type AuthPort } from './port';
 import { rotasDeEntrada } from './AuthScreens';
 
 const sessao = { token: 't', user: { id: 'u', name: 'Ana' } };
@@ -30,4 +30,11 @@ describe('modo de entrada declarado pela porta (#123)', () => {
   it('porta sem método de entrada não monta telas: falha cedo e clara', () => {
     expect(() => rotasDeEntrada({}, { me: vi.fn() })).toThrow('não declara entrada por senha nem por código');
   });
+});
+
+it('modo código nunca expõe senha pelo perfil mesmo com método legado na porta', () => {
+  const port: AuthPort = { entrada: 'codigo', me: vi.fn(), changePassword: vi.fn() };
+  expect(canProfile({}, port)).toBe(false);
+  expect(canProfile({}, { ...port, updateProfile: vi.fn() })).toBe(true);
+  expect(canProfile({}, { ...port, entrada: 'senha' })).toBe(true);
 });

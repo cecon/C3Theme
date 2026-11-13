@@ -16,9 +16,9 @@ const SESSAO: SessaoDaPorta = { token: 'tok', user: { id: 'u1', name: 'Ana', ema
 const resposta = (corpo: unknown) => new Response(JSON.stringify({ data: corpo }), { headers: { 'content-type': 'application/json' } });
 
 /** Transporte falso: só o /_meta/login, que a sessão lê antes das telas. */
-function transporteFalso() {
+function transporteFalso(config = {}) {
   return vi.fn(async (url: string) =>
-    url.endsWith('/_meta/login') ? resposta({ name: 'C3', auth: {} }) : new Response('{}', { status: 404 })
+    url.endsWith('/_meta/login') ? resposta({ name: 'C3', auth: config }) : new Response('{}', { status: 404 })
   );
 }
 
@@ -33,13 +33,13 @@ function portaPorCodigo(extra: Partial<AuthPort> = {}): AuthPort {
 }
 
 /** As telas do modo código num roteador de memória, com a sessão de verdade em volta. */
-function montarPaginas(auth: AuthPort) {
+function montarPaginas(auth: AuthPort, config = {}) {
   return render(
     <C3ThemeProvider>
       <AuthSessionProvider
         port={auth}
         apiUrl="/api"
-        transport={transporteFalso()}
+        transport={transporteFalso(config)}
         loading={<p>carregando</p>}
         failed={(mensagem) => <p>{mensagem}</p>}
       >
@@ -168,6 +168,7 @@ it('código expirado pede reenvio e o reenvio pede outro código', async () => {
   expect(await screen.findByText('O código expirou. Peça um novo código.')).toBeTruthy();
   fireEvent.click(await screen.findByText('Reenviar código'));
   await waitFor(() => expect(auth.enviarCodigo).toHaveBeenCalledTimes(2));
+  await waitFor(() => expect(document.activeElement).toBe(screen.getAllByRole('textbox')[0]));
 });
 
 it('muitas tentativas mostra o estado próprio', async () => {
@@ -229,4 +230,57 @@ it('falha ao reenviar mostra o estado e não zera a espera', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Entrar' }));
   fireEvent.click(await screen.findByText('Reenviar código'));
   expect(await screen.findByText('Sem conexão com o servidor. Verifique a rede e tente de novo.')).toBeTruthy();
+});
+
+it('modo código exige e-mail mesmo se o login antigo declarava usuário', async () => {
+  const auth = portaPorCodigo();
+  montarPaginas(auth, { identifier: 'username' });
+  expect(await campoDeEmail()).toBeTruthy();
+  expect(screen.queryByLabelText('Usuário')).toBeNull();
+  fireEvent.change(await campoDeEmail(), { target: { value: 'usuario' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Enviar código' }));
+  expect(auth.enviarCodigo).not.toHaveBeenCalled();
+});
+
+it('Enter repetido não pede dois códigos enquanto o envio está pendente', async () => {
+  let resolve!: () => void;
+  const auth = portaPorCodigo({
+    enviarCodigo: vi.fn(
+      () =>
+        new Promise<void>((done) => {
+          resolve = done;
+        })
+    )
+  });
+  montarPaginas(auth);
+  await preencherEmail();
+  const form = (await campoDeEmail()).closest('form')!;
+  fireEvent.submit(form);
+  fireEvent.submit(form);
+  expect(auth.enviarCodigo).toHaveBeenCalledOnce();
+  await act(async () => resolve());
+  await screen.findByText(/Digite o código de 6 dígitos/);
+});
+
+it('verificação pendente não duplica a entrada nem permite reenvio paralelo', async () => {
+  let reject!: (error: Error) => void;
+  const auth = portaPorCodigo({
+    entrarComCodigo: vi.fn(
+      () =>
+        new Promise<SessaoDaPorta>((_resolve, fail) => {
+          reject = fail;
+        })
+    )
+  });
+  montarPaginas(auth);
+  await irParaOCodigo();
+  digitarCodigo('123456');
+  const form = screen.getByRole('button', { name: 'Entrar' }).closest('form')!;
+  fireEvent.submit(form);
+  fireEvent.submit(form);
+  expect(auth.entrarComCodigo).toHaveBeenCalledOnce();
+  await act(async () => reject(Object.assign(new Error('limite'), { status: 429 })));
+  expect(screen.getByText('Muitas tentativas. Peça um novo código e tente mais tarde.')).toBeTruthy();
+  expect(screen.queryByText('Reenviar código')).toBeNull();
+  expect(screen.getByText(/Reenviar em 30s/)).toBeTruthy();
 });

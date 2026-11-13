@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useRef, useState } from 'react';
 import { Link as RouterLink, Navigate, useLocation, useNavigate } from 'react-router';
 
 // material-ui
@@ -10,8 +10,9 @@ import Typography from '@mui/material/Typography';
 
 import { notify, OtpInput } from '@c3theme/ui';
 import { useAuth } from '../session';
-import { codigoCompleto, ESPERA_PARA_REENVIAR, mensagemDoCodigo, pedeNovoCodigo, textoDaEspera } from '../codigo';
+import { codigoCompleto, codigoDoErro, ESPERA_PARA_REENVIAR, mensagemDoCodigo, pedeNovoCodigo, textoDaEspera } from '../codigo';
 import { AuthHeading } from './shared';
+import useCodeWait from '../useCodeWait';
 
 /**
  * Conferência do código no modo de entrada `codigo` (#123). O código que expirou ou esgotou as tentativas pede
@@ -27,22 +28,20 @@ export default function CodeLoginVerifyPage() {
   const [error, setError] = useState<string>();
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
-  const [wait, setWait] = useState(ESPERA_PARA_REENVIAR);
-
-  useEffect(() => {
-    if (wait <= 0) return;
-    const timer = setTimeout(() => setWait((segundos) => segundos - 1), 1000);
-    return () => clearTimeout(timer);
-  }, [wait]);
+  const [wait, setWait] = useCodeWait(ESPERA_PARA_REENVIAR);
+  const [generation, setGeneration] = useState(0);
+  const busy = useRef(false);
 
   if (!email) return <Navigate to="/login" replace />;
 
   async function submit(e?: FormEvent) {
     e?.preventDefault();
+    if (busy.current) return;
     if (!codigoCompleto(code)) {
       setError('Digite os 6 dígitos do código.');
       return;
     }
+    busy.current = true;
     setLoading(true);
     setError(undefined);
     try {
@@ -50,22 +49,28 @@ export default function CodeLoginVerifyPage() {
       navigate(from, { replace: true });
     } catch (err) {
       setError(mensagemDoCodigo(err));
-      if (pedeNovoCodigo(err)) setWait(0);
+      if (pedeNovoCodigo(err)) setWait(codigoDoErro(err) === 'muitas-tentativas' ? ESPERA_PARA_REENVIAR : 0);
+    } finally {
+      busy.current = false;
       setLoading(false);
     }
   }
 
   async function resend() {
+    if (busy.current || wait > 0) return;
+    busy.current = true;
     setResending(true);
     setError(undefined);
     try {
       await requestCode(email!);
       setWait(ESPERA_PARA_REENVIAR);
       setCode('');
+      setGeneration((current) => current + 1);
       notify('Enviamos um novo código.', 'info');
     } catch (err) {
       setError(mensagemDoCodigo(err));
     } finally {
+      busy.current = false;
       setResending(false);
     }
   }
@@ -74,8 +79,16 @@ export default function CodeLoginVerifyPage() {
     <Stack component="form" spacing={2.5} onSubmit={submit} noValidate>
       <AuthHeading title="Confira seu e-mail" subtitle={`Digite o código de 6 dígitos enviado para ${email}.`} />
       {error && <Alert severity="error">{error}</Alert>}
-      <OtpInput value={code} onChange={setCode} error={!!error} autoFocus />
-      <Button type="submit" variant="contained" size="large" loading={loading}>
+      <OtpInput
+        key={generation}
+        value={code}
+        onChange={(next) => {
+          if (!busy.current) setCode(next);
+        }}
+        error={!!error}
+        autoFocus
+      />
+      <Button type="submit" variant="contained" size="large" loading={loading} disabled={resending}>
         Entrar
       </Button>
       <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
@@ -83,7 +96,7 @@ export default function CodeLoginVerifyPage() {
         {wait > 0 ? (
           textoDaEspera(wait)
         ) : (
-          <Link component="button" type="button" onClick={resend} disabled={resending} sx={{ verticalAlign: 'baseline' }}>
+          <Link component="button" type="button" onClick={resend} disabled={resending || loading} sx={{ verticalAlign: 'baseline' }}>
             {resending ? 'Enviando…' : 'Reenviar código'}
           </Link>
         )}

@@ -17,8 +17,10 @@ export const ESPERA_PARA_REENVIAR = 30;
 /** Código estável do erro: o `code` do ApiError, ou um `codigo`/`code` no objeto lançado. */
 export function codigoDoErro(erro: unknown): CodigoDeErro | undefined {
   if (typeof erro !== 'object' || erro === null) return undefined;
+  if ((erro as { status?: unknown }).status === 0) return 'sem-rede';
+  if ((erro as { status?: unknown }).status === 429) return 'muitas-tentativas';
   const codigo = (erro as { code?: unknown }).code ?? (erro as { codigo?: unknown }).codigo;
-  return typeof codigo === 'string' && codigo in MENSAGENS_DO_CODIGO ? (codigo as CodigoDeErro) : undefined;
+  return typeof codigo === 'string' && Object.hasOwn(MENSAGENS_DO_CODIGO, codigo) ? (codigo as CodigoDeErro) : undefined;
 }
 
 /** Mensagem PT-BR do estado; erro sem código conhecido mostra a mensagem que a porta deu. */

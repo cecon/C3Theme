@@ -143,7 +143,7 @@ export default function ProfilePage() {
   const { user, port } = useAuth();
   const [params, setParams] = useSearchParams();
   const canEdit = Boolean(port.updateProfile);
-  const canChange = Boolean(port.changePassword);
+  const canChange = port.entrada !== 'codigo' && Boolean(port.changePassword);
   const tab = (params.get('aba') === 'senha' && canChange) || !canEdit ? 'senha' : 'dados';
   if (!user) return null;
   const initials = user.name
