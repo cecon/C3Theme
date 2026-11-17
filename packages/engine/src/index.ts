@@ -93,6 +93,7 @@ export { default as ChatPanel } from './chat/ChatPanel';
 export { default as ChatPage } from './chat/ChatPage';
 export { httpChatTransport } from './chat/httpChat';
 export type { AgentKind, ChatDef } from './chat/chatDef';
+export type { ChatTabsDef } from './chat/tabs/tabsDef';
 // conversas à parte e ações por mensagem do chat declarado (issue #10)
 export { BRANCH_ACTION, hasAside, laneActions, lanesApi, runLaneAction } from './agent';
 export type { ChatLanesDef, ChatLanesSpec, ChatMessageActionDef, LaneAction, LanesApi, MessageActionReply, WireLane } from './agent';

@@ -141,6 +141,7 @@ export * from './calendar';
 export * from './components/settings';
 // ligar aparelho por QR Code ou código, pedidos de acesso e lista de liberados (só callbacks, sem rede)
 export * from './components/device';
+export * from './components/threadTabs';
 // catálogo de itens instaláveis (loja de agentes, habilidades e apps)
 export * from './components/catalog';
 

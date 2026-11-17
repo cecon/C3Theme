@@ -20,6 +20,7 @@ trocada ganha um ADR novo, e o antigo passa a `Substituída por NNNN`.
 | [0013](0013-painel-por-resumo.md)               | Painel alimentado por resumo do sistema                  | Aceita                                  |
 | [0014](0014-configuracoes-em-abas.md)           | Configurações em abas, busca, atalho e confirmação       | Aceita                                  |
 | [0015](0015-pacote-de-entrada-enxuto.md)        | Pacote de entrada sem biblioteca pesada                  | Aceita                                  |
+| [0016](0016-abas-das-threads.md)                | Abas das threads no painel central do chat               | Aceita                                  |
 
 ## Formato
 

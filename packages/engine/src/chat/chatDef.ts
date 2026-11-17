@@ -6,6 +6,7 @@ import type { Text } from '../types';
 import type { ChatLanesSpec } from '../agent/lanes';
 import { CONVERSATION_ID, conversationParam } from './chatRoute.mjs';
 import type { PageStates } from '../pageStates/types';
+import type { ChatTabsDef } from './tabs/tabsDef';
 
 /** Partes do catálogo fechado (spec/v0/agent-ui.schema.json). */
 export const AGENT_KINDS = ['c3.form', 'c3.record', 'c3.action', 'c3.tool', 'c3.plan', 'c3.browser'] as const;
@@ -37,6 +38,8 @@ export interface ChatDef extends ChatLanesSpec {
   states?: PageStates;
   /** Lista fornecida por GET /_chat/{conversation}/_pinned. */
   pinned?: boolean | { label?: Text };
+  /** Faixa de abas das threads no alto do painel (#134, ADR 0016). Ausente: sem faixa. */
+  tabs?: ChatTabsDef;
 }
 
 /** `layout.header.assistant`: `true` vale o padrão; `false`, ausente ou outra coisa, sem botão. */
