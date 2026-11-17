@@ -20,3 +20,9 @@ it('recusa fontes vazias, seções sem nome e ações sem rótulo', () => {
   expect(validate({ ...def, cards: [{ id: 'x', label: 'X', action: { id: 'open' } }] })).toBe(false);
   expect(validate({ ...def, executeScript: 'não' })).toBe(false);
 });
+it('busca no cabeçalho: true ou textos próprios, nada além (#135)', () => {
+  expect(validate({ ...def, search: true })).toBe(true);
+  expect(validate({ ...def, search: { label: 'Buscar agentes', placeholder: { id: 'busca' }, empty: 'Ninguém' } })).toBe(true);
+  expect(validate({ ...def, search: 'sim' })).toBe(false);
+  expect(validate({ ...def, search: { filtro: 'x' } })).toBe(false);
+});

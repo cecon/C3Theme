@@ -2,6 +2,12 @@
 
 Cada entrada diz o que muda para quem usa; **Quebra** marca o que exige mudar o app.
 
+## Não publicado — busca e avatar na lista lateral (#135)
+
+- `SectionSidebar` ganhou `search` (`{ label, placeholder?, empty? }`): filtra por `label` e `status` sem acento e sem
+  caixa, esconde seções sem achado, anuncia o resultado e limpa com Escape, sem mexer nas preferências.
+- `SidebarItem.avatar` (`{ label, color? }`): iniciais sobre a cor em hex, texto pelo contraste; sem ele, o `mark`.
+
 ## Não publicado — QR sob demanda (#121)
 
 - `QrCode` (e o `DeviceLink`) carrega o gerador de QR na primeira vez que desenha: o `qrcode-generator` sai do pedaço

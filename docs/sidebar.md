@@ -24,6 +24,15 @@ e `actions?: { id, label: Text }[]`. IDs são estáveis e únicos por fonte/serv
 de `path` é do motor. Duplicação/renomeação de registros só aparecem quando declaradas
 em `actions`, e continuam sendo operações da porta. Só preferências visuais são locais.
 
+Busca (#135): `"search": true` (ou `{ "label", "placeholder", "empty" }`, todos `Text`) põe um campo no
+cabeçalho que filtra por `label` e `status` do item, sem acento e sem caixa. Buscando, seções sem achado
+somem, o resultado é anunciado e Escape limpa. A busca só muda o que aparece: ordem, fixados, seções e
+recolhimento continuam valendo para a lista inteira.
+
+Avatar (#135): o item da porta aceita `avatar: { label: Text, color?: "#rrggbb" }`. A linha mostra as
+iniciais do `label` sobre a cor, com texto claro ou escuro pelo contraste, no lugar do `icon`; sem avatar,
+fica o ícone. Cor fora do formato hex cai na cor neutra do tema.
+
 Seções da porta complementam as da spec. A pessoa pode criar/renomear/reordenar/excluir
 suas seções locais sem excluir registros. Ao excluir uma seção, seus itens reaparecem
 na primeira seção disponível. Itens sem seção válida também têm esse destino.
@@ -43,4 +52,4 @@ crítico antes de atenção; os cartões ok podem coexistir. Dispensa é por ser
 Configurações. O conteúdo rola separado do cabeçalho e do rodapé.
 
 Vitrine: **Telas / Lista lateral por servidor**: completa, carregando, vazia, erro,
-alerta e oculta. O teste e2e cria seção, move e recolhe uma linha e confirma persistência.
+alerta, oculta e com busca e avatar. O teste e2e cria seção, move e recolhe uma linha e confirma persistência; outro busca "cla" e limpa com Escape.

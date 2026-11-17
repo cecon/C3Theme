@@ -6,6 +6,8 @@ export interface SidebarDef {
   title: Text;
   hidden?: boolean;
   empty?: Text;
+  /** Busca no cabeçalho (#135), por nome e resumo do item. `true` usa os textos padrão. */
+  search?: boolean | { label?: Text; placeholder?: Text; empty?: Text };
   sections: { id: string; label: Text; editable?: boolean }[];
   cards?: { id: string; label: Text; message?: Text; dismissible?: boolean; action: { id: string; label: Text } }[];
 }
@@ -23,6 +25,8 @@ export interface SidebarSnapshot {
     label: Text;
     section: string;
     icon?: string;
+    /** Iniciais do `label` sobre a cor em hex; quando vem, ocupa o lugar do `icon` (#135). */
+    avatar?: { label: Text; color?: string };
     status?: Text;
     pending?: number;
     path?: string;

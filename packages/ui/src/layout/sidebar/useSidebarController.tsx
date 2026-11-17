@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import SidebarRow from './SidebarRow';
 import { ordered, readPreferences, savePreferences, toggleId } from './preferences';
+import { filterItems } from './search';
 import type { SectionSidebarProps, SidebarItem, SidebarPreferences, SidebarSection } from './types';
 export default function useSidebarController(props: SectionSidebarProps) {
   const { storageKey, items, active } = props;
   const [prefs, setPrefs] = useState(() => readPreferences(storageKey));
   const [announcement, announce] = useState('');
   const [failure, setFailure] = useState('');
+  const [query, setQuery] = useState('');
   const [menu, setMenu] = useState<{ anchor: HTMLElement; item?: SidebarItem; section?: SidebarSection }>();
   const [editor, setEditor] = useState<{ title: string; initial: string; save: (name: string) => void }>();
   const dragSection = useRef<string | null>(null);
@@ -35,6 +37,12 @@ export default function useSidebarController(props: SectionSidebarProps) {
   const assigned = (item: SidebarItem) => {
     const target = (Object.hasOwn(prefs.moved, item.id) ? prefs.moved[item.id] : undefined) ?? item.section;
     return sections.some((s) => s.id === target) ? target : sections[0]?.id;
+  };
+  // a busca só muda o que aparece; ordem, mover e fixar continuam sobre a lista inteira
+  const shown = filterItems(visible, query);
+  const search = (q: string) => {
+    setQuery(q);
+    announce(q.trim() ? `${filterItems(visible, q).length} itens encontrados` : 'Busca limpa');
   };
   const pinned = ordered(
     visible.filter((i) => prefs.pinned.includes(i.id)),
@@ -116,6 +124,9 @@ export default function useSidebarController(props: SectionSidebarProps) {
     change,
     sections,
     visible,
+    query,
+    search,
+    shown,
     assigned,
     pinned,
     pin,

@@ -1,5 +1,11 @@
 # Mudanças do motor
 
+## Não publicado — busca e avatar na lista lateral (#135)
+
+- `layout.sidebar.search` (`true` ou `{ label, placeholder, empty }`) põe busca no cabeçalho da lista lateral, por nome
+  e resumo do item; `SidebarSnapshot.items[].avatar` (`{ label, color? }`) desenha iniciais sobre a cor no lugar do
+  ícone. Guia: [Lista lateral](../../docs/sidebar.md).
+
 ## Não publicado — pacote de entrada enxuto (#121)
 
 - **Quebra**: a casca não baixa mais o catálogo inteiro do iconsax quando o app não passa `icons`; sem `icons`, os
@@ -20,6 +26,7 @@
 - O cabeçalho passa a abrir o modal da spec no lugar do painel de aparência quando o app declara `settings`; a porta
   `settingsSection` do `<C3Shell>` abre direto numa seção. Sem `app.settings`, o painel de aparência continua igual.
 - A shell pede o `pages` de `GET /_meta/app` também quando uma seção de configuração declara `permission`.
+
 # @c3theme/engine
 
 Cada entrada diz o que muda para quem usa; **Quebra** marca o que exige mudar o app.
@@ -49,7 +56,7 @@ Cada entrada diz o que muda para quem usa; **Quebra** marca o que exige mudar o 
 - #118: `layout.sidebar` e porta `sidebars` montam lista lateral por servidor,
   com seções, fixados, preferências locais, menus acessíveis e cartões de estado.
   Sem a declaração, a navegação anterior permanece. Guia em `docs/sidebar.md`.
-Instale fixando o commit (`github:cecon/C3Theme#<sha>&path:packages/engine`). Cada entrada diz o que muda para quem usa; **Quebra** marca o que exige mudar o app.
+  Instale fixando o commit (`github:cecon/C3Theme#<sha>&path:packages/engine`). Cada entrada diz o que muda para quem usa; **Quebra** marca o que exige mudar o app.
 
 ## Sem versão nova (2026-11-13)
 

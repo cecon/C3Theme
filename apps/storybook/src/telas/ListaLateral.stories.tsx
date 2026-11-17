@@ -36,7 +36,13 @@ const app: AppDef = {
     { path: '/conversa', comingSoon: { message: 'Conversa selecionada sem recarregar a janela.' } }
   ]
 };
-type Scenario = 'ready' | 'loading' | 'empty' | 'error' | 'alert' | 'hidden';
+type Scenario = 'ready' | 'loading' | 'empty' | 'error' | 'alert' | 'hidden' | 'search';
+// cenário com busca (#135): avatares com cor por pessoa/agente no lugar do ícone
+const avatars: Record<string, { label: string; color: string }> = {
+  ana: { label: 'Ana Souza', color: '#1d4ed8' },
+  bia: { label: 'Bia Lima', color: '#fbbf24' },
+  clara: { label: 'Clara', color: '#047857' }
+};
 function Demo({ scenario = 'ready' }: { scenario?: Scenario }) {
   const sidebar = useMemo(() => {
     let snapshot: SidebarSnapshot = {
@@ -57,8 +63,11 @@ function Demo({ scenario = 'ready' }: { scenario?: Scenario }) {
                 actions: [{ id: 'duplicate', label: 'Duplicar' }]
               },
               { id: 'bia', label: 'Bia', section: 'team', status: 'Respondeu', path: '/conversa' },
-              { id: 'rotina', label: 'Resumo diário', section: 'routine', status: 'Aguardando', path: '/conversa' }
-            ],
+              { id: 'rotina', label: 'Resumo diário', section: 'routine', status: 'Aguardando', path: '/conversa' },
+              ...(scenario === 'search'
+                ? [{ id: 'clara', label: 'Clara', section: 'team', status: 'Revisando o contrato', path: '/conversa' }]
+                : [])
+            ].map((i) => (scenario === 'search' && avatars[i.id] ? { ...i, avatar: avatars[i.id] } : i)),
       views: [
         { id: 'agents', label: 'Agentes' },
         { id: 'routines', label: 'Rotinas' }
@@ -94,7 +103,19 @@ function Demo({ scenario = 'ready' }: { scenario?: Scenario }) {
   }, [scenario]);
   const transport: C3Fetch = async () =>
     new Response(
-      JSON.stringify({ data: { ...app, layout: { ...app.layout, sidebar: { ...app.layout.sidebar!, hidden: scenario === 'hidden' } } } }),
+      JSON.stringify({
+        data: {
+          ...app,
+          layout: {
+            ...app.layout,
+            sidebar: {
+              ...app.layout.sidebar!,
+              hidden: scenario === 'hidden',
+              ...(scenario === 'search' && { search: { label: 'Buscar agentes', placeholder: 'Buscar por nome ou resumo' } })
+            }
+          }
+        }
+      }),
       { headers: { 'content-type': 'application/json' } }
     );
   return <C3Shell apiUrl="/demo" transport={transport} sidebars={{ equipe: sidebar }} router="hash" />;
@@ -110,3 +131,4 @@ export const Vazia: Story = { args: { scenario: 'empty' } };
 export const Erro: Story = { args: { scenario: 'error' } };
 export const Alerta: Story = { args: { scenario: 'alert' } };
 export const Oculta: Story = { args: { scenario: 'hidden' } };
+export const ComBuscaEAvatar: Story = { args: { scenario: 'search' } };

@@ -18,3 +18,16 @@ test('lista lateral: criar seção, mover e recolher com teclado', async ({ page
   await page.reload();
   await expect(nav.getByRole('button', { name: /Pesquisa \(1\)/ })).toHaveAttribute('aria-expanded', 'false');
 });
+
+test('lista lateral: busca filtra por nome e Escape devolve a lista (#135)', async ({ page }) => {
+  await page.goto('/iframe.html?id=telas-lista-lateral-por-servidor--com-busca-e-avatar&viewMode=story');
+  const nav = page.getByRole('navigation', { name: 'Conversas da equipe' });
+  const box = nav.getByRole('searchbox', { name: 'Buscar agentes' });
+  await box.fill('cla');
+  await expect(nav.getByRole('group', { name: 'Clara' })).toBeVisible();
+  await expect(nav.getByRole('group', { name: 'Ana' })).toHaveCount(0);
+  await expect(nav.getByRole('group', { name: 'Clara' }).locator('.MuiAvatar-root')).toHaveText('C');
+  await box.press('Escape');
+  await expect(box).toHaveValue('');
+  await expect(nav.getByRole('group', { name: 'Ana' })).toBeVisible();
+});
