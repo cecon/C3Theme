@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import type { ReactNode } from 'react';
-import { act, cleanup, fireEvent, render, renderHook, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, renderHook, screen, waitFor } from '@testing-library/react';
 import { IntlProvider } from 'react-intl';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -25,9 +25,11 @@ const ui = (node: ReactNode) => (
 );
 
 describe('DeviceLink', () => {
-  it('QR novo troca só o desenho do mesmo nó (sem desmontar, sem piscar)', () => {
+  it('QR novo troca só o desenho do mesmo nó (sem desmontar, sem piscar)', async () => {
     const { rerender } = render(ui(<DeviceLink status="qr" qr="primeiro" />));
     const svg = screen.getByRole('img', { name: 'QR Code para ligar o aparelho' });
+    // o gerador chega à parte (#121): o quadro já está no lugar, o desenho vem depois
+    await waitFor(() => expect(svg.querySelector('path')!.getAttribute('d')).not.toBe(''));
     const before = svg.querySelector('path')!.getAttribute('d');
     rerender(ui(<DeviceLink status="qr" qr="segundo-codigo" />));
     const after = screen.getByRole('img', { name: 'QR Code para ligar o aparelho' });

@@ -11,6 +11,14 @@ const qrText = (n: number) =>
 const meta = {
   title: 'Componentes/Ligar aparelho',
   component: DeviceLink,
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'O gerador do QR baixa na primeira vez que um QR aparece (#121): quem nunca mostra QR não leva a biblioteca. Até lá o quadro branco já ocupa o lugar.'
+      }
+    }
+  },
   args: {
     status: 'qr',
     qr: qrText(1),

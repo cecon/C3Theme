@@ -12,7 +12,6 @@ import { C3Components, C3Icons, EngineProvider, EngineState } from './context';
 import C3Layout, { type ShellRailsPort } from './C3Layout';
 import { desktopFrame, frameFromOptions, frameTokens } from './desktop/frame';
 import type { DesktopHost } from './desktop/port';
-import useIconCatalog from './hooks/useIconCatalog';
 import { readStoredBranch, storeBranch } from './branchStorage';
 import { loadEntities } from './access';
 import { buildRoutes, homePath, routesKey } from './routes';
@@ -40,8 +39,8 @@ export interface C3ShellProps {
   /** Componentes custom citados na spec por nome (`component` em página, campo, coluna, seção, header). */
   components?: C3Components;
   /**
-   * Ícones citados na spec por nome (`icon`), ex.: `{ Profile2User, Box }` do iconsax-reactjs. Sem ele, a shell
-   * carrega o catálogo inteiro do iconsax num pedaço à parte (vários MB): passe só os que a spec usa.
+   * Ícones citados na spec por nome (`icon`), ex.: `{ Profile2User, Box }` do iconsax-reactjs. Sem ele, nome de
+   * ícone da spec não desenha nada. O catálogo inteiro (vários MB) é opt-in: `allIcons` de `@c3theme/engine/icons`.
    */
   icons?: C3Icons;
   /** Cabeçalhos por requisição, ex.: () => ({ Authorization: `Bearer ${token}` }). */
@@ -136,7 +135,6 @@ function Shell(props: C3ShellProps) {
   const [offline, setOffline] = useState<AppStatusDef>();
   // cada pedido de nova tentativa é um objeto novo: o efeito roda de novo
   const [attempt, retry] = useReducer(() => ({}), {});
-  const catalog = useIconCatalog(icons);
   // função nova a cada render do app não recria o contexto: a shell chama sempre a última recebida
   const sink = useRef(onTelemetry);
   useEffect(() => {
@@ -219,7 +217,7 @@ function Shell(props: C3ShellProps) {
     () =>
       state && {
         ...state,
-        icons: catalog,
+        icons,
         telemetry,
         connectivity: props.connectivity,
         sidebars: props.sidebars,
@@ -233,7 +231,7 @@ function Shell(props: C3ShellProps) {
       },
     [
       state,
-      catalog,
+      icons,
       telemetry,
       reloadApp,
       setActive,

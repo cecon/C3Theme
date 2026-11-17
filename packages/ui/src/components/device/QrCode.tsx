@@ -1,9 +1,7 @@
-import { useMemo } from 'react';
-
 // material-ui
 import Box from '@mui/material/Box';
 
-import { qrModules, qrPath } from './qr';
+import { useQrModules } from './useQrModules';
 
 /** Margem branca obrigatória do QR (4 módulos pela norma): sem ela a câmera não acha o código no tema escuro. */
 const QUIET = 4;
@@ -21,9 +19,8 @@ export interface QrCodeProps {
  * é trocado: o nó não é desmontado e o código renova sem piscar.
  */
 export default function QrCode({ value, size = 232, label }: QrCodeProps) {
-  const modules = useMemo(() => qrModules(value), [value]);
+  const { modules, d } = useQrModules(value, QUIET);
   const side = modules.length + QUIET * 2;
-  const d = useMemo(() => qrPath(modules, QUIET), [modules]);
   return (
     <Box
       component="svg"
