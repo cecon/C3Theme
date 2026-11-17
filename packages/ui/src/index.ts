@@ -145,7 +145,14 @@ export * from './components/device';
 export * from './components/catalog';
 
 export { default as SectionSidebar } from './layout/SectionSidebar';
-export type { SectionSidebarProps, SidebarItem, SidebarSection, SidebarCard } from './layout/SectionSidebar';
+export type {
+  SectionSidebarProps,
+  SidebarAvatar,
+  SidebarItem,
+  SidebarSearchDef,
+  SidebarSection,
+  SidebarCard
+} from './layout/SectionSidebar';
 
 export { default as AgentDock } from './layout/AgentDock';
 export type { AgentDockItem, AgentDockProps, AgentDockPosition, AgentDockStatus } from './layout/AgentDock';

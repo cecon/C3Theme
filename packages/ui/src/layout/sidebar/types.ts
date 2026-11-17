@@ -4,11 +4,27 @@ export interface SidebarItem {
   id: string;
   label: string;
   mark?: ReactNode;
+  /** Iniciais do `label` sobre a cor (hex), no lugar do `mark` (#135). */
+  avatar?: SidebarAvatar;
   /** Presença/atividade também vira texto acessível, nunca apenas cor. */
   status?: string;
   pending?: number;
   section: string;
   actions?: { id: string; label: string }[];
+}
+export interface SidebarAvatar {
+  /** Nome de onde saem as iniciais (até duas). */
+  label: string;
+  /** Cor de fundo em hex (`#3366ff`); o texto escolhe claro ou escuro pelo contraste. Sem ela, a cor neutra do tema. */
+  color?: string;
+}
+/** Busca no cabeçalho (#135): filtra por nome e resumo, sem mexer nas preferências. */
+export interface SidebarSearchDef {
+  /** Nome acessível do campo. */
+  label: string;
+  placeholder?: string;
+  /** Texto quando nada casa; padrão: `Nada encontrado para "…".` */
+  empty?: string;
 }
 export interface SidebarSection {
   id: string;
@@ -45,6 +61,7 @@ export interface SectionSidebarProps {
   error?: string;
   onRetry?: () => void;
   empty?: string;
+  search?: SidebarSearchDef;
 }
 export interface SidebarPreferences {
   collapsed: string[];

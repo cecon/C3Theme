@@ -194,6 +194,29 @@
         "empty": {
           "$ref": "#/$defs/text"
         },
+        "search": {
+          "description": "Busca no cabeçalho da lista (#135): filtra por nome e resumo (status) do item, sem acento e sem caixa, sem mexer em ordem, fixados e seções. `true` usa os textos padrão.",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "label": {
+                  "$ref": "#/$defs/text"
+                },
+                "placeholder": {
+                  "$ref": "#/$defs/text"
+                },
+                "empty": {
+                  "$ref": "#/$defs/text"
+                }
+              }
+            }
+          ]
+        },
         "hidden": {
           "type": "boolean"
         },

@@ -11,9 +11,10 @@ import SidebarFooter from './sidebar/SidebarFooter';
 import type { SectionSidebarProps } from './sidebar/types';
 import useSidebarController from './sidebar/useSidebarController';
 import SidebarMenus from './sidebar/SidebarMenus';
+import SidebarSearch from './sidebar/SidebarSearch';
 import { toggleId } from './sidebar/preferences';
 
-export type { SectionSidebarProps, SidebarItem, SidebarSection, SidebarCard } from './sidebar/types';
+export type { SectionSidebarProps, SidebarAvatar, SidebarItem, SidebarSearchDef, SidebarSection, SidebarCard } from './sidebar/types';
 
 /** Lista lateral com preferências locais por servidor; os dados e as ações de negócio continuam no app. */
 export default function SectionSidebar(props: SectionSidebarProps) {
@@ -33,6 +34,9 @@ function SidebarScope(props: SectionSidebarProps) {
     change,
     sections,
     visible,
+    query,
+    search,
+    shown,
     assigned,
     pinned,
     move,
@@ -42,6 +46,8 @@ function SidebarScope(props: SectionSidebarProps) {
     sectionIds
   } = controller;
   const { label, title, views, view, onView, loading, error, onRetry } = props;
+  const searching = !!query.trim();
+  const shownPinned = pinned.filter((i) => shown.includes(i));
   return (
     <Box
       component="nav"
@@ -52,6 +58,7 @@ function SidebarScope(props: SectionSidebarProps) {
         <Typography component="h2" variant="h6">
           {title}
         </Typography>
+        {props.search && <SidebarSearch def={props.search} value={query} onChange={search} />}
         {views && views.length > 1 && (
           <Select
             size="small"
@@ -98,19 +105,21 @@ function SidebarScope(props: SectionSidebarProps) {
           </Alert>
         ) : (
           <>
-            {pinned.length > 0 && (
+            {shownPinned.length > 0 && (
               <Box>
                 <Typography variant="subtitle2" sx={{ px: 1.5 }}>
                   Fixados
                 </Typography>
-                {pinned.map(row)}
+                {shownPinned.map(row)}
               </Box>
             )}
             {sections.map((section) => {
-              const children = visible.filter((i) => assigned(i) === section.id && !prefs.pinned.includes(i.id));
-              const count = visible.filter((i) => assigned(i) === section.id).length;
-              const pending =
-                (section.pending ?? 0) + visible.filter((i) => assigned(i) === section.id).reduce((sum, i) => sum + (i.pending ?? 0), 0);
+              const inSection = shown.filter((i) => assigned(i) === section.id);
+              // buscando, seção sem achado some: não mostra "Seção vazia" para o que só está filtrado
+              if (searching && !inSection.length) return null;
+              const children = inSection.filter((i) => !prefs.pinned.includes(i.id));
+              const count = inSection.length;
+              const pending = (section.pending ?? 0) + inSection.reduce((sum, i) => sum + (i.pending ?? 0), 0);
               const collapsed = prefs.collapsed.includes(section.id);
               return (
                 <Box
@@ -201,6 +210,9 @@ function SidebarScope(props: SectionSidebarProps) {
               );
             })}
             {!visible.length && <Typography sx={{ p: 2 }}>{props.empty ?? 'Nenhum item nesta lista.'}</Typography>}
+            {visible.length > 0 && searching && !shown.length && (
+              <Typography sx={{ p: 2 }}>{props.search?.empty ?? `Nada encontrado para "${query.trim()}".`}</Typography>
+            )}
           </>
         )}
       </Box>

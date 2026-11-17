@@ -25,6 +25,7 @@ function ConnectedSidebar({ def, port, onNavigate }: { def: SidebarDef; port: Si
       label={text(def.label)}
       title={text(def.title)}
       empty={text(def.empty, 'Nenhum item nesta lista.')}
+      search={searchDef(def.search, text)}
       sections={[...def.sections, ...(data.sections ?? []).filter((s) => !def.sections.some((base) => base.id === s.id))].map((s) => ({
         ...s,
         label: text(s.label)
@@ -36,6 +37,7 @@ function ConnectedSidebar({ def, port, onNavigate }: { def: SidebarDef; port: Si
           label: text(i.label),
           status: i.status && text(i.status),
           mark: Icon ? <Icon size={20} /> : undefined,
+          avatar: i.avatar && { label: text(i.avatar.label), color: i.avatar.color },
           actions: i.actions?.map((a) => ({ ...a, label: text(a.label) }))
         };
       })}
@@ -71,4 +73,16 @@ function ConnectedSidebar({ def, port, onNavigate }: { def: SidebarDef; port: Si
       })}
     />
   );
+}
+
+type TextOf = ReturnType<typeof useText>;
+/** `search: true` ou o objeto da spec viram os textos já resolvidos do campo; ausente ou `false`, sem busca. */
+function searchDef(search: SidebarDef['search'], text: TextOf) {
+  if (!search) return undefined;
+  const s = search === true ? {} : search;
+  return {
+    label: text(s.label, 'Buscar na lista'),
+    placeholder: text(s.placeholder, 'Buscar'),
+    empty: s.empty && text(s.empty)
+  };
 }

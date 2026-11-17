@@ -3,6 +3,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
+import ItemAvatar from './ItemAvatar';
 import type { SidebarItem } from './types';
 
 export default function SidebarRow({
@@ -73,10 +74,14 @@ export default function SidebarRow({
           bgcolor: active ? 'action.selected' : undefined
         }}
       >
-        {item.mark && (
-          <Box component="span" aria-hidden="true">
-            {item.mark}
-          </Box>
+        {item.avatar ? (
+          <ItemAvatar avatar={item.avatar} />
+        ) : (
+          item.mark && (
+            <Box component="span" aria-hidden="true">
+              {item.mark}
+            </Box>
+          )
         )}
         <Box sx={{ minWidth: 0, textAlign: 'left' }}>
           <Typography noWrap>{item.label}</Typography>
