@@ -1,5 +1,13 @@
 # Mudanças do motor
 
+## Não publicado — pacote de entrada enxuto (#121)
+
+- **Quebra**: a casca não baixa mais o catálogo inteiro do iconsax quando o app não passa `icons`; sem `icons`, os
+  nomes de ícone da spec não desenham nada. Para o comportamento antigo, passe `icons={allIcons}` com
+  `import { allIcons } from '@c3theme/engine/icons'` (ponto de entrada à parte, vários MB). Passar só os ícones que a
+  spec cita continua sendo o recomendado. [ADR 0015](../../docs/adr/0015-pacote-de-entrada-enxuto.md).
+- O quadro (`/{entidade}/board`) carrega sob demanda: o `@hello-pangea/dnd` sai do pedaço de entrada.
+
 ## Não publicado — configurações em modal (#119)
 
 - `app.settings` no app.json declara o modal de configurações: abas pessoais, seções do servidor, busca, subpáginas,

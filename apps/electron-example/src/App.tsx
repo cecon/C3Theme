@@ -3,6 +3,7 @@
 // shell montar a moldura do `layout.desktop` do app.json.
 
 import { C3Shell, httpAuth } from '@c3theme/engine';
+import { allIcons } from '@c3theme/engine/icons';
 import { electronDesktop, ipcFetch } from '@c3theme/electron/renderer';
 
 const transport = ipcFetch(window.c3);
@@ -12,6 +13,14 @@ const desktopHost = electronDesktop();
 
 export default function App() {
   return (
-    <C3Shell apiUrl="" router="hash" transport={transport} auth={auth} desktopHost={desktopHost} theme={{ storageKey: 'c3-electron' }} />
+    <C3Shell
+      apiUrl=""
+      router="hash"
+      transport={transport}
+      auth={auth}
+      desktopHost={desktopHost}
+      icons={allIcons}
+      theme={{ storageKey: 'c3-electron' }}
+    />
   );
 }

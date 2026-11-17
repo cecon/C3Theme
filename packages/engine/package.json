@@ -27,6 +27,11 @@
       "c3theme-source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./icons": {
+      "c3theme-source": "./src/icons.ts",
+      "types": "./dist/icons.d.ts",
+      "default": "./dist/icons.js"
     }
   },
   "files": [
@@ -87,6 +92,10 @@
       ".": {
         "types": "./dist/index.d.ts",
         "default": "./dist/index.js"
+      },
+      "./icons": {
+        "types": "./dist/icons.d.ts",
+        "default": "./dist/icons.js"
       }
     }
   }

@@ -2,6 +2,11 @@
 
 Cada entrada diz o que muda para quem usa; **Quebra** marca o que exige mudar o app.
 
+## Não publicado — QR sob demanda (#121)
+
+- `QrCode` (e o `DeviceLink`) carrega o gerador de QR na primeira vez que desenha: o `qrcode-generator` sai do pedaço
+  de entrada de quem nunca mostra um QR. Até o gerador chegar, o quadro branco já ocupa o lugar.
+
 ## 0.2.0 (2026-11-12)
 
 - Revisão dos rails: recolhimento mantém ícones inteiros; menu de fixação tem itens de checkbox acessíveis pelo
