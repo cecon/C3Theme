@@ -47,6 +47,12 @@ export interface WireLane {
   fromMessageId?: string;
   working?: boolean;
   unread: number;
+  /** Aguardando a pessoa: aprovação ou pergunta (#134). */
+  attention?: 'approval' | 'question';
+  /** O último turno falhou (#134). */
+  failed?: boolean;
+  /** Thread que existe mas não abre agora; o texto diz por quê (#134). */
+  unavailable?: string;
   updatedAt: string;
   lastMessage?: { text?: string; createdAt: string; direction: 'in' | 'out' };
 }

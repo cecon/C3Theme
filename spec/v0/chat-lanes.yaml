@@ -91,6 +91,9 @@ Lane:
     fromMessageId: { type: string, description: 'Ramo: a mensagem da principal de onde saiu.' }
     working: { type: boolean, description: 'O agente ainda trabalha nela.' }
     unread: { type: integer, minimum: 0, default: 0 }
+    attention: { enum: [approval, question], description: 'Aguardando a pessoa (aprovação ou pergunta); a aba mostra (#134).' }
+    failed: { type: boolean, description: 'O último turno falhou; a aba mostra (#134).' }
+    unavailable: { type: string, description: 'A thread existe mas não abre agora; a aba fica desabilitada com este motivo (#134).' }
     updatedAt: { type: string, format: date-time }
     lastMessage:
       type: object

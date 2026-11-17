@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { useIntl } from 'react-intl';
 
 import { CATALOG_MESSAGES_EN } from './components/catalog/catalogText';
+import { THREAD_TABS_MESSAGES_EN } from './components/threadTabs/threadTabsText';
 import { UI_MESSAGES_EN } from './i18n.en';
 
 /**
@@ -201,7 +202,7 @@ export { UI_MESSAGES_EN };
 
 /** Mensagens embutidas do pacote para o idioma (o app ainda pode sobrescrever). */
 export const uiMessagesFor = (locale: string): Record<string, string> =>
-  locale.toLowerCase().startsWith('en') ? { ...UI_MESSAGES_EN, ...CATALOG_MESSAGES_EN } : {};
+  locale.toLowerCase().startsWith('en') ? { ...UI_MESSAGES_EN, ...CATALOG_MESSAGES_EN, ...THREAD_TABS_MESSAGES_EN } : {};
 
 /** `t('c3.search.open')` com o texto do idioma atual. */
 export function useUiText() {

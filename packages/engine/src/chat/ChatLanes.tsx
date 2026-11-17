@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -14,12 +14,13 @@ import {
   type ChatTransport
 } from '@c3theme/chat';
 
-import { hasAside, laneActions, lanesApi, runLaneAction, type WireLane } from '../agent/lanes';
-import { ApiError } from '../apiError';
-import { useEngine, useText } from '../context';
+import { laneActions, runLaneAction, type WireLane } from '../agent/lanes';
+import { useText } from '../context';
 import type { ChatDef } from './chatDef';
 import usePinned from './usePinned';
 import { rereadMessage } from './pinned';
+import useLanes from './useLanes';
+import ChatTabs from './tabs/ChatTabs';
 
 interface Props {
   def: ChatDef;
@@ -31,100 +32,66 @@ interface Props {
 
 /** Liga as conversas declaradas às rotas do motor; a principal continua montada enquanto uma filha abre. */
 export default function ChatLanes({ def, chat, transport, me, panel }: Props) {
-  const { client } = useEngine();
   const text = useText();
   const t = useChatText();
-  const api = useMemo(() => lanesApi(client), [client]);
   const actions = useMemo(() => laneActions(def, text, t('c3.chat.lanes.branchFrom')), [def, text, t]);
-  const [lanes, setLanes] = useState<WireLane[]>([]);
-  const [selected, setSelected] = useState<string>();
-  const [available, setAvailable] = useState(true);
-  const [error, setError] = useState('');
-  const [pending, setPending] = useState(false);
   const [revision, setRevision] = useState(0);
   const pinned = usePinned(def, chat, revision);
-  const enabled = !!api && available;
-  const showLanes = enabled && (!!def.lanes || lanes.length > 0);
-
-  useEffect(() => {
-    if (!api || !def.lanes) return;
-    let live = true;
-    void api.list(chat.conversationId).then(
-      (items) => live && setLanes(items),
-      (e: unknown) => {
-        if (!live) return;
-        if (e instanceof ApiError && e.status === 404) setAvailable(false);
-        else setError(e instanceof Error ? e.message : 'Não foi possível abrir as conversas.');
+  const state = useLanes(def, chat);
+  const { api, lanes, selected, setSelected, enabled, error, clearError, pending, run, aside } = state;
+  const showLanes = enabled && (!!def.lanes || lanes.length > 0) && !def.tabs;
+  const main = (
+    <AssistantPanel
+      {...panel}
+      chat={chat}
+      actions={
+        <>
+          {panel.actions}
+          {pinned.actions}
+        </>
       }
+      jumpTo={pinned.jumpTo}
+      messageActions={enabled && !pending ? actions : []}
+      onMessageAction={
+        enabled
+          ? (m, id) =>
+              void run(async () => {
+                const result = await runLaneAction(api!, actions, chat.conversationId, m.id, id);
+                if (!actions.find((a) => a.id === id)?.opens) {
+                  const fresh = await rereadMessage(transport, chat.conversationId, m.id);
+                  if (fresh) chat.putMessage?.(fresh);
+                  setRevision((n) => n + 1);
+                }
+                return result;
+              })
+          : undefined
+      }
+      onAside={aside}
+    />
+  );
+  // com abas declaradas, as threads abrem em abas no painel central em vez do painel ao lado (#134)
+  if (def.tabs)
+    return (
+      <ChatTabs
+        def={{ ...def, tabs: def.tabs }}
+        conversationId={chat.conversationId}
+        main={main}
+        mainTitle={typeof panel.title === 'string' ? panel.title : 'Assistente'}
+        lanes={state}
+        transport={transport}
+        me={me}
+        panel={panel}
+      />
     );
-    return () => {
-      live = false;
-    };
-  }, [api, def.lanes, chat.conversationId, chat.messages.length, chat.generating]);
-
-  async function run(work: () => Promise<{ lane?: WireLane; message?: string } | undefined>) {
-    if (pending) return false;
-    setPending(true);
-    setError('');
-    try {
-      const result = await work();
-      if (result?.lane) {
-        const lane = result.lane;
-        setLanes((items) => [...items.filter((l) => l.id !== lane.id), lane]);
-        setSelected(lane.id);
-      }
-      if (result?.message) setError(result.message);
-      return true;
-    } catch (e) {
-      if (e instanceof ApiError && e.status === 404) setAvailable(false);
-      setError(e instanceof Error ? e.message : 'Não foi possível abrir a conversa.');
-      return false;
-    } finally {
-      setPending(false);
-    }
-  }
-
-  const aside =
-    enabled && hasAside(def) && !pending
-      ? (value: string) => run(async () => ({ lane: await api!.open(chat.conversationId, { kind: 'aside', text: value || undefined }) }))
-      : undefined;
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
       {error && (
-        <Alert severity="info" onClose={() => setError('')}>
+        <Alert severity="info" onClose={clearError}>
           {error}
         </Alert>
       )}
       <Box sx={{ display: 'grid', gridTemplateColumns: showLanes ? { xs: '1fr', md: '1fr 1fr' } : '1fr', flex: 1, minHeight: 0 }}>
-        <Box sx={{ minWidth: 0, minHeight: 0 }}>
-          <AssistantPanel
-            {...panel}
-            chat={chat}
-            actions={
-              <>
-                {panel.actions}
-                {pinned.actions}
-              </>
-            }
-            jumpTo={pinned.jumpTo}
-            messageActions={enabled && !pending ? actions : []}
-            onMessageAction={
-              enabled
-                ? (m, id) =>
-                    void run(async () => {
-                      const result = await runLaneAction(api!, actions, chat.conversationId, m.id, id);
-                      if (!actions.find((a) => a.id === id)?.opens) {
-                        const fresh = await rereadMessage(transport, chat.conversationId, m.id);
-                        if (fresh) chat.putMessage?.(fresh);
-                        setRevision((n) => n + 1);
-                      }
-                      return result;
-                    })
-                : undefined
-            }
-            onAside={aside}
-          />
-        </Box>
+        <Box sx={{ minWidth: 0, minHeight: 0 }}>{main}</Box>
         {showLanes && (
           <Box sx={{ minWidth: 0, minHeight: { xs: 360, md: 0 }, borderLeft: 1, borderColor: 'divider' }}>
             <LaneConversation

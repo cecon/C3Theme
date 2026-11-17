@@ -1,5 +1,13 @@
 # Mudanças do motor
 
+## Não publicado — abas das threads no chat (#134)
+
+- `chat.tabs` desenha a faixa de abas das threads no alto do painel central: principal fixa, laterais (`aside`/`branch`)
+  como abas, "+" com rascunho que só vira thread ao enviar, fechar com desfazer, reabrir, renomear, arrastar, menu,
+  indicadores (`attention`, `failed`, `unavailable` novos e opcionais na `Lane`) e atalhos declarados. Abas, ordem e
+  nomes ficam por servidor e agente. Guia: [Abas das threads](../../docs/chat-tabs.md);
+  [ADR 0016](../../docs/adr/0016-abas-das-threads.md). Sem `tabs`, o painel ao lado continua igual.
+
 ## Não publicado — busca e avatar na lista lateral (#135)
 
 - `layout.sidebar.search` (`true` ou `{ label, placeholder, empty }`) põe busca no cabeçalho da lista lateral, por nome

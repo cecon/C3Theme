@@ -2,6 +2,13 @@
 
 Cada entrada diz o que muda para quem usa; **Quebra** marca o que exige mudar o app.
 
+## Não publicado — faixa de abas de threads (#134)
+
+- `ThreadTabs`: tablist com setas/Home/End, Delete fecha, F2 renomeia, menu (Shift+F10, botão direito), arrastar com
+  rolagem nas bordas, sombra e lista de todas quando não cabem, "Reabrir" das fechadas, estados carregando e erro, aba
+  indisponível e botão de lista no celular. Estado da aba (`running`, `waiting`, `unread`, `failed`) tem forma própria
+  e vai no nome acessível. Textos em `c3.tabs.*` (pt e en).
+
 ## Não publicado — busca e avatar na lista lateral (#135)
 
 - `SectionSidebar` ganhou `search` (`{ label, placeholder?, empty? }`): filtra por `label` e `status` sem acento e sem

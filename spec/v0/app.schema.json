@@ -1108,6 +1108,9 @@
         "lanes": {
           "$ref": "#/$defs/chatLanes"
         },
+        "tabs": {
+          "$ref": "#/$defs/chatTabs"
+        },
         "entregaDaUltimaMensagem": {
           "$ref": "#/$defs/chatDelivery",
           "description": "Resumo da entrega externa da última resposta do agente; a entrega declarada no turno prevalece. Opcional: sem o resumo não há marca implícita."
@@ -2672,6 +2675,49 @@
         "server": {
           "$ref": "#/$defs/settings",
           "description": "Configurações do servidor, abertas pelo rodapé do modal pessoal."
+        }
+      }
+    },
+    "chatTabs": {
+      "type": "object",
+      "description": "Faixa de abas das threads no alto do painel central (#134, ADR 0016): a principal sempre tem aba; cada conversa à parte aberta (aside/branch, spec/v0/chat-lanes.yaml) ganha a sua. A shell desenha a faixa (ThreadTabs do @c3theme/ui) com nova aba, fechar com desfazer, reabrir, renomear, arrastar e menu; abas abertas, ordem e nomes ficam guardados por servidor e agente. Com abas, as threads abrem no painel central em vez do painel ao lado.",
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "$ref": "#/$defs/text",
+          "description": "Nome acessível da faixa. Padrão: \"Threads da conversa\"."
+        },
+        "main": {
+          "$ref": "#/$defs/text",
+          "description": "Título da aba da thread principal. Padrão: o título do chat."
+        },
+        "new": {
+          "type": "boolean",
+          "default": true,
+          "description": "Botão \"+\" de thread nova. Sem mensagem enviada, a thread nova não vai ao servidor nem fica guardada."
+        },
+        "shortcuts": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Atalhos na forma canônica do format \"shortcut\" (\"Ctrl+Shift+K\"; sem modificador, só F1–F24). Não disparam em campo de texto nem durante composição.",
+          "properties": {
+            "next": {
+              "type": "string",
+              "pattern": "^(?:(?:Ctrl\\+)?(?:Alt\\+)?(?:Shift\\+)?(?:Meta\\+)?F(?:[1-9]|1\\d|2[0-4])|(?=(?:Ctrl|Alt|Shift|Meta)\\+)(?:Ctrl\\+)?(?:Alt\\+)?(?:Shift\\+)?(?:Meta\\+)?(?:[A-Z0-9]|Space|Enter|Tab|Backspace|Delete|Insert|Home|End|PageUp|PageDown|Up|Down|Left|Right|Plus|Minus|Comma|Period|Slash))$"
+            },
+            "previous": {
+              "type": "string",
+              "pattern": "^(?:(?:Ctrl\\+)?(?:Alt\\+)?(?:Shift\\+)?(?:Meta\\+)?F(?:[1-9]|1\\d|2[0-4])|(?=(?:Ctrl|Alt|Shift|Meta)\\+)(?:Ctrl\\+)?(?:Alt\\+)?(?:Shift\\+)?(?:Meta\\+)?(?:[A-Z0-9]|Space|Enter|Tab|Backspace|Delete|Insert|Home|End|PageUp|PageDown|Up|Down|Left|Right|Plus|Minus|Comma|Period|Slash))$"
+            },
+            "new": {
+              "type": "string",
+              "pattern": "^(?:(?:Ctrl\\+)?(?:Alt\\+)?(?:Shift\\+)?(?:Meta\\+)?F(?:[1-9]|1\\d|2[0-4])|(?=(?:Ctrl|Alt|Shift|Meta)\\+)(?:Ctrl\\+)?(?:Alt\\+)?(?:Shift\\+)?(?:Meta\\+)?(?:[A-Z0-9]|Space|Enter|Tab|Backspace|Delete|Insert|Home|End|PageUp|PageDown|Up|Down|Left|Right|Plus|Minus|Comma|Period|Slash))$"
+            },
+            "close": {
+              "type": "string",
+              "pattern": "^(?:(?:Ctrl\\+)?(?:Alt\\+)?(?:Shift\\+)?(?:Meta\\+)?F(?:[1-9]|1\\d|2[0-4])|(?=(?:Ctrl|Alt|Shift|Meta)\\+)(?:Ctrl\\+)?(?:Alt\\+)?(?:Shift\\+)?(?:Meta\\+)?(?:[A-Z0-9]|Space|Enter|Tab|Backspace|Delete|Insert|Home|End|PageUp|PageDown|Up|Down|Left|Right|Plus|Minus|Comma|Period|Slash))$"
+            }
+          }
         }
       }
     }
